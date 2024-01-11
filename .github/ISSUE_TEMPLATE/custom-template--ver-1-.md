@@ -9,7 +9,7 @@ assignees: ''
 
 # :notebook_with_decorative_cover: ShareNote
 > [!NOTE]
-> 해야할 일을 기록합니다.
+> <!-- 해야할 일을 기록합니다. -->
 > - [ ] 할 일
 > - [ ] 할 일
 
