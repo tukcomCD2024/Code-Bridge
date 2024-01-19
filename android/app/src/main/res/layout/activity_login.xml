@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="로그인"
+        android:textSize="30dp"
+        android:textColor="@color/black"
+        android:textStyle="bold"
+        android:layout_marginTop="30dp"/>
+
+    <TextView
+        android:id="@+id/logintext"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="아이디"
+        android:textSize="20dp"
+        android:textColor="@color/black"
+        android:layout_marginTop="20dp"
+        android:layout_marginLeft="20dp"
+        android:layout_marginBottom="10dp"/>
+
+    <EditText
+        android:id="@+id/idEditText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="30sp"
+        android:hint="   아이디를 입력하세요"
+        android:textColorHint="@color/brightgray"
+        android:background="@drawable/edittext"
+        android:backgroundTint="@color/gray"
+        android:inputType="textEmailAddress"
+        android:layout_marginBottom="20dp" />
+
+    <TextView
+        android:id="@+id/passwordtext"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="비밀번호"
+        android:textSize="20dp"
+        android:textColor="@color/black"
+        android:layout_marginLeft="20dp"
+        android:layout_marginBottom="10dp"/>
+
+    <EditText
+        android:id="@+id/passwordEditText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="30sp"
+        android:hint="   비밀번호를 입력하세요"
+        android:textColorHint="@color/brightgray"
+        android:background="@drawable/edittext"
+        android:backgroundTint="@color/gray"
+        android:inputType="textPassword"
+        android:layout_marginBottom="45dp" />
+
+    <Button
+        android:id="@+id/loginButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="로그인"
+        android:textSize="17dp"
+        android:background="@drawable/button_background"
+        android:layout_marginBottom="8dp" />
+
+
+    <Button
+        android:id="@+id/signupButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="회원가입"
+        android:textSize="17dp"
+        android:background="@drawable/button_background"/>
+
+</LinearLayout>
