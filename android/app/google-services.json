@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "411874898060",
+    "project_id": "sharenote-64aaf",
+    "storage_bucket": "sharenote-64aaf.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:411874898060:android:f17868999e2562fddbcba9",
+        "android_client_info": {
+          "package_name": "com.example.sharenote"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCeMQOqQvePY17N3k1Hu3-3Yqyzy4LlzfQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
