@@ -22,7 +22,6 @@ repositories {
 }
 
 dependencies {
-	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation ('org.springframework.boot:spring-boot-starter-data-mongodb-reactive')
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	compileOnly 'org.projectlombok:lombok'
@@ -33,4 +32,10 @@ dependencies {
 
 tasks.named('test') {
 	useJUnitPlatform()
+}
+
+bootJar {
+	archiveBaseName = 'shareNote'
+	archiveFileName = 'shareNote.jar' // 원하는 JAR 파일의 이름으로 변경
+	archiveVersion = "0.0.0"
 }
