@@ -80,4 +80,11 @@
         android:textSize="17dp"
         android:background="@drawable/button_background"/>
 
+    <Button
+        android:id="@+id/googleLoginButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Google로 로그인"
+        android:layout_marginBottom="8dp"/>
+
 </LinearLayout>
