@@ -6,7 +6,6 @@
     android:padding="16dp">
 
 
-
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -80,11 +79,11 @@
         android:textSize="17dp"
         android:background="@drawable/button_background"/>
 
-    <Button
+
+    <com.google.android.gms.common.SignInButton
         android:id="@+id/googleLoginButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Google로 로그인"
-        android:layout_marginBottom="8dp"/>
+        android:layout_centerHorizontal="true" />
 
 </LinearLayout>

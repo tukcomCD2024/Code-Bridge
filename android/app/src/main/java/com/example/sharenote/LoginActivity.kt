@@ -1,53 +1,52 @@
 package com.example.sharenote
 
+
 import android.content.Intent
 import android.os.Bundle
+import android.view.View
+import android.widget.EditText
 import android.widget.Toast
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import com.example.sharenote.databinding.ActivityLoginBinding
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.common.SignInButton
 import com.google.android.gms.common.api.ApiException
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.GoogleAuthProvider
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.ktx.Firebase
+
+
 
 class LoginActivity : AppCompatActivity() {
     private var auth: FirebaseAuth? = null
-    private lateinit var binding: ActivityLoginBinding
-    private lateinit var resultLauncher: ActivityResultLauncher<Intent>
     private lateinit var mGoogleSignInClient: GoogleSignInClient
     private val RC_SIGN_IN = 9001 // Google 로그인 요청 코드
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityLoginBinding.inflate(layoutInflater)
-        setContentView(binding.root)
-        auth = Firebase.auth
+        setContentView(R.layout.activity_login)
+        auth = FirebaseAuth.getInstance()
 
         // Google 로그인 구성
         configureGoogleSignIn()
 
         // 회원가입 창으로
-        binding.signupButton.setOnClickListener {
+        findViewById<View>(R.id.signupButton).setOnClickListener {
             startActivity(Intent(this, SignUpActivity::class.java))
         }
 
         // 로그인 버튼
-        binding.loginButton.setOnClickListener {
-            signInWithEmail(
-                binding.idEditText.text.toString(),
-                binding.passwordEditText.text.toString()
-            )
+        findViewById<View>(R.id.loginButton).setOnClickListener {
+            val email = findViewById<EditText>(R.id.idEditText).text.toString()
+            val password = findViewById<EditText>(R.id.passwordEditText).text.toString()
+            signInWithEmail(email, password)
         }
 
         // Google 로그인 버튼
-        binding.googleLoginButton.setOnClickListener {
+        val googleLoginButton = findViewById<SignInButton>(R.id.googleLoginButton)
+        googleLoginButton.setOnClickListener {
             signInWithGoogle()
         }
     }
@@ -83,7 +82,7 @@ class LoginActivity : AppCompatActivity() {
 
     private fun signInWithGoogle() {
         val signInIntent = mGoogleSignInClient.signInIntent
-        resultLauncher.launch(signInIntent)
+        startActivityForResult(signInIntent, RC_SIGN_IN)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
