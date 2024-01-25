@@ -22,7 +22,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="닉네임"
-        android:textSize="20dp"
+        android:textSize="15dp"
         android:textColor="@color/black"
         android:layout_below="@+id/signuptext"
         android:layout_marginLeft="20dp"
@@ -32,31 +32,57 @@
         android:id="@+id/usernameEditText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textSize="30sp"
-        android:hint="   닉네임을 입력하세요"
+        android:textSize="25sp"
+        android:hint="  닉네임을 입력하세요"
         android:textColorHint="@color/brightgray"
         android:background="@drawable/edittext"
         android:backgroundTint="@color/gray"
         android:inputType="text"
         android:layout_below="@+id/usernametext"
-        android:layout_marginBottom="20dp" />
+        android:layout_marginBottom="20dp"
+        android:layout_toLeftOf="@+id/checkDuplicateButton" />
 
     <Button
         android:id="@+id/checkDuplicateButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="중복 확인"
-        android:layout_below="@+id/usernameEditText"
+        android:background="@drawable/button_background"
+        android:layout_below="@+id/usernametext"
+        android:layout_alignParentRight="true"
+        android:layout_marginLeft="8dp" />
+
+    <TextView
+        android:id="@+id/idtext"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="아이디"
+        android:textSize="15dp"
+        android:textColor="@color/black"
+        android:layout_below="@+id/checkDuplicateButton"
+        android:layout_marginLeft="20dp"
         android:layout_marginBottom="10dp"/>
+
+    <EditText
+        android:id="@+id/idEditText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="25sp"
+        android:hint="   아이디를 입력하세요"
+        android:textColorHint="@color/brightgray"
+        android:background="@drawable/edittext"
+        android:backgroundTint="@color/gray"
+        android:inputType="textEmailAddress"
+        android:layout_below="@+id/idtext" />
 
     <TextView
         android:id="@+id/emailtext"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="이메일"
-        android:textSize="20dp"
+        android:textSize="15dp"
         android:textColor="@color/black"
-        android:layout_below="@+id/checkDuplicateButton"
+        android:layout_below="@+id/idEditText"
         android:layout_marginTop="20dp"
         android:layout_marginLeft="20dp"
         android:layout_marginBottom="10dp"/>
@@ -65,7 +91,7 @@
         android:id="@+id/emailEditText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textSize="30sp"
+        android:textSize="25sp"
         android:hint="   이메일을 입력하세요"
         android:textColorHint="@color/brightgray"
         android:background="@drawable/edittext"
@@ -79,7 +105,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="비밀번호"
-        android:textSize="20dp"
+        android:textSize="15dp"
         android:textColor="@color/black"
         android:layout_below="@+id/emailEditText"
         android:layout_marginLeft="20dp"
@@ -89,7 +115,7 @@
         android:id="@+id/passwordEditText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textSize="30sp"
+        android:textSize="25sp"
         android:hint="   비밀번호를 입력하세요"
         android:textColorHint="@color/brightgray"
         android:background="@drawable/edittext"
@@ -103,7 +129,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="비밀번호 확인"
-        android:textSize="20dp"
+        android:textSize="15dp"
         android:textColor="@color/black"
         android:layout_below="@+id/passwordEditText"
         android:layout_marginLeft="20dp"
@@ -113,8 +139,8 @@
         android:id="@+id/confirmPasswordEditText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textSize="30sp"
-        android:hint="   비밀번호를 다시 입력하세요"
+        android:textSize="25sp"
+        android:hint="   비밀번호를 다시 한번 확인하세요"
         android:textColorHint="@color/brightgray"
         android:background="@drawable/edittext"
         android:backgroundTint="@color/gray"
@@ -131,5 +157,30 @@
         android:background="@drawable/button_background"
         android:layout_below="@+id/confirmPasswordEditText"
         android:layout_marginTop="20dp" />
+
+    <TextView
+        android:id="@+id/loginText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="                    이미 계정이 있으신가요? "
+        android:textSize="15dp"
+        android:gravity="center"
+        android:layout_below="@+id/signupButton"
+        android:layout_marginTop="16dp"
+        android:textColor="@android:color/darker_gray" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="  로그인하기"
+        android:textSize="15dp"
+        android:textStyle="bold"
+        android:layout_toRightOf="@+id/loginText"
+        android:layout_below="@+id/signupButton"
+        android:layout_marginTop="16dp"
+        android:clickable="true"
+        android:textColor="@android:color/holo_blue_dark"
+        android:layout_gravity="center"
+        android:id="@+id/loginLink" />
 
 </RelativeLayout>
