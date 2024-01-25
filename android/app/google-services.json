@@ -12,7 +12,20 @@
           "package_name": "com.example.sharenote"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "411874898060-69dmapsaifg85vrn10csh2c8n93dr7n3.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.sharenote",
+            "certificate_hash": "46da62f4b6c62d78edfbbe8f04896bb4c45cb18d"
+          }
+        },
+        {
+          "client_id": "411874898060-gqbctgokr3c36vtpjsrtvun8qedg6g16.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyCeMQOqQvePY17N3k1Hu3-3Yqyzy4LlzfQ"
@@ -20,7 +33,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "411874898060-gqbctgokr3c36vtpjsrtvun8qedg6g16.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }
