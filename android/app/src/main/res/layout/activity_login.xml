@@ -77,13 +77,17 @@
         android:layout_height="wrap_content"
         android:text="회원가입"
         android:textSize="17dp"
-        android:background="@drawable/button_background"/>
+        android:background="@drawable/button_background"
+        android:layout_marginBottom="20dp"/>
 
 
-    <com.google.android.gms.common.SignInButton
+    <ImageView
         android:id="@+id/googleLoginButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true" />
+        android:src="@drawable/btn_login_google"
+        android:scaleType="fitCenter"
+        android:layout_marginBottom="8dp" />
+
 
 </LinearLayout>

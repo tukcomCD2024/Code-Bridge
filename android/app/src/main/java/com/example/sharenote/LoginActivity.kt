@@ -5,6 +5,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.widget.EditText
+import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.gms.auth.api.signin.GoogleSignIn
@@ -45,7 +46,7 @@ class LoginActivity : AppCompatActivity() {
         }
 
         // Google 로그인 버튼
-        val googleLoginButton = findViewById<SignInButton>(R.id.googleLoginButton)
+        val googleLoginButton = findViewById<ImageView>(R.id.googleLoginButton)
         googleLoginButton.setOnClickListener {
             signInWithGoogle()
         }
