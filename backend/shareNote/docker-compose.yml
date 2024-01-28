@@ -1,13 +1,14 @@
 version : "3.8"
 services:
-  mongodb:
+  mongodbService:
     image: mongo:4.4.5
-    container_name: mongodb
+    container_name: mongodbService
+    hostname: mongodb
     ports:
       - "27017:27017"
     environment:
       - MONGO_INITDB_ROOT_USERNAME=root
-      - MONGO_INITDB_ROOT_PASSWORD=root
+      - MONGO_INITDB_ROOT_PASSWORD=1234
       - MONGO_INITDB_DATABASE=shareDB
 
 
@@ -25,7 +26,7 @@ services:
       #S3_SECRET_KEY: ${S3_SECRET_KEY}
       #RABBIT_HOST: rabbitmq
     depends_on:
-      - mongodb
+      - mongodbService
     restart: on-failure
 
 
