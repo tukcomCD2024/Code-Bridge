@@ -8,6 +8,6 @@ public class UserSignUpDTO {
     private String loginId;
     private String password;
     private String nickname;
-    
+
 
 }
