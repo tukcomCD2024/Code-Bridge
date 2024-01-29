@@ -30,6 +30,7 @@ public class Organization {
     public static class Note {
         @Id
         private String id;
+        private String craeteUser;
 
         private String title;
 
@@ -44,9 +45,7 @@ public class Organization {
     public static class Page {
         @Id
         private String id;
-
-        private String title;
-
+        private String craeteUser;
         private List<String> blocks;
 
         // 생성자, 게터, 세터 등 필요한 메서드들 추가

@@ -1,5 +1,6 @@
 package com.Backend.shareNote.domain.User.service;
 
+import com.Backend.shareNote.domain.User.dto.UserLoginDTO;
 import com.Backend.shareNote.domain.User.dto.UserSignUpDTO;
 import com.Backend.shareNote.domain.User.entity.Users;
 import com.Backend.shareNote.domain.User.repository.UserRepository;
@@ -8,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -18,11 +20,30 @@ public class UserService {
     public void signUp(UserSignUpDTO userSignUpDTO) {
         Users users = Users.builder()
                 .email(userSignUpDTO.getEmail())
+                .loginId(userSignUpDTO.getLoginId())
                 .password(userSignUpDTO.getPassword())
                 .nickname(userSignUpDTO.getNickname())
                 .workspaces(new ArrayList<String>())
                 .build();
 
         userRepository.save(users);
+    }
+
+    public String login(UserLoginDTO userLoginDTO) {
+
+        try{
+            Optional<Users> user = userRepository.findByLoginId(userLoginDTO.getLoginId()); //여기서 에러나면 에러 메세지 지정이 힘드니까 try catch로 해결
+            Users loginUser = user.get();
+            if(!loginUser.getPassword().equals(userLoginDTO.getPassword())) {
+                return "비밀번호를 확인해 주세요";
+            }
+            return loginUser.getId();
+        }catch (Exception e){
+            return "아이디를 확인해 주세요";
+        }
+
+
+
+
     }
 }
