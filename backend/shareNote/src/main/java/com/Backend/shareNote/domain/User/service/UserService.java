@@ -23,7 +23,7 @@ public class UserService {
                 .loginId(userSignUpDTO.getLoginId())
                 .password(userSignUpDTO.getPassword())
                 .nickname(userSignUpDTO.getNickname())
-                .workspaces(new ArrayList<String>())
+                .organizations(new ArrayList<String>())
                 .build();
 
         userRepository.save(users);

@@ -1,6 +1,8 @@
 package com.Backend.shareNote.domain.Oraganization.entity;
 
 import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
@@ -9,16 +11,17 @@ import java.util.List;
 
 @Document(collection = "organizations")
 @Builder
+@Getter
 public class Organization {
 
     @Id
     private String id;
 
     private String name;
-
+    @Setter
     private String description;
 
-    private String owner;
+    private String owner; //여기 loginId 들어가는거야
 
     private List<String> members;
 
