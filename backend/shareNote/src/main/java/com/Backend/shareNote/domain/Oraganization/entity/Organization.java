@@ -22,7 +22,6 @@ public class Organization {
     private String description;
 
     private String owner; //여기 loginId 들어가는거야
-
     private List<String> members;
 
     private List<String> quiz;
@@ -30,14 +29,18 @@ public class Organization {
     private List<Note> notes;
 
     // 내부 클래스로 Note 정의
+    @Builder //신기하다
+    @Getter
     public static class Note {
         @Id
         private String id;
-        private String craeteUser;
+        private String createUser;
 
         private String title;
 
-        private List<Page> pages; //도큐먼트 안의 도큐먼트는 어떻게 표현하지??
+        private String noteImageUrl;
+
+        private List<Page> pages;
         //page에 order 필드 추가!!
 
 

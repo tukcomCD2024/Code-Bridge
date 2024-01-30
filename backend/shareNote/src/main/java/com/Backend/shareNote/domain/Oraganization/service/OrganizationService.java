@@ -1,15 +1,18 @@
 package com.Backend.shareNote.domain.Oraganization.service;
 
-import com.Backend.shareNote.domain.Oraganization.dto.OrganizationCreateDTO;
-import com.Backend.shareNote.domain.Oraganization.dto.OrganizationDeleteDTO;
-import com.Backend.shareNote.domain.Oraganization.dto.OrganizationUpdateDTO;
+import com.Backend.shareNote.domain.Oraganization.organdto.OrganizationCreateDTO;
+import com.Backend.shareNote.domain.Oraganization.organdto.OrganizationDeleteDTO;
+import com.Backend.shareNote.domain.Oraganization.organdto.OrganizationUpdateDTO;
 import com.Backend.shareNote.domain.Oraganization.entity.Organization;
 import com.Backend.shareNote.domain.Oraganization.repository.OrganizationRepository;
+import com.Backend.shareNote.domain.Quiz.entity.Quiz;
 import com.Backend.shareNote.domain.User.entity.Users;
 import com.Backend.shareNote.domain.User.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
 
 @Service
 @Slf4j
@@ -25,6 +28,10 @@ public class OrganizationService {
         Organization org = Organization.builder()
                 .name(organizationCreateDTO.getName())
                 .owner(organizationCreateDTO.getOwner())
+                .notes(new ArrayList<Organization.Note>())
+                .quiz(new ArrayList<String>())
+                .members(new ArrayList<String>())
+                .description("")
                 .build();
         Organization savedOrgan = organizationRepository.save(org);
 

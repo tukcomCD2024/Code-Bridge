@@ -1,4 +1,4 @@
-package com.Backend.shareNote.domain.Oraganization.dto;
+package com.Backend.shareNote.domain.Oraganization.organdto;
 
 import lombok.Getter;
 

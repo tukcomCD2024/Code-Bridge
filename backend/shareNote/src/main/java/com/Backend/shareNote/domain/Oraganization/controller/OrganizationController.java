@@ -1,8 +1,8 @@
 package com.Backend.shareNote.domain.Oraganization.controller;
 
-import com.Backend.shareNote.domain.Oraganization.dto.OrganizationCreateDTO;
-import com.Backend.shareNote.domain.Oraganization.dto.OrganizationDeleteDTO;
-import com.Backend.shareNote.domain.Oraganization.dto.OrganizationUpdateDTO;
+import com.Backend.shareNote.domain.Oraganization.organdto.OrganizationCreateDTO;
+import com.Backend.shareNote.domain.Oraganization.organdto.OrganizationDeleteDTO;
+import com.Backend.shareNote.domain.Oraganization.organdto.OrganizationUpdateDTO;
 import com.Backend.shareNote.domain.Oraganization.service.OrganizationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
