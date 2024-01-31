@@ -21,9 +21,9 @@ services:
     ports:
       - "8080:8080"
       - "5005:5005"
-    #environment:
-      #S3_ACCESS_KEY: ${S3_ACCESS_KEY}
-      #S3_SECRET_KEY: ${S3_SECRET_KEY}
+    environment:
+      S3_ACCESS_KEY: ${S3_ACCESS_KEY}
+      S3_SECRET_KEY: ${S3_SECRET_KEY}
       #RABBIT_HOST: rabbitmq
     depends_on:
       - mongodbService
