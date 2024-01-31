@@ -26,7 +26,7 @@ public class Users {
 
     private String nickname;
 
-    private List<String> workspaces;
+    private List<String> organizations;
 
     @Field("created_at")
     private Date createdAt;

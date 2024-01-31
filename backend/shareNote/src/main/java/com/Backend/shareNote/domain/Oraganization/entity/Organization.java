@@ -1,25 +1,28 @@
 package com.Backend.shareNote.domain.Oraganization.entity;
 
 import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Document(collection = "organizations")
 @Builder
+@Getter
 public class Organization {
 
     @Id
     private String id;
 
     private String name;
-
+    @Setter
     private String description;
 
-    private String owner;
-
+    private String owner; //여기 loginId 들어가는거야
     private List<String> members;
 
     private List<String> quiz;
@@ -27,14 +30,19 @@ public class Organization {
     private List<Note> notes;
 
     // 내부 클래스로 Note 정의
+    @Builder //신기하다
+    @Getter
+    @Setter
     public static class Note {
         @Id
         private String id;
-        private String craeteUser;
+        private String createUser;
 
         private String title;
 
-        private List<Page> pages; //도큐먼트 안의 도큐먼트는 어떻게 표현하지??
+        private String noteImageUrl;
+
+        private List<Page> pages;
         //page에 order 필드 추가!!
 
 
