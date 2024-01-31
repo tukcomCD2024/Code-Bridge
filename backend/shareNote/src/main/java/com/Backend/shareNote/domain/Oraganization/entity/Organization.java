@@ -6,6 +6,7 @@ import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 
@@ -31,6 +32,7 @@ public class Organization {
     // 내부 클래스로 Note 정의
     @Builder //신기하다
     @Getter
+    @Setter
     public static class Note {
         @Id
         private String id;

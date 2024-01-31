@@ -3,6 +3,7 @@ package com.Backend.shareNote.domain.Oraganization.controller;
 import com.Backend.shareNote.domain.Oraganization.entity.Organization;
 import com.Backend.shareNote.domain.Oraganization.notedto.NoteCreateDTO;
 import com.Backend.shareNote.domain.Oraganization.notedto.NoteDeleteDTO;
+import com.Backend.shareNote.domain.Oraganization.notedto.NoteUpdateDTO;
 import com.Backend.shareNote.domain.Oraganization.service.NoteService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,5 +30,11 @@ public class NoteController {
     @GetMapping("/user/note/{organizationId}")
     public List<Organization.Note> getNote(@PathVariable String organizationId){
         return noteService.getNotes(organizationId);
+    }
+
+    @PatchMapping("/user/note")
+    public String updateNote(@RequestBody NoteUpdateDTO noteUpdateDTO){
+        return noteService.updateNote(noteUpdateDTO);
+
     }
 }

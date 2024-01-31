@@ -3,6 +3,7 @@ package com.Backend.shareNote.domain.Oraganization.service;
 import com.Backend.shareNote.domain.Oraganization.entity.Organization;
 import com.Backend.shareNote.domain.Oraganization.notedto.NoteCreateDTO;
 import com.Backend.shareNote.domain.Oraganization.notedto.NoteDeleteDTO;
+import com.Backend.shareNote.domain.Oraganization.notedto.NoteUpdateDTO;
 import com.Backend.shareNote.domain.Oraganization.repository.NoteRepository;
 import com.Backend.shareNote.domain.Oraganization.repository.OrganizationRepository;
 import lombok.RequiredArgsConstructor;
@@ -65,5 +66,29 @@ public class NoteService {
     public List<Organization.Note> getNotes(String organizationId) {
         Organization organization = organizationRepository.findById(organizationId).get();
         return organization.getNotes();
+    }
+
+    public String updateNote(NoteUpdateDTO noteUpdateDTO) {
+        Organization oranization = organizationRepository.findById(noteUpdateDTO.getOrganizationId())
+                .orElseThrow(()->new IllegalArgumentException("해당하는 organization이 없습니다."));
+
+        Organization.Note note = noteRepository.findById(noteUpdateDTO.getNoteId())
+                .orElseThrow(()->new IllegalArgumentException("해당하는 note가 없습니다."));
+        //노트 업데이트
+        note.setTitle(noteUpdateDTO.getTitle());
+        note.setNoteImageUrl(noteUpdateDTO.getNoteImageUrl());
+
+        //organization에서 note 업데이트
+        oranization.getNotes().stream()
+                .filter(n -> n.getId().equals(note.getId()))
+                .findFirst()
+                .ifPresent(n -> {
+                    n.setTitle(noteUpdateDTO.getTitle());
+                    n.setNoteImageUrl(noteUpdateDTO.getNoteImageUrl());
+                });
+
+        noteRepository.save(note);
+        organizationRepository.save(oranization);
+        return "노트 수정 성공!";
     }
 }
