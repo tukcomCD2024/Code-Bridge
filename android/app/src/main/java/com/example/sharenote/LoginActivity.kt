@@ -40,9 +40,9 @@ class LoginActivity : AppCompatActivity() {
 
         // 로그인 버튼
         findViewById<View>(R.id.loginButton).setOnClickListener {
-            val email = findViewById<EditText>(R.id.idEditText).text.toString()
+            val id = findViewById<EditText>(R.id.idEditText).text.toString()
             val password = findViewById<EditText>(R.id.passwordEditText).text.toString()
-            signInWithEmail(email, password)
+            signInWithEmail(id, password)
         }
 
         // Google 로그인 버튼
@@ -61,9 +61,9 @@ class LoginActivity : AppCompatActivity() {
         mGoogleSignInClient = GoogleSignIn.getClient(this, gso)
     }
 
-    private fun signInWithEmail(email: String, password: String) {
-        if (email.isNotEmpty() && password.isNotEmpty()) {
-            auth?.signInWithEmailAndPassword(email, password)
+    private fun signInWithEmail(id: String, password: String) {
+        if (id.isNotEmpty() && password.isNotEmpty()) {
+            auth?.signInWithEmailAndPassword(id, password)
                 ?.addOnCompleteListener(this) { task ->
                     if (task.isSuccessful) {
                         Toast.makeText(
