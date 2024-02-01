@@ -25,6 +25,8 @@ class SignUpActivity : AppCompatActivity() {
 
     private val db = FirebaseFirestore.getInstance()
 
+    private var isUsernameAvailable = false // 중복된 닉네임 여부를 저장하는 변수
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_sign_up)
@@ -44,12 +46,17 @@ class SignUpActivity : AppCompatActivity() {
             Password = passwordEditText.text.toString()
 
             // 중복된 닉네임 확인 후 회원가입 진행
-            checkDuplicateUsername()
+            if (isUsernameAvailable) {
+                signUpUser()
+            } else {
+                Toast.makeText(this, "닉네임 중복 확인을 진행해주세요.", Toast.LENGTH_SHORT).show()
+            }
         }
 
         // 중복 확인 버튼
         val checkDuplicateButton = findViewById<Button>(R.id.checkDuplicateButton)
         checkDuplicateButton.setOnClickListener {
+            // 중복 확인 버튼을 눌렀을 때 중복 여부 확인
             checkDuplicateUsername()
         }
 
@@ -121,12 +128,10 @@ class SignUpActivity : AppCompatActivity() {
                 .whereEqualTo("Name", enteredName)
                 .get()
                 .addOnSuccessListener { documents ->
-                    if (documents.isEmpty) {
+                    isUsernameAvailable = documents.isEmpty // 중복 여부를 저장
+                    if (isUsernameAvailable) {
                         // 중복된 닉네임이 없으면 사용 가능
                         Toast.makeText(this, "사용 가능한 닉네임입니다.", Toast.LENGTH_SHORT).show()
-
-                        // 회원가입 진행
-                        signUpUser()
                     } else {
                         // 중복된 닉네임이 존재하면 사용 불가능
                         Toast.makeText(this, "이미 사용 중인 닉네임입니다.", Toast.LENGTH_SHORT).show()
