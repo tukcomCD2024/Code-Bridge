@@ -25,6 +25,7 @@
         android:textSize="15dp"
         android:textColor="@color/black"
         android:layout_below="@+id/signuptext"
+        android:layout_marginTop="30dp"
         android:layout_marginLeft="20dp"
         android:layout_marginBottom="10dp"/>
 
@@ -52,28 +53,6 @@
         android:layout_alignParentRight="true"
         android:layout_marginLeft="8dp" />
 
-    <TextView
-        android:id="@+id/idtext"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="아이디"
-        android:textSize="15dp"
-        android:textColor="@color/black"
-        android:layout_below="@+id/checkDuplicateButton"
-        android:layout_marginLeft="20dp"
-        android:layout_marginBottom="10dp"/>
-
-    <EditText
-        android:id="@+id/idEditText"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textSize="25sp"
-        android:hint="   아이디를 입력하세요"
-        android:textColorHint="@color/brightgray"
-        android:background="@drawable/edittext"
-        android:backgroundTint="@color/gray"
-        android:inputType="textEmailAddress"
-        android:layout_below="@+id/idtext" />
 
     <TextView
         android:id="@+id/emailtext"
@@ -82,8 +61,7 @@
         android:text="이메일"
         android:textSize="15dp"
         android:textColor="@color/black"
-        android:layout_below="@+id/idEditText"
-        android:layout_marginTop="20dp"
+        android:layout_below="@+id/usernameEditText"
         android:layout_marginLeft="20dp"
         android:layout_marginBottom="10dp"/>
 
