@@ -20,7 +20,6 @@ public class UserService {
     public void signUp(UserSignUpDTO userSignUpDTO) {
         Users users = Users.builder()
                 .email(userSignUpDTO.getEmail())
-                .loginId(userSignUpDTO.getLoginId())
                 .password(userSignUpDTO.getPassword())
                 .nickname(userSignUpDTO.getNickname())
                 .organizations(new ArrayList<String>())
@@ -32,7 +31,7 @@ public class UserService {
     public String login(UserLoginDTO userLoginDTO) {
 
         try{
-            Optional<Users> user = userRepository.findByLoginId(userLoginDTO.getLoginId()); //여기서 에러나면 에러 메세지 지정이 힘드니까 try catch로 해결
+            Optional<Users> user = userRepository.findByEmail(userLoginDTO.getEmail()); //여기서 에러나면 에러 메세지 지정이 힘드니까 try catch로 해결
             Users loginUser = user.get();
             if(!loginUser.getPassword().equals(userLoginDTO.getPassword())) {
                 return "비밀번호를 확인해 주세요";

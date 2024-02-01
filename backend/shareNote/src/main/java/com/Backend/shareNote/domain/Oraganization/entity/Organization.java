@@ -23,7 +23,7 @@ public class Organization {
     @Setter
     private String description;
 
-    private String owner; //여기 loginId 들어가는거야
+    private String owner; //여기 email 들어가는거야
     private List<String> members;
 
     private List<String> quiz;

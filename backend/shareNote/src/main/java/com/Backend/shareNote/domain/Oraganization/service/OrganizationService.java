@@ -21,7 +21,7 @@ public class OrganizationService {
     private final OrganizationRepository organizationRepository;
     private final UserRepository userRepository;
     public String createOrganization(OrganizationCreateDTO organizationCreateDTO) {
-        Users user = userRepository.findByLoginId(organizationCreateDTO.getOwner())
+        Users user = userRepository.findByEmail(organizationCreateDTO.getOwner())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
 
 
@@ -45,7 +45,7 @@ public class OrganizationService {
     }
 
     public String deleteOrganization(OrganizationDeleteDTO organizationDeleteDTO) {
-        Users user = userRepository.findByLoginId(organizationDeleteDTO.getUserLoginId())
+        Users user = userRepository.findByEmail(organizationDeleteDTO.getUserLoginId())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
 
         Organization organization = organizationRepository.findById(organizationDeleteDTO.getOrganizationId())
@@ -53,7 +53,7 @@ public class OrganizationService {
 
         user.getOrganizations().remove(organization.getId()); //좋은데?
         userRepository.save(user);
-        if(organization.getOwner().equals(user.getLoginId())) {
+        if(organization.getOwner().equals(user.getEmail())) {
             organizationRepository.delete(organization);
             return "삭제 완료";
         }
