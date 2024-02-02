@@ -3,6 +3,7 @@ package com.Backend.shareNote.domain.Oraganization.entity;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
@@ -22,7 +23,7 @@ public class Organization {
     @Setter
     private String description;
 
-    private String owner; //여기 loginId 들어가는거야
+    private String owner; //여기 email 들어가는거야
     private List<String> members;
 
     private List<String> quiz;
@@ -50,13 +51,34 @@ public class Organization {
     }
 
     // 내부 클래스로 Page 정의
+    @Getter
+    @Builder
     public static class Page {
-        @Id
+        @Id //수동으로 id 생성
         private String id;
-        private String craeteUser;
+        private String createUser;
         private List<String> blocks;
 
         // 생성자, 게터, 세터 등 필요한 메서드들 추가
+    }
+
+    public void addPageToNote(String noteId, Page newPage) {
+        for (Note note : this.notes) {
+            if (note.getId().equals(noteId)) {
+                note.getPages().add(newPage);
+                break;
+            }
+        }
+    }
+
+    public void deletePageFromNote(String noteId, String pageId) {
+        // 페이지 삭제
+        for (Note note : this.notes) {
+            if (note.getId().equals(noteId)) {
+                note.getPages().removeIf(page -> page.getId().equals(pageId));
+                break;
+            }
+        }
     }
 
     // 생성자, 게터, 세터 등 필요한 메서드들 추가
