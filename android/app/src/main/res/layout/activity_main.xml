@@ -24,22 +24,14 @@
         android:layout_below="@id/recentNotesButton"
         android:layout_marginTop="20dp"/>
 
-    <!-- 개인 페이지 목록 버튼 -->
-    <Button
-        android:id="@+id/personalNotesButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="개인 페이지 목록"
-        android:layout_below="@id/teamSpacesButton"
-        android:layout_marginTop="20dp"/>
 
     <!-- 설정 버튼 -->
     <Button
-        android:id="@+id/settingsButton"
+        android:id="@+id/mypageButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="설정"
-        android:layout_below="@id/personalNotesButton"
+        android:text="마이페이지"
+        android:layout_below="@id/teamSpacesButton"
         android:layout_marginTop="20dp"/>
 
     <!-- 멤버 버튼 -->
@@ -48,7 +40,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="멤버"
-        android:layout_below="@id/settingsButton"
+        android:layout_below="@id/mypageButton"
         android:layout_marginTop="20dp"/>
 
     <!-- 휴지통 버튼 -->
