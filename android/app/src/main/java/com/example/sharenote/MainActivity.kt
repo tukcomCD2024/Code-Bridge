@@ -1,42 +1,50 @@
-// MainActivity.kt
 package com.example.sharenote
 
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
-import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import com.google.firebase.auth.FirebaseAuth
 
 class MainActivity : AppCompatActivity() {
-
-    private lateinit var welcomeText: TextView
-    private lateinit var logoutButton: Button
-    private lateinit var auth: FirebaseAuth
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        // Firebase 인증 객체 초기화
-        auth = FirebaseAuth.getInstance()
+        // 최근 방문한 페이지
+        val recentNotesButton = findViewById<Button>(R.id.recentNotesButton)
+        recentNotesButton.setOnClickListener {
+            startActivity(Intent(this, RecentNotesActivity::class.java))
+        }
 
-        // 레이아웃에서 뷰 참조
-        welcomeText = findViewById(R.id.welcomeText)
-        logoutButton = findViewById(R.id.logoutButton)
+        // 팀스페이스 목록
+        val teamSpacesButton = findViewById<Button>(R.id.teamSpacesButton)
+        teamSpacesButton.setOnClickListener {
+            startActivity(Intent(this, TeamSpacesActivity::class.java))
+        }
 
-        // 환영 메시지 설정 (여기에서는 현재 로그인한 사용자의 이메일을 표시합니다)
-        val currentUser = auth.currentUser
-        welcomeText.text = "환영합니다, ${currentUser?.email}님!"
+        // 개인 페이지 목록
+        val personalNotesButton = findViewById<Button>(R.id.personalNotesButton)
+        personalNotesButton.setOnClickListener {
+            startActivity(Intent(this, PersonalNotesActivity::class.java))
+        }
 
-        // 로그아웃 버튼 클릭 시
-        logoutButton.setOnClickListener {
-            // Firebase에서 로그아웃
-            auth.signOut()
+        // 설정
+        val settingsButton = findViewById<Button>(R.id.settingsButton)
+        settingsButton.setOnClickListener {
+            startActivity(Intent(this, SettingsActivity::class.java))
+        }
 
-            // 로그인 화면으로 이동
-            startActivity(Intent(this, LoginActivity::class.java))
-            finish()
+        // 멤버
+        val membersButton = findViewById<Button>(R.id.membersButton)
+        membersButton.setOnClickListener {
+            startActivity(Intent(this, MembersActivity::class.java))
+        }
+
+        // 휴지통
+        val trashButton = findViewById<Button>(R.id.trashButton)
+        trashButton.setOnClickListener {
+            startActivity(Intent(this, TrashActivity::class.java))
         }
     }
 }
