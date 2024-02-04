@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 
 const SignupPage = () => {
@@ -10,6 +11,7 @@ const SignupPage = () => {
   const [resultMessage, setResultMessage] = useState("");
   const [isUsernameAvailable, setIsUsernameAvailable] = useState(true);
   const [isNicknameAvailable, setIsNicknameAvailable] = useState(true);
+  const navigate = useNavigate();
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -82,16 +84,14 @@ const SignupPage = () => {
       <ContentWrapper>
         <p style={{ fontWeight: "bold", fontSize: "25px" }}>회원가입</p>
         <Id_InputWrapper>
-          아이디
-          <span>
-            <Id_Input
-              id="id"
-              type="text"
-              placeholder="ID를 입력해주세요."
-              //   value={id}
-            />
-            <ID_Duplicate_CheckBtn>중복확인</ID_Duplicate_CheckBtn>
-          </span>
+          이메일(ID)
+          <Id_Input
+            id="id"
+            type="text"
+            placeholder="이메일을 입력하세요."
+            //   value={id}
+          />
+          <ID_Duplicate_CheckBtn>중복확인</ID_Duplicate_CheckBtn>
         </Id_InputWrapper>
         <Nickname_InputWrapper>
           닉네임
@@ -103,15 +103,15 @@ const SignupPage = () => {
           />
           <Nickname_Duplicate_CheckBtn>중복확인</Nickname_Duplicate_CheckBtn>
         </Nickname_InputWrapper>
-        <Email_InputWrapper>
+        {/* <Email_InputWrapper>
           이메일
           <Email_Input
             Nickname="Nickname"
             type="text"
-            placeholder="닉네임을 입력하세요."
+            placeholder="이메일을 입력하세요."
             //   value={Nickname}
           />
-        </Email_InputWrapper>
+        </Email_InputWrapper> */}
         <Password_InputWrapper>
           비밀번호
           <Password_Input
@@ -131,6 +131,9 @@ const SignupPage = () => {
           />
         </Passwordcheck_InputWrapper>
         <SignupBtn>회원가입</SignupBtn>
+        <HomeBtn onClick={() => navigate("/")}>
+          <small>홈으로 돌아가기</small>
+        </HomeBtn>
       </ContentWrapper>
     </Container>
   );
@@ -151,14 +154,13 @@ const ContentWrapper = styled.div`
   width: 350px;
   padding: 2rem;
   align-items: center;
-
   background-color: rgba(138, 43, 226, 0.2);
   border-radius: 10px;
   margin: 0 auto;
 `;
 const Id_InputWrapper = styled.div`
   display: flex;
-
+  position: relative;
   flex-direction: column;
   align-items: flex-start;
   text-align: center;
@@ -169,7 +171,6 @@ const Id_InputWrapper = styled.div`
 
 const Id_Input = styled.input`
   flex: 1;
-  position: relative;
   background-color: #f0f0f0;
   border: none;
   outline: none;
@@ -184,13 +185,16 @@ const Id_Input = styled.input`
 
 const ID_Duplicate_CheckBtn = styled.button`
   position: absolute;
+  top: 44px;
+  right: 5px;
   margin-left: 10px;
-  padding: 8px 12px;
+  padding: 5px 5px;
+  font-size: 11px;
   border: 1px solid #666;
   background-color: #fff;
   color: #333;
   cursor: pointer;
-  border-radius: 5px;
+  border-radius: 50px;
   transition: background-color 0.3s, color 0.3s, border-color 0.3s;
 
   &:hover {
@@ -201,13 +205,17 @@ const ID_Duplicate_CheckBtn = styled.button`
 `;
 
 const Nickname_Duplicate_CheckBtn = styled.button`
+  position: absolute;
+  top: 44px;
+  right: 5px;
   margin-left: 10px;
-  padding: 8px 12px;
+  padding: 5px 5px;
+  font-size: 11px;
   border: 1px solid #666;
   background-color: #fff;
   color: #333;
   cursor: pointer;
-  border-radius: 5px;
+  border-radius: 50px;
   transition: background-color 0.3s, color 0.3s, border-color 0.3s;
 
   &:hover {
@@ -218,6 +226,7 @@ const Nickname_Duplicate_CheckBtn = styled.button`
 `;
 
 const Nickname_InputWrapper = styled.div`
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -241,29 +250,29 @@ const Nickname_Input = styled.input`
   }
 `;
 
-const Email_InputWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  text-align: center;
-  line-height: 40px;
-  margin-bottom: 10px;
-  border-radius: 10px;
-`;
+// const Email_InputWrapper = styled.div`
+//   display: flex;
+//   flex-direction: column;
+//   align-items: flex-start;
+//   text-align: center;
+//   line-height: 40px;
+//   margin-bottom: 10px;
+//   border-radius: 10px;
+// `;
 
-const Email_Input = styled.input`
-  flex: 1;
-  background-color: #f0f0f0;
-  border: none;
-  outline: none;
-  padding: 10px;
-  width: 30vh;
-  border-radius: 20px;
+// const Email_Input = styled.input`
+//   flex: 1;
+//   background-color: #f0f0f0;
+//   border: none;
+//   outline: none;
+//   padding: 10px;
+//   width: 30vh;
+//   border-radius: 20px;
 
-  &:focus {
-    background-color: #cccccc;
-  }
-`;
+//   &:focus {
+//     background-color: #cccccc;
+//   }
+// `;
 
 const Password_InputWrapper = styled.div`
   display: flex;
@@ -320,7 +329,7 @@ const SignupBtn = styled.button`
   margin-bottom: 0px;
   width: 30vh;
   height: 40px;
-  border: 2px solid #ffffff;
+  border: 0px solid #ffffff;
   border-radius: 1px;
   background-color: #ffffcc;
   text-align: center;
@@ -333,13 +342,26 @@ const SignupBtn = styled.button`
   border-color: #ffffcc;
 
   &:hover {
-    border-width: 1px;
+    background-color: #f7f7b5;
   }
 `;
 
 const IsNotUser = styled.div`
   display: "flex";
   align-items: "center";
+`;
+
+const HomeBtn = styled.span`
+  display: "inline-block";
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+  font-weight: bold;
+  color: #0000ff;
+  text-decoration: underline;
+
+  &:hover {
+    color: #000000;
+  }
 `;
 
 export default SignupPage;

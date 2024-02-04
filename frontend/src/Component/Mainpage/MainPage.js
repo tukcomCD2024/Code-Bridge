@@ -1,14 +1,17 @@
 import React, { useState, useRef, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import Header from "./Header";
-import OrganizationDetails from "../Note/NotePage";
+import ImagetoBackend from "../imageToBackend"; // ImagetoBackend 컴포넌트를 가져옴.
+import NotePage from "../Note/NotePage"; // NotePage 컴포넌트를 가져옴.
+
 import styled from "styled-components";
 import { ReactComponent as AddNoteIcon } from "../../image/addNote.svg";
 import defaultImage from "../../image/NoneImage2.png";
 
 function OrganizationCard({ organization, index }) {
   return (
-    <Link to={`/organization/${index}`} key={index}>
+    <Link to={`/organization/${organization.id}`}>
+      {" "}
       <OrganizationContainer>
         <img src={organization.image} alt={`Organization-Picture-${index}`} />
         <p>
@@ -55,7 +58,8 @@ function OrganizationModal({
           style={{ maxWidth: "300px", width: "100%", height: "auto" }}
         />
 
-        <ImageUploadWrapper htmlFor="fileInput">
+        {/* 백엔드 전송없이 사진 업로드 */}
+        {/* <ImageUploadWrapper htmlFor="fileInput">
           <ImageUploadButton>이미지 찾기</ImageUploadButton>
         </ImageUploadWrapper>
         <input
@@ -63,7 +67,8 @@ function OrganizationModal({
           type="file"
           onChange={uploadImage}
           style={{ display: "none" }}
-        />
+        /> */}
+        <ImagetoBackend onImageUpload={uploadImage} />
         <hr />
         <CreateButton onClick={handleCreate}>생성하기</CreateButton>
       </ModalContent>
@@ -81,8 +86,36 @@ function MainPage() {
   const [organizations, setOrganizations] = useState([]);
 
   const uploadImage = (e) => {
-    setMyImage(URL.createObjectURL(e.target.files[0]));
+    const selectedFile = e.target.files[0];
+
+    // 파일이 선택되었고, 이미지 파일인 경우에만 처리
+    if (selectedFile && isImageFile(selectedFile)) {
+      setMyImage(URL.createObjectURL(selectedFile));
+    } else {
+      // 이미지 파일이 아닌 경우에 대한 처리 (예: 경고 메시지 등)
+      alert("올바른 이미지 파일을 선택해주세요.");
+      // 또는 다른 처리 방법을 선택할 수 있습니다.
+    }
   };
+
+  // 이미지 파일 여부를 확인하는 함수
+  const isImageFile = (file) => {
+    const allowedExtensions = ["jpg", "jpeg", "png", "gif"]; // 허용된 확장자들
+
+    // 파일 이름에서 확장자 추출
+    const fileName = file.name;
+    const fileExtension = fileName.split(".").pop().toLowerCase();
+
+    // 허용된 확장자들 중에 포함되어 있는지 확인
+    return allowedExtensions.includes(fileExtension);
+  };
+  useEffect(() => {
+    // 로컬 스토리지에서 데이터 불러오기
+    const savedOrganizations = localStorage.getItem("organizations");
+    if (savedOrganizations) {
+      setOrganizations(JSON.parse(savedOrganizations));
+    }
+  }, []);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -113,16 +146,16 @@ function MainPage() {
   };
 
   const handleCreate = () => {
-    // Handle organization creation logic here
     const newOrganization = {
+      id: Date.now(),
       name: organizationName,
       image: myimage || defaultImage,
-      submissionTime: new Date().toISOString(), // Capture submission time in ISO format
+      submissionTime: new Date().toISOString(),
     };
 
-    setOrganizations([...organizations, newOrganization]);
-
-    // Reset modal state
+    const updatedOrganizations = [...organizations, newOrganization];
+    setOrganizations(updatedOrganizations);
+    localStorage.setItem("organizations", JSON.stringify(updatedOrganizations));
     handleCloseModal();
   };
 
@@ -150,18 +183,15 @@ function MainPage() {
       {organizations.map((org, index) => (
         <OrganizationCard organization={org} index={index} />
       ))}
-      {/* Add Route for OrganizationDetails */}
+      {/* NotePage를 위한 Route 추가 */}
       <Routes>
-        {organizations.map((org, index) => (
+        {organizations.map((org) => (
           <Route
-            path={`/organization/${index}`}
+            path={`/organization/${org.id}`}
             element={
-              <OrganizationDetails
-                organizations={organizations}
-                index={index}
-              />
+              <NotePage organization={org} organizations={organizations} />
             }
-            key={index}
+            key={org.id}
           />
         ))}
       </Routes>
