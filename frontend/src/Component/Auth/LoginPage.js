@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import GoogleLoginBtn from "../../image/googleLoginBtn.png";
 
@@ -6,6 +7,7 @@ const LoginPage = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [resultMessage, setResultMessage] = useState("");
+  const navigate = useNavigate();
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -42,11 +44,11 @@ const LoginPage = () => {
       <ContentWrapper>
         <p style={{ fontWeight: "bold", fontSize: "25px" }}>로그인</p>
         <Id_InputWrapper>
-          아이디
+          이메일
           <Id_Input
             id="id"
             type="text"
-            placeholder="ID를 입력해주세요."
+            placeholder="이메일(ID)를 입력해주세요."
             //   value={id}
           />
         </Id_InputWrapper>
@@ -64,7 +66,7 @@ const LoginPage = () => {
           <p style={{ display: "inline", margin: "0", marginRight: "8px" }}>
             <small>회원이 아니신가요?</small>
           </p>
-          <SignupBtn>
+          <SignupBtn onClick={() => navigate("/signup")}>
             <small>회원가입하기</small>
           </SignupBtn>
         </IsNotUser>
@@ -72,7 +74,7 @@ const LoginPage = () => {
           <GoogleLoginImg
             src={GoogleLoginBtn}
             alt="Google Login Button"
-            // onClick={() => navigate("/")}
+            onClick={() => navigate("/signup")}
           />
         </GoogleLoginBtnContainer>
       </ContentWrapper>
@@ -156,7 +158,7 @@ const LoginBtn = styled.button`
   margin-bottom: 0px;
   width: 30vh;
   height: 40px;
-  border: 2px solid #ffffff;
+  border: #ffffcc;
   border-radius: 1px;
   background-color: #ffffcc;
   text-align: center;
@@ -166,10 +168,9 @@ const LoginBtn = styled.button`
   color: #000000;
   cursor: pointer;
   border-radius: 20px;
-  border-color: #ffffcc;
 
   &:hover {
-    border-width: 1px;
+    background-color: #f7f7b5;
   }
 `;
 
@@ -178,7 +179,7 @@ const IsNotUser = styled.div`
   align-items: "center";
 `;
 
-const SignupBtn = styled.text`
+const SignupBtn = styled.span`
   display: "inline-block";
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
   cursor: pointer;
