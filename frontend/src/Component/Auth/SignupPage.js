@@ -116,7 +116,7 @@ const SignupPage = () => {
           비밀번호
           <Password_Input
             Nickname="password"
-            type="text"
+            type="password"
             placeholder="비밀번호를 입력해주세요."
             //   value={password}
           />
@@ -125,7 +125,7 @@ const SignupPage = () => {
           비밀번호 확인
           <Passwordcheck_Input
             Nickname="passwordcheck"
-            type="text"
+            type="password"
             placeholder="비밀번호를 한 번 더 입력해주세요."
             //   value={password}
           />
@@ -175,7 +175,7 @@ const Id_Input = styled.input`
   border: none;
   outline: none;
   padding: 10px;
-  width: 30vh;
+  width: 300px;
   border-radius: 20px;
 
   &:focus {
@@ -185,7 +185,7 @@ const Id_Input = styled.input`
 
 const ID_Duplicate_CheckBtn = styled.button`
   position: absolute;
-  top: 44px;
+  top: 46px;
   right: 5px;
   margin-left: 10px;
   padding: 5px 5px;
@@ -206,7 +206,7 @@ const ID_Duplicate_CheckBtn = styled.button`
 
 const Nickname_Duplicate_CheckBtn = styled.button`
   position: absolute;
-  top: 44px;
+  top: 46px;
   right: 5px;
   margin-left: 10px;
   padding: 5px 5px;
@@ -242,7 +242,7 @@ const Nickname_Input = styled.input`
   border: none;
   outline: none;
   padding: 10px;
-  width: 30vh;
+  width: 300px;
   border-radius: 20px;
 
   &:focus {
@@ -289,7 +289,7 @@ const Password_Input = styled.input`
   background-color: #f0f0f0;
   border: none;
   outline: none;
-  width: 30vh;
+  width: 300px;
   padding: 10px;
   border-radius: 20px;
 
@@ -313,7 +313,7 @@ const Passwordcheck_Input = styled.input`
   background-color: #f0f0f0;
   border: none;
   outline: none;
-  width: 30vh;
+  width: 300px;
   padding: 10px;
   border-radius: 20px;
 
@@ -327,7 +327,7 @@ const SignupBtn = styled.button`
   flex-direction: column;
   margin: 20px auto; /* Auto margin for centering horizontally */
   margin-bottom: 0px;
-  width: 30vh;
+  width: 250px;
   height: 40px;
   border: 0px solid #ffffff;
   border-radius: 1px;
