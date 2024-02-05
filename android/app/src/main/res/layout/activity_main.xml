@@ -51,4 +51,13 @@
         android:text="휴지통"
         android:layout_below="@id/membersButton"
         android:layout_marginTop="20dp"/>
+
+    <Button
+        android:id="@+id/logoutButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="로그아웃"
+        android:layout_below="@id/trashButton"
+        android:layout_marginTop="20dp"/>
+
 </RelativeLayout>
