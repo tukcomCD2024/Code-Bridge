@@ -56,7 +56,7 @@ const LoginPage = () => {
           비밀번호
           <Password_Input
             id="password"
-            type="text"
+            type="password"
             placeholder="비밀번호를 입력해주세요."
             //   value={password}
           />

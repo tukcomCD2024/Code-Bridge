@@ -6,24 +6,7 @@ function OrganizationDetails({ organizations }) {
   const organization = organizations[index];
 
   if (!organization) {
-    return <p>Organization not connected</p>;
-  }
-
-  const submissionDate = new Date(organization.submissionTime);
-  const today = new Date();
-
-  let displayTimeOrDate;
-
-  if (
-    submissionDate.getFullYear() === today.getFullYear() &&
-    submissionDate.getMonth() === today.getMonth() &&
-    submissionDate.getDate() === today.getDate()
-  ) {
-    // If the submission time is today, display only the time
-    displayTimeOrDate = submissionDate.toLocaleTimeString();
-  } else {
-    // If the submission time is not today, display only the date
-    displayTimeOrDate = submissionDate.toLocaleDateString();
+    return <p>Failed to load organization</p>;
   }
 
   return (

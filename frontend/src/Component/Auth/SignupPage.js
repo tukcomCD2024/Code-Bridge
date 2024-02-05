@@ -116,7 +116,7 @@ const SignupPage = () => {
           비밀번호
           <Password_Input
             Nickname="password"
-            type="text"
+            type="password"
             placeholder="비밀번호를 입력해주세요."
             //   value={password}
           />
@@ -125,7 +125,7 @@ const SignupPage = () => {
           비밀번호 확인
           <Passwordcheck_Input
             Nickname="passwordcheck"
-            type="text"
+            type="password"
             placeholder="비밀번호를 한 번 더 입력해주세요."
             //   value={password}
           />
@@ -185,7 +185,7 @@ const Id_Input = styled.input`
 
 const ID_Duplicate_CheckBtn = styled.button`
   position: absolute;
-  top: 44px;
+  top: 46px;
   right: 5px;
   margin-left: 10px;
   padding: 5px 5px;
@@ -206,7 +206,7 @@ const ID_Duplicate_CheckBtn = styled.button`
 
 const Nickname_Duplicate_CheckBtn = styled.button`
   position: absolute;
-  top: 44px;
+  top: 46px;
   right: 5px;
   margin-left: 10px;
   padding: 5px 5px;
