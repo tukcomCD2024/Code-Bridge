@@ -1,8 +1,9 @@
 import React, { useState, useRef, useEffect } from "react";
-import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
+import { Routes, Route, Link } from "react-router-dom";
 import Header from "./Header";
 import ImagetoBackend from "../imageToBackend"; // ImagetoBackend 컴포넌트를 가져옴.
 import NotePage from "../Note/NotePage"; // NotePage 컴포넌트를 가져옴.
+import { formatCreationTime } from "../Utils/formatCreationTime";
 
 import styled from "styled-components";
 import { ReactComponent as AddNoteIcon } from "../../image/addNote.svg";
@@ -11,7 +12,7 @@ import defaultImage from "../../image/NoneImage2.png";
 function OrganizationCard({ organization, index }) {
   return (
     <Link to={`/organization/${organization.id}`}>
-      {" "}
+      {/* {" "} */}
       <OrganizationContainer>
         <img src={organization.image} alt={`Organization-Picture-${index}`} />
         <p>
@@ -40,7 +41,7 @@ function OrganizationModal({
         <CloseButton onClick={handleCloseModal} style={{ color: "red" }}>
           X
         </CloseButton>
-        <p style={{ fontWeight: "bold" }}>Organization 생성하기</p>
+        <p style={{ fontWeight: "bold" }}>📚 Organization 생성하기</p>
 
         <OrganizationInputWrapper>
           <OrganizationInput
@@ -179,11 +180,15 @@ function MainPage() {
           handleCreate={handleCreate}
         />
       )}
-      {/* Display Organization Name and Image on Main Page */}
-      {organizations.map((org, index) => (
-        <OrganizationCard organization={org} index={index} />
-      ))}
-      {/* NotePage를 위한 Route 추가 */}
+      {organizations.length > 0 ? (
+        organizations.map((org, index) => (
+          <OrganizationCard organization={org} index={index} key={org.id} />
+        ))
+      ) : (
+        <NoOrganizationMessage>
+          📢 소속된 Organization이 없습니다.
+        </NoOrganizationMessage>
+      )}
       <Routes>
         {organizations.map((org) => (
           <Route
@@ -197,24 +202,6 @@ function MainPage() {
       </Routes>
     </StContainer>
   );
-}
-
-// Add a new function to format the creation time
-function formatCreationTime(submissionTime) {
-  const submissionDate = new Date(submissionTime);
-  const today = new Date();
-
-  if (
-    submissionDate.getFullYear() === today.getFullYear() &&
-    submissionDate.getMonth() === today.getMonth() &&
-    submissionDate.getDate() === today.getDate()
-  ) {
-    // If the submission time is today, display only the time
-    return submissionDate.toLocaleTimeString();
-  } else {
-    // If the submission time is not today, display only the date
-    return submissionDate.toLocaleDateString();
-  }
 }
 
 const StContainer = styled.div``;
@@ -253,14 +240,6 @@ const StOrgCreateBtn = styled.button`
     border-color: #cccccc;
     color: #000000;
   }
-`;
-
-// 노트 화면에서 사용할 요소(삭제X)
-const StyledAddNoteIcon = styled(AddNoteIcon)`
-  width: 15%;
-  height: 15%;
-  cursor: pointer;
-  margin-top: 10px;
 `;
 
 const ModalContainer = styled.div`
@@ -363,13 +342,24 @@ const OrganizationContainer = styled.div`
   }
 
   img {
-    width: 100%;
-    height: auto;
+    width: 200px; /* 너비 설정 */
+    height: 300px; /* 높이 설정 */
     cursor: pointer;
     margin-top: 10px;
-    max-width: 100%;
-    max-height: 100%;
+    border: 1px solid rgba(0, 0, 0, 0.2); // 블랙 색상에 알파값 0.2로 설정
+    object-fit: contain; /* 비율 유지 */
+    border-radius: 5px; /* 이미지에 둥근 모서리 추가 */
   }
+`;
+
+const NoOrganizationMessage = styled.div`
+  display: flex;
+  justify-content: center;
+  margin-top: 200px;
+  align-items: center;
+  font-weight: bold;
+  font-size: 20px;
+  color: #666;
 `;
 
 export default MainPage;
