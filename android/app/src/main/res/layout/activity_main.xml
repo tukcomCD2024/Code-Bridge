@@ -27,7 +27,7 @@
 
     <!-- 설정 버튼 -->
     <Button
-        android:id="@+id/mypageButton"
+        android:id="@+id/myPageButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="마이페이지"
@@ -40,7 +40,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="멤버"
-        android:layout_below="@id/mypageButton"
+        android:layout_below="@id/myPageButton"
         android:layout_marginTop="20dp"/>
 
     <!-- 휴지통 버튼 -->

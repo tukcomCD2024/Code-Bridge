@@ -52,6 +52,12 @@ class MainActivity : AppCompatActivity() {
             startActivity(Intent(this, TrashActivity::class.java))
         }*/
 
+        val myPageButton = findViewById<Button>(R.id.myPageButton)
+        myPageButton.setOnClickListener {
+            val myPageIntent = Intent(this, MyPageActivity::class.java)
+            startActivity(myPageIntent)
+        }
+
         val logoutButton = findViewById<Button>(R.id.logoutButton)
         logoutButton.setOnClickListener {
             // Firebase에서 로그아웃
