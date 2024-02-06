@@ -1,108 +1,130 @@
 package com.example.sharenote
 
 import android.os.Bundle
+import android.util.Log
 import android.widget.Button
 import android.widget.EditText
-import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.UserProfileChangeRequest
 import com.google.firebase.firestore.FirebaseFirestore
 
 class MyPageActivity : AppCompatActivity() {
 
-    private lateinit var auth: FirebaseAuth
-    private lateinit var currentUser: FirebaseUser
-    private lateinit var db: FirebaseFirestore
+    private lateinit var usernameEditText: EditText
+    private lateinit var emailEditText: EditText
+    private lateinit var passwordEditText: EditText
+    private lateinit var updateButton: Button
 
-    private lateinit var editNickname: EditText
-    private lateinit var textEmail: TextView
-    private lateinit var editPassword: EditText
-    private lateinit var editPasswordConfirm: EditText
-    private lateinit var btnChangeProfile: Button
+    private lateinit var firebaseAuth: FirebaseAuth
+    private lateinit var firestore: FirebaseFirestore
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_my_page)
 
-        auth = FirebaseAuth.getInstance()
-        currentUser = auth.currentUser!!
-        db = FirebaseFirestore.getInstance()
+        // 뷰 초기화
+        usernameEditText = findViewById(R.id.usernameEditText)
+        emailEditText = findViewById(R.id.emailEditText)
+        passwordEditText = findViewById(R.id.passwordEditText)
+        updateButton = findViewById(R.id.updateButton)
 
-        editNickname = findViewById(R.id.editNickname)
-        textEmail = findViewById(R.id.textEmail)
-        editPassword = findViewById(R.id.editPassword)
-        editPasswordConfirm = findViewById(R.id.editPasswordConfirm)
-        btnChangeProfile = findViewById(R.id.btnChangeProfile)
+        // 파이어베이스 초기화
+        firebaseAuth = FirebaseAuth.getInstance()
+        firestore = FirebaseFirestore.getInstance()
 
-        // 화면에 현재 사용자의 정보 표시
-        textEmail.text = currentUser.email
+        // 현재 사용자의 정보 가져오기
+        val currentUser = firebaseAuth.currentUser
+        currentUser?.let {
+            val userId = it.uid
+            getUserInfoFromFirestore(userId)
+        }
 
-        // 변경 버튼 클릭 시 프로필 변경 시도
-        btnChangeProfile.setOnClickListener {
-            changeUserProfile()
+        // 수정하기 버튼 클릭 리스너 설정
+        updateButton.setOnClickListener {
+            updateUserProfile()
         }
     }
 
-    private fun changeUserProfile() {
-        val newNickname = editNickname.text.toString()
-        val newPassword = editPassword.text.toString()
-        val newPasswordConfirm = editPasswordConfirm.text.toString()
-
-        // 닉네임, 비밀번호 등 유효성 검사
-        if (newNickname.isEmpty()) {
-            editNickname.error = "닉네임을 입력하세요."
-            return
-        }
-
-        if (newPassword.isNotEmpty() && newPassword != newPasswordConfirm) {
-            editPasswordConfirm.error = "비밀번호가 일치하지 않습니다."
-            return
-        }
-
-        // 프로필 변경 메서드 호출
-        updateProfile(newNickname, newPassword)
-    }
-
-    private fun updateProfile(newNickname: String, newPassword: String) {
-        // 사용자의 프로필 업데이트
-        val profileUpdates = UserProfileChangeRequest.Builder()
-            .setDisplayName(newNickname)
-            .build()
-
-        currentUser.updateProfile(profileUpdates)
-            .addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    // 프로필 업데이트 성공
-                    Toast.makeText(this, "프로필이 업데이트되었습니다.", Toast.LENGTH_SHORT).show()
-
-                    // 이후 필요한 작업 수행
-                    // 예: 닉네임, 이메일, 비밀번호 등의 데이터를 Firestore에 업데이트
-                    updateFirestoreUserData(newNickname, newPassword)
+    private fun getUserInfoFromFirestore(userId: String) {
+        // Firestore에서 사용자 정보 가져오기
+        firestore.collection("users").document(userId)
+            .get()
+            .addOnSuccessListener { document ->
+                if (document != null && document.exists()) {
+                    // Firestore에서 가져온 사용자 정보를 화면에 설정
+                    val username = document.getString("username")
+                    val email = document.getString("email")
+                    usernameEditText.setText(username)
+                    emailEditText.setText(email)
                 } else {
-                    // 실패 시 메시지 표시
-                    Toast.makeText(this, "프로필 업데이트에 실패했습니다.", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "사용자 정보를 불러올 수 없습니다", Toast.LENGTH_SHORT).show()
                 }
             }
+            .addOnFailureListener { exception ->
+                Toast.makeText(this, "사용자 정보를 불러오는데 실패했습니다", Toast.LENGTH_SHORT).show()
+                Log.e("MyPageActivity", "Error getting user information", exception)
+            }
     }
 
-    private fun updateFirestoreUserData(newNickname: String, newPassword: String) {
-        // Firestore에 사용자 데이터 업데이트
-        val userDocument = db.collection("users").document(currentUser.uid)
 
-        // 예: 이름 필드 업데이트
-        userDocument.update("Name", newNickname)
-            .addOnSuccessListener {
-                // 업데이트 성공
-                Toast.makeText(this, "Firestore에 데이터가 업데이트되었습니다.", Toast.LENGTH_SHORT).show()
+    private fun updateUserProfile() {
+        val username = usernameEditText.text.toString().trim()
+        val email = emailEditText.text.toString().trim()
+        val password = passwordEditText.text.toString().trim()
+
+        // 입력 값 유효성 검사
+        if (username.isEmpty() && email.isEmpty() && password.isEmpty()) {
+            Toast.makeText(this, "수정할 정보를 입력하세요", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        // 현재 사용자 가져오기
+        val user = firebaseAuth.currentUser
+
+        // 사용자 정보 업데이트
+        val profileUpdates = UserProfileChangeRequest.Builder().apply {
+            if (username.isNotEmpty()) setDisplayName(username)
+        }.build()
+        user?.updateProfile(profileUpdates)
+            ?.addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    // 닉네임 업데이트 성공
+                    Toast.makeText(this, "닉네임이 업데이트되었습니다", Toast.LENGTH_SHORT).show()
+                } else {
+                    // 닉네임 업데이트 실패
+                    Toast.makeText(this, "닉네임 업데이트에 실패했습니다", Toast.LENGTH_SHORT).show()
+                }
             }
-            .addOnFailureListener { e ->
-                // 업데이트 실패 시 메시지 표시
-                Toast.makeText(this, "Firestore 업데이트 실패: $e", Toast.LENGTH_SHORT).show()
-            }
+
+        // 이메일 업데이트
+        if (email.isNotEmpty()) {
+            user?.updateEmail(email)
+                ?.addOnCompleteListener { emailTask ->
+                    if (emailTask.isSuccessful) {
+                        // 이메일 업데이트 성공
+                        Toast.makeText(this, "이메일이 업데이트되었습니다", Toast.LENGTH_SHORT).show()
+                    } else {
+                        // 이메일 업데이트 실패
+                        Toast.makeText(this, "이메일 업데이트에 실패했습니다", Toast.LENGTH_SHORT).show()
+                    }
+                }
+        }
+
+        // 비밀번호 업데이트
+        if (password.isNotEmpty()) {
+            user?.updatePassword(password)
+                ?.addOnCompleteListener { passwordTask ->
+                    if (passwordTask.isSuccessful) {
+                        // 비밀번호 업데이트 성공
+                        Toast.makeText(this, "비밀번호가 업데이트되었습니다", Toast.LENGTH_SHORT).show()
+                    } else {
+                        // 비밀번호 업데이트 실패
+                        Toast.makeText(this, "비밀번호 업데이트에 실패했습니다", Toast.LENGTH_SHORT).show()
+                    }
+                }
+        }
     }
 }
 
