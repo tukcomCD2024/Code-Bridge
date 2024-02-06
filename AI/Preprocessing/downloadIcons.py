@@ -58,8 +58,16 @@ def getTagCount(driver, i, j):
 
     return len(tag)
 
+def tagScan(driver, webURL, tagSet, i):
+    try:
+        tagSet.add(driver.find_element(By.XPATH, f'//*[@id="detail"]/div/div[2]/ul/li[{i + 1}]/a').text)
+    except:
+        driver.get(webURL)
+        tagSet.add(driver.find_element(By.XPATH, f'//*[@id="detail"]/div/div[2]/ul/li[{i + 1}]/a').text)
 
-def scanTag(webURL, pageNum, from0, to0):
+
+
+def scanTag(webURL, pageNum, from0, to0, tagSet, action):
     iconPath = '//*[@id="viewport"]/div[6]/div/section[2]/ul/li[{}]/div/a'
     tagPath = '//*[@id="detail"]/div/div[2]/ul/li'
     detail = set()
@@ -143,17 +151,22 @@ def initalTagCount():
     return tagCount
 
 
-def scanTagCount(webURL, pageNum, from0, to0, tagSet):
-    step = (to0 - from0) // 5
+def tagCounting(driver, webURL, tagMap, i):
+    tagMap[driver.find_element(By.XPATH, f'//*[@id="detail"]/div/div[2]/ul/li[{i + 1}]/a').text] += 1
+
+def scanTagCount(webURL, pageNum, from0, to0, tagSet, action):
+    n = 4
+    step = (to0 - from0) // n
     path = webURL.format(pageNum + 1)
     print(path)
-    for j in range(5):
+    for j in range(n):
         from1 = step * j + from0
         to1 = from1 + step
 
         driver = getDriver(path)
         for k in range(from1, to1):
             for i in range(getTagCount(driver, k, pageNum + 1)):
+                # action(driver, webURL, tagSet, i)
                 try:
                     tagSet[driver.find_element(By.XPATH, f'//*[@id="detail"]/div/div[2]/ul/li[{i + 1}]/a').text] += 1
                 except:
@@ -167,6 +180,7 @@ def scanTagCount(webURL, pageNum, from0, to0, tagSet):
     driver = getDriver(webURL.format(pageNum + 1))
     for j in range(to1, from0):
         for i in range(getTagCount(driver, j, pageNum + 1)):
+            # action(driver, webURL, tagSet, i)
             try:
                 tagSet[driver.find_element(By.XPATH, f'//*[@id="detail"]/div/div[2]/ul/li[{i + 1}]/a').text] += 1
             except:
@@ -193,11 +207,10 @@ def countTag():
 
     print(tagCount)
     for i in range(pageNum):
-        tagCount = scanTagCount(webURL, i, 3, 99, tagCount)
+        tagCount = scanTagCount(webURL, i, 3, 99, tagCount, tagCounting)
         print(tagCount)
 
     printTagCount(tagCount)
-
 
 countTag()
 # icon7("https://www.flaticon.com/kr/icon-fonts-most-downloaded/{}?weight=thin&type=uicon", './asset/imgIcon7')
