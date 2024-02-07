@@ -16,6 +16,7 @@ class MyPageActivity : AppCompatActivity() {
     private lateinit var emailEditText: EditText
     private lateinit var passwordEditText: EditText
     private lateinit var updateButton: Button
+    private lateinit var checkDuplicateButton: Button
 
     private lateinit var firebaseAuth: FirebaseAuth
     private lateinit var firestore: FirebaseFirestore
@@ -24,11 +25,16 @@ class MyPageActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_my_page)
 
+        findViewById<Button>(R.id.backButton).setOnClickListener {
+            onBackPressed()
+        }
+
         // 뷰 초기화
         usernameEditText = findViewById(R.id.usernameEditText)
         emailEditText = findViewById(R.id.emailEditText)
         passwordEditText = findViewById(R.id.passwordEditText)
         updateButton = findViewById(R.id.updateButton)
+        checkDuplicateButton = findViewById(R.id.checkDuplicateButton)
 
         // 파이어베이스 초기화
         firebaseAuth = FirebaseAuth.getInstance()
@@ -36,6 +42,11 @@ class MyPageActivity : AppCompatActivity() {
 
         // 사용자 정보 가져와서 화면에 보여주기
         fetchUserData()
+
+        // 중복 확인 버튼 클릭 리스너 설정
+        checkDuplicateButton.setOnClickListener {
+            checkDuplicateUsername()
+        }
 
         // 수정하기 버튼 클릭 리스너 설정
         updateButton.setOnClickListener {
@@ -68,6 +79,30 @@ class MyPageActivity : AppCompatActivity() {
         }
     }
 
+    private fun checkDuplicateUsername() {
+        val newUsername = usernameEditText.text.toString().trim()
+        if (newUsername.isEmpty()) {
+            Toast.makeText(this, "닉네임을 입력하세요", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        // 중복 확인을 위한 파이어스토어 쿼리 수행
+        firestore.collection("users").whereEqualTo("Name", newUsername).get()
+            .addOnSuccessListener { querySnapshot ->
+                if (!querySnapshot.isEmpty) {
+                    // 중복된 닉네임이 존재함
+                    Toast.makeText(this, "이미 사용 중인 닉네임입니다", Toast.LENGTH_SHORT).show()
+                } else {
+                    // 중복된 닉네임이 없음
+                    Toast.makeText(this, "사용 가능한 닉네임입니다", Toast.LENGTH_SHORT).show()
+                }
+            }
+            .addOnFailureListener { e ->
+                // 쿼리 실패
+                Toast.makeText(this, "중복 확인에 실패했습니다: $e", Toast.LENGTH_SHORT).show()
+            }
+    }
+
     private fun updateUserProfile() {
         // 수정할 정보 가져오기
         val newUsername = usernameEditText.text.toString().trim()
@@ -83,9 +118,11 @@ class MyPageActivity : AppCompatActivity() {
         val currentUser = firebaseAuth.currentUser
 
         // 사용자 정보 업데이트
-        val profileUpdates = UserProfileChangeRequest.Builder().apply {
+        val profileUpdatesBuilder = UserProfileChangeRequest.Builder().apply {
             if (newUsername.isNotEmpty()) setDisplayName(newUsername)
-        }.build()
+        }
+
+        val profileUpdates = profileUpdatesBuilder.build()
 
         currentUser?.updateProfile(profileUpdates)?.addOnCompleteListener { task ->
             if (task.isSuccessful) {
@@ -97,31 +134,38 @@ class MyPageActivity : AppCompatActivity() {
             }
         }
 
-        // 파이어베이스 Firestore에서 사용자 정보 업데이트
-        val userId = currentUser?.uid
-        userId?.let {
-            val userRef = firestore.collection("users").document(it)
-            val updates = hashMapOf<String, Any>()
-            if (newUsername.isNotEmpty()) {
-                updates["Name"] = newUsername
-            }
-            if (newPassword.isNotEmpty()) {
-                updates["Password"] = newPassword
-            }
-            userRef.update(updates)
-                .addOnSuccessListener {
-                    // 사용자 정보 업데이트 성공
-                    Toast.makeText(this, "사용자 정보가 업데이트되었습니다", Toast.LENGTH_SHORT).show()
-                    // 메인 페이지로 이동
-                    val intent = Intent(this, MainActivity::class.java)
+        // 비밀번호 업데이트
+        if (newPassword.isNotEmpty()) {
+            currentUser?.updatePassword(newPassword)?.addOnCompleteListener { passwordTask ->
+                if (passwordTask.isSuccessful) {
+                    // 비밀번호 업데이트 성공
+                    Toast.makeText(this, "비밀번호가 업데이트되었습니다", Toast.LENGTH_SHORT).show()
+
+                    // 파이어베이스 Firestore에서 사용자 비밀번호 업데이트
+                    val userId = currentUser.uid
+                    userId.let {
+                        val userRef = firestore.collection("users").document(it)
+                        val updates = hashMapOf<String, Any>(
+                            "Password" to newPassword
+                        )
+                        userRef.update(updates)
+                            .addOnSuccessListener {
+                                // 사용자 비밀번호 업데이트 성공
+                                Toast.makeText(this, "사용자 비밀번호가 업데이트되었습니다", Toast.LENGTH_SHORT).show()
+                            }
+                            .addOnFailureListener { e ->
+                                // 사용자 비밀번호 업데이트 실패
+                                Toast.makeText(this, "사용자 비밀번호 업데이트에 실패했습니다: $e", Toast.LENGTH_SHORT).show()
+                            }
+                    }
+                    // 마이페이지로 이동
+                    val intent = Intent(this, MyPageActivity::class.java)
                     startActivity(intent)
-                    finish() // 현재 액티비티 종료
+                } else {
+                    // 비밀번호 업데이트 실패
+                    Toast.makeText(this, "비밀번호 업데이트에 실패했습니다", Toast.LENGTH_SHORT).show()
                 }
-                .addOnFailureListener { e ->
-                    // 사용자 정보 업데이트 실패
-                    Toast.makeText(this, "사용자 정보 업데이트에 실패했습니다: $e", Toast.LENGTH_SHORT).show()
-                }
+            }
         }
     }
 }
-
