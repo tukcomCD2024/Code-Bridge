@@ -1,7 +1,7 @@
 package com.example.sharenote
 
+import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
@@ -26,6 +26,7 @@ class MyPageActivity : AppCompatActivity() {
 
         // 뷰 초기화
         usernameEditText = findViewById(R.id.usernameEditText)
+        emailEditText = findViewById(R.id.emailEditText)
         passwordEditText = findViewById(R.id.passwordEditText)
         updateButton = findViewById(R.id.updateButton)
 
@@ -33,12 +34,8 @@ class MyPageActivity : AppCompatActivity() {
         firebaseAuth = FirebaseAuth.getInstance()
         firestore = FirebaseFirestore.getInstance()
 
-        // 현재 사용자의 정보 가져오기
-        val currentUser = firebaseAuth.currentUser
-        currentUser?.let {
-            val userId = it.uid
-            getUserInfoFromFirestore(userId)
-        }
+        // 사용자 정보 가져와서 화면에 보여주기
+        fetchUserData()
 
         // 수정하기 버튼 클릭 리스너 설정
         updateButton.setOnClickListener {
@@ -46,82 +43,83 @@ class MyPageActivity : AppCompatActivity() {
         }
     }
 
-    private fun getUserInfoFromFirestore(userId: String) {
-        // Firestore에서 사용자 정보 가져오기
-        firestore.collection("users").document(userId)
-            .get()
-            .addOnSuccessListener { document ->
-                if (document != null && document.exists()) {
-                    // Firestore에서 가져온 사용자 정보를 화면에 설정
-                    val username = document.getString("username")
-                    val email = document.getString("email")
-                    usernameEditText.setText(username)
-                    emailEditText.setText(email)
-                } else {
-                    Toast.makeText(this, "사용자 정보를 불러올 수 없습니다", Toast.LENGTH_SHORT).show()
+    private fun fetchUserData() {
+        // 현재 사용자 가져오기
+        val currentUser = firebaseAuth.currentUser
+        currentUser?.let { user ->
+            // 사용자 정보 가져오기
+            val userId = user.uid
+            firestore.collection("users").document(userId).get()
+                .addOnSuccessListener { document ->
+                    if (document != null) {
+                        // 사용자 정보를 가져와서 화면에 보여주기
+                        val username = document.getString("Name")
+                        val email = document.getString("Email")
+
+                        usernameEditText.setText(username)
+                        emailEditText.setText(email)
+                    } else {
+                        Toast.makeText(this, "사용자 정보를 가져오지 못했습니다", Toast.LENGTH_SHORT).show()
+                    }
                 }
-            }
-            .addOnFailureListener { exception ->
-                Toast.makeText(this, "사용자 정보를 불러오는데 실패했습니다", Toast.LENGTH_SHORT).show()
-                Log.e("MyPageActivity", "Error getting user information", exception)
-            }
+                .addOnFailureListener { e ->
+                    Toast.makeText(this, "사용자 정보를 가져오는 데 실패했습니다: $e", Toast.LENGTH_SHORT).show()
+                }
+        }
     }
 
-
     private fun updateUserProfile() {
-        val username = usernameEditText.text.toString().trim()
-        val email = emailEditText.text.toString().trim()
-        val password = passwordEditText.text.toString().trim()
+        // 수정할 정보 가져오기
+        val newUsername = usernameEditText.text.toString().trim()
+        val newPassword = passwordEditText.text.toString().trim()
 
         // 입력 값 유효성 검사
-        if (username.isEmpty() && email.isEmpty() && password.isEmpty()) {
+        if (newUsername.isEmpty() && newPassword.isEmpty()) {
             Toast.makeText(this, "수정할 정보를 입력하세요", Toast.LENGTH_SHORT).show()
             return
         }
 
         // 현재 사용자 가져오기
-        val user = firebaseAuth.currentUser
+        val currentUser = firebaseAuth.currentUser
 
         // 사용자 정보 업데이트
         val profileUpdates = UserProfileChangeRequest.Builder().apply {
-            if (username.isNotEmpty()) setDisplayName(username)
+            if (newUsername.isNotEmpty()) setDisplayName(newUsername)
         }.build()
-        user?.updateProfile(profileUpdates)
-            ?.addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    // 닉네임 업데이트 성공
-                    Toast.makeText(this, "닉네임이 업데이트되었습니다", Toast.LENGTH_SHORT).show()
-                } else {
-                    // 닉네임 업데이트 실패
-                    Toast.makeText(this, "닉네임 업데이트에 실패했습니다", Toast.LENGTH_SHORT).show()
-                }
-            }
 
-        // 이메일 업데이트
-        if (email.isNotEmpty()) {
-            user?.updateEmail(email)
-                ?.addOnCompleteListener { emailTask ->
-                    if (emailTask.isSuccessful) {
-                        // 이메일 업데이트 성공
-                        Toast.makeText(this, "이메일이 업데이트되었습니다", Toast.LENGTH_SHORT).show()
-                    } else {
-                        // 이메일 업데이트 실패
-                        Toast.makeText(this, "이메일 업데이트에 실패했습니다", Toast.LENGTH_SHORT).show()
-                    }
-                }
+        currentUser?.updateProfile(profileUpdates)?.addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                // 닉네임 업데이트 성공
+                Toast.makeText(this, "닉네임이 업데이트되었습니다", Toast.LENGTH_SHORT).show()
+            } else {
+                // 닉네임 업데이트 실패
+                Toast.makeText(this, "닉네임 업데이트에 실패했습니다", Toast.LENGTH_SHORT).show()
+            }
         }
 
-        // 비밀번호 업데이트
-        if (password.isNotEmpty()) {
-            user?.updatePassword(password)
-                ?.addOnCompleteListener { passwordTask ->
-                    if (passwordTask.isSuccessful) {
-                        // 비밀번호 업데이트 성공
-                        Toast.makeText(this, "비밀번호가 업데이트되었습니다", Toast.LENGTH_SHORT).show()
-                    } else {
-                        // 비밀번호 업데이트 실패
-                        Toast.makeText(this, "비밀번호 업데이트에 실패했습니다", Toast.LENGTH_SHORT).show()
-                    }
+        // 파이어베이스 Firestore에서 사용자 정보 업데이트
+        val userId = currentUser?.uid
+        userId?.let {
+            val userRef = firestore.collection("users").document(it)
+            val updates = hashMapOf<String, Any>()
+            if (newUsername.isNotEmpty()) {
+                updates["Name"] = newUsername
+            }
+            if (newPassword.isNotEmpty()) {
+                updates["Password"] = newPassword
+            }
+            userRef.update(updates)
+                .addOnSuccessListener {
+                    // 사용자 정보 업데이트 성공
+                    Toast.makeText(this, "사용자 정보가 업데이트되었습니다", Toast.LENGTH_SHORT).show()
+                    // 메인 페이지로 이동
+                    val intent = Intent(this, MainActivity::class.java)
+                    startActivity(intent)
+                    finish() // 현재 액티비티 종료
+                }
+                .addOnFailureListener { e ->
+                    // 사용자 정보 업데이트 실패
+                    Toast.makeText(this, "사용자 정보 업데이트에 실패했습니다: $e", Toast.LENGTH_SHORT).show()
                 }
         }
     }
