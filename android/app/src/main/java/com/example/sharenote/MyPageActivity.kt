@@ -26,7 +26,6 @@ class MyPageActivity : AppCompatActivity() {
 
         // 뷰 초기화
         usernameEditText = findViewById(R.id.usernameEditText)
-        emailEditText = findViewById(R.id.emailEditText)
         passwordEditText = findViewById(R.id.passwordEditText)
         updateButton = findViewById(R.id.updateButton)
 
