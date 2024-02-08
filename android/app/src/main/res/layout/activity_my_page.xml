@@ -125,15 +125,6 @@
         android:layout_below="@+id/confirmPasswordText"
         android:layout_marginBottom="20dp" />
 
-    <Button
-        android:id="@+id/signupButton"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="회원가입"
-        android:textSize="17dp"
-        android:background="@drawable/button_background"
-        android:layout_below="@+id/confirmPasswordEditText"
-        android:layout_marginTop="20dp" />
 
     <!-- 수정 버튼 -->
     <Button

@@ -21,6 +21,8 @@ class MyPageActivity : AppCompatActivity() {
     private lateinit var firebaseAuth: FirebaseAuth
     private lateinit var firestore: FirebaseFirestore
 
+    private var isUsernameAvailable = false // 중복된 닉네임 여부를 저장하는 변수
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_my_page)
@@ -50,7 +52,11 @@ class MyPageActivity : AppCompatActivity() {
 
         // 수정하기 버튼 클릭 리스너 설정
         updateButton.setOnClickListener {
-            updateUserProfile()
+            if (isUsernameAvailable) {
+                updateUserProfile()
+            } else {
+                Toast.makeText(this, "닉네임 중복 확인을 확인해주세요", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 
@@ -89,12 +95,15 @@ class MyPageActivity : AppCompatActivity() {
         // 중복 확인을 위한 파이어스토어 쿼리 수행
         firestore.collection("users").whereEqualTo("Name", newUsername).get()
             .addOnSuccessListener { querySnapshot ->
-                if (!querySnapshot.isEmpty) {
-                    // 중복된 닉네임이 존재함
-                    Toast.makeText(this, "이미 사용 중인 닉네임입니다", Toast.LENGTH_SHORT).show()
-                } else {
-                    // 중복된 닉네임이 없음
+                isUsernameAvailable = querySnapshot.isEmpty // 중복 여부를 저장
+                if (isUsernameAvailable) {
+                    // 중복된 닉네임이 없으면 사용 가능
                     Toast.makeText(this, "사용 가능한 닉네임입니다", Toast.LENGTH_SHORT).show()
+                    updateButton.isEnabled = true // 수정하기 버튼 활성화
+                } else {
+                    // 중복된 닉네임이 존재하면 사용 불가능
+                    Toast.makeText(this, "이미 사용 중인 닉네임입니다", Toast.LENGTH_SHORT).show()
+                    updateButton.isEnabled = false // 수정하기 버튼 비활성화
                 }
             }
             .addOnFailureListener { e ->
@@ -128,9 +137,30 @@ class MyPageActivity : AppCompatActivity() {
             if (task.isSuccessful) {
                 // 닉네임 업데이트 성공
                 Toast.makeText(this, "닉네임이 업데이트되었습니다", Toast.LENGTH_SHORT).show()
+
+                // 닉네임을 Firestore에도 업데이트
+                val userId = currentUser.uid
+                userId.let {
+                    val userRef = firestore.collection("users").document(it)
+                    val updates = hashMapOf<String, Any>(
+                        "Name" to newUsername
+                    )
+                    userRef.update(updates)
+                        .addOnSuccessListener {
+                            // 사용자 닉네임 업데이트 성공
+                            Toast.makeText(this, "사용자 닉네임이 업데이트되었습니다", Toast.LENGTH_SHORT).show()
+                        }
+                        .addOnFailureListener { e ->
+                            // 사용자 닉네임 업데이트 실패
+                            Toast.makeText(this, "사용자 닉네임 업데이트에 실패했습니다: $e", Toast.LENGTH_SHORT).show()
+                        }
+                }
+
             } else {
                 // 닉네임 업데이트 실패
                 Toast.makeText(this, "닉네임 업데이트에 실패했습니다", Toast.LENGTH_SHORT).show()
+                val errorMessage = task.exception?.message ?: "업데이트 실패"
+                Toast.makeText(this, errorMessage, Toast.LENGTH_SHORT).show()
             }
         }
 
@@ -159,8 +189,9 @@ class MyPageActivity : AppCompatActivity() {
                             }
                     }
                     // 마이페이지로 이동
-                    val intent = Intent(this, MyPageActivity::class.java)
+                    val intent = Intent(this, MainActivity::class.java)
                     startActivity(intent)
+                    finish() // 현재 액티비티 종료
                 } else {
                     // 비밀번호 업데이트 실패
                     Toast.makeText(this, "비밀번호 업데이트에 실패했습니다", Toast.LENGTH_SHORT).show()
