@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
+@RequestMapping("/api")
 public class OrganizationController {
     private final OrganizationService organizationService;
     @PostMapping("/user/organization")
