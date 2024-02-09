@@ -30,6 +30,13 @@ dependencies {
 	annotationProcessor 'org.projectlombok:lombok'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
+
+	implementation 'org.springframework.boot:spring-boot-starter-websocket'
+	implementation("org.springframework.boot:spring-boot-starter-amqp:3.2.1")
+	implementation group: 'org.springframework.boot', name: 'spring-boot-starter-reactor-netty', version: '3.1.7'
+	implementation group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: '2.12.4'
+	implementation group: 'org.webjars', name: 'stomp-websocket', version: '2.3.3-1'
+	testImplementation 'org.springframework.amqp:spring-rabbit-test'
 }
 
 tasks.named('test') {

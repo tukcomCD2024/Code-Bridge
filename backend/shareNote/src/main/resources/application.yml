@@ -9,6 +9,12 @@ spring:
 #      username: root
 #      password: 1234
 #      database: shareDB
+  rabbitmq:
+    host: rabbitmq  # Docker Compose에서 정의한 RabbitMQ 서비스 이름
+    port: 5672      # 기본 RabbitMQ 포트
+    username: guest # 'docker-compose.yml'에서 정의한 사용자 이름
+    password: guest # 'docker-compose.yml'에서 정의한 비밀번호
+
 
 cloud:
   aws:

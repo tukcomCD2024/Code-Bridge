@@ -14,6 +14,7 @@ import java.util.List;
 @RestController
 @Slf4j
 @RequiredArgsConstructor
+@RequestMapping("/api")
 public class NoteController {
     private final NoteService noteService;
     @PostMapping("/user/note")
