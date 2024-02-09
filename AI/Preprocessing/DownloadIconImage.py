@@ -4,6 +4,8 @@ from selenium.webdriver.common.by import By
 import os
 from urllib.request import urlretrieve
 
+
+option = ['regular', 'outline', '']
 cd_installer.install()
 
 def getDriver(path):
@@ -28,10 +30,12 @@ def scanIcon(webURL, imgFolder, pageNum, from0, to0):
     driver.close()
 
 
-def icon7(webURL, img_folder):
+def icon(webURL, img_folder):
     if not os.path.isdir(img_folder):  # 없으면 새로 생성하는 조건문
         os.mkdir(img_folder)
 
     for i in range(53):
         scanIcon(webURL, img_folder, i + 1, 3, 99)
     scanIcon(webURL, img_folder, 54, 3, 37)
+
+
