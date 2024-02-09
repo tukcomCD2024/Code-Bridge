@@ -81,6 +81,7 @@ def tagCounting(driver, tagMap, i):
         tagMap[tagName] = 1
     return tagMap
 
+
 def getTag(pageNum, from0, to0, tagSet, action):
     n = 4
     step = (to0 - from0) // n

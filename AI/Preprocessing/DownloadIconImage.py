@@ -8,17 +8,20 @@ from urllib.request import urlretrieve
 option = ['regular', 'outline', '']
 cd_installer.install()
 
-def getDriver(path):
-    driver = webdriver.Chrome()
-    driver.get(path)
-    return driver
+driver = webdriver.Chrome()
+
+
+def getIconCount(driver):
+    driver.get(url.format(keyword))
+    icons = driver.find_elements(By.XPATH, '//*[@id="app"]/div[2]/div/div/div[2]/div[2]/div/div/div')
+    return len(icons)
 
 
 def scanIcon(webURL, imgFolder, pageNum, from0, to0):
     iconPath = '//*[@id="viewport"]/div[6]/div/section[4]/ul/li[{}]/div/a'
     imagePath = '//*[@id="uicons__detail-img"]'
 
-    driver = getDriver(webURL.format(pageNum + 1))
+    driver.get(webURL.format(pageNum + 1))
 
     for j in range(from0, to0):
         driver.find_element(By.XPATH, iconPath.format(j)).click()  # icon
@@ -34,8 +37,12 @@ def icon(webURL, img_folder):
     if not os.path.isdir(img_folder):  # 없으면 새로 생성하는 조건문
         os.mkdir(img_folder)
 
-    for i in range(53):
-        scanIcon(webURL, img_folder, i + 1, 3, 99)
-    scanIcon(webURL, img_folder, 54, 3, 37)
+    driver.get(webURL)
+    n = getIconCount(driver)
+    for i in range(n):
+        downloadIcon()
 
+
+url = "https://icon-sets.iconify.design/?query={}"
+icon(url, '../asset/image/icon1/')
 
