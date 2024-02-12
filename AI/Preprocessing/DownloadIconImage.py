@@ -3,19 +3,30 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 import os
 from urllib.request import urlretrieve
+import signal
 
 
-option = ['regular', 'outline', '']
+category = ['fluent-emoji-high-contrast/', 'ph/', 'mdi/', 'material-symbols-light/', 'bi/', 'teenyicons/', 'clarity/', 'ci/', 'icon-park-outline/', 'mingcute/', 'tabler/']
+additional = {'fluent/': 'regular', 'healthicons/': 'outline 24'}
+tagsTemp = ['rabbit', 'bear', 'dog', 'cat', 'squirrel', 'lion', 'tiger', 'dragon','horse']
+
+url = "https://icon-sets.iconify.design/{}/?query={}"
+
 cd_installer.install()
 
 driver = webdriver.Chrome()
 
 
-def getIconCount(driver):
-    driver.get(url.format(keyword))
-    icons = driver.find_elements(By.XPATH, '//*[@id="app"]/div[2]/div/div/div[2]/div[2]/div/div/div')
-    return len(icons)
+def timeout():
+    print("next")
 
+def getIconCount():
+    try:
+        icons = driver.find_elements(By.XPATH, '//*[@id="app"]/div[2]/div/div/div[2]/div[2]/div/div/div[1]/a/iconify-icon')
+        return len(icons)
+    except:
+        return 0
+  
 
 def scanIcon(webURL, imgFolder, pageNum, from0, to0):
     iconPath = '//*[@id="viewport"]/div[6]/div/section[4]/ul/li[{}]/div/a'
@@ -33,16 +44,47 @@ def scanIcon(webURL, imgFolder, pageNum, from0, to0):
     driver.close()
 
 
-def icon(webURL, img_folder):
+def downloadIcon():
+    img_folder = '../asset/image/icon1/'
+
     if not os.path.isdir(img_folder):  # 없으면 새로 생성하는 조건문
         os.mkdir(img_folder)
 
-    driver.get(webURL)
-    n = getIconCount(driver)
-    for i in range(n):
-        downloadIcon()
+    for c in category:
+        for t in tagsTemp:
+            driver.get(url.format(c, t))
+            driver.implicitly_wait(100)
+
+            imgSubFolder = img_folder + t + '/'
+
+            n = getIconCount()
+            print(n)
+            for i in range(n):
+                driver.find_element(By.XPATH, f'//*[@id="app"]/div[2]/div/div/div[2]/div[2]/div/div/div/a[{i+1}]/iconify-icon').click()
+                driver.find_element(By.XPATH, '//*[@id="app"]/dialog/div/div/div[3]/div/div[1]/section[1]/button[1]').click()
+                source = driver.find_element(By.XPATH, '//*[@id="app"]/dialog/div/div/div[3]/div/div[3]/div/textarea').get_attribute("value")
+
+                imgSource = imgSubFolder+str(i)+".svg"
+                f = open(imgSource, 'w')
+                f.write('<?xml version="1.0" encoding="UTF-8"?>')
+                f.write(source)
+                print(source)
+                driver.find_element(By.XPATH, '//*[@id="app"]/dialog/div/button').click()
 
 
-url = "https://icon-sets.iconify.design/?query={}"
-icon(url, '../asset/image/icon1/')
+def make_a_directory():
+    img_folder = '../asset/image/icon1/'
+
+    for t in tagsTemp:
+        imgSubFolder = img_folder + t + '/'
+        if not os.path.isdir(imgSubFolder):  # 없으면 새로 생성하는 조건문
+            os.mkdir(imgSubFolder)
+
+
+def icon():
+    make_a_directory()
+    downloadIcon()
+
+
+icon()
 
