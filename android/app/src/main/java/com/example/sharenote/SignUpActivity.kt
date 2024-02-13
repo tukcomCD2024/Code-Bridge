@@ -17,6 +17,7 @@ class SignUpActivity : AppCompatActivity() {
 
     private lateinit var emailEditText: EditText
     private lateinit var passwordEditText: EditText
+    private lateinit var confirmPasswordEditText: EditText
     private lateinit var nameEditText: EditText
 
     private lateinit var Name: String
@@ -36,6 +37,7 @@ class SignUpActivity : AppCompatActivity() {
 
         emailEditText = findViewById(R.id.emailEditText)
         passwordEditText = findViewById(R.id.passwordEditText)
+        confirmPasswordEditText = findViewById(R.id.confirmPasswordEditText)
         nameEditText = findViewById(R.id.usernameEditText)
 
         val signUpButton = findViewById<Button>(R.id.signupButton)
@@ -44,12 +46,15 @@ class SignUpActivity : AppCompatActivity() {
             Name = nameEditText.text.toString()
             Email = emailEditText.text.toString()
             Password = passwordEditText.text.toString()
+            val confirmPassword = confirmPasswordEditText.text.toString()
 
             // 중복된 닉네임 확인 후 회원가입 진행
-            if (isUsernameAvailable) {
+            if (isUsernameAvailable && Password == confirmPassword) {
                 signUpUser()
+            } else if (!isUsernameAvailable) {
+                Toast.makeText(this, "사용 중인 닉네임입니다. 다른 닉네임을 선택하세요.", Toast.LENGTH_SHORT).show()
             } else {
-                Toast.makeText(this, "닉네임 중복 확인을 진행해주세요.", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "비밀번호가 일치하지 않습니다. 다시 입력해주세요.", Toast.LENGTH_SHORT).show()
             }
         }
 
