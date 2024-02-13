@@ -1,55 +1,22 @@
 <!-- res/layout/activity_main.xml -->
-
-<RelativeLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity">
+    android:padding="16dp">
 
-    <!-- 최근 방문한 페이지 버튼 -->
+    <!-- 노트 생성 버튼 -->
     <Button
-        android:id="@+id/recentNotesButton"
+        android:id="@+id/buttonCreateNote"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="최근 방문한 페이지"
-        android:layout_marginTop="20dp"/>
+        android:text="노트 생성" />
 
-    <!-- 팀스페이스 목록 버튼 -->
-    <Button
-        android:id="@+id/teamSpacesButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="팀스페이스 목록"
-        android:layout_below="@id/recentNotesButton"
-        android:layout_marginTop="20dp"/>
-
-
-    <!-- 설정 버튼 -->
     <Button
         android:id="@+id/myPageButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="마이페이지"
-        android:layout_below="@id/teamSpacesButton"
-        android:layout_marginTop="20dp"/>
-
-    <!-- 멤버 버튼 -->
-    <Button
-        android:id="@+id/membersButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="멤버"
-        android:layout_below="@id/myPageButton"
-        android:layout_marginTop="20dp"/>
-
-    <!-- 휴지통 버튼 -->
-    <Button
-        android:id="@+id/trashButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="휴지통"
-        android:layout_below="@id/membersButton"
+        android:layout_below="@id/buttonCreateNote"
         android:layout_marginTop="20dp"/>
 
     <Button
@@ -57,7 +24,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="로그아웃"
-        android:layout_below="@id/trashButton"
+        android:layout_below="@id/myPageButton"
         android:layout_marginTop="20dp"/>
 
 </RelativeLayout>

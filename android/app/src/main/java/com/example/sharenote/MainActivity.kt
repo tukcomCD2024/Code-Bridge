@@ -15,42 +15,11 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         auth = FirebaseAuth.getInstance()
-/*
-        // 최근 방문한 페이지
-        val recentNotesButton = findViewById<Button>(R.id.recentNotesButton)
-        recentNotesButton.setOnClickListener {
-            startActivity(Intent(this, RecentNotesActivity::class.java))
-        }
 
-        // 팀스페이스 목록
-        val teamSpacesButton = findViewById<Button>(R.id.teamSpacesButton)
-        teamSpacesButton.setOnClickListener {
-            startActivity(Intent(this, TeamSpacesActivity::class.java))
+        val buttonCreateNote = findViewById<Button>(R.id.buttonCreateNote)
+        buttonCreateNote.setOnClickListener {
+            createNote()
         }
-
-        // 개인 페이지 목록
-        val personalNotesButton = findViewById<Button>(R.id.personalNotesButton)
-        personalNotesButton.setOnClickListener {
-            startActivity(Intent(this, PersonalNotesActivity::class.java))
-        }
-
-        // 설정
-        val settingsButton = findViewById<Button>(R.id.settingsButton)
-        settingsButton.setOnClickListener {
-            startActivity(Intent(this, SettingsActivity::class.java))
-        }
-
-        // 멤버
-        val membersButton = findViewById<Button>(R.id.membersButton)
-        membersButton.setOnClickListener {
-            startActivity(Intent(this, MembersActivity::class.java))
-        }
-
-        // 휴지통
-        val trashButton = findViewById<Button>(R.id.trashButton)
-        trashButton.setOnClickListener {
-            startActivity(Intent(this, TrashActivity::class.java))
-        }*/
 
         val myPageButton = findViewById<Button>(R.id.myPageButton)
         myPageButton.setOnClickListener {
@@ -70,5 +39,9 @@ class MainActivity : AppCompatActivity() {
             // 현재 액티비티 종료 (메인 페이지에서 뒤로가기 시 로그인 화면으로 가도록)
             finish()
         }
+    }
+    private fun createNote() {
+        val intent = Intent(this, NoteActivity::class.java)
+        startActivity(intent)
     }
 }
