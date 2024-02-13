@@ -4,64 +4,74 @@ import styled from "styled-components";
 import GoogleLoginBtn from "../../image/googleLoginBtn.png";
 
 const LoginPage = () => {
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [resultMessage, setResultMessage] = useState("");
   const navigate = useNavigate();
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    if (name === "username") {
-      setUsername(value);
+    if (name === "email") {
+      setEmail(value);
     } else if (name === "password") {
       setPassword(value);
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Add logic for handling form submission
-    // Example fetch call:
-    // fetch('/userController?action=login', {
-    //   method: 'POST',
-    //   headers: {
-    //     'Content-Type': 'application/json',
-    //   },
-    //   body: JSON.stringify({ username, password }),
-    // })
-    //   .then(response => response.json())
-    //   .then(data => {
-    //     // Handle response data
-    //     setResultMessage(data.resultMessage);
-    //   })
-    //   .catch(error => {
-    //     console.error('Error:', error);
-    //   });
+
+    if (password === "" || email === "") {
+      alert("이메일(ID)과 비밀번호를 모두 입력해주세요.");
+      return;
+    }
+
+    try {
+      const response = await fetch("/api/user/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      if (response.ok) {
+        navigate("/main");
+      } else {
+        const errorData = await response.json();
+        alert(`로그인 실패: ${errorData.message}`);
+      }
+    } catch (error) {
+      console.error("Error: ", error);
+      alert("처리 중 오류가 발생했습니다.");
+    }
   };
 
   return (
     <Container>
       <ContentWrapper>
         <p style={{ fontWeight: "bold", fontSize: "25px" }}>로그인</p>
-        <Id_InputWrapper>
+        <Email_InputWrapper>
           이메일
-          <Id_Input
-            id="id"
+          <Email_Input
+            name="email"
             type="text"
             placeholder="이메일(ID)를 입력해주세요."
-            //   value={id}
+            onChange={handleInputChange}
+            value={email}
           />
-        </Id_InputWrapper>
+        </Email_InputWrapper>
         <Password_InputWrapper>
           비밀번호
           <Password_Input
-            id="password"
+            name="password"
             type="password"
             placeholder="비밀번호를 입력해주세요."
-            //   value={password}
+            onChange={handleInputChange}
+            value={password}
           />
         </Password_InputWrapper>
-        <LoginBtn>로그인</LoginBtn>
+        <LoginBtn onClick={handleSubmit}>로그인</LoginBtn>
         <IsNotUser>
           <p style={{ display: "inline", margin: "0", marginRight: "8px" }}>
             <small>회원이 아니신가요?</small>
@@ -103,7 +113,7 @@ const ContentWrapper = styled.div`
   margin: 0 auto;
 `;
 
-const Id_InputWrapper = styled.div`
+const Email_InputWrapper = styled.div`
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -113,7 +123,7 @@ const Id_InputWrapper = styled.div`
   border-radius: 10px;
 `;
 
-const Id_Input = styled.input`
+const Email_Input = styled.input`
   flex: 1;
   background-color: #f0f0f0;
   border: none;

@@ -3,26 +3,24 @@ import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 
 const SignupPage = () => {
-  const [username, setUsername] = useState("");
-  const [nickname, setNickname] = useState("");
   const [email, setEmail] = useState("");
+  const [nickname, setNickname] = useState("");
   const [password, setPassword] = useState("");
   const [passwordCheck, setPasswordCheck] = useState("");
-  const [resultMessage, setResultMessage] = useState("");
-  const [isUsernameAvailable, setIsUsernameAvailable] = useState(true);
+  const [isEmailAvailable, setIsEmailAvailable] = useState(true);
   const [isNicknameAvailable, setIsNicknameAvailable] = useState(true);
+  const [resultMessage, setResultMessage] = useState(""); // 상태 추가
+
   const navigate = useNavigate();
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    if (name === "username") {
-      setUsername(value);
-      setIsUsernameAvailable(true); // Reset availability when username changes
+    if (name === "email") {
+      setEmail(value);
+      setIsEmailAvailable(true); // 이메일 변경 시 사용 가능 여부 재설정
     } else if (name === "nickname") {
       setNickname(value);
-      setIsNicknameAvailable(true); // Reset availability when nickname changes
-    } else if (name === "email") {
-      setEmail(value);
+      setIsNicknameAvailable(true); // 닉네임 변경 시 사용 가능 여부 재설정
     } else if (name === "password") {
       setPassword(value);
     } else if (name === "passwordCheck") {
@@ -30,107 +28,140 @@ const SignupPage = () => {
     }
   };
 
-  const handleUsernameDuplicateCheck = () => {
-    // Implement logic for checking username duplication
-    // Example fetch call:
-    // fetch(`/api/checkUsername?username=${username}`)
-    //   .then(response => response.json())
-    //   .then(data => {
-    //     setIsUsernameAvailable(data.isAvailable);
-    //     setResultMessage(data.message);
-    //   })
-    //   .catch(error => {
-    //     console.error('Error:', error);
-    //   });
+  const handleEmailDuplicateCheck = () => {
+    if (email === "") {
+      alert("이메일를 입력하세요.");
+      return;
+    }
+    fetch(`/user/signup?email=${email}`)
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.isAvailable === false) {
+          // 중복된 닉네임이 있음을 사용자에게 알림
+          alert("이메일의 닉네임이 존재합니다.");
+        } else {
+          setIsEmailAvailable(data.isAvailable);
+          setResultMessage(data.message);
+        }
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+        alert("처리에 실패하였습니다.");
+      });
   };
 
   const handleNicknameDuplicateCheck = () => {
-    // Implement logic for checking nickname duplication
-    // Example fetch call:
-    // fetch(`/api/checkNickname?nickname=${nickname}`)
-    //   .then(response => response.json())
-    //   .then(data => {
-    //     setIsNicknameAvailable(data.isAvailable);
-    //     setResultMessage(data.message);
-    //   })
-    //   .catch(error => {
-    //     console.error('Error:', error);
-    //   });
+    if (nickname === "") {
+      alert("닉네임을 입력하세요.");
+      return;
+    }
+    fetch(`/user/signup?nickname=${nickname}`)
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.isAvailable === false) {
+          // 중복된 닉네임이 있음을 사용자에게 알림
+          alert("이미 가입된 닉네임이 존재합니다.");
+        } else {
+          setIsNicknameAvailable(true);
+          setResultMessage(data.message);
+        }
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+        alert("처리에 실패하였습니다.");
+      });
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // Add logic for handling form submission
-    // Example fetch call:
-    // fetch('/api/signup', {
-    //   method: 'POST',
-    //   headers: {
-    //     'Content-Type': 'application/json',
-    //   },
-    //   body: JSON.stringify({ username, nickname, email, password, passwordCheck }),
-    // })
-    //   .then(response => response.json())
-    //   .then(data => {
-    //     // Handle response data
-    //     setResultMessage(data.resultMessage);
-    //   })
-    //   .catch(error => {
-    //     console.error('Error:', error);
-    //   });
+  const handleSubmit = async (e) => {
+    e.preventDefault(); // 폼 제출 기본 동작 방지
+
+    if (
+      password === "" ||
+      passwordCheck === "" ||
+      email === "" ||
+      nickname === ""
+    ) {
+      alert("모든 칸을 빠짐없이 입력해주세요.");
+      return;
+    } else if (password !== passwordCheck) {
+      alert("비밀번호와 비밀번호 확인이 일치하지 않습니다.");
+      return;
+    }
+
+    try {
+      const response = await fetch("/api/user/signUp", {
+        // URL 경로 확인 필요 ("/api/user/signUp" 가 정확한지 확인)
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, nickname, password }), // 직접적으로 데이터 전송
+      });
+      if (response.ok) {
+        alert("회원가입 성공! 로그인을 진행해주세요.");
+        navigate("/login");
+      } else {
+        // 서버 응답에서 반환된 에러 메시지를 사용하여 사용자에게 보다 구체적인 정보 제공
+        const errorData = await response.json();
+        alert(`회원가입 실패: ${errorData.message}`);
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      alert("처리에 실패하였습니다.");
+    }
   };
 
   return (
     <Container>
       <ContentWrapper>
         <p style={{ fontWeight: "bold", fontSize: "25px" }}>회원가입</p>
-        <Id_InputWrapper>
+        <Email_InputWrapper>
           이메일(ID)
-          <Id_Input
-            id="id"
+          <Email_Input
+            name="email"
             type="text"
             placeholder="이메일을 입력하세요."
-            //   value={id}
+            onChange={handleInputChange} // 이 부분을 추가
+            value={email}
           />
-          <ID_Duplicate_CheckBtn>중복확인</ID_Duplicate_CheckBtn>
-        </Id_InputWrapper>
+          <Email_Duplicate_CheckBtn onClick={handleEmailDuplicateCheck}>
+            중복확인
+          </Email_Duplicate_CheckBtn>
+        </Email_InputWrapper>
         <Nickname_InputWrapper>
           닉네임
           <Nickname_Input
-            Nickname="Nickname"
+            name="nickname"
             type="text"
             placeholder="닉네임을 입력하세요."
-            //   value={Nickname}
+            onChange={handleInputChange}
+            value={nickname}
           />
-          <Nickname_Duplicate_CheckBtn>중복확인</Nickname_Duplicate_CheckBtn>
+          <Nickname_Duplicate_CheckBtn onClick={handleNicknameDuplicateCheck}>
+            중복확인
+          </Nickname_Duplicate_CheckBtn>{" "}
         </Nickname_InputWrapper>
-        {/* <Email_InputWrapper>
-          이메일
-          <Email_Input
-            Nickname="Nickname"
-            type="text"
-            placeholder="이메일을 입력하세요."
-            //   value={Nickname}
-          />
-        </Email_InputWrapper> */}
         <Password_InputWrapper>
           비밀번호
           <Password_Input
-            Nickname="password"
+            name="password" // 올바른 name 속성 값으로 변경
             type="password"
             placeholder="비밀번호를 입력해주세요."
-            //   value={password}
+            value={password}
+            onChange={handleInputChange} // 이 부분을 추가
           />
         </Password_InputWrapper>
         <Passwordcheck_InputWrapper>
           비밀번호 확인
           <Passwordcheck_Input
-            Nickname="passwordcheck"
+            name="passwordCheck" // 올바른 name 속성 값으로 변경
             type="password"
             placeholder="비밀번호를 한 번 더 입력해주세요."
-            //   value={password}
+            value={passwordCheck}
+            onChange={handleInputChange} // 이 부분을 추가}
           />
         </Passwordcheck_InputWrapper>
-        <SignupBtn>회원가입</SignupBtn>
+        <SignupBtn onClick={handleSubmit}>회원가입</SignupBtn>
         <HomeBtn onClick={() => navigate("/")}>
           <small>홈으로 돌아가기</small>
         </HomeBtn>
@@ -158,7 +189,7 @@ const ContentWrapper = styled.div`
   border-radius: 10px;
   margin: 0 auto;
 `;
-const Id_InputWrapper = styled.div`
+const Email_InputWrapper = styled.div`
   display: flex;
   position: relative;
   flex-direction: column;
@@ -169,7 +200,7 @@ const Id_InputWrapper = styled.div`
   border-radius: 10px;
 `;
 
-const Id_Input = styled.input`
+const Email_Input = styled.input`
   flex: 1;
   background-color: #f0f0f0;
   border: none;
@@ -183,7 +214,7 @@ const Id_Input = styled.input`
   }
 `;
 
-const ID_Duplicate_CheckBtn = styled.button`
+const Email_Duplicate_CheckBtn = styled.button`
   position: absolute;
   top: 46px;
   right: 5px;
@@ -249,31 +280,6 @@ const Nickname_Input = styled.input`
     background-color: #cccccc;
   }
 `;
-
-// const Email_InputWrapper = styled.div`
-//   display: flex;
-//   flex-direction: column;
-//   align-items: flex-start;
-//   text-align: center;
-//   line-height: 40px;
-//   margin-bottom: 10px;
-//   border-radius: 10px;
-// `;
-
-// const Email_Input = styled.input`
-//   flex: 1;
-//   background-color: #f0f0f0;
-//   border: none;
-//   outline: none;
-//   padding: 10px;
-//   width: 30vh;
-//   border-radius: 20px;
-
-//   &:focus {
-//     background-color: #cccccc;
-//   }
-// `;
-
 const Password_InputWrapper = styled.div`
   display: flex;
   flex-direction: column;
