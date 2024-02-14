@@ -98,6 +98,7 @@ const SignupPage = () => {
         body: JSON.stringify({ email, nickname, password }), // 직접적으로 데이터 전송
       });
       if (response.ok) {
+      
         alert("회원가입 성공! 로그인을 진행해주세요.");
         navigate("/login");
       } else {

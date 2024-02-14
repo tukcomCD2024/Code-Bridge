@@ -6,9 +6,13 @@ import com.Backend.shareNote.domain.User.entity.Users;
 import com.Backend.shareNote.domain.User.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -28,21 +32,27 @@ public class UserService {
         userRepository.save(users);
     }
 
-    public String login(UserLoginDTO userLoginDTO) {
+    public ResponseEntity<Object> login(UserLoginDTO userLoginDTO) {
+        try {
+            Optional<Users> userOptional = userRepository.findByEmail(userLoginDTO.getEmail());
 
-        try{
-            Optional<Users> user = userRepository.findByEmail(userLoginDTO.getEmail()); //여기서 에러나면 에러 메세지 지정이 힘드니까 try catch로 해결
-            Users loginUser = user.get();
-            if(!loginUser.getPassword().equals(userLoginDTO.getPassword())) {
-                return "비밀번호를 확인해 주세요";
+            if (userOptional.isPresent()) {
+                Users loginUser = userOptional.get();
+                if (!loginUser.getPassword().equals(userLoginDTO.getPassword())) {
+                    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("비밀번호를 확인해 주세요");
+                } else {
+                    // 로그인 성공 시 UserId와 name을 JSON 형태로 반환
+                    // 로그인 성공 시 UserId와 name을 JSON 형태로 반환
+                    Map<String, Object> responseJson = new HashMap<>();
+                    responseJson.put("userId", loginUser.getId());
+                    responseJson.put("name", loginUser.getNickname());
+                    return ResponseEntity.ok(responseJson);
+                }
+            } else {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("아이디를 확인해 주세요");
             }
-            return loginUser.getId();
-        }catch (Exception e){
-            return "아이디를 확인해 주세요";
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("서버 오류가 발생했습니다");
         }
-
-
-
-
     }
 }

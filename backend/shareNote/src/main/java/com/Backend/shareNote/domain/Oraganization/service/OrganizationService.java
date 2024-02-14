@@ -10,9 +10,12 @@ import com.Backend.shareNote.domain.User.entity.Users;
 import com.Backend.shareNote.domain.User.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 @Slf4j
@@ -20,7 +23,7 @@ import java.util.ArrayList;
 public class OrganizationService {
     private final OrganizationRepository organizationRepository;
     private final UserRepository userRepository;
-    public String createOrganization(OrganizationCreateDTO organizationCreateDTO) {
+    public ResponseEntity<Object> createOrganization(OrganizationCreateDTO organizationCreateDTO) {
         Users user = userRepository.findByEmail(organizationCreateDTO.getOwner())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
 
@@ -39,8 +42,9 @@ public class OrganizationService {
 
         //@Transactional이 없으니까 직접 save해줘야함
         userRepository.save(user);
-
-        return savedOrgan.getId();
+        Map<String, Object> responseJson = new HashMap<>();
+        responseJson.put("organizationId", savedOrgan.getId());
+        return ResponseEntity.ok(responseJson);
 
     }
 
