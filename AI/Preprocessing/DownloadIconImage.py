@@ -3,12 +3,13 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 import os
 from urllib.request import urlretrieve
-import signal
+from PIL import Image, ImageFilter
+import cairosvg
 
 
 category = ['fluent-emoji-high-contrast/', 'ph/', 'mdi/', 'material-symbols-light/', 'bi/', 'teenyicons/', 'clarity/', 'ci/', 'icon-park-outline/', 'mingcute/', 'tabler/']
 additional = {'fluent/': 'regular', 'healthicons/': 'outline 24'}
-tagsTemp = ['rabbit', 'bear', 'dog', 'cat', 'squirrel', 'lion', 'tiger', 'dragon','horse']
+tagsTemp = ['rabbit', 'bear', 'dog', 'cat', 'tiger','horse']
 
 url = "https://icon-sets.iconify.design/{}/?query={}"
 
@@ -20,13 +21,14 @@ driver = webdriver.Chrome()
 def timeout():
     print("next")
 
+
 def getIconCount():
     try:
         icons = driver.find_elements(By.XPATH, '//*[@id="app"]/div[2]/div/div/div[2]/div[2]/div/div/div[1]/a/iconify-icon')
         return len(icons)
     except:
         return 0
-  
+
 
 def scanIcon(webURL, imgFolder, pageNum, from0, to0):
     iconPath = '//*[@id="viewport"]/div[6]/div/section[4]/ul/li[{}]/div/a'
@@ -72,7 +74,7 @@ def downloadIcon():
                 driver.find_element(By.XPATH, '//*[@id="app"]/dialog/div/button').click()
 
 
-def make_a_directory():
+def makeDirectory():
     img_folder = '../asset/image/icon1/'
 
     for t in tagsTemp:
@@ -82,9 +84,7 @@ def make_a_directory():
 
 
 def icon():
-    make_a_directory()
+    makeDirectory()
     downloadIcon()
 
-
-icon()
 
