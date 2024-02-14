@@ -5,6 +5,7 @@ import com.Backend.shareNote.domain.User.dto.UserSignUpDTO;
 import com.Backend.shareNote.domain.User.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -20,7 +21,7 @@ public class UserController {
     }
 
     @PostMapping("/user/login")
-    public String login(@RequestBody UserLoginDTO userLoginDTO) {
+    public ResponseEntity<Object> login(@RequestBody UserLoginDTO userLoginDTO) {
         return UserService.login(userLoginDTO);
     }
 

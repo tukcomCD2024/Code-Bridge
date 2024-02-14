@@ -86,16 +86,16 @@ function MainPage() {
   const [organizationName, setOrganizationName] = useState("");
   const [organizations, setOrganizations] = useState([]);
 
-  const uploadImage = (e) => {
-    const selectedFile = e.target.files[0];
+  const [selectedFile, setSelectedFile] = useState(null);
 
-    // 파일이 선택되었고, 이미지 파일인 경우에만 처리
-    if (selectedFile && isImageFile(selectedFile)) {
-      setMyImage(URL.createObjectURL(selectedFile));
+
+  const uploadImage = (e) => {
+    const file = e.target.files[0];
+    if (file && isImageFile(file)) {
+      setMyImage(URL.createObjectURL(file));
+      setSelectedFile(file); // 파일 객체를 selectedFile 상태로 설정
     } else {
-      // 이미지 파일이 아닌 경우에 대한 처리 (예: 경고 메시지 등)
       alert("올바른 이미지 파일을 선택해주세요.");
-      // 또는 다른 처리 방법을 선택할 수 있습니다.
     }
   };
 
@@ -146,18 +146,70 @@ function MainPage() {
     setOrganizationName("");
   };
 
-  const handleCreate = () => {
-    const newOrganization = {
-      id: Date.now(),
-      name: organizationName,
-      image: myimage || defaultImage,
-      submissionTime: new Date().toISOString(),
-    };
+  // const handleCreate = () => {
+  //   const newOrganization = {
+  //     id: Date.now(),
+  //     name: organizationName,
+  //     image: myimage || defaultImage,
+  //     submissionTime: new Date().toISOString(),
+  //   };
 
-    const updatedOrganizations = [...organizations, newOrganization];
-    setOrganizations(updatedOrganizations);
-    localStorage.setItem("organizations", JSON.stringify(updatedOrganizations));
-    handleCloseModal();
+  //   const updatedOrganizations = [...organizations, newOrganization];
+  //   setOrganizations(updatedOrganizations);
+  //   localStorage.setItem("organizations", JSON.stringify(updatedOrganizations));
+  //   handleCloseModal();
+  // };
+
+  const handleCreate = async () => {
+    const owner = "qwer123";
+    const name = organizationName;
+  
+    try {
+      const response = await fetch("/api/user/organization", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ name, owner }),
+      });
+  
+      if (response.ok) {
+        const responseData = await response.json();
+        console.log('Success:', responseData);
+        // 성공 처리 로직
+        // 예: 새로운 organization을 상태에 추가하거나 사용자를 다른 페이지로 리다이렉션
+        const newOrganization = {
+          id: responseData.id, // 백엔드에서 생성된 organizationID를 사용한다고 가정
+          name: organizationName,
+          image: myimage || defaultImage,
+          submissionTime: new Date().toISOString(), // 또는 백엔드에서 반환된 값을 사용
+        };
+        const updatedOrganizations = [...organizations, newOrganization];
+        setOrganizations(updatedOrganizations);
+        localStorage.setItem('organizations', JSON.stringify(updatedOrganizations));
+        handleCloseModal();
+      } else {
+        // 응답이 ok가 아닌 경우 에러 처리
+        const errorData = await response.json();
+        alert(`생성 실패: ${errorData.message}`);
+      }
+    } catch (error) {
+      // 네트워크 오류 또는 요청 완료 불가 등의 예외 처리
+      console.error("Error: ", error);
+      alert("처리 중 오류가 발생했습니다.");
+
+      const newOrganization = {
+        id: Date.now(),
+        name: organizationName,
+        image: myimage || defaultImage,
+        submissionTime: new Date().toISOString(),
+      };
+
+      const updatedOrganizations = [...organizations, newOrganization];
+      setOrganizations(updatedOrganizations);
+      localStorage.setItem("organizations", JSON.stringify(updatedOrganizations));
+      handleCloseModal();
+      }
   };
 
   return (
