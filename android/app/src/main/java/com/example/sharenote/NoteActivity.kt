@@ -11,6 +11,10 @@ import androidx.appcompat.app.AppCompatActivity
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
+data class Note(
+    val text: String,
+    val imageUrl: String
+)
 class NoteActivity : AppCompatActivity() {
 
     private lateinit var editTextNote: EditText
