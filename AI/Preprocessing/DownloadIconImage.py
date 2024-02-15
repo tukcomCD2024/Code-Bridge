@@ -65,6 +65,7 @@ def downloadIcon():
                 driver.find_element(By.XPATH, f'//*[@id="app"]/div[2]/div/div/div[2]/div[2]/div/div/div/a[{i+1}]/iconify-icon').click()
                 driver.find_element(By.XPATH, '//*[@id="app"]/dialog/div/div/div[3]/div/div[1]/section[1]/button[1]').click()
                 source = driver.find_element(By.XPATH, '//*[@id="app"]/dialog/div/div/div[3]/div/div[3]/div/textarea').get_attribute("value")
+                source = source.replace('"1em"', '"224"')
 
                 imgSource = imgSubFolder+str(i)+".svg"
                 f = open(imgSource, 'w')
@@ -72,6 +73,7 @@ def downloadIcon():
                 f.write(source)
                 print(source)
                 driver.find_element(By.XPATH, '//*[@id="app"]/dialog/div/button').click()
+
 
 
 def makeDirectory():

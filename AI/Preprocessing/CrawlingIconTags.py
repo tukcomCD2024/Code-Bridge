@@ -13,7 +13,7 @@ def getDriver(path):
     return driver
 
 
-def getLastpage(webURL):
+def getLastPage(webURL):
     driver = getDriver(webURL)
     driver.implicitly_wait(10)
     lastpage = driver.find_element(By.XPATH, '//*[@id="pagination-total"]').text
@@ -45,16 +45,16 @@ def getTagCount(driver, i, j):
 
     return len(tag)
 
+
 def tagScanning(driver, tagSet, i):
     tagSet.add(driver.find_element(By.XPATH, f'//*[@id="detail"]/div/div[2]/ul/li[{i}]/a').text)
     return tagSet
 
 
-
 def scanTags():
     detail = set()
 
-    lastpage = getLastpage(webURL.format(2))
+    lastpage = getLastPage(webURL.format(2))
     for i in range(3, lastpage):
         detail = detail.union(getTag(i, 3, 99, set(), tagScanning))
         print(detail)
@@ -62,7 +62,7 @@ def scanTags():
     print(detail)
 
 
-def initalTagCount():
+def initialTagCount():
     f = open("../asset/tag/tagsFinal.txt", "r")
     tags = f.readline().split(',')
     tagCount = {}
@@ -116,8 +116,8 @@ def printTagCount(tagMap):
 
 
 def countTags():
-    tagCount = initalTagCount()
-    pageNum = getLastpage(webURL.format(1))
+    tagCount = initialTagCount()
+    pageNum = getLastPage(webURL.format(1))
 
     print(tagCount)
     for i in range(pageNum):
@@ -125,5 +125,6 @@ def countTags():
         print(tagCount)
 
     printTagCount(tagCount)
+
 
 countTags()

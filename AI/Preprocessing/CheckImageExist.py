@@ -7,9 +7,8 @@ cd_installer.install()
 
 
 def availableTag():
-    f = open('../asset/tag/tags2차 작업.csv','r')
+    f = open('../asset/tag/tags2차 작업.csv', 'r')
     reader = csv.reader(f)
-
 
     driver = webdriver.Chrome()
     checkMsgPath = '//*[@id="app"]/div[2]/div/div/div[2]/div[1]'
@@ -37,7 +36,3 @@ def availableTag():
     for row in reader:
         if row[0] in availableTags:
             writer.writerow({'tag': row[0], 'count': row[1]})
-
-
-
-
