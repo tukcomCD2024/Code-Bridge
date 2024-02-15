@@ -75,7 +75,6 @@ def downloadIcon():
                 driver.find_element(By.XPATH, '//*[@id="app"]/dialog/div/button').click()
 
 
-
 def makeDirectory():
     img_folder = '../asset/image/icon1/'
 

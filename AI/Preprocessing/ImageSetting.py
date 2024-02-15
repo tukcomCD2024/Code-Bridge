@@ -20,13 +20,11 @@ def getImageList(path):
 
 
 def convertSVGtoPNG():
-    imgFrom = '../asset/image/icon1/'
-    imgTo = '../asset/image/icon2/'
-
     for i in getSubdirectoryList():
         for j in getImageList(i):
             imgPath = f'{i}/{j}'
-            imgSavePath = f"{imgTo}{i}/{j}.png"
+            imgTo = i.replace('icon2', 'icon3')
+            imgSavePath = f"{imgTo}/{j}.png"
             print(imgPath)
             print(imgSavePath)
             try:
@@ -49,7 +47,6 @@ def imageReformByAlpha(img):
 
 def imageReform():
     directoryName = 'icon2'
-    imgTo = '../asset/image/icon3/'
 
     for i in getSubdirectoryList(directoryName):
         for imageFile in getImageList(i):
