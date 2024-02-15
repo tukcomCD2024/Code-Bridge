@@ -20,7 +20,6 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(R.layout.activity_main)
 
-        //initNavigationBar() //네이게이션 바의 각 메뉴 탭을 눌렀을 때 화면이 전환되도록 하는 함수.
 
         auth = FirebaseAuth.getInstance()
 
@@ -47,6 +46,8 @@ class MainActivity : AppCompatActivity() {
             // 현재 액티비티 종료 (메인 페이지에서 뒤로가기 시 로그인 화면으로 가도록)
             finish()
         }
+
+
 
 
         // BottomNavigationView 초기화
@@ -77,34 +78,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
-    /*
-    fun initNavigationBar() {
-        binding.bottomNavigationView.run {
-            setOnNavigationItemSelectedListener {
-                when (it.itemId) {
-                    R.id.fragment_home -> {
-                        changeFragment(HomeFragment())
-                    }
-                    R.id.fragment_search -> {
-                        changeFragment(SearchFragment())
-                    }
-                    R.id.fragment_alert -> {
-                        changeFragment(AlertFragment())
-                    }
-                    R.id.fragment_settings -> {
-                        changeFragment(MyPageFragment())
-                    }
-                }
-                true
-            }
-            selectedItemId = R.id.fragment_home
-        }
-    }
 
-    fun changeFragment(fragment: Fragment) {
-        supportFragmentManager.beginTransaction()
-            .replace(binding.mainContainer.id, fragment).commit()
-    }*/
 
     private fun createNote() {
         val intent = Intent(this, NoteActivity::class.java)

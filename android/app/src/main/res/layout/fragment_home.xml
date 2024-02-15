@@ -1,14 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".HomeFragment">
 
-    <!-- TODO: Update blank fragment layout -->
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="@string/hello_blank_fragment" />
+    <!-- 노트 생성 버튼 -->
+    <Button
+        android:id="@+id/buttonCreateNote"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="노트 생성" />
 
-</FrameLayout>
+    <!-- 마이페이지 버튼 -->
+    <Button
+        android:id="@+id/myPageButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="마이페이지"
+        android:layout_below="@id/buttonCreateNote"
+        android:layout_marginTop="20dp"/>
+
+    <!-- 로그아웃 버튼 -->
+    <Button
+        android:id="@+id/logoutButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="로그아웃"
+        android:layout_below="@id/myPageButton"
+        android:layout_marginTop="20dp"/>
+</RelativeLayout>
