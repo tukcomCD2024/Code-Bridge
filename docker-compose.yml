@@ -1,0 +1,60 @@
+version : "3.8"
+services:
+  mongodbService:
+    image: mongo:4.4.5
+    container_name: mongodbService
+    hostname: mongodb
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=1234
+      - MONGO_INITDB_DATABASE=shareDB
+
+
+  backend:
+    container_name: backend
+    #env_file:
+    #  ../Backend/.env
+    build:
+      context: ./backend/shareNote
+    ports:
+      - "8080:8080"
+      - "5005:5005"
+    environment:
+      S3_ACCESS_KEY: ${S3_ACCESS_KEY}
+      S3_SECRET_KEY: ${S3_SECRET_KEY}
+      RABBIT_HOST: rabbitmq
+    depends_on:
+      - mongodbService
+    restart: on-failure
+
+  rabbitmq:
+    hostname: rabbitmq
+    image: rabbitmq:3.12.11-management
+    container_name: rabbitmq
+
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+      - "61613:61613"
+    environment:
+      RABBITMQ_DEFAULT_USER: "guest"
+      RABBITMQ_DEFAULT_PASS: "guest"
+      #RABBITMQ_DEFAULT_VHOST: "/"
+
+    command:
+      - bash
+      - -c
+      - |
+        rabbitmq-plugins enable rabbitmq_web_stomp && rabbitmq-plugins enable rabbitmq_web_stomp_examples && rabbitmq-server
+
+    volumes:
+      - ./rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
+
+  frontend:
+    build:
+      context: ./frontend
+    restart: always
+    ports:
+      - "80:80"

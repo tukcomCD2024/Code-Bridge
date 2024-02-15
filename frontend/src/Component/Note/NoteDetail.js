@@ -11,9 +11,9 @@ function NoteDetails({ notes }) {
 
   return (
     <div>
-      <p>Note Name: {Note.name}</p>
-      <p>Note Time: {displayTimeOrDate}</p>
-      <img src={Note.image} alt={`Note-Picture-${index}`} />
+      <p>Note Name: </p>
+      <p>Note Time: </p>
+
     </div>
   );
 }
