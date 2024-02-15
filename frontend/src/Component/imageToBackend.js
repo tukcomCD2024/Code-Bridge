@@ -39,22 +39,22 @@ function ImagetoBackend({ onImageUpload }) {
   const handleUpload = () => {
     if (selectedFile && isImageFile(selectedFile)) {
       const formData = new FormData();
-      formData.append("image", selectedFile);
+      formData.append("multipartFile", selectedFile);
 
       $.ajax({
-        // 의미?
-        url: "/api/upload",
+        url: "http://localhost:8080/api/image",
         type: "POST",
         data: formData,
         processData: false,
         contentType: false,
-        success: function (data) {
-          console.log("Upload successful:", data);
-          alert("Upload successful");
+        success: function (response) {
+          console.log("Upload successful: " + response.image_url);
+          alert("S3 URL: " + response.image_url);
         },
         error: function (error) {
-          console.error("Error uploading image", error);
-          alert("Upload failed");
+          console.error("Error uploading image: " + error);
+          // HTTP 상태 코드와 함께 오류 메시지를 표시합니다.
+          alert("Upload failed. Error Code: " + error.status);
         },
       });
     }
@@ -70,6 +70,7 @@ function ImagetoBackend({ onImageUpload }) {
         type="file"
         onChange={handleFileChange}
         style={{ display: "none" }}
+        accept="image/jpeg, image/png, image/gif"
       />
     </ImageUploadContainer>
   );

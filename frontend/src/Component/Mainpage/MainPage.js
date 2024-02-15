@@ -1,20 +1,28 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Routes, Route, Link } from "react-router-dom";
 import Header from "./Header";
-import ImagetoBackend from "../imageToBackend"; // ImagetoBackend 컴포넌트를 가져옴.
 import NotePage from "../Note/NotePage"; // NotePage 컴포넌트를 가져옴.
 import { formatCreationTime } from "../Utils/formatCreationTime";
-
 import styled from "styled-components";
-import { ReactComponent as AddNoteIcon } from "../../image/addNote.svg";
-import defaultImage from "../../image/NoneImage2.png";
+import { defaultEmoji, emojiList } from "../Utils/emojiList";
 
-function OrganizationCard({ organization, index }) {
+function EmojiPicker({ onSelect }) {
+  return (
+    <EmojiContainer>
+      {emojiList.map((emoji) => (
+        <EmojiSelectButton key={emoji} onClick={() => onSelect(emoji)}>
+          {emoji}
+        </EmojiSelectButton>
+      ))}
+    </EmojiContainer>
+  );
+}
+
+function OrganizationCard({ organization }) {
   return (
     <Link to={`/organization/${organization.id}`}>
-      {/* {" "} */}
       <OrganizationContainer>
-        <img src={organization.image} alt={`Organization-Picture-${index}`} />
+        <Emoji>{organization.emoji || defaultEmoji}</Emoji>
         <p>
           <small>{organization.name}</small>
         </p>
@@ -31,18 +39,19 @@ function OrganizationModal({
   handleCloseModal,
   organizationName,
   setOrganizationName,
-  myimage,
-  uploadImage,
+  myEmoji,
+  setMyEmoji,
   handleCreate,
 }) {
+  const handleSelectEmoji = (emoji) => {
+    setMyEmoji(emoji);
+  };
+
   return (
     <ModalContainer>
       <ModalContent ref={modalRef}>
-        <CloseButton onClick={handleCloseModal} style={{ color: "red" }}>
-          X
-        </CloseButton>
+        <CloseButton onClick={handleCloseModal}>X</CloseButton>
         <p style={{ fontWeight: "bold" }}>📚 Organization 생성하기</p>
-
         <OrganizationInputWrapper>
           <OrganizationInput
             id="OrganizationName"
@@ -52,24 +61,10 @@ function OrganizationModal({
             onChange={(e) => setOrganizationName(e.target.value)}
           />
         </OrganizationInputWrapper>
-
-        <img
-          src={myimage || defaultImage}
-          alt="Organization-Picture"
-          style={{ maxWidth: "300px", width: "100%", height: "auto" }}
-        />
-
-        {/* 백엔드 전송없이 사진 업로드 */}
-        {/* <ImageUploadWrapper htmlFor="fileInput">
-          <ImageUploadButton>이미지 찾기</ImageUploadButton>
-        </ImageUploadWrapper>
-        <input
-          id="fileInput"
-          type="file"
-          onChange={uploadImage}
-          style={{ display: "none" }}
-        /> */}
-        <ImagetoBackend onImageUpload={uploadImage} />
+        <Emoji style={{ fontSize: "100px" }}>{myEmoji}</Emoji>
+        <div>
+          <EmojiPicker onSelect={handleSelectEmoji} />
+        </div>
         <hr />
         <CreateButton onClick={handleCreate}>생성하기</CreateButton>
       </ModalContent>
@@ -82,34 +77,10 @@ function MainPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const modalRef = useRef();
 
-  const [myimage, setMyImage] = useState(null);
+  const [myEmoji, setMyEmoji] = useState(defaultEmoji);
   const [organizationName, setOrganizationName] = useState("");
   const [organizations, setOrganizations] = useState([]);
 
-  const [selectedFile, setSelectedFile] = useState(null);
-
-
-  const uploadImage = (e) => {
-    const file = e.target.files[0];
-    if (file && isImageFile(file)) {
-      setMyImage(URL.createObjectURL(file));
-      setSelectedFile(file); // 파일 객체를 selectedFile 상태로 설정
-    } else {
-      alert("올바른 이미지 파일을 선택해주세요.");
-    }
-  };
-
-  // 이미지 파일 여부를 확인하는 함수
-  const isImageFile = (file) => {
-    const allowedExtensions = ["jpg", "jpeg", "png", "gif"]; // 허용된 확장자들
-
-    // 파일 이름에서 확장자 추출
-    const fileName = file.name;
-    const fileExtension = fileName.split(".").pop().toLowerCase();
-
-    // 허용된 확장자들 중에 포함되어 있는지 확인
-    return allowedExtensions.includes(fileExtension);
-  };
   useEffect(() => {
     // 로컬 스토리지에서 데이터 불러오기
     const savedOrganizations = localStorage.getItem("organizations");
@@ -122,7 +93,7 @@ function MainPage() {
     const handleClickOutside = (event) => {
       if (modalRef.current && !modalRef.current.contains(event.target)) {
         setModalOpen(false);
-        setMyImage(defaultImage);
+        setMyEmoji(defaultEmoji);
         setOrganizationName("");
       }
     };
@@ -136,34 +107,42 @@ function MainPage() {
     };
   }, [modalOpen]);
 
+  const createOrganization = () => {
+    const newOrganization = {
+      id: Date.now(),
+      name: organizationName,
+      emoji: myEmoji,
+      submissionTime: new Date().toISOString(),
+    };
+
+    const updatedOrganizations = [...organizations, newOrganization];
+    setOrganizations(updatedOrganizations);
+    localStorage.setItem("organizations", JSON.stringify(updatedOrganizations));
+    handleCloseModal();
+  };
+
   const handleButtonClick = () => {
     setModalOpen(true);
   };
 
   const handleCloseModal = () => {
     setModalOpen(false);
-    setMyImage(defaultImage);
+    setMyEmoji(defaultEmoji);
     setOrganizationName("");
   };
 
-  // const handleCreate = () => {
-  //   const newOrganization = {
-  //     id: Date.now(),
-  //     name: organizationName,
-  //     image: myimage || defaultImage,
-  //     submissionTime: new Date().toISOString(),
-  //   };
+  const handleCreate = async (e) => {
+    e.preventDefault();
 
-  //   const updatedOrganizations = [...organizations, newOrganization];
-  //   setOrganizations(updatedOrganizations);
-  //   localStorage.setItem("organizations", JSON.stringify(updatedOrganizations));
-  //   handleCloseModal();
-  // };
+    if (organizationName === "") {
+      alert("Organization 이름을 입력해주세요.");
+      return;
+    }
 
-  const handleCreate = async () => {
-    const owner = "qwer123";
+    const owner = localStorage.getItem("userId");
     const name = organizationName;
-  
+    const organizationEmoji = myEmoji; // Organization 대표 마크를 이모지로 설정함.
+
     try {
       const response = await fetch("/api/user/organization", {
         method: "POST",
@@ -172,44 +151,20 @@ function MainPage() {
         },
         body: JSON.stringify({ name, owner }),
       });
-  
+
       if (response.ok) {
         const responseData = await response.json();
-        console.log('Success:', responseData);
-        // 성공 처리 로직
-        // 예: 새로운 organization을 상태에 추가하거나 사용자를 다른 페이지로 리다이렉션
-        const newOrganization = {
-          id: responseData.id, // 백엔드에서 생성된 organizationID를 사용한다고 가정
-          name: organizationName,
-          image: myimage || defaultImage,
-          submissionTime: new Date().toISOString(), // 또는 백엔드에서 반환된 값을 사용
-        };
-        const updatedOrganizations = [...organizations, newOrganization];
-        setOrganizations(updatedOrganizations);
-        localStorage.setItem('organizations', JSON.stringify(updatedOrganizations));
-        handleCloseModal();
+        console.log("생성 성공:", responseData);
+        createOrganization();
       } else {
-        // 응답이 ok가 아닌 경우 에러 처리
         const errorData = await response.json();
         alert(`생성 실패: ${errorData.message}`);
       }
     } catch (error) {
-      // 네트워크 오류 또는 요청 완료 불가 등의 예외 처리
+      createOrganization(); // 유저 정보와 연결되면 삭제해야 하는 코드
       console.error("Error: ", error);
       alert("처리 중 오류가 발생했습니다.");
-
-      const newOrganization = {
-        id: Date.now(),
-        name: organizationName,
-        image: myimage || defaultImage,
-        submissionTime: new Date().toISOString(),
-      };
-
-      const updatedOrganizations = [...organizations, newOrganization];
-      setOrganizations(updatedOrganizations);
-      localStorage.setItem("organizations", JSON.stringify(updatedOrganizations));
-      handleCloseModal();
-      }
+    }
   };
 
   return (
@@ -219,7 +174,6 @@ function MainPage() {
         <StOrgCreateBtn onClick={handleButtonClick}>
           Organization 생성 모달창 띄우는 버튼
         </StOrgCreateBtn>
-        {/* <StyledAddNoteIcon onClick={handleButtonClick} /> */}
       </StHeader>
       {modalOpen && (
         <OrganizationModal
@@ -227,11 +181,12 @@ function MainPage() {
           handleCloseModal={handleCloseModal}
           organizationName={organizationName}
           setOrganizationName={setOrganizationName}
-          myimage={myimage}
-          uploadImage={uploadImage}
+          myEmoji={myEmoji}
+          setMyEmoji={setMyEmoji}
           handleCreate={handleCreate}
         />
       )}
+
       {organizations.length > 0 ? (
         organizations.map((org, index) => (
           <OrganizationCard organization={org} index={index} key={org.id} />
@@ -255,6 +210,57 @@ function MainPage() {
     </StContainer>
   );
 }
+
+const Emoji = styled.p`
+  font-size: 100px; /* 이모지 기본 크기 */
+
+  @media screen and (max-width: 768px) {
+    font-size: 50px;
+  }
+`;
+
+const EmojiContainer = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  height: 80px;
+  overflow-y: scroll;
+  gap: 6px;
+  border: 1px solid #cccccc;
+  border-radius: 10px;
+  padding: 5px;
+  margin-bottom: 10px;
+
+  &::-webkit-scrollbar {
+    width: 7px; // 스크롤바의 너비
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: #888; // 스크롤바 썸의 배경색
+    border-radius: 10px; // 스크롤바 썸에 마우스 호버 시 색상
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background: #555; // 스크롤바 썸에 마우스 호버 시 색상
+  }
+
+  &::-webkit-scrollbar-corner {
+    background: transparent; // 스크롤바 코너 배경을 투명하게 설정
+  }
+`;
+
+const EmojiSelectButton = styled.button`
+  font-size: 20px;
+  border: none;
+  background: none;
+  cursor: pointer;
+
+  &:hover {
+    background-color: #cccccc;
+    border-color: #cccccc;
+    border-radius: 10px;
+    color: #000000;
+  }
+`;
 
 const StContainer = styled.div``;
 
@@ -308,6 +314,7 @@ const ModalContainer = styled.div`
 
 const CloseButton = styled.button`
   position: absolute;
+  color: red;
   font-size: 19px;
   font-weight: bold;
   top: 10px;
@@ -333,25 +340,6 @@ const OrganizationInput = styled.input`
   width: 80%;
   padding: 5px;
   border-radius: 5px;
-`;
-
-const ImageUploadWrapper = styled.label`
-  display: block;
-  margin: 0 auto;
-  margin-top: 10px;
-  cursor: pointer;
-  padding: 0 80px;
-`;
-
-const ImageUploadButton = styled.span`
-  display: block;
-  text-align: center;
-  line-height: 40px;
-  border-radius: 10px;
-  border-color: #cccccc;
-  border-width: 1px; /* Add border-width property */
-  border-style: solid; /* Add border-style property */
-  background-color: #ffffff;
 `;
 
 // 모달창_생성하기 버튼
@@ -383,24 +371,14 @@ const ModalContent = styled.div`
 `;
 
 const OrganizationContainer = styled.div`
-  width: 15%;
+  width: 14%;
   text-align: center;
   display: inline-block;
-  margin: 10px;
+  margin: 5px;
 
   p,
   small {
-    margin: 0; /* Remove top and bottom margins */
-  }
-
-  img {
-    width: 200px; /* 너비 설정 */
-    height: 300px; /* 높이 설정 */
-    cursor: pointer;
-    margin-top: 10px;
-    border: 1px solid rgba(0, 0, 0, 0.2); // 블랙 색상에 알파값 0.2로 설정
-    object-fit: contain; /* 비율 유지 */
-    border-radius: 5px; /* 이미지에 둥근 모서리 추가 */
+    margin: 0px; /* Remove top and bottom margins */
   }
 `;
 
