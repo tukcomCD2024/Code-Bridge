@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
+import toastr from "toastr";
+import "toastr/build/toastr.css";
 
 const SignupPage = () => {
   const [email, setEmail] = useState("");
@@ -90,7 +92,6 @@ const SignupPage = () => {
 
     try {
       const response = await fetch("/api/user/signUp", {
-        // URL 경로 확인 필요 ("/api/user/signUp" 가 정확한지 확인)
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -98,8 +99,7 @@ const SignupPage = () => {
         body: JSON.stringify({ email, nickname, password }), // 직접적으로 데이터 전송
       });
       if (response.ok) {
-      
-        alert("회원가입 성공! 로그인을 진행해주세요.");
+        toastr.success("회원가입 성공! 로그인을 진행해주세요.");
         navigate("/login");
       } else {
         // 서버 응답에서 반환된 에러 메시지를 사용하여 사용자에게 보다 구체적인 정보 제공
