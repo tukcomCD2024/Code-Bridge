@@ -2,6 +2,7 @@ package com.Backend.shareNote.domain.Oraganization.service;
 
 import com.Backend.shareNote.domain.Oraganization.organdto.OrganizationCreateDTO;
 import com.Backend.shareNote.domain.Oraganization.organdto.OrganizationDeleteDTO;
+import com.Backend.shareNote.domain.Oraganization.organdto.OrganizationSearchDTO;
 import com.Backend.shareNote.domain.Oraganization.organdto.OrganizationUpdateDTO;
 import com.Backend.shareNote.domain.Oraganization.entity.Organization;
 import com.Backend.shareNote.domain.Oraganization.repository.OrganizationRepository;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 @Service
 @Slf4j
@@ -23,7 +25,7 @@ import java.util.Map;
 public class OrganizationService {
     private final OrganizationRepository organizationRepository;
     private final UserRepository userRepository;
-    public ResponseEntity<Object> createOrganization(OrganizationCreateDTO organizationCreateDTO) {
+    public ResponseEntity<OrganizationSearchDTO> createOrganization(OrganizationCreateDTO organizationCreateDTO) {
         Users user = userRepository.findByEmail(organizationCreateDTO.getOwner())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
 
@@ -31,6 +33,7 @@ public class OrganizationService {
         Organization org = Organization.builder()
                 .name(organizationCreateDTO.getName())
                 .owner(organizationCreateDTO.getOwner())
+                .emoji(organizationCreateDTO.getEmoji()) // 이모지 추가
                 .notes(new ArrayList<Organization.Note>())
                 .quiz(new ArrayList<String>())
                 .members(new ArrayList<String>())
@@ -42,13 +45,18 @@ public class OrganizationService {
 
         //@Transactional이 없으니까 직접 save해줘야함
         userRepository.save(user);
-        Map<String, Object> responseJson = new HashMap<>();
-        responseJson.put("organizationId", savedOrgan.getId());
-        return ResponseEntity.ok(responseJson);
+
+        //반환용 DTO로 반환하자
+        OrganizationSearchDTO organizationSearchDTO = new OrganizationSearchDTO();
+        organizationSearchDTO.setOwner(savedOrgan.getOwner());
+        organizationSearchDTO.setEmoji(savedOrgan.getEmoji());
+        organizationSearchDTO.setOrganizationId(savedOrgan.getId());
+        return ResponseEntity.ok(organizationSearchDTO);
+
 
     }
 
-    public String deleteOrganization(OrganizationDeleteDTO organizationDeleteDTO) {
+    public ResponseEntity<Object> deleteOrganization(OrganizationDeleteDTO organizationDeleteDTO) {
         Users user = userRepository.findByEmail(organizationDeleteDTO.getUserLoginId())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
 
@@ -57,16 +65,20 @@ public class OrganizationService {
 
         user.getOrganizations().remove(organization.getId()); //좋은데?
         userRepository.save(user);
+
+        Map<String, Object> responseJson = new HashMap<>();
+        responseJson.put("organizationId", organization.getId());
         if(organization.getOwner().equals(user.getEmail())) {
             organizationRepository.delete(organization);
-            return "삭제 완료";
+            return ResponseEntity.ok(responseJson);
         }
         else {
             //throw new IllegalArgumentException("권한이 없습니다.");
-            return "권한이 없습니다.";
+            return ResponseEntity.status(401).body("권한이 없습니다.");
         }
     }
 
+    //update는 진짜 나중에 하자 2/18
     public String updateOrganization(OrganizationUpdateDTO organizationUpdateDTO) {
         Organization organization = organizationRepository.findById(organizationUpdateDTO.getOrganizationId())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 Organization 입니다."));

@@ -3,11 +3,13 @@ package com.Backend.shareNote.domain.Oraganization.service;
 import com.Backend.shareNote.domain.Oraganization.entity.Organization;
 import com.Backend.shareNote.domain.Oraganization.notedto.NoteCreateDTO;
 import com.Backend.shareNote.domain.Oraganization.notedto.NoteDeleteDTO;
+import com.Backend.shareNote.domain.Oraganization.notedto.NoteSearchDTO;
 import com.Backend.shareNote.domain.Oraganization.notedto.NoteUpdateDTO;
 import com.Backend.shareNote.domain.Oraganization.repository.NoteRepository;
 import com.Backend.shareNote.domain.Oraganization.repository.OrganizationRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,7 +24,7 @@ public class NoteService {
     private final NoteRepository noteRepository;
     private final OrganizationRepository organizationRepository;
     @Transactional
-    public String createNote(NoteCreateDTO noteCreateDTO) {
+    public ResponseEntity<NoteSearchDTO> createNote(NoteCreateDTO noteCreateDTO) {
         // organization 찾기
         Organization organization = organizationRepository.findById(noteCreateDTO.getOrganizationId())
                 .orElseThrow(()->new IllegalArgumentException("해당하는 organization이 없습니다."));
@@ -37,7 +39,11 @@ public class NoteService {
         // organization에 note 추가
         organization.getNotes().add(note);
         organizationRepository.save(organization);
-        return "노트 생성 성공!";
+
+        NoteSearchDTO noteSearchDTO = new NoteSearchDTO();
+        noteSearchDTO.setNoteId(note.getId());
+        return ResponseEntity.ok(noteSearchDTO);
+
     }
 
     @Transactional

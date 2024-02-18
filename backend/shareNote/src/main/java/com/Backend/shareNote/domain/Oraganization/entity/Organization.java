@@ -30,6 +30,8 @@ public class Organization {
 
     private List<Note> notes;
 
+    private String emoji;
+
     // 내부 클래스로 Note 정의
     @Builder //신기하다
     @Getter
@@ -58,6 +60,7 @@ public class Organization {
         private String id;
         private String createUser;
         private List<String> blocks;
+        private String routingKey;
 
         // 생성자, 게터, 세터 등 필요한 메서드들 추가
     }
