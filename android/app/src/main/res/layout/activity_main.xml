@@ -42,7 +42,7 @@
             android:layout_below="@id/buttonCreateNote"
             android:layout_marginTop="20dp"/>
 
-        <!-- 로그아웃 버튼 -->
+
         <Button
             android:id="@+id/logoutButton"
             android:layout_width="wrap_content"
@@ -66,5 +66,4 @@
         app:itemTextColor="@color/black"
         app:itemIconTint="#2196F3"/>
 </androidx.constraintlayout.widget.ConstraintLayout>
-
 
