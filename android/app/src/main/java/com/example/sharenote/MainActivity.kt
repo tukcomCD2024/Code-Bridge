@@ -1,5 +1,7 @@
 package com.example.sharenote
 
+import HomeFragment
+import MyPageFragment
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
@@ -23,32 +25,6 @@ class MainActivity : AppCompatActivity() {
 
         auth = FirebaseAuth.getInstance()
 
-        val buttonCreateNote = findViewById<Button>(R.id.buttonCreateNote)
-        buttonCreateNote.setOnClickListener {
-            createNote()
-        }
-
-        val myPageButton = findViewById<Button>(R.id.myPageButton)
-        myPageButton.setOnClickListener {
-            val myPageIntent = Intent(this, MyPageActivity::class.java)
-            startActivity(myPageIntent)
-        }
-
-        val logoutButton = findViewById<Button>(R.id.logoutButton)
-        logoutButton.setOnClickListener {
-            // Firebase에서 로그아웃
-            auth.signOut()
-
-            // 로그인 화면으로 이동
-            val loginIntent = Intent(this, LoginActivity::class.java)
-            startActivity(loginIntent)
-
-            // 현재 액티비티 종료 (메인 페이지에서 뒤로가기 시 로그인 화면으로 가도록)
-            finish()
-        }
-
-
-
 
         // BottomNavigationView 초기화
         bottomNavigationView = findViewById(R.id.bottom_navigation_view)
@@ -57,26 +33,29 @@ class MainActivity : AppCompatActivity() {
         bottomNavigationView.setOnNavigationItemSelectedListener { menuItem ->
             when (menuItem.itemId) {
                 R.id.fragment_home -> {
-                    startActivity(Intent(this, MainActivity::class.java))
-                    finish()
+                    supportFragmentManager.beginTransaction()
+                        .replace(R.id.main_container, HomeFragment())
+                        .commit()
                     true
                 }
                 R.id.fragment_search -> {
-
+                    // SearchFragment로 이동하는 코드 작성
                     true
                 }
                 R.id.fragment_alert -> {
-
+                    // AlertFragment로 이동하는 코드 작성
                     true
                 }
                 R.id.fragment_settings -> {
-                    startActivity(Intent(this, MyPageActivity::class.java))
-                    finish()
+                    supportFragmentManager.beginTransaction()
+                        .replace(R.id.main_container, MyPageFragment())
+                        .commit()
                     true
                 }
                 else -> false
             }
         }
+        bottomNavigationView.selectedItemId = R.id.fragment_home
     }
 
 

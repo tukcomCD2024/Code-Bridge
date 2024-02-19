@@ -31,7 +31,7 @@ class MyPageActivity : AppCompatActivity() {
     private var imageUri: Uri? = null
 
     companion object {
-        private const val REQUEST_IMAGE_PICK = 100
+       const val REQUEST_IMAGE_PICK = 100
     }
 
     private var isUsernameAvailable = false // 중복된 닉네임 여부를 저장하는 변수
