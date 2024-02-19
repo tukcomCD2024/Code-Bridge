@@ -21,6 +21,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class PageService {
     private final OrganizationRepository organizationRepository;
+    private final PageRepository pageRepository;
     @Transactional
     public ResponseEntity<PageSearchDTO> createPage(PageCreateDTO pageCreateDTO) {
         UUID routingKey = UUID.randomUUID();
@@ -32,6 +33,7 @@ public class PageService {
                 .routingKey(routingKey.toString())
                 .build();
 
+        pageRepository.save(page);
 
         Organization organization = organizationRepository.findById(pageCreateDTO.getOrganizationId()).get();
         organization.addPageToNote(pageCreateDTO.getNoteId(), page);

@@ -20,7 +20,12 @@ public class Block {
 
     private List<Content> content;
 
-    @Field("created_at")
+    private int blockSeq; // block 순서
+
+    private String createUser;
+    private String pageId;
+
+    @Field("created_at") // 애너테이션 붙여서 처리 좀 해줘 2/19
     private Date createdAt;
 
     @Field("updated_at")
