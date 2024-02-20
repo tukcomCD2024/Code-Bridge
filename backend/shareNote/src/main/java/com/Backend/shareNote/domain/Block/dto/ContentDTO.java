@@ -15,7 +15,6 @@ public class ContentDTO {
     private String blockId; // block 고유값
     private int blockSeq; // block 순서
     private String createUser;
-    private String createTime;
     private String nickName;
     private String crdtIndex; // 타입은 뭔지 모르겠네 아마 float?
 

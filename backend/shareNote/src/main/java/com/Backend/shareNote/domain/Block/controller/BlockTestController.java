@@ -1,13 +1,16 @@
 package com.Backend.shareNote.domain.Block.controller;
 
+import com.Backend.shareNote.domain.Block.dto.BlockDTO;
 import com.Backend.shareNote.domain.Block.dto.ContentDTO;
+import com.Backend.shareNote.domain.Block.dto.PageBlocksDTO;
 import com.Backend.shareNote.domain.Block.service.BlockService;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @Slf4j
@@ -21,5 +24,18 @@ public class BlockTestController {
         log.info("createBlock");
         blockService.createBlock(content);
         return "success";
+    }
+
+    @PostMapping("/block/content")
+    public String addContent(@RequestBody ContentDTO content) {
+        log.info("addContent");
+        blockService.addContent(content);
+        return "success";
+    }
+
+    @GetMapping("/block")
+    public ResponseEntity<List<BlockDTO>> getBlockList(@RequestBody PageBlocksDTO pageBlocksDTO) {
+        return blockService.getBlocks(pageBlocksDTO);
+
     }
 }

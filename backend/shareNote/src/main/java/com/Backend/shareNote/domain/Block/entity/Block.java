@@ -35,13 +35,21 @@ public class Block {
     private Like like;
 
     // 내부 클래스로 Content 정의
+    @Getter
+    @Builder
     public static class Content {
-        private String oneChar;
-        private String id;
-        private List<Integer> position;
-        private String userId;
-
+        private String type;
+        private String content;
+        private String blockId; // block 고유값
+        private int blockSeq; // block 순서
+        private String createUser;
+        private String nickName;
+        private String crdtIndex; // 타입은 뭔지 모르겠네 아마 float?
+        private String routingKey;
         // 생성자, 게터, 세터 등 필요한 메서드들 추가
+    }
+    public void addContent(Content content) {
+        this.content.add(content);
     }
 
     // 내부 클래스로 Like 정의
