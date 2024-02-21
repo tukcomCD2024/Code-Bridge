@@ -1,4 +1,6 @@
 import React, { useEffect, useRef } from "react";
+
+// prosemirror 라이브러리(리치 텍스트 에디터)
 import { Schema, DOMParser } from "prosemirror-model";
 import { EditorState, Plugin, Selection } from "prosemirror-state";
 import { EditorView, Decoration, DecorationSet } from "prosemirror-view";
@@ -10,7 +12,15 @@ import {
   updateImageNode,
   imagePlugin,
 } from "prosemirror-image-plugin";
+
+// toastr 라이브러리(토스트 메세지)
 import toastr from "toastr";
+import { checkBlockType } from "./checkBlockType";
+
+import plus from "../../image/plus_icon.svg";
+import down from "../../image/down.gif";
+import down_arrow from "../../image/down_arrow.svg";
+import typing from "../../image/typing.gif";
 
 import "./ProseMirror_css/image/common.css";
 import "./ProseMirror_css/image/withResize.css";
@@ -19,11 +29,32 @@ import "./ProseMirror_css/image/withoutResize.css";
 import "./ProseMirror_css/ProseMirror.css";
 import "toastr/build/toastr.css";
 
-const ImageSettings = {
+const imageSettings = {
   ...defaultSettings,
   hasTitle: false,
-  minSize: 50,
+  minSize: 30,
   maxSize: 550,
+};
+
+const imageNodeSpec = {
+  inline: false,
+  group: "block",
+  attrs: {
+    src: {},
+    alt: { default: null },
+    title: { default: null },
+  },
+  parseDOM: [
+    {
+      tag: "img[src]",
+      getAttrs: (dom) => ({
+        src: dom.getAttribute("src"),
+        alt: dom.getAttribute("alt"),
+        title: dom.getAttribute("title"),
+      }),
+    },
+  ],
+  toDOM: (node) => ["img", node.attrs],
 };
 
 function inlinePlaceholderPlugin(placeholderText = "내용을 입력하세요...") {
@@ -57,243 +88,163 @@ function inlinePlaceholderPlugin(placeholderText = "내용을 입력하세요...
   });
 }
 
-// Prosemirror 에디터 내부에서 드래그 앤 드롭방식으로 이미지 노드 이동 플러그인
-function imageDragDropPlugin() {
+function hoverButtonPlugin() {
   return new Plugin({
     view(editorView) {
-      let draggingImage = null; // 드래그 중인 이미지 정보
-      let dragStartPos = null; // 드래그 시작 위치
-      let dragEndPos = null; // 드래그 종료 위치
+      const hoverDiv = document.createElement("div");
+      hoverDiv.classList.add("hoverDiv"); // CSS 클래스 적용
+      document.body.appendChild(hoverDiv); // 바디에 직접 추가
 
-      const handleDragStart = (e) => {
-        // 이미지 노드를 드래그 시작할 때의 처리
-        const img = e.target.closest("img");
-        if (img) {
-          const pos = editorView.posAtCoords({
-            left: e.clientX,
-            top: e.clientY,
-          });
-          if (pos) {
-            dragStartPos = pos.pos;
-            draggingImage = {
-              src: img.getAttribute("src"),
-              alt: img.getAttribute("alt"),
-              title: img.getAttribute("title"),
-            };
-            e.dataTransfer.effectAllowed = "move";
+      let lastPos = null;
+
+      // hoverButton 생성 및 스타일 적용
+      const hoverButton_plus = document.createElement("img");
+      hoverButton_plus.src = down_arrow;
+      hoverButton_plus.title = "새 블록 추가";
+      hoverButton_plus.classList.add("hoverButton_plus"); // CSS 클래스 적용
+      hoverDiv.appendChild(hoverButton_plus);
+
+      // hoverButton_2 생성 및 스타일 적용
+      const hoverButton_writer = document.createElement("img");
+      hoverButton_writer.src = typing;
+      hoverButton_writer.title = "작성자 확인";
+      hoverButton_writer.classList.add("hoverButton_writer"); // CSS 클래스 적용
+      hoverDiv.appendChild(hoverButton_writer);
+
+      hoverButton_plus.addEventListener("click", (event) => {
+        event.stopPropagation(); // 이벤트 버블링 방지
+
+        const { state, dispatch } = editorView;
+        let tr = state.tr; // 현재 문서의 트랜잭션
+        const $clickPos = state.doc.resolve(lastPos);
+        let insertPos;
+
+        // 이미지 노드 바로 뒤에 새 노드 삽입
+        if ($clickPos.nodeAfter && $clickPos.nodeAfter.type.name === "image") {
+          // 이미지 노드 바로 뒤의 위치를 삽입 위치로 설정
+          insertPos = $clickPos.pos + $clickPos.nodeAfter.nodeSize;
+        } else {
+          // 클릭한 위치(lastPos)를 기준으로 해당 노드의 끝 위치를 찾음
+          const endOfNodePos = $clickPos.end($clickPos.depth);
+          // 클릭한 노드의 바로 다음 위치에 새 노드 삽입
+          insertPos = endOfNodePos + 1;
+        }
+
+        // 새 노드 삽입
+        const newNode = state.schema.nodes.paragraph.create();
+        tr = tr.insert(insertPos, newNode);
+
+        // 삽입된 노드 내부에 커서 위치시키기
+        const newPos = insertPos + 1; // 노드 삽입 후 새로운 위치 조정
+        tr = tr.setSelection(Selection.near(tr.doc.resolve(newPos)));
+
+        // 트랜잭션 적용
+        dispatch(tr);
+        editorView.focus();
+
+        // hoverDiv 위치 업데이트
+        updateButton(editorView, newPos, true);
+      });
+
+      function updateButton(view, pos, show) {
+        const { doc } = view.state;
+        const resolvedPos = doc.resolve(pos);
+
+        if (resolvedPos.depth === 0 && !show) {
+          hoverDiv.style.visibility = "hidden";
+          return;
+        }
+
+        // 마지막 위치 업데이트
+        lastPos = pos;
+
+        let coords;
+
+        // 이미지 노드인 경우 해당 노드의 정확한 위치를 사용
+        if (
+          resolvedPos.nodeAfter &&
+          resolvedPos.nodeAfter.type.name === "image"
+        ) {
+          coords = view.coordsAtPos(resolvedPos.pos);
+        } else {
+          // 선택된 위치에서 가장 가까운 블록 노드의 경계를 찾습니다.
+          let depth = resolvedPos.depth;
+          while (depth > 0 && !resolvedPos.node(depth).isBlock) {
+            depth--;
           }
+          const startPos = resolvedPos.start(depth);
+          // 시작 위치에 대한 좌표를 계산합니다.
+          coords = view.coordsAtPos(startPos);
         }
-      };
 
-      const handleDragOver = (e) => {
-        e.preventDefault(); // 기본 동작 방지
-        e.dataTransfer.dropEffect = "move";
-        const pos = editorView.posAtCoords({ left: e.clientX, top: e.clientY });
-        if (pos) {
-          dragEndPos = pos.pos;
-        }
-      };
+        // 스크롤 오프셋을 고려하여 좌표 조정
+        const topWithScroll = coords.top + window.scrollY;
 
-      const handleDrop = (e) => {
-        e.preventDefault();
-        if (draggingImage && dragStartPos !== null && dragEndPos !== null) {
-          const { state, dispatch } = editorView;
-          let tr = state.tr;
-          // 이미지 삭제
-          tr.delete(dragStartPos, dragStartPos + 1);
-          // 드랍 위치에 이미지 삽입
-          const imageNode = state.schema.nodes.image.create(draggingImage);
-          tr.insert(dragEndPos, imageNode);
-          dispatch(tr);
-          draggingImage = null; // 드래그 중인 이미지 정보 초기화
-        }
-      };
+        const editorRect = view.dom.getBoundingClientRect();
+        hoverDiv.style.left = `${
+          editorRect.left - hoverDiv.offsetWidth - 10
+        }px`;
+        hoverDiv.style.top = `${topWithScroll}px`;
+        hoverDiv.style.visibility = "visible";
+      }
 
-      const handleDragEnd = (e) => {
-        // 드래그 종료 처리
-        draggingImage = null;
-      };
-
-      editorView.dom.addEventListener("dragstart", handleDragStart);
-      editorView.dom.addEventListener("dragover", handleDragOver);
-      editorView.dom.addEventListener("drop", handleDrop);
-      editorView.dom.addEventListener("dragend", handleDragEnd);
-
-      return {
-        destroy() {
-          editorView.dom.removeEventListener("dragstart", handleDragStart);
-          editorView.dom.removeEventListener("dragover", handleDragOver);
-          editorView.dom.removeEventListener("drop", handleDrop);
-          editorView.dom.removeEventListener("dragend", handleDragEnd);
-        },
-      };
-    },
-  });
-}
-
-// checkContentUnderCursor() 노트 블록에 텍스트나 이미지가 입력되어 있을 경우 이미지 드래그 앤 드롭을 막는다.
-function checkContentUnderCursor() {
-  return new Plugin({
-    view(editorView) {
-      let dragOverPosition = null;
-
-      const { dom } = editorView;
-      const checkContentUnderCursor = (event) => {
-        const selection = editorView.state.selection;
-        let containsTextOrImage = false;
-
-        if (selection.empty) {
-          const coords = { left: event.clientX, top: event.clientY };
-
-          // 화면상의 좌표를 문서 내의 포지션으로 변환
-          const pos = editorView.posAtCoords(coords);
-          if (pos) {
-            const $pos = editorView.state.doc.resolve(pos.pos);
-            const parentNode = $pos.node($pos.depth);
-
-            // 노드가 비어 있는지 먼저 확인
-            if (parentNode.content.size === 0) {
-              console.log(parentNode.type.name + "false");
-              containsTextOrImage = false;
-            } else {
-              // 노드가 비어 있지 않다면, 각 자식 노드를 검사
-              parentNode.forEach((childNode) => {
-                if (
-                  childNode.type.name === "text" ||
-                  childNode.type.name === "image"
-                ) {
-                  containsTextOrImage = true;
-                }
-              });
-            }
-          }
-        }
-        return containsTextOrImage;
-      };
-
-      const captureDrop = (event) => {
-        if (checkContentUnderCursor(event)) {
-          event.preventDefault();
-          toastr.info("이미지는 비어있는 블록에 입력하세요.");
-
-          const { state, dispatch } = editorView;
-          let { tr } = state;
-
-          if (dragOverPosition !== null) {
-            const $dropPos = state.doc.resolve(dragOverPosition);
-            // 현재 위치에서 다음 줄(노드) 존재 여부 확인
-            let nextPos = $dropPos.pos + 1;
-            let $nextPos = state.doc.resolve(nextPos);
-            let nextNode = $nextPos.nodeAfter;
-
-            // 다음 줄에 노트 블록이 존재하지 않거나 다음 줄이 비어있는 노트 블록이 아니면 새 줄 삽입
-            if (!nextNode || nextNode.content.size !== 0) {
-              const position = dragOverPosition;
-              const newNode = state.schema.nodes.paragraph.create();
-              tr = tr.insert(position, newNode);
-
-              const newPos = position + 1; // 새 노트 블록 내부의 커서 위치
-              tr = tr.setSelection(Selection.near(tr.doc.resolve(newPos)));
-            } else {
-              // 다음 줄에 노트 블록이 존재하는 경우, 커서만 해당 위치로 이동
-              const newPos = $dropPos.pos + (nextNode ? nextNode.nodeSize : 1);
-              tr = tr.setSelection(Selection.near(tr.doc.resolve(newPos)));
-            }
-
-            // 트랜잭션을 적용하여 문서 상태를 업데이트하고 커서를 이동
-            dispatch(tr);
-            editorView.focus();
-
-            // 위치 사용 후 초기화
-            dragOverPosition = null;
-          }
-        }
-      };
-
-      const captureDragOver = (event) => {
-        if (checkContentUnderCursor(event)) {
-          event.preventDefault();
-          const coords = { left: event.clientX, top: event.clientY };
-          const pos = editorView.posAtCoords(coords);
-          if (pos) {
-            dragOverPosition = pos.pos; // 드래그 중인 커서의 문서 내 위치를 업데이트합니다.
-          }
-        }
-      };
-
-      // Attach event listeners for drop and dragover events with capturing phase
-      dom.addEventListener("drop", captureDrop, true);
-      dom.addEventListener("dragover", captureDragOver, true);
-
-      return {
-        destroy() {
-          // Remove event listeners when the editor is destroyed
-          dom.removeEventListener("drop", captureDrop, true);
-          dom.removeEventListener("dragover", captureDragOver, true);
-        },
-      };
-    },
-  });
-}
-
-// checkImageNoteBlock()은 이미지 블록에 텍스트 입력을 막음
-function checkImageNoteBlock() {
-  return new Plugin({
-    props: {
-      handleTextInput(view, from, to, text) {
-        const { doc, selection } = view.state;
-        const { $from } = selection;
-        // 현재 선택 영역의 부모 노드를 확인하여 이미지 노드를 포함하고 있는지 검사
-        let containsImage = false;
-        $from.parent.content.forEach((node) => {
-          if (node.type.name === "image") {
-            containsImage = true;
-          }
+      function handleInteraction(event) {
+        const { pos } = editorView.posAtCoords({
+          left: event.clientX,
+          top: event.clientY,
         });
-        // 이미지를 포함하는 블록에서는 텍스트 입력을 방지
-        if (containsImage) {
-          const tr = view.state.tr;
-          const position = $from.pos;
-          const newNode = view.state.schema.nodes.paragraph.create();
-          tr.insert(position + 1, newNode); // 이미지 다음에 새로운 노트 블록 삽입
-          const newPos = position + 2; // 새로운 노트 블록 내부의 커서 위치
+        if (pos === null || pos === undefined) return;
 
-          // 커서 위치가 문서 범위를 벗어나지 않도록 조정
-          const resolvedPos = tr.doc.resolve(
-            Math.min(newPos, tr.doc.content.size)
-          );
-          view.dispatch(tr.setSelection(Selection.near(resolvedPos)));
-          toastr.warning("이미지 블록에 텍스트 입력불가");
+        const resolvedPos = editorView.state.doc.resolve(pos);
+        let node = resolvedPos.nodeAfter || resolvedPos.nodeBefore;
 
-          return true; // 이벤트 처리 중단
+        if (node && node.type.name !== "image") {
+          updateButton(editorView, pos, false);
+          return;
         }
-        // 기본 입력 처리를 계속 진행
-        return false;
-      },
+
+        updateButton(editorView, pos, true);
+      }
+
+      function handleInteractionFromCursor(pos) {
+        if (pos === null || pos === undefined) return;
+
+        const resolvedPos = editorView.state.doc.resolve(pos);
+        let node = resolvedPos.nodeAfter || resolvedPos.nodeBefore;
+
+        if (node && node.type.name !== "image") {
+          updateButton(editorView, pos, false);
+          return;
+        }
+
+        updateButton(editorView, pos, true);
+      }
+
+      editorView.dom.addEventListener("click", handleInteraction);
+      editorView.dom.addEventListener("keydown", (event) => {
+        if (event.keyCode === 13) {
+          const { from } = editorView.state.selection;
+          if (from !== null) {
+            handleInteractionFromCursor(from);
+          }
+        }
+      });
+
+      window.addEventListener("resize", () => {
+        if (lastPos !== null) {
+          updateButton(editorView, lastPos, true);
+        }
+      });
+
+      return {
+        destroy() {
+          hoverDiv.remove();
+          window.removeEventListener("resize", updateButton); // 리소스 정리
+        },
+      };
     },
   });
 }
-
-const imageNodeSpec = {
-  inline: true,
-  group: "inline",
-  attrs: {
-    src: {},
-    alt: { default: null },
-    title: { default: null },
-  },
-  parseDOM: [
-    {
-      tag: "img[src]",
-      getAttrs: (dom) => ({
-        src: dom.getAttribute("src"),
-        alt: dom.getAttribute("alt"),
-        title: dom.getAttribute("title"),
-      }),
-    },
-  ],
-  toDOM: (node) => ["img", node.attrs],
-};
 
 function Page() {
   const editorRef = useRef(null);
@@ -319,10 +270,23 @@ function Page() {
   useEffect(() => {
     if (!editorRef.current) return;
 
+    // Update the image node with additional settings (this function needs to be defined)
+    const updatedImageNodes = updateImageNode(customNodes, {
+      ...imageSettings,
+    });
+
     const mySchema = new Schema({
-      nodes: customNodes,
+      nodes: updatedImageNodes,
       marks,
     });
+
+    // Alternatively, define the imageSchema here if it should be separate
+    // const imageSchema = new Schema({
+    //   nodes: updateImageNode(customNodes, {
+    //     ...imageSettings, // Ensure this matches your requirements
+    //   }),
+    //   marks,
+    // });
 
     const view = new EditorView(editorRef.current, {
       state: EditorState.create({
@@ -330,11 +294,11 @@ function Page() {
           document.createElement("div")
         ),
         plugins: exampleSetup({ schema: mySchema }).concat(
-          checkContentUnderCursor(),
-          checkImageNoteBlock(),
-          imageDragDropPlugin(),
+
           inlinePlaceholderPlugin(),
-          imagePlugin(ImageSettings)
+          imagePlugin(imageSettings),
+          hoverButtonPlugin(),
+          checkBlockType()
         ),
       }),
     });
@@ -346,7 +310,12 @@ function Page() {
     };
   }, []);
 
-  return <div ref={editorRef} id="editor" />;
+  return (
+    <div
+      ref={editorRef}
+      id="editor"
+      style={{ width: "80%", margin: "0 auto", paddingLeft: "15%" }} // Adjust width and add padding on the left
+    />
+  );
 }
-
 export default Page;

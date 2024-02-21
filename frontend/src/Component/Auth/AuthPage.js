@@ -53,6 +53,7 @@ const AuthBox = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: center;
+  align-items: center;
 `;
 
 const ToMain = styled.div`
@@ -65,6 +66,8 @@ const ToMain = styled.div`
 `;
 
 const LoginBtn = styled.button`
+  width: 100%;
+
   background-color: #0064ff;
   color: #ffffff;
   border: 1px solid #000000;
@@ -81,6 +84,7 @@ const LoginBtn = styled.button`
 `;
 
 const SignupBtn = styled.button`
+  width: 100%;
   background-color: #f5f5f5;
   border: 1px solid #000000;
   border-radius: 10px;
