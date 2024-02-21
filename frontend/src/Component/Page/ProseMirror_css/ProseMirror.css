@@ -361,7 +361,7 @@ img.ProseMirror-separator {
 }
 
 /* 아래부터는 직접 추가한 css 설정 */
-/*  블록 단위 */
+/*  문단(텍스트) 블록 단위 */
 .custom-paragraph:hover {
   background-color: #f9f9f9;
 }
@@ -378,4 +378,30 @@ img.ProseMirror-separator {
 .editor-inline-placeholder {
   color: #aaa; /* 플레이스홀더 텍스트 색상 */
   pointer-events: none;
+}
+
+.hoverDiv {
+  position: absolute;
+  width: 50px;
+  height: 20px;
+  display: block;
+  visibility: hidden;
+  padding: 3px;
+  border: 1px solid #ccc;
+  background: #f9f9f9;
+  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+
+.hoverButton_plus {
+  cursor: pointer;
+  width: 20px;
+  height: 20px;
+}
+
+.hoverButton_writer {
+  cursor: pointer;
+  width: 20px;
+  height: 20px;
+  margin-left: 8px;
 }
