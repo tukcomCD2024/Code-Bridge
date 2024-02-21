@@ -1,19 +1,27 @@
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.sharenote.LoginActivity
 import com.example.sharenote.MyPageActivity
+import com.example.sharenote.Note
 import com.example.sharenote.NoteActivity
 import com.example.sharenote.R
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 
 class HomeFragment : Fragment() {
 
     private lateinit var auth: FirebaseAuth
+    private lateinit var recyclerView: RecyclerView
+    private lateinit var noteListAdapter: NoteListAdapter
+    private var notes: MutableList<Note> = mutableListOf()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -24,16 +32,17 @@ class HomeFragment : Fragment() {
 
         auth = FirebaseAuth.getInstance()
 
+        recyclerView = view.findViewById(R.id.recyclerViewNotes)
+        recyclerView.layoutManager = LinearLayoutManager(requireContext())
+        noteListAdapter = NoteListAdapter(notes)
+        recyclerView.adapter = noteListAdapter
+
+
         val buttonCreateNote = view.findViewById<Button>(R.id.buttonCreateNote)
         buttonCreateNote.setOnClickListener {
             createNote()
         }
 
-        val myPageButton = view.findViewById<Button>(R.id.myPageButton)
-        myPageButton.setOnClickListener {
-            val myPageIntent = Intent(requireContext(), MyPageActivity::class.java)
-            startActivity(myPageIntent)
-        }
 
         val logoutButton = view.findViewById<Button>(R.id.logoutButton)
         logoutButton.setOnClickListener {
@@ -48,11 +57,41 @@ class HomeFragment : Fragment() {
             requireActivity().finish()
         }
 
+        loadNotesFromFirestore()
+
         return view
     }
 
     private fun createNote() {
         val intent = Intent(requireContext(), NoteActivity::class.java)
         startActivity(intent)
+    }
+
+    private fun initRecyclerView() {
+        // RecyclerView 설정
+        recyclerView.layoutManager = LinearLayoutManager(activity)
+        notes = mutableListOf()
+        noteListAdapter = NoteListAdapter(notes)
+        recyclerView.adapter = noteListAdapter
+    }
+
+    private fun loadNotesFromFirestore() {
+        val db = FirebaseFirestore.getInstance()
+        db.collection("notes")
+            .get()
+            .addOnSuccessListener { result ->
+                notes.clear()
+                for (document in result) {
+                    val noteText = document.getString("text") ?: ""
+                    val noteImageUri = document.getString("imageUri") ?: ""
+                    val note = Note(noteText, noteImageUri)
+                    notes.add(note)
+                }
+                noteListAdapter.notifyDataSetChanged()
+            }
+            .addOnFailureListener { exception ->
+                // Handle any errors
+                // Log.e(TAG, "Error getting documents: ", exception)
+            }
     }
 }

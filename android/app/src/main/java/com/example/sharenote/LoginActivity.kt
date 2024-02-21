@@ -34,7 +34,7 @@ class LoginActivity : AppCompatActivity() {
         configureGoogleSignIn()
 
         // 회원가입 창으로
-        findViewById<View>(R.id.signupButton).setOnClickListener {
+        findViewById<View>(R.id.signupLink).setOnClickListener {
             startActivity(Intent(this, SignUpActivity::class.java))
         }
 

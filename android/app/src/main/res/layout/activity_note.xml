@@ -31,6 +31,7 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/imagePreview"
         android:hint="노트를 입력하세요"
+        android:inputType="textMultiLine"
         android:layout_marginTop="16dp"/>
 
     <!-- 노트 저장 버튼 -->
