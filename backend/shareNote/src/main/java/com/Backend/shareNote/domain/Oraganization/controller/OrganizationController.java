@@ -2,6 +2,7 @@ package com.Backend.shareNote.domain.Oraganization.controller;
 
 import com.Backend.shareNote.domain.Oraganization.organdto.OrganizationCreateDTO;
 import com.Backend.shareNote.domain.Oraganization.organdto.OrganizationDeleteDTO;
+import com.Backend.shareNote.domain.Oraganization.organdto.OrganizationSearchDTO;
 import com.Backend.shareNote.domain.Oraganization.organdto.OrganizationUpdateDTO;
 import com.Backend.shareNote.domain.Oraganization.service.OrganizationService;
 import lombok.RequiredArgsConstructor;
@@ -16,13 +17,13 @@ import org.springframework.web.bind.annotation.*;
 public class OrganizationController {
     private final OrganizationService organizationService;
     @PostMapping("/user/organization")
-    public ResponseEntity<Object> createOrganization(@RequestBody OrganizationCreateDTO organizationCreateDTO) {
+    public ResponseEntity<OrganizationSearchDTO> createOrganization(@RequestBody OrganizationCreateDTO organizationCreateDTO) {
         return organizationService.createOrganization(organizationCreateDTO);
 
     }
 
     @DeleteMapping("/user/organization")
-    public String deleteOrganization(@RequestBody OrganizationDeleteDTO organizationCreateDTO) {
+    public ResponseEntity<Object> deleteOrganization(@RequestBody OrganizationDeleteDTO organizationCreateDTO) {
         return organizationService.deleteOrganization(organizationCreateDTO);
 
     }
@@ -32,6 +33,8 @@ public class OrganizationController {
         return organizationService.updateOrganization(organizationUpdateDTO);
 
     }
+
+    //@GetMapping("/user/organization")
 
 
 }

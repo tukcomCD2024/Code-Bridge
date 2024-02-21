@@ -1,5 +1,6 @@
 package com.Backend.shareNote.domain.Oraganization.entity;
 
+import com.Backend.shareNote.domain.Block.entity.Block;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -30,6 +31,8 @@ public class Organization {
 
     private List<Note> notes;
 
+    private String emoji;
+
     // 내부 클래스로 Note 정의
     @Builder //신기하다
     @Getter
@@ -58,8 +61,12 @@ public class Organization {
         private String id;
         private String createUser;
         private List<String> blocks;
+        private String routingKey;
 
         // 생성자, 게터, 세터 등 필요한 메서드들 추가
+        public void addBlock(String blockId) {
+            this.blocks.add(blockId);
+        }
     }
 
     public void addPageToNote(String noteId, Page newPage) {
@@ -81,5 +88,18 @@ public class Organization {
         }
     }
 
+    // Page에 Block 추가하는 메서드
+    public void addBlockToPage(String noteId, String pageId, String blockId) {
+        for (Note note : this.notes) {
+            if (note.getId().equals(noteId)) {
+                for (Page page : note.getPages()) {
+                    if (page.getId().equals(pageId)) {
+                        page.getBlocks().add(blockId);
+                        return;
+                    }
+                }
+            }
+        }
+    }
     // 생성자, 게터, 세터 등 필요한 메서드들 추가
 }
