@@ -37,6 +37,8 @@ dependencies {
 	implementation group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: '2.12.4'
 	implementation group: 'org.webjars', name: 'stomp-websocket', version: '2.3.3-1'
 	testImplementation 'org.springframework.amqp:spring-rabbit-test'
+
+	implementation 'org.springframework.boot:spring-boot-starter-mail'
 }
 
 tasks.named('test') {

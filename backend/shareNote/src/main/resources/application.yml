@@ -3,6 +3,9 @@ spring:
     mongodb:
       uri: mongodb://root:1234@mongodbService:27017/shareDB?authSource=admin
 
+  profiles:
+    active: local
+    include: email
 
 #      host: mongodbService
 #      port: 27017
