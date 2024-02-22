@@ -82,9 +82,10 @@ class HomeFragment : Fragment() {
             .addOnSuccessListener { result ->
                 notes.clear()
                 for (document in result) {
+                    val noteID = document.getString("id") ?:""
                     val noteText = document.getString("text") ?: ""
                     val noteImageUri = document.getString("imageUri") ?: ""
-                    val note = Note(noteText, noteImageUri)
+                    val note = Note(noteID, noteText, noteImageUri)
                     notes.add(note)
                 }
                 noteListAdapter.notifyDataSetChanged()

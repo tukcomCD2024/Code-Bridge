@@ -1,5 +1,6 @@
 package com.example.sharenote
 
+import HomeFragment
 import android.app.Activity
 import android.content.Intent
 import android.net.Uri
@@ -70,20 +71,29 @@ class NoteActivity : AppCompatActivity() {
         }
 
         val db = FirebaseFirestore.getInstance()
+        val noteId = UUID.randomUUID().toString() // 고유한 ID 생성
+
         val note = hashMapOf(
+            "id" to noteId, // 사용자 정의 ID 추가
             "text" to noteText,
-            "imageId" to imageId
+            "imageId" to imageId // 이미지 ID 추가
         )
 
         db.collection("notes")
-            .add(note)
-            .addOnSuccessListener { documentReference ->
-                uploadImage(imageId)
+            .document(noteId) // 사용자 정의 ID를 문서 ID로 지정하여 저장
+            .set(note)
+            .addOnSuccessListener {
+                uploadImage(imageId) // 노트 저장 성공 시 이미지 업로드
+                // 저장에 성공하면 HomeFragment로 이동
+                val intent = Intent(this, MainActivity::class.java)
+                startActivity(intent)
+                finish() // 현재 액티비티 종료
             }
             .addOnFailureListener { e ->
                 Toast.makeText(this, "노트 저장 실패: $e", Toast.LENGTH_SHORT).show()
             }
     }
+
 
     private fun uploadImage(imageId: String) {
         if (selectedImageUri != null) {

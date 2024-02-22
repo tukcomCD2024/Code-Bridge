@@ -23,4 +23,14 @@
         android:scaleType="centerCrop"
         android:layout_marginBottom="8dp"/>
 
+    <Button
+        android:id="@+id/buttonDeleteNote"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="삭제"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginEnd="8dp"
+        android:layout_marginTop="8dp"/>
+
 </LinearLayout>
