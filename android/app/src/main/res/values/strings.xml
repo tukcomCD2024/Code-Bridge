@@ -1,4 +1,7 @@
 <resources>
     <string name="app_name">ShareNote</string>
     <string name="default_web_client_id">411874898060-uimlp41132s7tfu1da1uaqka942mnslo.apps.googleusercontent.com</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="title_activity_menu_bottom_nav">MenuBottomNav</string>
 </resources>

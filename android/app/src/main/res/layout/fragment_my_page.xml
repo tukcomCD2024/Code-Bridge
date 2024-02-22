@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="16dp">
+
+        <TextView
+            android:id="@+id/modifytext"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="내 정보 수정"
+            android:textSize="30dp"
+            android:textColor="@color/black"
+            android:textStyle="bold"
+            android:layout_marginTop="30dp"/>
+
+
+        <ImageView
+            android:id="@+id/profileImageView"
+            android:layout_width="120dp"
+            android:layout_height="120dp"
+            android:src="@drawable/default_profile_image"
+            android:layout_below="@id/modifytext"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="20dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:onClick="selectImageFromGallery" />
+
+        <TextView
+            android:id="@+id/usernametext"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="닉네임"
+            android:textSize="15dp"
+            android:textColor="@color/black"
+            android:layout_below="@+id/profileImageView"
+            android:layout_marginTop="30dp"
+            android:layout_marginLeft="20dp"
+            android:layout_marginBottom="10dp"/>
+
+        <EditText
+            android:id="@+id/usernameEditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="25sp"
+            android:hint="  닉네임을 입력하세요"
+            android:textColorHint="@color/brightgray"
+            android:background="@drawable/edittext"
+            android:backgroundTint="@color/gray"
+            android:inputType="text"
+            android:layout_below="@+id/usernametext"
+            android:layout_marginBottom="20dp"
+            android:layout_toLeftOf="@+id/checkDuplicateButton"/>
+
+        <Button
+            android:id="@+id/checkDuplicateButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="중복 확인"
+            android:background="@drawable/button_background"
+            android:layout_below="@+id/usernametext"
+            android:layout_alignParentRight="true"
+            android:layout_marginLeft="8dp" />
+
+
+        <TextView
+            android:id="@+id/emailtext"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="이메일"
+            android:textSize="15dp"
+            android:textColor="@color/black"
+            android:layout_below="@+id/usernameEditText"
+            android:layout_marginLeft="20dp"
+            android:layout_marginBottom="10dp"/>
+
+        <EditText
+            android:id="@+id/emailEditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="25sp"
+            android:hint="   이메일을 입력하세요"
+            android:textColorHint="@color/brightgray"
+            android:background="@drawable/edittext"
+            android:backgroundTint="@color/gray"
+            android:inputType="textEmailAddress"
+            android:layout_below="@+id/emailtext"
+            android:layout_marginBottom="20dp"
+            android:focusable="false"
+            android:focusableInTouchMode="false"/>
+
+        <TextView
+            android:id="@+id/passwordtext"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="비밀번호"
+            android:textSize="15dp"
+            android:textColor="@color/black"
+            android:layout_below="@+id/emailEditText"
+            android:layout_marginLeft="20dp"
+            android:layout_marginBottom="10dp"/>
+
+        <EditText
+            android:id="@+id/passwordEditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="25sp"
+            android:hint="   비밀번호를 입력하세요"
+            android:textColorHint="@color/brightgray"
+            android:background="@drawable/edittext"
+            android:backgroundTint="@color/gray"
+            android:inputType="textPassword"
+            android:layout_below="@+id/passwordtext"
+            android:layout_marginBottom="20dp" />
+
+        <TextView
+            android:id="@+id/confirmPasswordText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="비밀번호 확인"
+            android:textSize="15dp"
+            android:textColor="@color/black"
+            android:layout_below="@+id/passwordEditText"
+            android:layout_marginLeft="20dp"
+            android:layout_marginBottom="10dp"/>
+
+        <EditText
+            android:id="@+id/confirmPasswordEditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="25sp"
+            android:hint="   비밀번호를 다시 한번 확인하세요"
+            android:textColorHint="@color/brightgray"
+            android:background="@drawable/edittext"
+            android:backgroundTint="@color/gray"
+            android:inputType="textPassword"
+            android:layout_below="@+id/confirmPasswordText"
+            android:layout_marginBottom="20dp" />
+
+
+        <!-- 수정 버튼 -->
+        <Button
+            android:id="@+id/updateButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="수정하기"
+            android:textSize="17dp"
+            android:background="@drawable/button_background"
+            android:layout_below="@id/confirmPasswordEditText"
+            android:layout_marginTop="20dp"/>
+
+    </RelativeLayout>
+</ScrollView>
