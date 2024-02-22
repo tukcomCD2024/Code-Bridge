@@ -57,31 +57,37 @@ const imageNodeSpec = {
   toDOM: (node) => ["img", node.attrs],
 };
 
-function inlinePlaceholderPlugin(placeholderText = "내용을 입력하세요...") {
+function inlinePlaceholderPlugin() {
   return new Plugin({
     props: {
       decorations(state) {
         const decorations = [];
-        const doc = state.doc;
-        const { from, to } = state.selection;
-
-        if (from !== to) return DecorationSet.empty;
+        const { doc, selection } = state;
 
         doc.descendants((node, pos) => {
-          if (
-            node.isBlock &&
-            node.content.size === 0 &&
-            !node.type.spec.isCode &&
-            from >= pos &&
-            from <= pos + node.nodeSize
-          ) {
-            const placeholder = document.createElement("span");
-            placeholder.textContent = placeholderText;
-            placeholder.className = "editor-inline-placeholder";
-            const deco = Decoration.widget(pos + 1, placeholder, { side: 1 });
-            decorations.push(deco);
+          if (!node.isBlock || !!node.textContent) return;
+          if (selection.empty && selection.from === pos + 1) {
+            // The selection is inside the node
+            if (node.type.name === "paragraph") {
+              decorations.push(
+                Decoration.node(pos, pos + node.nodeSize, {
+                  class: "placeholder",
+                  style: "--placeholder-text: '내용을 입력하세요...';",
+                })
+              );
+            }
           }
+          //  else if (node.type.name !== "paragraph") {
+          //   decorations.push(
+          //     Decoration.node(pos, pos + node.nodeSize, {
+          //       class: "placeholder",
+          //       style: `--placeholder-text: "New ${node.type.name}";`,
+          //     })
+          //   );
+          // }
+          return false;
         });
+
         return DecorationSet.create(doc, decorations);
       },
     },
@@ -147,45 +153,49 @@ function hoverButtonPlugin() {
       });
 
       function updateButton(view, pos, show) {
-        const { doc } = view.state;
-        const resolvedPos = doc.resolve(pos);
+        try {
+          const { doc } = view.state;
+          const resolvedPos = doc.resolve(pos);
 
-        if (resolvedPos.depth === 0 && !show) {
-          hoverDiv.style.visibility = "hidden";
-          return;
-        }
-
-        // 마지막 위치 업데이트
-        lastPos = pos;
-
-        let coords;
-
-        // 이미지 노드인 경우 해당 노드의 정확한 위치를 사용
-        if (
-          resolvedPos.nodeAfter &&
-          resolvedPos.nodeAfter.type.name === "image"
-        ) {
-          coords = view.coordsAtPos(resolvedPos.pos);
-        } else {
-          // 선택된 위치에서 가장 가까운 블록 노드의 경계를 찾습니다.
-          let depth = resolvedPos.depth;
-          while (depth > 0 && !resolvedPos.node(depth).isBlock) {
-            depth--;
+          if (resolvedPos.depth === 0 && !show) {
+            hoverDiv.style.visibility = "hidden";
+            return;
           }
-          const startPos = resolvedPos.start(depth);
-          // 시작 위치에 대한 좌표를 계산합니다.
-          coords = view.coordsAtPos(startPos);
+
+          // 마지막 위치 업데이트
+          lastPos = pos;
+
+          let coords;
+
+          // 이미지 노드인 경우 해당 노드의 정확한 위치를 사용
+          if (
+            resolvedPos.nodeAfter &&
+            resolvedPos.nodeAfter.type.name === "image"
+          ) {
+            coords = view.coordsAtPos(resolvedPos.pos);
+          } else {
+            // 선택된 위치에서 가장 가까운 블록 노드의 경계를 찾습니다.
+            let depth = resolvedPos.depth;
+            while (depth > 0 && !resolvedPos.node(depth).isBlock) {
+              depth--;
+            }
+            const startPos = resolvedPos.start(depth);
+            // 시작 위치에 대한 좌표를 계산합니다.
+            coords = view.coordsAtPos(startPos);
+          }
+
+          // 스크롤 오프셋을 고려하여 좌표 조정
+          const topWithScroll = coords.top + window.scrollY;
+
+          const editorRect = view.dom.getBoundingClientRect();
+          hoverDiv.style.left = `${
+            editorRect.left - hoverDiv.offsetWidth - 10
+          }px`;
+          hoverDiv.style.top = `${topWithScroll}px`;
+          hoverDiv.style.visibility = "visible";
+        } catch (error) {
+          console.error("Failed to update button position:", error);
         }
-
-        // 스크롤 오프셋을 고려하여 좌표 조정
-        const topWithScroll = coords.top + window.scrollY;
-
-        const editorRect = view.dom.getBoundingClientRect();
-        hoverDiv.style.left = `${
-          editorRect.left - hoverDiv.offsetWidth - 10
-        }px`;
-        hoverDiv.style.top = `${topWithScroll}px`;
-        hoverDiv.style.visibility = "visible";
       }
 
       function handleInteraction(event) {
@@ -230,16 +240,22 @@ function hoverButtonPlugin() {
         }
       });
 
-      window.addEventListener("resize", () => {
-        if (lastPos !== null) {
-          updateButton(editorView, lastPos, true);
+      function handleResize() {
+        try {
+          if (lastPos !== null) {
+            updateButton(editorView, lastPos, true);
+          }
+        } catch (error) {
+          console.error("Failed to handle resize:", error);
         }
-      });
+      }
+
+      window.addEventListener("resize", handleResize);
 
       return {
         destroy() {
           hoverDiv.remove();
-          window.removeEventListener("resize", updateButton); // 리소스 정리
+          window.removeEventListener("resize", handleResize);
         },
       };
     },
@@ -296,7 +312,20 @@ function Page() {
         plugins: exampleSetup({ schema: mySchema }).concat(
 
           inlinePlaceholderPlugin(),
-          imagePlugin(imageSettings),
+          imagePlugin({
+            ...imageSettings,
+            resizeCallback: (el, updateCallback) => {
+              const observer = new ResizeObserver(entries => {
+                // ResizeObserver 콜백을 비동기적으로 실행
+                requestAnimationFrame(() => {
+                  // 여기서 updateCallback 또는 다른 DOM 조작 로직을 실행
+                  updateCallback();
+                });
+              });
+              observer.observe(el);
+              return () => observer.unobserve(el);
+            },
+          }),
           hoverButtonPlugin(),
           checkBlockType()
         ),

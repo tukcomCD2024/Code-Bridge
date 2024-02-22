@@ -362,22 +362,28 @@ img.ProseMirror-separator {
 
 /* 아래부터는 직접 추가한 css 설정 */
 /*  문단(텍스트) 블록 단위 */
+/* .placeholder::before {
+  content: var(--placeholder-text);
+  color: #aaa;
+  cursor: text;
+  position: absolute;
+} */
+
+/*  문단(텍스트) 블록 단위_알록달록 */
+.placeholder::before {
+  content: var(--placeholder-text);
+  color: #7a4dff; /* 기본 텍스트 색상을 보라색 계열로 설정 */
+  cursor: text;
+  position: absolute;
+
+  /* 배경에 선형 그라데이션 추가 */
+  background: linear-gradient(45deg, #ff69b4, #8a2be2, #4b0082, #00ff7f);
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
 .custom-paragraph:hover {
   background-color: #f9f9f9;
-}
-
-/* 블록에 아무런 텍스트가 없을 때 */
-.editor-placeholder::before {
-  content: attr(data-placeholder);
-  pointer-events: none;
-  display: block; /* 또는 inline-block; 상황에 따라 */
-  color: #aaa; /* 플레이스홀더 텍스트 색상 */
-}
-
-/* 블록에 아무런 텍스트가 없을 때_2 */
-.editor-inline-placeholder {
-  color: #aaa; /* 플레이스홀더 텍스트 색상 */
-  pointer-events: none;
 }
 
 .hoverDiv {
