@@ -16,7 +16,7 @@ public class EmailService {
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     private final JavaMailSender javaMailSender;
     @Async
-    public boolean sendMailReject(EmailDTO emailDTO) {
+    public boolean sendMail(EmailDTO emailDTO) {
         boolean msg = false;
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(emailDTO.getTargetMail());

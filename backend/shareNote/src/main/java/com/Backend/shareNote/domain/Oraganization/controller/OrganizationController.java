@@ -1,9 +1,6 @@
 package com.Backend.shareNote.domain.Oraganization.controller;
 
-import com.Backend.shareNote.domain.Oraganization.organdto.OrganizationCreateDTO;
-import com.Backend.shareNote.domain.Oraganization.organdto.OrganizationDeleteDTO;
-import com.Backend.shareNote.domain.Oraganization.organdto.OrganizationSearchDTO;
-import com.Backend.shareNote.domain.Oraganization.organdto.OrganizationUpdateDTO;
+import com.Backend.shareNote.domain.Oraganization.organdto.*;
 import com.Backend.shareNote.domain.Oraganization.service.OrganizationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,6 +32,18 @@ public class OrganizationController {
     }
 
     //@GetMapping("/user/organization")
+
+    //초대 링크를 생성하고 이메일로 보내기
+    @PostMapping("/user/organization/invitation")
+    public String inviteOrganization(@RequestBody OrganizationInvitation Invitation) {
+        return organizationService.inviteOrganization(Invitation);
+    }
+
+    //login 성공 시 token이 존재한다면 실행됨
+    @PostMapping("/user/organization/invitation/accept")
+    public String acceptOrganization(AcceptInvitationDTO invitation) {
+        return organizationService.acceptInvitation(invitation);
+    }
 
 
 }

@@ -13,6 +13,6 @@ public class EmailController {
     private final EmailService emailService;
     @PostMapping("/email")
     public boolean sendMailReject(@RequestBody EmailDTO emailDTO) {
-        return emailService.sendMailReject(emailDTO);
+        return emailService.sendMail(emailDTO);
     }
 }

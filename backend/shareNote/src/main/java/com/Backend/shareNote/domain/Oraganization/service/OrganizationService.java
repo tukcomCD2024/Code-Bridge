@@ -1,9 +1,9 @@
 package com.Backend.shareNote.domain.Oraganization.service;
 
-import com.Backend.shareNote.domain.Oraganization.organdto.OrganizationCreateDTO;
-import com.Backend.shareNote.domain.Oraganization.organdto.OrganizationDeleteDTO;
-import com.Backend.shareNote.domain.Oraganization.organdto.OrganizationSearchDTO;
-import com.Backend.shareNote.domain.Oraganization.organdto.OrganizationUpdateDTO;
+import com.Backend.shareNote.domain.EmailService.EmailDTO;
+import com.Backend.shareNote.domain.EmailService.EmailService;
+import com.Backend.shareNote.domain.Jwt.JwtService;
+import com.Backend.shareNote.domain.Oraganization.organdto.*;
 import com.Backend.shareNote.domain.Oraganization.entity.Organization;
 import com.Backend.shareNote.domain.Oraganization.repository.OrganizationRepository;
 import com.Backend.shareNote.domain.Quiz.entity.Quiz;
@@ -25,6 +25,9 @@ import java.util.Objects;
 public class OrganizationService {
     private final OrganizationRepository organizationRepository;
     private final UserRepository userRepository;
+    private final EmailService emailService;
+    private final JwtService jwtService;
+
     public ResponseEntity<OrganizationSearchDTO> createOrganization(OrganizationCreateDTO organizationCreateDTO) {
         Users user = userRepository.findByEmail(organizationCreateDTO.getOwner())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
@@ -91,4 +94,26 @@ public class OrganizationService {
     }
 
 
+    public String inviteOrganization(OrganizationInvitation invitation) {
+        EmailDTO emailDTO = new EmailDTO();
+        emailDTO.setTargetMail(invitation.getEmail());
+        emailDTO.setNickname(invitation.getNickname());
+        //organization을 재료로 토큰 만들기
+        String Token = jwtService.createInvitationToken(invitation.getOrganizationId());
+
+        //쿼리 파라미터로 동작
+        //이 링크 클릭 시 토큰을 localStorage에 저장하고
+        //login 시 토큰을 가져와서 organization 초대 수락하기
+        emailDTO.setLink("http://localhost:3000/organization/invitation/approve?token=" + Token);
+        emailService.sendMail(emailDTO);
+        return "메일 전송 완료";
+    }
+
+    //초대 응답 로직
+    //토큰에서 organizationId를 가져오기
+    public String acceptInvitation(AcceptInvitationDTO invitation) {
+        String token = invitation.getToken();
+
+
+    }
 }
