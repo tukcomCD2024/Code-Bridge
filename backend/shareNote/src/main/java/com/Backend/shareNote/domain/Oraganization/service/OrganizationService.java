@@ -100,7 +100,7 @@ public class OrganizationService {
         emailDTO.setNickname(invitation.getNickname());
         //organization을 재료로 토큰 만들기
         String Token = jwtService.createInvitationToken(invitation.getOrganizationId());
-
+        log.info("토큰 생성 완료 : " + Token);
         //쿼리 파라미터로 동작
         //이 링크 클릭 시 토큰을 localStorage에 저장하고
         //login 시 토큰을 가져와서 organization 초대 수락하기
@@ -111,9 +111,27 @@ public class OrganizationService {
 
     //초대 응답 로직
     //토큰에서 organizationId를 가져오기
-    public String acceptInvitation(AcceptInvitationDTO invitation) {
+    public ResponseEntity<Object> acceptInvitation(AcceptInvitationDTO invitation) {
         String token = invitation.getToken();
+        String OrganizationId = jwtService.extractOrganizationId(token).get();
+        try {
+            //초대장에 있는 organization 찾아서
+            organizationRepository.findById(OrganizationId).ifPresent(organization -> {
+                //멤버 이미 존재하는지 확인
+                organization.getMembers().forEach(member -> {
+                    if (member.equals(invitation.getUserId())) {
+                        throw new IllegalArgumentException("이미 초대된 사용자입니다.");
+                    }
+                });
+                //멤버 추가
+                organization.getMembers().add(invitation.getUserId());
 
+                organizationRepository.save(organization);
+            });
+        }catch (Exception e){
+            return ResponseEntity.status(401).body("초대 수락 실패");
+        }
 
+        return ResponseEntity.ok("초대 수락 완료");
     }
 }

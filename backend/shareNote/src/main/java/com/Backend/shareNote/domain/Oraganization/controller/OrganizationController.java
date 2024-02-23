@@ -41,7 +41,7 @@ public class OrganizationController {
 
     //login 성공 시 token이 존재한다면 실행됨
     @PostMapping("/user/organization/invitation/accept")
-    public String acceptOrganization(AcceptInvitationDTO invitation) {
+    public ResponseEntity<Object> acceptOrganization(@RequestBody AcceptInvitationDTO invitation) {
         return organizationService.acceptInvitation(invitation);
     }
 
