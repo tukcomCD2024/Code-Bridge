@@ -156,12 +156,14 @@ function hoverButtonPlugin() {
         try {
           const { doc } = view.state;
           const resolvedPos = doc.resolve(pos);
-
-          if (resolvedPos.depth === 0 && !show) {
+          if (
+            (resolvedPos.depth === 0 &&
+              resolvedPos.nodeBefore.type.name !== "paragraph") ||
+              (resolvedPos.depth === 0 && !show )
+          ) {
             hoverDiv.style.visibility = "hidden";
             return;
           }
-
           // 마지막 위치 업데이트
           lastPos = pos;
 
