@@ -1,2 +1,4 @@
 
 .env
+
+backend/shareNote/src/main/resources/application-email.yml
