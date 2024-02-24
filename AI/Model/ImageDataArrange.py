@@ -30,4 +30,4 @@ def getImageListByHash(path):
     return img
 
 
-print(getImageListByHash('../asset/image/icon1/'))
+print(getImageListByHash('../asset/image/sample/svg/'))
