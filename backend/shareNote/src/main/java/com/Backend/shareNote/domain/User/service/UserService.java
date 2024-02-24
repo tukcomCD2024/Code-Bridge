@@ -1,5 +1,8 @@
 package com.Backend.shareNote.domain.User.service;
 
+import com.Backend.shareNote.domain.Jwt.JwtService;
+import com.Backend.shareNote.domain.Oraganization.organdto.AcceptInvitationDTO;
+import com.Backend.shareNote.domain.Oraganization.service.OrganizationService;
 import com.Backend.shareNote.domain.User.dto.UserLoginDTO;
 import com.Backend.shareNote.domain.User.dto.UserSignUpDTO;
 import com.Backend.shareNote.domain.User.entity.Users;
@@ -21,6 +24,8 @@ import java.util.Optional;
 public class UserService {
 
     private final UserRepository userRepository;
+
+    private final OrganizationService organizationService;
     public void signUp(UserSignUpDTO userSignUpDTO) {
         Users users = Users.builder()
                 .email(userSignUpDTO.getEmail())
@@ -46,6 +51,22 @@ public class UserService {
                     Map<String, Object> responseJson = new HashMap<>();
                     responseJson.put("userId", loginUser.getId());
                     responseJson.put("name", loginUser.getNickname());
+
+                    //token 존재 시 token에 적힌 organization에 가입하는 로직 추가
+                    if(userLoginDTO.getToken() != null){
+                        try {
+                            AcceptInvitationDTO acceptInvitationDTO = new AcceptInvitationDTO();
+                            acceptInvitationDTO.setToken(userLoginDTO.getToken());
+                            acceptInvitationDTO.setUserId(loginUser.getId());
+
+                            organizationService.acceptInvitation(acceptInvitationDTO);
+                        }catch (Exception e){
+                            e.printStackTrace();
+                        }
+                    }
+
+
+
                     return ResponseEntity.ok(responseJson);
                 }
             } else {

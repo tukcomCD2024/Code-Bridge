@@ -25,7 +25,7 @@ public class EmailService {
         message.setTo(emailDTO.getTargetMail());
         message.setSubject("너 내 동료가 돼라");
         message.setFrom(mailProperties.getUsername());
-        message.setText("너 이 링크를 누르고 내 동료가 돼라!!" + emailDTO.getLink());
+        message.setText("너 이 링크를 누르고 내 동료가 돼라!! from " +emailDTO.getNickname() + " " + emailDTO.getLink());
 
         try {
             javaMailSender.send(message);

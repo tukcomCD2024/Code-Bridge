@@ -35,11 +35,11 @@ public class OrganizationController {
 
     //초대 링크를 생성하고 이메일로 보내기
     @PostMapping("/user/organization/invitation")
-    public String inviteOrganization(@RequestBody OrganizationInvitation Invitation) {
+    public ResponseEntity<Object> inviteOrganization(@RequestBody OrganizationInvitation Invitation) {
         return organizationService.inviteOrganization(Invitation);
     }
 
-    //login 성공 시 token이 존재한다면 실행됨
+    //링크 눌렀을 때 로그인 상태면 초대에 응하겠습니까?? 예 클릭 시 이 url 동작
     @PostMapping("/user/organization/invitation/accept")
     public ResponseEntity<Object> acceptOrganization(@RequestBody AcceptInvitationDTO invitation) {
         return organizationService.acceptInvitation(invitation);

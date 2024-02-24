@@ -4,6 +4,7 @@ import com.Backend.shareNote.domain.User.dto.UserSignUpDTO;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
@@ -25,6 +26,7 @@ public class Users {
 
     private String nickname;
 
+    @Setter
     private List<String> organizations;
 
     @Field("created_at")

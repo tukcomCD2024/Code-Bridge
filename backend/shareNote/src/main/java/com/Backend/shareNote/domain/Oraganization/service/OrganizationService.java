@@ -94,7 +94,7 @@ public class OrganizationService {
     }
 
 
-    public String inviteOrganization(OrganizationInvitation invitation) {
+    public ResponseEntity<Object> inviteOrganization(OrganizationInvitation invitation) {
         EmailDTO emailDTO = new EmailDTO();
         emailDTO.setTargetMail(invitation.getEmail());
         emailDTO.setNickname(invitation.getNickname());
@@ -106,7 +106,7 @@ public class OrganizationService {
         //login 시 토큰을 가져와서 organization 초대 수락하기
         emailDTO.setLink("http://localhost:3000/organization/invitation/approve?token=" + Token);
         emailService.sendMail(emailDTO);
-        return "메일 전송 완료";
+        return ResponseEntity.ok("초대장 전송 완료");
     }
 
     //초대 응답 로직
@@ -129,8 +129,15 @@ public class OrganizationService {
                 organizationRepository.save(organization);
             });
         }catch (Exception e){
+            e.printStackTrace();
             return ResponseEntity.status(401).body("초대 수락 실패");
         }
+
+        //user에도 organization 추가
+        Users user = userRepository.findById(invitation.getUserId())
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
+        user.getOrganizations().add(OrganizationId);
+        userRepository.save(user);
 
         return ResponseEntity.ok("초대 수락 완료");
     }
