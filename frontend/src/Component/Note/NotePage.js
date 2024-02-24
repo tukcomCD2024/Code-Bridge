@@ -155,7 +155,14 @@ function NotePage() {
     setNoteName("");
   };
 
-  const handleCreate = () => {
+  const handleCreate = (e) => {
+    e.preventDefault();
+
+    if (noteName === "") {
+      alert("노트 이름을 입력해주세요.");
+      return;
+    }
+
     const newNote = {
       id: Date.now(),
       name: noteName,
