@@ -9,49 +9,52 @@ export function checkBlockType() {
     view(editorView) {
       const { dom } = editorView;
 
-      const displayNodeInfo = (event) => {
+      function handleClick(event) {
         const coords = { left: event.clientX, top: event.clientY };
         const posAtCoords = editorView.posAtCoords(coords);
         if (!posAtCoords) return;
 
-        toastr.remove();
+        toastr.remove(); // 이전 toastr 메시지를 제거
 
         const pos = posAtCoords.pos;
         const resolvedPos = editorView.state.doc.resolve(pos);
-        // 현재 클릭된 노드의 정보를 가져옵니다.
+        // 현재 클릭된 노드의 정보와 부모 노드의 정보를 가져옵니다.
         let node = resolvedPos.nodeAfter || resolvedPos.nodeBefore;
-        let nodePos = resolvedPos.pos;
-        if (resolvedPos.parent.type.name === "doc" && node) {
-          // 'doc' 바로 아래 노드인 경우, 부모는 'doc'이고 자식 노드는 현재 노드입니다.
+        let parentType = resolvedPos.parent.type.name;
+        let parentPos = resolvedPos.start() - 1; // 부모 노드의 시작 위치
+        let lineNumber = 1;
+
+        // 라인 번호 계산
+        editorView.state.doc.nodesBetween(0, pos, (node, start) => {
+          if (node.isBlock && start < pos) {
+            lineNumber++;
+          }
+        });
+
+        if (node) {
+          // 노드와 부모 노드 정보를 표시
           toastr.info(
-            `부모 노드: doc, 부모 위치: 0 // 자식 노드: ${node.type.name} // 블록 위치: ${nodePos}`
-          );
-        } else if (node) {
-          // 클릭된 노드가 이미지 노드인 경우, 그 부모 노드 정보를 표시합니다.
-          const parentType = resolvedPos.parent.type.name;
-          const parentPos = resolvedPos.start() - 1; // 부모 노드의 시작 위치
-          toastr.info(
-            `부모 노드: ${parentType}, 부모 위치: ${parentPos} // 자식 노드: ${node.type.name} // 블록 위치: ${nodePos}`
+            `블록 번호: ${lineNumber} || 부모 노드: ${parentType}, 자식 노드: ${node.type.name} || 부모 시작 위치: ${parentPos} `
           );
         } else {
           // 클릭된 위치에 노드가 없는 경우
           toastr.info(
-            `부모 노드: ${resolvedPos.parent.type.name} // 자식 노드 없음 // 블록 위치: ${resolvedPos.pos}`
+            `블록 번호: ${lineNumber} || 부모 노드: ${parentType}, 자식 없음 || 부모 시작 위치: ${parentPos}`
           );
         }
-      };
+      }
 
       // mousedown 이벤트 리스너를 추가합니다.
-      dom.addEventListener("mousedown", displayNodeInfo);
+      dom.addEventListener("mousedown", handleClick);
 
       // drop 이벤트 리스너를 추가합니다.
-      dom.addEventListener("drop", displayNodeInfo, true);
+      dom.addEventListener("drop", handleClick, true);
 
       return {
         destroy() {
           // 에디터가 파괴될 때 이벤트 리스너를 제거합니다.
-          dom.removeEventListener("mousedown", displayNodeInfo);
-          dom.removeEventListener("drop", displayNodeInfo, true);
+          dom.removeEventListener("mousedown", handleClick);
+          dom.removeEventListener("drop", handleClick, true);
         },
       };
     },
