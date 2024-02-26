@@ -1,6 +1,5 @@
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -9,14 +8,13 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.sharenote.LoginActivity
-import com.example.sharenote.MyPageActivity
 import com.example.sharenote.Note
 import com.example.sharenote.NoteActivity
 import com.example.sharenote.R
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
-class HomeFragment : Fragment() {
+class HomeFragment : Fragment(), NoteListAdapter.OnNoteClickListener {
 
     private lateinit var auth: FirebaseAuth
     private lateinit var recyclerView: RecyclerView
@@ -29,50 +27,42 @@ class HomeFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_home, container, false)
-
         auth = FirebaseAuth.getInstance()
-
         recyclerView = view.findViewById(R.id.recyclerViewNotes)
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
-        noteListAdapter = NoteListAdapter(notes)
+        noteListAdapter = NoteListAdapter(notes, this)
         recyclerView.adapter = noteListAdapter
 
-
+        // Create Note 버튼 클릭 시 NoteActivity로 이동
         val buttonCreateNote = view.findViewById<Button>(R.id.buttonCreateNote)
         buttonCreateNote.setOnClickListener {
             createNote()
         }
 
-
+        // Logout 버튼 클릭 시 로그아웃 처리
         val logoutButton = view.findViewById<Button>(R.id.logoutButton)
         logoutButton.setOnClickListener {
-            // Firebase에서 로그아웃
             auth.signOut()
-
-            // 로그인 화면으로 이동
             val loginIntent = Intent(requireContext(), LoginActivity::class.java)
             startActivity(loginIntent)
-
-            // 현재 액티비티 종료 (메인 페이지에서 뒤로가기 시 로그인 화면으로 가도록)
             requireActivity().finish()
         }
 
         loadNotesFromFirestore()
-
         return view
+    }
+
+    override fun onNoteClick(note: Note) {
+        val intent = Intent(requireContext(), NoteActivity::class.java)
+        intent.putExtra("note_id", note.id)
+        intent.putExtra("note_text", note.text)
+        intent.putExtra("note_image_uri", note.imageUri)
+        startActivity(intent)
     }
 
     private fun createNote() {
         val intent = Intent(requireContext(), NoteActivity::class.java)
         startActivity(intent)
-    }
-
-    private fun initRecyclerView() {
-        // RecyclerView 설정
-        recyclerView.layoutManager = LinearLayoutManager(activity)
-        notes = mutableListOf()
-        noteListAdapter = NoteListAdapter(notes)
-        recyclerView.adapter = noteListAdapter
     }
 
     private fun loadNotesFromFirestore() {
@@ -82,7 +72,7 @@ class HomeFragment : Fragment() {
             .addOnSuccessListener { result ->
                 notes.clear()
                 for (document in result) {
-                    val noteID = document.getString("id") ?:""
+                    val noteID = document.getString("id") ?: ""
                     val noteText = document.getString("text") ?: ""
                     val noteImageUri = document.getString("imageUri") ?: ""
                     val note = Note(noteID, noteText, noteImageUri)

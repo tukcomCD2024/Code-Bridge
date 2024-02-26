@@ -11,9 +11,12 @@ import com.example.sharenote.Note
 import com.example.sharenote.R
 import com.google.firebase.firestore.FirebaseFirestore
 
-class NoteListAdapter(private val notes: MutableList<Note>) :
+class NoteListAdapter(private val notes: MutableList<Note>,private val onNoteClickListener: OnNoteClickListener) :
     RecyclerView.Adapter<NoteListAdapter.NoteViewHolder>() {
 
+    interface OnNoteClickListener {
+        fun onNoteClick(note: Note)
+    }
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): NoteViewHolder {
         val itemView = LayoutInflater.from(parent.context)
             .inflate(R.layout.item_note, parent, false)
@@ -28,14 +31,19 @@ class NoteListAdapter(private val notes: MutableList<Note>) :
         currentNote.imageUri?.let { uri ->
             holder.imageViewImage.visibility = View.VISIBLE
             Glide.with(holder.itemView)
-                .load(Uri.parse(uri))
+                .load(uri) // 이미지 URI를 직접 전달합니다.
                 .into(holder.imageViewImage)
         } ?: run {
             // 이미지 URI가 없는 경우 이미지뷰를 숨깁니다.
             holder.imageViewImage.visibility = View.GONE
         }
+
         holder.buttonDeleteNote.setOnClickListener {
             deleteNote(holder.adapterPosition)
+        }
+        // 노트를 클릭하면 해당 노트의 정보를 전달합니다.
+        holder.itemView.setOnClickListener {
+            onNoteClickListener.onNoteClick(currentNote)
         }
 
     }
