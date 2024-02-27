@@ -2,6 +2,7 @@ import { Plugin } from "prosemirror-state";
 import toastr from "toastr";
 import "toastr/build/toastr.css";
 
+// 노트 페이지에서 블록(노드)의 정보를 토스트 메시지로 출력한다.
 export function checkBlockType() {
   toastr.options.positionClass = "toast-bottom-full-width";
 
