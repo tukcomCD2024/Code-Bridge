@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useParams, Link, Route, Routes } from "react-router-dom";
+import styled from "styled-components";
+
+import { formatCreationTime } from "../Utils/formatCreationTime";
+import OrganizationInfoModal from "./organizationInfo/organizationInfo";
 import ImagetoBackend from "../imageToBackend";
 import NoteDetail from "./NoteDetail";
 
-import { formatCreationTime } from "../Utils/formatCreationTime";
-
-import styled from "styled-components";
 import defaultImage from "../../image/NoneImage2.png";
 import { ReactComponent as AddNoteIcon } from "../../image/addNote.svg";
 
@@ -76,6 +77,7 @@ function NotePage() {
   const [noteName, setNoteName] = useState("");
   const [notes, setNotes] = useState([]); // 노트 상태 관리
   const [modalOpen, setModalOpen] = useState(false);
+  const [OrganizationModalOpen, setOrganizationModalOpen] = useState(false);
   const modalRef = useRef();
 
   const uploadImage = (e) => {
@@ -155,14 +157,19 @@ function NotePage() {
     setNoteName("");
   };
 
-  const handleCreate = (e) => {
-    e.preventDefault();
+  const handleOpenOrganizationModal = () => {
+    setOrganizationModalOpen(true);
+  };
 
+  const handleCloseOrganizationModal = () => {
+    setOrganizationModalOpen(false);
+  };
+
+  const handleCreate = () => {
     if (noteName === "") {
       alert("노트 이름을 입력해주세요.");
       return;
     }
-
     const newNote = {
       id: Date.now(),
       name: noteName,
@@ -189,9 +196,19 @@ function NotePage() {
       <h1 style={{ textDecoration: "underline" }}>{organization?.name}</h1>{" "}
       {/* 옵셔널 체이닝 사용 */}
       <h3>[노트 목록]</h3>
-      {/* <StNoteCreateBtn onClick={handleButtonClick}>
-        Note 생성 모달창 띄우는 버튼
-      </StNoteCreateBtn> */}
+      <OrganizationInfo onClick={handleOpenOrganizationModal}>
+        Organization 정보를 확인하는 모달창
+      </OrganizationInfo>
+      {OrganizationModalOpen && (
+        <OrganizationInfoModal
+          modalOpen={OrganizationModalOpen}
+          handleCloseModal={handleCloseOrganizationModal}
+          organization={organization}
+          setOrganization={setOrganization}
+          setNotes={setNotes}
+          notes={notes}
+        />
+      )}
       <StyledAddNoteIcon onClick={handleButtonClick} />
       {modalOpen && (
         <NoteModal
@@ -220,7 +237,7 @@ function NotePage() {
   );
 }
 
-const StNoteCreateBtn = styled.button`
+const OrganizationInfo = styled.button`
   display: flex;
   flex-direction: column;
   margin-top: 10px;
@@ -293,17 +310,16 @@ const NoteInputWrapper = styled.div`
   text-align: center;
   line-height: 40px;
   margin-bottom: 10px;
-  border-radius: 10px;
-  background-color: #ffff99;
 `;
 
 const NoteInput = styled.input`
-  background-color: #ffff99;
+  width: 90%;
   border: none;
   outline: none;
-  width: 80%;
-  padding: 5px;
-  border-radius: 5px;
+  padding: 10px;
+  background-color: #ffffff;
+  border: 1px solid #d0d0d0;
+  border-radius: 8px;
 `;
 
 // 모달창_생성하기 버튼
@@ -319,9 +335,7 @@ const CreateButton = styled.span`
   cursor: pointer;
 
   &:hover {
-    background: #cccccc;
-    box-shadow: 0 0 5px #cccccc, 0 0 5px #cccccc, 0 0 5px #cccccc,
-      0 0 5px #cccccc;
+    background: #bbbbbb;
   }
 `;
 
@@ -353,7 +367,7 @@ const NoteContainer = styled.div`
     border: 1px solid rgba(0, 0, 0, 0.2); // 블랙 색상에 알파값 0.2로 설정
     object-fit: contain; /* 비율 유지 */
     border-radius: 5px; /* 이미지에 둥근 모서리 추가 */
-  }
+
 `;
 
 export default NotePage;
