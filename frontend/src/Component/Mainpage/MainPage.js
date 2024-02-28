@@ -4,6 +4,7 @@ import Header from "./Header";
 import NotePage from "../Note/NotePage"; // NotePage 컴포넌트를 가져옴.
 import { formatCreationTime } from "../Utils/formatCreationTime";
 import styled from "styled-components";
+
 import { defaultEmoji, emojiList } from "../Utils/emojiList";
 
 function EmojiPicker({ onSelect }) {
@@ -329,17 +330,16 @@ const OrganizationInputWrapper = styled.div`
   text-align: center;
   line-height: 40px;
   margin-bottom: 10px;
-  border-radius: 10px;
-  background-color: #ffff99;
 `;
 
 const OrganizationInput = styled.input`
-  background-color: #ffff99;
+  width: 90%;
   border: none;
   outline: none;
-  width: 80%;
-  padding: 5px;
-  border-radius: 5px;
+  padding: 10px;
+  background-color: #ffffff;
+  border-radius: 8px;
+  border: 1px solid #d0d0d0;
 `;
 
 // 모달창_생성하기 버튼
@@ -355,9 +355,7 @@ const CreateButton = styled.span`
   cursor: pointer;
 
   &:hover {
-    background: #cccccc;
-    box-shadow: 0 0 5px #cccccc, 0 0 5px #cccccc, 0 0 5px #cccccc,
-      0 0 5px #cccccc;
+    background: #bbbbbb;
   }
 `;
 
