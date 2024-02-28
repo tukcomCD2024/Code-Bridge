@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
@@ -8,19 +8,36 @@
     <!-- 텍스트 표시를 위한 TextView -->
     <TextView
         android:id="@+id/textViewText"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textSize="16sp"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
         android:textColor="@android:color/black"
-        android:layout_marginBottom="8dp"/>
+        android:textSize="16sp" />
 
     <!-- 이미지 표시를 위한 ImageView -->
     <ImageView
         android:id="@+id/imageViewImage"
-        android:layout_width="match_parent"
+        android:layout_width="100dp"
         android:layout_height="wrap_content"
+        android:layout_below="@id/textViewText"
+        android:layout_alignParentEnd="true"
+        android:layout_marginStart="8dp"
+        android:layout_marginBottom="8dp"
         android:adjustViewBounds="true"
-        android:scaleType="centerCrop"
-        android:layout_marginBottom="8dp"/>
+        android:scaleType="fitCenter" />
 
-</LinearLayout>
+
+    <Button
+        android:id="@+id/buttonDeleteNote"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="삭제"
+        android:layout_alignStart="@id/textViewText"
+        android:layout_below="@id/imageViewImage"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"/>
+
+</RelativeLayout>

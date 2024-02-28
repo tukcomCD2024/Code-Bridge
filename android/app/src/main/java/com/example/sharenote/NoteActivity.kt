@@ -1,6 +1,5 @@
 package com.example.sharenote
 
-import android.app.Activity
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -10,11 +9,9 @@ import android.widget.ImageView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import com.bumptech.glide.Glide
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.storage.FirebaseStorage
 import java.util.*
-
-
 
 class NoteActivity : AppCompatActivity() {
 
@@ -24,13 +21,14 @@ class NoteActivity : AppCompatActivity() {
     private lateinit var imagePreview: ImageView
 
     private var selectedImageUri: Uri? = null
+    private var noteId: String? = null
 
     private val getContent = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        if (result.resultCode == Activity.RESULT_OK) {
+        if (result.resultCode == RESULT_OK) {
             val data: Intent? = result.data
             data?.data?.let { uri ->
                 selectedImageUri = uri
-                imagePreview.setImageURI(selectedImageUri)
+                Glide.with(this).load(selectedImageUri).into(imagePreview)
                 imagePreview.visibility = ImageView.VISIBLE
             }
         }
@@ -44,6 +42,19 @@ class NoteActivity : AppCompatActivity() {
         buttonAddImage = findViewById(R.id.buttonAddImage)
         buttonSaveNote = findViewById(R.id.buttonSaveNote)
         imagePreview = findViewById(R.id.imagePreview)
+
+        // 이전에 작성한 데이터가 있는지 확인하고 있으면 해당 데이터를 불러옴
+        noteId = intent.getStringExtra("note_id")
+
+        if (!noteId.isNullOrEmpty()) {
+            val noteText = intent.getStringExtra("note_text")
+            val noteImageUri = intent.getStringExtra("note_image_uri")
+
+            editTextNote.setText(noteText)
+            selectedImageUri = Uri.parse(noteImageUri)
+            Glide.with(this).load(selectedImageUri).into(imagePreview)
+            imagePreview.visibility = ImageView.VISIBLE
+        }
 
         buttonAddImage.setOnClickListener {
             openGallery()
@@ -62,7 +73,6 @@ class NoteActivity : AppCompatActivity() {
 
     private fun saveNote() {
         val noteText = editTextNote.text.toString().trim()
-        val imageId = UUID.randomUUID().toString()
 
         if (noteText.isEmpty()) {
             Toast.makeText(this, "노트를 입력하세요", Toast.LENGTH_SHORT).show()
@@ -70,40 +80,49 @@ class NoteActivity : AppCompatActivity() {
         }
 
         val db = FirebaseFirestore.getInstance()
-        val note = hashMapOf(
-            "text" to noteText,
-            "imageId" to imageId
-        )
 
-        db.collection("notes")
-            .add(note)
-            .addOnSuccessListener { documentReference ->
-                uploadImage(imageId)
-            }
-            .addOnFailureListener { e ->
-                Toast.makeText(this, "노트 저장 실패: $e", Toast.LENGTH_SHORT).show()
-            }
-    }
+        // 이전에 작성한 데이터가 있는 경우 해당 데이터의 ID를 사용하여 업데이트
+        if (!noteId.isNullOrEmpty()) {
+            val note = hashMapOf(
+                "id" to noteId, // NoteId를 유지하도록 수정
+                "text" to noteText,
+                "imageUri" to selectedImageUri.toString()
+            )
 
-    private fun uploadImage(imageId: String) {
-        if (selectedImageUri != null) {
-            val storage = FirebaseStorage.getInstance()
-            val storageRef = storage.reference
-            val imageRef = storageRef.child("images/$imageId")
-
-            imageRef.putFile(selectedImageUri!!)
+            db.collection("notes")
+                .document(noteId!!)
+                .set(note)
                 .addOnSuccessListener {
-                    // 이미지 업로드 성공
-                    Toast.makeText(this, "이미지 업로드 성공", Toast.LENGTH_SHORT).show()
-                    finish()
+                    Toast.makeText(this, "노트 업데이트 성공", Toast.LENGTH_SHORT).show()
+                    val intent = Intent(this, MainActivity::class.java)
+                    startActivity(intent)
+                    finish() // 현재 액티비티 종료
                 }
                 .addOnFailureListener { e ->
-                    // 이미지 업로드 실패
-                    Toast.makeText(this, "이미지 업로드 실패: $e", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "노트 업데이트 실패: $e", Toast.LENGTH_SHORT).show()
                 }
         } else {
-            // 선택한 이미지가 없는 경우
-            finish()
+            // 이전에 작성한 데이터가 없는 경우 새로운 노트 생성
+            val newNoteId = UUID.randomUUID().toString()
+            val note = hashMapOf(
+                "id" to newNoteId, // 새로운 노트의 ID 생성
+                "text" to noteText,
+                "imageUri" to selectedImageUri.toString()
+            )
+
+            db.collection("notes")
+                .document(newNoteId)
+                .set(note)
+                .addOnSuccessListener {
+                    Toast.makeText(this, "노트 저장 성공", Toast.LENGTH_SHORT).show()
+                    val intent = Intent(this, MainActivity::class.java)
+                    startActivity(intent)
+                    finish() // 현재 액티비티 종료
+                }
+
+                .addOnFailureListener { e ->
+                    Toast.makeText(this, "노트 저장 실패: $e", Toast.LENGTH_SHORT).show()
+                }
         }
     }
 }
