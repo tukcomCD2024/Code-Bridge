@@ -9,6 +9,9 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 class SignUpActivity : AppCompatActivity() {
 
@@ -77,21 +80,38 @@ class SignUpActivity : AppCompatActivity() {
         val auth = FirebaseAuth.getInstance()
 
         if (Email.isNotEmpty() && Password.isNotEmpty()) {
-            auth.createUserWithEmailAndPassword(Email, Password)
-                .addOnCompleteListener(this) { task ->
-                    if (task.isSuccessful) {
-                        Toast.makeText(this, "계정 생성 완료.", Toast.LENGTH_SHORT).show()
+            // Retrofit을 사용하여 회원가입 데이터를 서버에 전송
+            val userData = UserData(Name, Email, Password)
+            RetrofitClient.apiService.signUpUser(userData).enqueue(object : Callback<Void> {
+                override fun onResponse(call: Call<Void>, response: Response<Void>) {
+                    if (response.isSuccessful) {
+                        // 회원가입 성공
+                        Toast.makeText(this@SignUpActivity, "계정 생성 완료.", Toast.LENGTH_SHORT).show()
 
-                        // 회원가입이 성공한 경우 사용자 정보를 데이터베이스에 저장
-                        saveUserDataToFirestore()
+                        // Firebase에 사용자 등록
+                        auth.createUserWithEmailAndPassword(Email, Password)
+                            .addOnCompleteListener(this@SignUpActivity) { task ->
+                                if (task.isSuccessful) {
+                                    // 회원가입이 성공한 경우 사용자 정보를 Firestore에 저장
+                                    saveUserDataToFirestore()
 
-                        finish() // 가입창 종료
+                                    finish() // 가입창 종료
+                                } else {
+                                    // 계정 생성 실패
+                                    Toast.makeText(this@SignUpActivity, "계정 생성 실패", Toast.LENGTH_SHORT).show()
+                                }
+                            }
                     } else {
-                        // 계정 생성 실패 원인을 확인하여 메시지 표시
-                        val errorMessage = task.exception?.message ?: "계정 생성 실패"
-                        Toast.makeText(this, errorMessage, Toast.LENGTH_SHORT).show()
+                        // 서버로부터 응답 실패
+                        Toast.makeText(this@SignUpActivity, "회원가입에 실패했습니다.", Toast.LENGTH_SHORT).show()
                     }
                 }
+
+                override fun onFailure(call: Call<Void>, t: Throwable) {
+                    // 통신 실패
+                    Toast.makeText(this@SignUpActivity, "네트워크 오류: ${t.message}", Toast.LENGTH_SHORT).show()
+                }
+            })
         } else {
             Toast.makeText(this, "이메일과 비밀번호를 입력해주세요.", Toast.LENGTH_SHORT).show()
         }
@@ -100,27 +120,21 @@ class SignUpActivity : AppCompatActivity() {
     private fun saveUserDataToFirestore() {
         val user = hashMapOf(
             "Name" to Name,
-            "Email" to Email,
-            "Password" to Password
+            "Email" to Email
+            // 비밀번호는 보안상의 이유로 저장하지 않음
         )
 
-        // 실제로 데이터를 저장할 Firestore 컬렉션 및 문서 경로를 지정
+        // Firestore에 사용자 정보 저장
         val collectionPath = "users" // 사용자 정보를 저장할 컬렉션 이름
         db.collection(collectionPath).document(FirebaseAuth.getInstance().currentUser!!.uid)
             .set(user)
             .addOnSuccessListener {
                 // Firestore에 데이터가 성공적으로 추가된 경우
-                Toast.makeText(
-                    baseContext, "회원가입에 성공하였습니다.",
-                    Toast.LENGTH_SHORT
-                ).show()
+                Toast.makeText(this, "회원가입에 성공하였습니다.", Toast.LENGTH_SHORT).show()
             }
             .addOnFailureListener {
                 // Firestore에 데이터 추가 중 오류 발생한 경우
-                Toast.makeText(
-                    baseContext, "회원가입에 실패하였습니다.",
-                    Toast.LENGTH_SHORT
-                ).show()
+                Toast.makeText(this, "회원가입에 실패하였습니다.", Toast.LENGTH_SHORT).show()
             }
     }
 

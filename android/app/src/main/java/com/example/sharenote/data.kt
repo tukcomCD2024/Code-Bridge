@@ -5,3 +5,9 @@ data class Note(
     val text: String,
     val imageUri: String?
 )
+
+data class UserData(
+    val name: String,
+    val email: String,
+    val password: String
+)
