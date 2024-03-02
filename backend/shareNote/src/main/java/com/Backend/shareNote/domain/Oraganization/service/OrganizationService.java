@@ -32,6 +32,9 @@ public class OrganizationService {
         Users user = userRepository.findByEmail(organizationCreateDTO.getOwner())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
 
+        //organization 생성자를 member 필드에 넣기
+        ArrayList<String> members = new ArrayList<>();
+        members.add(user.getId());
 
         Organization org = Organization.builder()
                 .name(organizationCreateDTO.getName())
@@ -39,7 +42,7 @@ public class OrganizationService {
                 .emoji(organizationCreateDTO.getEmoji()) // 이모지 추가
                 .notes(new ArrayList<Organization.Note>())
                 .quiz(new ArrayList<String>())
-                .members(new ArrayList<String>())
+                .members(members)
                 .description("")
                 .build();
         Organization savedOrgan = organizationRepository.save(org);
