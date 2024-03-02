@@ -14,10 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 @Service
 @Slf4j
@@ -143,5 +140,31 @@ public class OrganizationService {
         userRepository.save(user);
 
         return ResponseEntity.ok("초대 수락 완료");
+    }
+
+    //organization 조회
+    public ResponseEntity<List<OrgSearchDTO>> getOrganization(String userId) {
+        // 유저 조회
+        Users user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
+        // 유저의 organization 조회
+        List<String> orgIds = user.getOrganizations();
+
+        List<OrgSearchDTO> organizations = new ArrayList<>();
+
+        // organization 조회 -> organization DTO로 변환
+        orgIds.forEach(orgId -> {
+            organizationRepository.findById(orgId).ifPresent(organization -> {
+                OrgSearchDTO orgSearchDTO = OrgSearchDTO.fromEntity(organization);
+                organizations.add(orgSearchDTO);
+            });
+        });
+
+        // 반환
+        return ResponseEntity.ok().body(organizations);
+
+
+
+
     }
 }
