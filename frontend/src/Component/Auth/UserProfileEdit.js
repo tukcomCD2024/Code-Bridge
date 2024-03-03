@@ -131,7 +131,7 @@ const Id_Input = styled.input`
   border: none;
   outline: none;
   padding: 10px;
-  width: 300px;
+  width: 30vh;
   border-radius: 20px;
 
   &:focus {
@@ -175,7 +175,7 @@ const Password_Input = styled.input`
   background-color: #f0f0f0;
   border: none;
   outline: none;
-  width: 300px;
+  width: 30vh;
   padding: 10px;
   border-radius: 20px;
 
@@ -199,7 +199,7 @@ const Passwordcheck_Input = styled.input`
   background-color: #f0f0f0;
   border: none;
   outline: none;
-  width: 300px;
+  width: 30vh;
   padding: 10px;
   border-radius: 20px;
 
@@ -246,7 +246,7 @@ const Nickname_Input = styled.input`
   border: none;
   outline: none;
   padding: 10px;
-  width: 300px;
+  width: 30vh;
   border-radius: 20px;
 
   &:focus {
@@ -259,7 +259,7 @@ const EditBtn = styled.button`
   flex-direction: column;
   margin: 20px auto; /* Auto margin for centering horizontally */
   margin-bottom: 0px;
-  width: 250px;
+  width: 30vh;
   height: 40px;
   border: #ffffcc;
   border-radius: 1px;

@@ -36,6 +36,7 @@ const LoginPage = () => {
       });
 
       if (response.ok) {
+        localStorage.setItem("userId", email);
         navigate("/main");
       } else {
         const errorData = await response.json();

@@ -1,4 +1,4 @@
-import { Plugin } from "prosemirror-state";
+import { Plugin, Selection } from "prosemirror-state";
 import down_arrow from "../../../image/down_arrow.svg";
 import typing from "../../../image/typing.gif";
 
@@ -79,7 +79,7 @@ export function hoverButtonPlugin() {
           if (
             (resolvedPos.depth === 0 &&
               resolvedPos.nodeBefore.type.name !== "paragraph") ||
-            !show
+            (resolvedPos.depth === 0 && !show)
           ) {
             hoverDiv.style.visibility = "hidden";
             return;

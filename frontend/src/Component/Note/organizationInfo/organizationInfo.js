@@ -9,9 +9,6 @@ const OrganizationInfoModal = ({
   modalOpen,
   handleCloseModal,
   organization,
-  setOrganization,
-  setNotes,
-  notes,
 }) => {
   const modalRef = useRef();
   const navigate = useNavigate();
@@ -74,6 +71,12 @@ const OrganizationInfoModal = ({
     }
   };
 
+  const handleKeyPress = (event) => {
+    if (event.key === "Enter") {
+      handleSendInvitation();
+    }
+  };
+
   useEffect(() => {
     if (organization?.name == null) {
       toastr.info("정보를 불러오지 못했습니다.");
@@ -115,10 +118,13 @@ const OrganizationInfoModal = ({
           X
         </CloseButton>
         <LeftContainer>
-          <p style={{ fontWeight: "bold", fontSize: "25px" }}>
-            {organization?.name || "조직 정보 없음"}
-          </p>
-          <p style={{ fontSize: "100px" }}>{organization?.emoji || ""}</p>
+          <p>나의 Organization</p>
+          <LeftInsideContainer>
+            <p style={{ fontWeight: "bold", fontSize: "25px" }}>
+              {organization?.name || "조직 정보 없음"}
+            </p>
+            <p style={{ fontSize: "100px" }}>{organization?.emoji || ""}</p>
+          </LeftInsideContainer>
         </LeftContainer>
         <RightContainer>
           <TopContainer>
@@ -127,6 +133,7 @@ const OrganizationInfoModal = ({
               <InvitationInput
                 type="text"
                 value={userEmailInput} // input value 바인딩
+                onKeyPress={handleKeyPress}
                 onChange={handleEmailInputChange} // 입력 값 변경 처리
                 placeholder="초대하려는 유저의 이메일을 입력하세요."
               />
@@ -135,7 +142,9 @@ const OrganizationInfoModal = ({
           </TopContainer>
           <BottomContainer>
             {" "}
-            <Title>&nbsp;&nbsp;◾ 멤버 목록</Title>
+            <Title>
+              &nbsp;&nbsp;◾ 멤버 목록 ({initialNicknames.length}명)
+            </Title>
             <UserList>
               {userNicknames.map((nickname, index) => (
                 <div
@@ -199,6 +208,13 @@ const LeftContainer = styled(HalfContainer)`
   p {
     margin: 20px 0; /* 상하 마진 10px, 좌우 마진 0 */
   }
+`;
+
+const LeftInsideContainer = styled(HalfContainer)`
+  border-radius: 8px;
+  width: 70%;
+  height: 70%;
+  background-color: rgba(255, 255, 180, 0.5);
 `;
 
 // RightContainer 정의
