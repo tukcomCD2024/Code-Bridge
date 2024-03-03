@@ -7,6 +7,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @Slf4j
 @RestController
 @RequiredArgsConstructor
@@ -43,6 +45,12 @@ public class OrganizationController {
     @PostMapping("/user/organization/invitation/accept")
     public ResponseEntity<Object> acceptOrganization(@RequestBody AcceptInvitationDTO invitation) {
         return organizationService.acceptInvitation(invitation);
+    }
+
+    //user의 모드 organization을 반환
+    @GetMapping("/user/organization/{userId}")
+    public ResponseEntity<List<OrgSearchDTO>> getOrganization(@PathVariable String userId) {
+        return organizationService.getOrganization(userId);
     }
 
 
