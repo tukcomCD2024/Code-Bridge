@@ -1,27 +1,33 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useParams, Link, Route, Routes } from "react-router-dom";
-import styled from "styled-components";
-
+import { useParams, Link, Route, Routes, useNavigate } from "react-router-dom";
+import styled, { keyframes, css } from "styled-components";
 import { formatCreationTime } from "../Utils/formatCreationTime";
 import OrganizationInfoModal from "./organizationInfo/organizationInfo";
 import ImagetoBackend from "../imageToBackend";
 import NoteDetail from "./NoteDetail";
-
 import defaultImage from "../../image/NoneImage2.png";
 import { ReactComponent as AddNoteIcon } from "../../image/addNote.svg";
+import toastr from "toastr";
+import "toastr/build/toastr.css";
+toastr.options.positionClass = "toast-top-right";
+
 
 function NoteCard({ note, index }) {
-  // note prop 추가
   return (
     <Link to={`/organization/${note.organizationId}/${note.id}`}>
       {/* {"📖"} */}
-      {/* 수정된 경로 */}
       <NoteContainer>
         <img src={note.image} alt={`Note-Picture-${index}`} />
-        <p>
+        <NoteName>
           <small>{note.name}</small>
-        </p>
-        <p>
+        </NoteName>
+        <p
+          style={{
+            color: "#000000",
+            cursor: "default",
+            textDecoration: "underline white",
+          }}
+        >
           <small>{formatCreationTime(note.submissionTime)}</small>
         </p>
       </NoteContainer>
@@ -36,6 +42,7 @@ function NoteModal({
   setNoteName,
   myimage,
   uploadImage,
+  isInvalid,
   handleCreate,
 }) {
   return (
@@ -45,13 +52,13 @@ function NoteModal({
           X
         </CloseButton>
         <p style={{ fontWeight: "bold" }}>📔 노트 생성</p>
-
         <NoteInputWrapper>
           <NoteInput
             id="NoteName"
             type="text"
             placeholder="생성하는 노트 이름을 입력해주세요."
             value={noteName}
+            $isInvalid={isInvalid}
             onChange={(e) => setNoteName(e.target.value)}
           />
         </NoteInputWrapper>
@@ -59,11 +66,13 @@ function NoteModal({
         <StyledImage
           src={myimage || defaultImage}
           alt="Note-Picture"
-          isDefaultImage={myimage === defaultImage}
+          $isDefaultImage={myimage === defaultImage}
         />
         <ImagetoBackend onImageUpload={uploadImage} />
         <hr />
-        <CreateButton onClick={handleCreate}>생성하기</CreateButton>
+        <CreateButton disabled={isInvalid} onClick={handleCreate}>
+          생성하기
+        </CreateButton>
       </ModalContent>
     </ModalContainer>
   );
@@ -71,14 +80,16 @@ function NoteModal({
 
 function NotePage() {
   const { id } = useParams();
+  const modalRef = useRef();
   const organizationId = Number(id);
+  const navigate = useNavigate();
   const [organization, setOrganization] = useState(null);
   const [myimage, setMyImage] = useState(null);
   const [noteName, setNoteName] = useState("");
   const [notes, setNotes] = useState([]); // 노트 상태 관리
   const [modalOpen, setModalOpen] = useState(false);
   const [OrganizationModalOpen, setOrganizationModalOpen] = useState(false);
-  const modalRef = useRef();
+  const [isInvalid, setIsInvalid] = useState(false);
 
   const uploadImage = (e) => {
     const selectedFile = e.target.files[0];
@@ -139,6 +150,11 @@ function NotePage() {
     };
 
     if (modalOpen) {
+      if (organization?.name == null) {
+        toastr.info("정보를 불러오지 못했습니다.");
+        navigate("/main");
+        return;
+      }
       document.addEventListener("mousedown", handleClickOutside);
     }
 
@@ -167,7 +183,8 @@ function NotePage() {
 
   const handleCreate = () => {
     if (noteName === "") {
-      alert("노트 이름을 입력해주세요.");
+      setIsInvalid(true);
+      setTimeout(() => setIsInvalid(false), 800);
       return;
     }
     const newNote = {
@@ -197,19 +214,21 @@ function NotePage() {
       {/* 옵셔널 체이닝 사용 */}
       <h3>[노트 목록]</h3>
       <OrganizationInfo onClick={handleOpenOrganizationModal}>
-        Organization 정보를 확인하는 모달창
+        Organization 정보 확인
       </OrganizationInfo>
+      <NotesContainer>
+        <StyledAddNoteIcon onClick={handleButtonClick} />
+        {notes.map((note, index) => (
+          <NoteCard note={note} index={index} key={note.id} />
+        ))}
+      </NotesContainer>
       {OrganizationModalOpen && (
         <OrganizationInfoModal
           modalOpen={OrganizationModalOpen}
           handleCloseModal={handleCloseOrganizationModal}
           organization={organization}
-          setOrganization={setOrganization}
-          setNotes={setNotes}
-          notes={notes}
         />
       )}
-      <StyledAddNoteIcon onClick={handleButtonClick} />
       {modalOpen && (
         <NoteModal
           modalRef={modalRef}
@@ -217,13 +236,11 @@ function NotePage() {
           noteName={noteName}
           setNoteName={setNoteName}
           myimage={myimage}
+          isInvalid={isInvalid}
           uploadImage={uploadImage}
           handleCreate={handleCreate}
         />
       )}
-      {notes.map((note, index) => (
-        <NoteCard note={note} index={index} />
-      ))}
       <Routes>
         {notes.map((note) => (
           <Route
@@ -269,17 +286,26 @@ const OrganizationInfo = styled.button`
 `;
 
 const StyledAddNoteIcon = styled(AddNoteIcon)`
-  width: 230px;
-  height: 385px;
+  width: 200px;
   cursor: pointer;
   margin-top: 10px;
 `;
 
 const StyledImage = styled.img`
-  width: ${(props) => (props.isDefaultImage ? "100%" : "100px")}; // 예시 크기
+  width: ${(props) => (props.$isDefaultImage ? "100%" : "100px")}; // 예시 크기
   height: auto;
   width: 100%; /* 너비를 최대값으로 설정 */
   object-fit: contain;
+`;
+
+const NoteName = styled.p`
+  color: #000000;
+  text-decoration: underline white;
+  white-space: nowrap; /* 텍스트를 한 줄로 만들기 */
+  overflow: hidden; /* 오버플로우된 텍스트 숨기기 */
+  text-overflow: ellipsis; /* 오버플로우된 텍스트를 말줄임표로 표시 */
+  max-width: 100%; /* 최대 너비 설정 (조절 가능) */
+  display: block; /* 블록 레벨 요소로 만들기 (필요한 경우) */
 `;
 
 const ModalContainer = styled.div`
@@ -312,6 +338,14 @@ const NoteInputWrapper = styled.div`
   margin-bottom: 10px;
 `;
 
+const shakeAnimation = keyframes`
+  0% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  50% { transform: translateX(5px); }
+  75% { transform: translateX(-5px); }
+  100% { transform: translateX(0); }
+`;
+
 const NoteInput = styled.input`
   width: 90%;
   border: none;
@@ -320,11 +354,20 @@ const NoteInput = styled.input`
   background-color: #ffffff;
   border: 1px solid #d0d0d0;
   border-radius: 8px;
+
+  ${(props) =>
+    props.$isInvalid &&
+    css`
+      border: 2px solid red;
+      animation: ${shakeAnimation} 0.5s ease-in-out;
+    `}
 `;
 
 // 모달창_생성하기 버튼
-const CreateButton = styled.span`
+const CreateButton = styled.button`
   display: block;
+  width: 100%;
+  font-size: 15px;
   text-align: center;
   line-height: 40px;
   border-radius: 10px;
@@ -335,7 +378,13 @@ const CreateButton = styled.span`
   cursor: pointer;
 
   &:hover {
-    background: #bbbbbb;
+    background: ${(props) => (props.disabled ? "#cccccc" : "#bbbbbb")};
+  }
+
+  &:disabled {
+    background-color: #e0e0e0;
+    color: #a0a0a0;
+    cursor: not-allowed;
   }
 `;
 
@@ -348,11 +397,28 @@ const ModalContent = styled.div`
   position: relative;
 `;
 
+const NotesContainer = styled.div`
+  padding-left: 100px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  gap: 20px;
+
+  @media (max-width: 768px) {
+    padding-left: 0px;
+  }
+`;
+
 const NoteContainer = styled.div`
-  width: 15%;
+  display: flex;
+  flex-direction: column; // 항목을 세로로 정렬
+  align-items: center; // 항목들을 가운데 정렬
+  width: 180px; // 너비 고정
+  height: 320px;
+  margin: 10px; // 주변 여백
   text-align: center;
-  display: inline-block;
-  margin: 10px 0px; //상하 마진 10px, 좌우 마진 5px
+  cursor: pointer; // 마우스 오버 시 커서 변경
+  margin-bottom: 20px; // 하단 마진 추가로 각 카드 사이의 수직 간격 조정
 
   p,
   small {
@@ -361,13 +427,18 @@ const NoteContainer = styled.div`
 
   img {
     width: 200px; /* 너비 설정 */
-    height: 300px; /* 높이 설정 */
+    height: 100%; /* 높이 설정 */
     cursor: pointer;
     margin-top: 10px;
     border: 1px solid rgba(0, 0, 0, 0.2); // 블랙 색상에 알파값 0.2로 설정
     object-fit: contain; /* 비율 유지 */
     border-radius: 5px; /* 이미지에 둥근 모서리 추가 */
+  }
 
+  @media (max-width: 768px) {
+    width: 100%;
+    padding-left: 10px;
+  }
 `;
 
 export default NotePage;

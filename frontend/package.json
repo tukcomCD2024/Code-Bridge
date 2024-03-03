@@ -16,13 +16,16 @@
     "prosemirror-schema-basic": "^1.2.2",
     "prosemirror-schema-list": "^1.3.0",
     "prosemirror-state": "^1.4.3",
+    "prosemirror-utils": "^1.2.1-0",
     "prosemirror-view": "^1.33.1",
     "react": "17.0.2",
     "react-dom": "17.0.2",
     "react-router-dom": "6.21.3",
     "react-scripts": "5.0.1",
     "styled-components": "6.1.8",
-    "toastr": "^2.1.4"
+    "toastr": "^2.1.4",
+    "y-prosemirror": "^1.2.3",
+    "y-websocket": "^1.5.4"
   },
   "devDependencies": {
     "@types/react": "18.2.38",

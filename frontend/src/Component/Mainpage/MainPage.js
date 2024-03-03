@@ -3,8 +3,7 @@ import { Routes, Route, Link } from "react-router-dom";
 import Header from "./Header";
 import NotePage from "../Note/NotePage"; // NotePage 컴포넌트를 가져옴.
 import { formatCreationTime } from "../Utils/formatCreationTime";
-import styled from "styled-components";
-
+import styled, { keyframes, css } from "styled-components";
 import { defaultEmoji, emojiList } from "../Utils/emojiList";
 
 function EmojiPicker({ onSelect }) {
@@ -24,10 +23,10 @@ function OrganizationCard({ organization }) {
     <Link to={`/organization/${organization.id}`}>
       <OrganizationContainer>
         <Emoji>{organization.emoji || defaultEmoji}</Emoji>
-        <p>
+        <OrganizationName>
           <small>{organization.name}</small>
-        </p>
-        <p>
+        </OrganizationName>
+        <p style={{ color: "#000000" }}>
           <small>{formatCreationTime(organization.submissionTime)}</small>
         </p>
       </OrganizationContainer>
@@ -42,6 +41,7 @@ function OrganizationModal({
   setOrganizationName,
   myEmoji,
   setMyEmoji,
+  isInvalid,
   handleCreate,
 }) {
   const handleSelectEmoji = (emoji) => {
@@ -59,6 +59,7 @@ function OrganizationModal({
             type="text"
             placeholder="Organization 이름을 입력해주세요."
             value={organizationName}
+            $isInvalid={isInvalid}
             onChange={(e) => setOrganizationName(e.target.value)}
           />
         </OrganizationInputWrapper>
@@ -67,7 +68,9 @@ function OrganizationModal({
           <EmojiPicker onSelect={handleSelectEmoji} />
         </div>
         <hr />
-        <CreateButton onClick={handleCreate}>생성하기</CreateButton>
+        <CreateButton disabled={isInvalid} onClick={handleCreate}>
+          생성하기
+        </CreateButton>
       </ModalContent>
     </ModalContainer>
   );
@@ -81,6 +84,7 @@ function MainPage() {
   const [myEmoji, setMyEmoji] = useState(defaultEmoji);
   const [organizationName, setOrganizationName] = useState("");
   const [organizations, setOrganizations] = useState([]);
+  const [isInvalid, setIsInvalid] = useState(false);
 
   useEffect(() => {
     // 로컬 스토리지에서 데이터 불러오기
@@ -136,7 +140,8 @@ function MainPage() {
     e.preventDefault();
 
     if (organizationName === "") {
-      alert("Organization 이름을 입력해주세요.");
+      setIsInvalid(true); // 유효성 상태 업데이트
+      setTimeout(() => setIsInvalid(false), 800); // 800ms 후 유효성 상태 초기화
       return;
     }
 
@@ -173,7 +178,7 @@ function MainPage() {
       <StHeader>
         <Header toggle={toggle} setToggle={setToggle} />
         <StOrgCreateBtn onClick={handleButtonClick}>
-          Organization 생성 모달창 띄우는 버튼
+          Organization 생성하기
         </StOrgCreateBtn>
       </StHeader>
       {modalOpen && (
@@ -184,6 +189,8 @@ function MainPage() {
           setOrganizationName={setOrganizationName}
           myEmoji={myEmoji}
           setMyEmoji={setMyEmoji}
+          isInvalid={isInvalid}
+          setIsInvalid={setIsInvalid}
           handleCreate={handleCreate}
         />
       )}
@@ -213,9 +220,11 @@ function MainPage() {
 }
 
 const Emoji = styled.p`
-  font-size: 100px; /* 이모지 기본 크기 */
+  font-size: 120px;
+  padding: 0px 0px;
 
-  @media screen and (max-width: 768px) {
+  @media screen and (max-width: 1000px) {
+    padding: 0px 0px;
     font-size: 50px;
   }
 `;
@@ -332,6 +341,14 @@ const OrganizationInputWrapper = styled.div`
   margin-bottom: 10px;
 `;
 
+const shakeAnimation = keyframes`
+  0% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  50% { transform: translateX(5px); }
+  75% { transform: translateX(-5px); }
+  100% { transform: translateX(0); }
+`;
+
 const OrganizationInput = styled.input`
   width: 90%;
   border: none;
@@ -340,11 +357,20 @@ const OrganizationInput = styled.input`
   background-color: #ffffff;
   border-radius: 8px;
   border: 1px solid #d0d0d0;
+
+  ${(props) =>
+    props.$isInvalid &&
+    css`
+      border: 2px solid red;
+      animation: ${shakeAnimation} 0.5s ease-in-out;
+    `}
 `;
 
 // 모달창_생성하기 버튼
-const CreateButton = styled.span`
+const CreateButton = styled.button`
   display: block;
+  width: 100%;
+  font-size: 15px;
   text-align: center;
   line-height: 40px;
   border-radius: 10px;
@@ -355,7 +381,13 @@ const CreateButton = styled.span`
   cursor: pointer;
 
   &:hover {
-    background: #bbbbbb;
+    background: ${(props) => (props.disabled ? "#cccccc" : "#bbbbbb")};
+  }
+
+  &:disabled {
+    background-color: #e0e0e0;
+    color: #a0a0a0;
+    cursor: not-allowed;
   }
 `;
 
@@ -368,12 +400,20 @@ const ModalContent = styled.div`
   position: relative;
 `;
 
+const OrganizationName = styled.p`
+  color: #000000;
+  text-decoration: underline white;
+  white-space: nowrap; /* 텍스트를 한 줄로 만들기 */
+  overflow: hidden; /* 오버플로우된 텍스트 숨기기 */
+  text-overflow: ellipsis; /* 오버플로우된 텍스트를 말줄임표로 표시 */
+  max-width: 100%; /* 최대 너비 설정 (조절 가능) */
+  display: block; /* 블록 레벨 요소로 만들기 (필요한 경우) */
+`;
+
 const OrganizationContainer = styled.div`
-  width: 14%;
+  width: 10%;
   text-align: center;
   display: inline-block;
-  margin: 5px;
-
   p,
   small {
     margin: 0px; /* Remove top and bottom margins */
