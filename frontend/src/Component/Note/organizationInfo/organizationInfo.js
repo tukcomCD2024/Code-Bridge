@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import toastr from "toastr";
 import "toastr/build/toastr.css";
-toastr.options.positionClass = "toast-top-right";
+
 
 const OrganizationInfoModal = ({
   modalOpen,
@@ -28,6 +28,9 @@ const OrganizationInfoModal = ({
     "닉네임9",
   ];
 
+  localStorage.setItem("nickname", "돈돈참");
+  localStorage.setItem("organizationId", "돈");
+
   localStorage.setItem("userNicknames", JSON.stringify(initialNicknames));
 
   // 이메일 입력 처리 함수
@@ -44,6 +47,8 @@ const OrganizationInfoModal = ({
 
   // 이메일 전송 처리 함수
   const handleSendInvitation = async () => {
+    const nickname = localStorage.getItem('nickname');
+    const organizationId = localStorage.getItem('organizationId');
     // 이메일 형식 검증
     if (!validateEmail(userEmailInput)) {
       toastr.remove();
@@ -58,15 +63,17 @@ const OrganizationInfoModal = ({
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email: userEmailInput }), // 입력된 이메일 데이터를 JSON 형태로 변환하여 전송
+        body: JSON.stringify({ email: userEmailInput,nickname,organizationId }), // 입력된 이메일 데이터를 JSON 형태로 변환하여 전송
       });
 
       if (!response.ok) throw new Error("Network response was not ok.");
       toastr.remove();
+      toastr.options.positionClass = "toast-top-right";
       toastr.success("초대 메일이 성공적으로 전송되었습니다.");
       setUserEmailInput("");
     } catch (error) {
       toastr.clear();
+      toastr.options.positionClass = "toast-top-right";
       toastr.error("초대 메일 전송에 실패했습니다.");
     }
   };
@@ -79,6 +86,7 @@ const OrganizationInfoModal = ({
 
   useEffect(() => {
     if (organization?.name == null) {
+      toastr.options.positionClass = "toast-top-right";
       toastr.info("정보를 불러오지 못했습니다.");
       navigate("/main");
     }

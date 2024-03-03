@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Routes, Route, Link } from "react-router-dom";
+import { Routes, Route, Link, useLocation  } from "react-router-dom";
 import Header from "./Header";
 import NotePage from "../Note/NotePage"; // NotePage 컴포넌트를 가져옴.
 import { formatCreationTime } from "../Utils/formatCreationTime";
@@ -24,11 +24,11 @@ function OrganizationCard({ organization }) {
       <OrganizationContainer>
         <Emoji>{organization.emoji || defaultEmoji}</Emoji>
         <OrganizationName>
-          <small>{organization.name}</small>
+          {organization.name}
         </OrganizationName>
-        <p style={{ color: "#000000" }}>
+        {/* <p style={{ color: "#000000" }}>
           <small>{formatCreationTime(organization.submissionTime)}</small>
-        </p>
+        </p> */}
       </OrganizationContainer>
     </Link>
   );
@@ -85,14 +85,33 @@ function MainPage() {
   const [organizationName, setOrganizationName] = useState("");
   const [organizations, setOrganizations] = useState([]);
   const [isInvalid, setIsInvalid] = useState(false);
+  
+  const location = useLocation(); // 현재 위치 정보를 가져옴
+  const userId = localStorage.getItem('userId');
 
   useEffect(() => {
-    // 로컬 스토리지에서 데이터 불러오기
-    const savedOrganizations = localStorage.getItem("organizations");
-    if (savedOrganizations) {
-      setOrganizations(JSON.parse(savedOrganizations));
-    }
-  }, []);
+    const fetchOrganizations = async () => {
+      try {
+        const response = await fetch(`/api/user/organization/${userId}`);
+          if (response.ok) {
+            const data = await response.json();
+            // 전체 데이터에서 id(Organization 고유값), name(Organization 이름), emoji(Organization 대표마크)만 추출
+            const fetchedOrganizationData = data.map(org => ({
+              id: org.id,
+              name: org.name,
+              emoji: org.emoji
+            }));
+            setOrganizations(fetchedOrganizationData);
+          } else {
+            console.error(`${userId}의 Organization을 불러오는데 실패했습니다.`);
+          }
+        } catch (error) {
+          console.error('Error fetching organizations:', error);
+        }
+      };
+      fetchOrganizations();
+    }, [location]);
+
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -117,7 +136,7 @@ function MainPage() {
       id: Date.now(),
       name: organizationName,
       emoji: myEmoji,
-      submissionTime: new Date().toISOString(),
+     // submissionTime: new Date().toISOString(),
     };
 
     const updatedOrganizations = [...organizations, newOrganization];
@@ -145,9 +164,9 @@ function MainPage() {
       return;
     }
 
-    const owner = localStorage.getItem("userId");
+    const owner = localStorage.getItem("email");
     const name = organizationName;
-    const organizationEmoji = myEmoji; // Organization 대표 마크를 이모지로 설정함.
+    const emoji = myEmoji; // Organization 대표 마크를 이모지로 설정함.
 
     try {
       const response = await fetch("/api/user/organization", {
@@ -155,7 +174,7 @@ function MainPage() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ name, owner }),
+        body: JSON.stringify({ name, owner, emoji }),
       });
 
       if (response.ok) {
@@ -167,7 +186,7 @@ function MainPage() {
         alert(`생성 실패: ${errorData.message}`);
       }
     } catch (error) {
-      createOrganization(); // 유저 정보와 연결되면 삭제해야 하는 코드
+      // createOrganization(); 
       console.error("Error: ", error);
       alert("처리 중 오류가 발생했습니다.");
     }
@@ -195,15 +214,15 @@ function MainPage() {
         />
       )}
 
-      {organizations.length > 0 ? (
-        organizations.map((org, index) => (
-          <OrganizationCard organization={org} index={index} key={org.id} />
-        ))
-      ) : (
-        <NoOrganizationMessage>
-          📢 소속된 Organization이 없습니다.
-        </NoOrganizationMessage>
-      )}
+{organizations?.length > 0 ? (
+  organizations.map((org, index) => (
+    <OrganizationCard organization={org} index={index} key={org.id} />
+  ))
+) : (
+  <NoOrganizationMessage>
+    📢 소속된 Organization이 없습니다.
+  </NoOrganizationMessage>
+)}
       <Routes>
         {organizations.map((org) => (
           <Route
