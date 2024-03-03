@@ -1,47 +1,79 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="16dp">
 
-    <!-- 이미지 추가 버튼 -->
-    <Button
-        android:id="@+id/buttonAddImage"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="이미지 추가"
-        android:layout_marginBottom="16dp"/>
-
-    <!-- 이미지 미리보기 -->
-    <ImageView
-        android:id="@+id/imagePreview"
-        android:layout_width="200dp"
-        android:layout_height="200dp"
-        android:layout_below="@id/buttonAddImage"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="16dp"
-        android:scaleType="centerCrop"
-        android:src="@drawable/placeholder_image"
-        android:visibility="gone" />
-
-    <!-- 텍스트 입력란 -->
-    <EditText
-        android:id="@+id/editTextNote"
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/imagePreview"
-        android:hint="노트를 입력하세요"
-        android:inputType="textMultiLine"
-        android:layout_marginTop="16dp"/>
+        android:layout_height="wrap_content">
 
-    <!-- 노트 저장 버튼 -->
-    <Button
-        android:id="@+id/buttonSaveNote"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="저장"
-        android:layout_below="@id/editTextNote"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="16dp"/>
 
-</RelativeLayout>
+        <TextView
+            android:id="@+id/inputNote"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="노트 입력창"
+            android:layout_marginStart="125dp"
+            android:textAppearance="@style/TextAppearance.AppCompat.Large" />
+
+        <EditText
+            android:id="@+id/editTextTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="5dp"
+            android:layout_marginTop="24dp"
+            android:ems="10"
+            android:hint="제목 :"
+            android:inputType="textPersonName"
+            android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+            android:layout_below="@+id/inputNote" />
+
+        <EditText
+            android:id="@+id/editTextNote"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="56dp"
+            android:ems="17"
+            android:hint="내용 :"
+            android:lines="15"
+            android:gravity="top|left"
+            android:layout_below="@+id/editTextTitle"
+            android:inputType="textMultiLine"
+            android:layout_marginBottom="24dp" />
+
+        <!-- 이미지 추가 버튼 -->
+        <Button
+            android:id="@+id/buttonAddImage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/editTextNote"
+            android:text="이미지 추가"
+            android:layout_marginBottom="16dp"/>
+
+        <!-- 이미지 미리보기 -->
+        <ImageView
+            android:id="@+id/imagePreview"
+            android:layout_width="200dp"
+            android:layout_height="200dp"
+            android:layout_below="@id/buttonAddImage"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="16dp"
+            android:scaleType="centerCrop"
+            android:src="@drawable/placeholder_image"
+            android:visibility="gone" />
+
+        <Button
+            android:id="@+id/buttonSaveNote"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="24dp"
+            android:backgroundTint="#8E5A0E"
+            android:text="저장하기"
+            android:layout_below="@+id/imagePreview" />
+
+    </RelativeLayout>
+
+</ScrollView>

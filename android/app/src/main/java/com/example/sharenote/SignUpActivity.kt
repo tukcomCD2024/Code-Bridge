@@ -120,8 +120,8 @@ class SignUpActivity : AppCompatActivity() {
     private fun saveUserDataToFirestore() {
         val user = hashMapOf(
             "Name" to Name,
-            "Email" to Email
-            // 비밀번호는 보안상의 이유로 저장하지 않음
+            "Email" to Email,
+            "Password" to Password
         )
 
         // Firestore에 사용자 정보 저장
