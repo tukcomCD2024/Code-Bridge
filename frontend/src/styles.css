@@ -1,12 +1,6 @@
 @import url(//spoqa.github.io/spoqa-han-sans/css/SpoqaHanSansNeo.css);
 @import url("https://cdn.jsdelivr.net/gh/toss/tossface/dist/tossface.css");
 
-/* @font-face {
-  font-family: "Tossface";
-  src: url("https://cdn.jsdelivr.net/gh/toss/tossface/dist/TossFaceFontWeb.otf")
-    format("opentype");
-} */
-
 .App {
   * {
     font-family: "Spoqa Han Sans Neo", "Tossface", "sans-serif";

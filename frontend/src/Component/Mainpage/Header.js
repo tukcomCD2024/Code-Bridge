@@ -24,7 +24,7 @@ const Header = ({ toggle, setToggle }) => {
       <StNavMenu>
         {/* <li onClick={() => navigate("/login")}>로그인(삭제)</li>
         <li onClick={() => navigate("/signup")}>회원가입(삭제)</li> */}
-        <li onClick={() => navigate("/")}>로그아웃</li>
+          <li onClick={() => {navigate("/"); localStorage.clear();}}>로그아웃</li>
         <li onClick={() => navigate("/editProfile")}>회원정보수정</li>
         <li onClick={() => navigate("/about")}>About</li>
       </StNavMenu>
@@ -33,7 +33,7 @@ const Header = ({ toggle, setToggle }) => {
         <StNavMenuNone>
           {/* <li onClick={() => navigate("/login")}>로그인(삭제)</li>
           <li onClick={() => navigate("/signup")}>회원가입(삭제)</li> */}
-          <li onClick={() => navigate("/")}>로그아웃</li>
+          <li onClick={() => {navigate("/"); localStorage.clear();}}>로그아웃</li>
           <li onClick={() => navigate("/editProfile")}>회원정보수정</li>
           <li onClick={() => navigate("/about")}>About</li>
         </StNavMenuNone>

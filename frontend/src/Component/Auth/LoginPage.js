@@ -36,7 +36,11 @@ const LoginPage = () => {
       });
 
       if (response.ok) {
-        localStorage.setItem("userId", email);
+        const data = await response.json();
+        const { name, userId } = data;
+        localStorage.setItem("userId", userId); // 백엔드로부터 받은 유저 (고유)아이디
+        localStorage.setItem("email", email); // 로그인한 아이디
+        console.log(userId);
         navigate("/main");
       } else {
         const errorData = await response.json();
