@@ -49,12 +49,12 @@ function ImagetoBackend({ onImageUpload }) {
         contentType: false,
         success: function (response) {
           console.log("Upload successful: " + response.image_url);
-          alert("S3 URL: " + response.image_url);
+          localStorage.setItem('recentImageUrl',response.image_url)
         },
         error: function (error) {
           console.error("Error uploading image: " + error);
           // HTTP 상태 코드와 함께 오류 메시지를 표시합니다.
-          alert("Upload failed. Error Code: " + error.status);
+          alert("이미지 업로드 실패. 에러 코드: " + error.status);
         },
       });
     }

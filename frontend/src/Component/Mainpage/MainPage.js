@@ -2,7 +2,6 @@ import React, { useState, useRef, useEffect } from "react";
 import { Routes, Route, Link, useLocation, useNavigate  } from "react-router-dom";
 import Header from "./Header";
 import NotePage from "../Note/NotePage"; // NotePage 컴포넌트를 가져옴.
-import { formatCreationTime } from "../Utils/formatCreationTime";
 import styled, { keyframes, css } from "styled-components";
 import { defaultEmoji, emojiList } from "../Utils/emojiList";
 
@@ -132,20 +131,6 @@ function MainPage() {
     };
   }, [modalOpen]);
 
-  const createOrganization = () => {
-    const newOrganization = {
-      id: Date.now(),
-      name: organizationName,
-      emoji: myEmoji,
-     // submissionTime: new Date().toISOString(),
-    };
-
-    const updatedOrganizations = [...organizations, newOrganization];
-    setOrganizations(updatedOrganizations);
-    localStorage.setItem("organizations", JSON.stringify(updatedOrganizations));
-    handleCloseModal();
-  };
-
   const handleButtonClick = () => {
     setModalOpen(true);
   };
@@ -169,6 +154,19 @@ function MainPage() {
     const name = organizationName;
     const emoji = myEmoji; // Organization 대표 마크를 이모지로 설정함.
 
+    const createOrganization = (organizationId) => {
+      const newOrganization = {
+        id: organizationId,
+        name: organizationName,
+        emoji: myEmoji,
+      };
+  
+      const updatedOrganizations = [...organizations, newOrganization];
+      setOrganizations(updatedOrganizations);
+      localStorage.setItem("organizations", JSON.stringify(updatedOrganizations));
+      handleCloseModal();
+    };
+  
     try {
       const response = await fetch("/api/user/organization", {
         method: "POST",
@@ -180,18 +178,20 @@ function MainPage() {
 
       if (response.ok) {
         const responseData = await response.json();
+        const organizationId = responseData.organizationId;
+        createOrganization(organizationId);
         console.log("생성 성공:", responseData);
-        createOrganization();
+
       } else {
         const errorData = await response.json();
         alert(`생성 실패: ${errorData.message}`);
       }
-    } catch (error) {
-      // createOrganization(); 
-      console.error("Error: ", error);
+    } catch (error) {      console.error("Error: ", error);
       alert("처리 중 오류가 발생했습니다.");
     }
   };
+
+  
 
   return (
     <StContainer>
