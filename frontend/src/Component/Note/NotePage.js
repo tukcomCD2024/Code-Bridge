@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useParams, Link, Route, Routes, useNavigate } from "react-router-dom";
+import { useParams, Link, Route, Routes, useNavigate, useLocation } from "react-router-dom";
 import styled, { keyframes, css } from "styled-components";
 import { formatCreationTime } from "../Utils/formatCreationTime";
 import OrganizationInfoModal from "./organizationInfo/organizationInfo";
@@ -80,6 +80,7 @@ function NoteModal({
 
 function NotePage() {
   const { id } = useParams();
+  const location = useLocation(); // 현재 위치 정보를 가져옴
   const modalRef = useRef();
   const organizationId = Number(id);
   const navigate = useNavigate();
@@ -90,6 +91,7 @@ function NotePage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [OrganizationModalOpen, setOrganizationModalOpen] = useState(false);
   const [isInvalid, setIsInvalid] = useState(false);
+
 
   const uploadImage = (e) => {
     const selectedFile = e.target.files[0];
@@ -114,6 +116,29 @@ function NotePage() {
     // 허용된 확장자들 중에 포함되어 있는지 확인
     return allowedExtensions.includes(fileExtension);
   };
+
+  useEffect(() => {
+    const userId = localStorage.getItem('userId');
+    const fetchOrganizations = async () => {
+      try {
+        const response = await fetch(`/api/user/organization/${userId}`);
+        if (response.ok) {
+          const organizations = await response.json();
+          const matchedOrganization = organizations.find(org => org.id === id);
+          console.log(matchedOrganization);
+          if (matchedOrganization) {
+            // 상태 업데이트
+            setOrganization(matchedOrganization);
+          }
+        } else {
+          console.error('Failed to fetch');
+        }
+      } catch (error) {
+        console.error('Error fetching:', error);
+      }
+    };
+    fetchOrganizations();
+  }, [id, location]);
 
   useEffect(() => {
     // 로컬 스토리지에서 organizations 데이터를 가져옴
@@ -253,6 +278,9 @@ function NotePage() {
     </div>
   );
 }
+
+
+
 
 const OrganizationInfo = styled.button`
   display: flex;

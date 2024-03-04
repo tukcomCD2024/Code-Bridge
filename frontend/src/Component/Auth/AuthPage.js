@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import styled from "styled-components";
 import veryBigEye from "../../image/veryBigEye.gif";
 import book1 from "../../image/book1.gif";
@@ -6,6 +6,10 @@ import { useNavigate } from "react-router-dom";
 
 function AuthPage() {
   const navigate = useNavigate();
+
+    useEffect(() => {
+      localStorage.clear();
+    }, []);
 
   return (
     <FlexContainer>

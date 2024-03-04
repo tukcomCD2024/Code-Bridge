@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Routes, Route, Link, useLocation  } from "react-router-dom";
+import { Routes, Route, Link, useLocation, useNavigate  } from "react-router-dom";
 import Header from "./Header";
 import NotePage from "../Note/NotePage"; // NotePage 컴포넌트를 가져옴.
 import { formatCreationTime } from "../Utils/formatCreationTime";
@@ -19,19 +19,20 @@ function EmojiPicker({ onSelect }) {
 }
 
 function OrganizationCard({ organization }) {
-  return (
-    <Link to={`/organization/${organization.id}`}>
-      <OrganizationContainer>
-        <Emoji>{organization.emoji || defaultEmoji}</Emoji>
-        <OrganizationName>
-          {organization.name}
-        </OrganizationName>
-        {/* <p style={{ color: "#000000" }}>
-          <small>{formatCreationTime(organization.submissionTime)}</small>
-        </p> */}
-      </OrganizationContainer>
-    </Link>
-  );
+ const navigate = useNavigate(); // useNavigate 훅 사용
+
+ const handleOrganizationClick = () => {
+   navigate(`/organization/${organization.id}`); // 해당 조직 페이지로 이동
+ };
+
+ return (
+  <OrganizationContainer onClick={handleOrganizationClick}>
+  <span style={{ fontSize: '120px', padding: '0px 0px' }}>{organization.emoji || defaultEmoji}</span>
+    <OrganizationName>
+      {organization.name}
+    </OrganizationName>
+  </OrganizationContainer>
+ );
 }
 
 function OrganizationModal({
@@ -200,6 +201,17 @@ function MainPage() {
           Organization 생성하기
         </StOrgCreateBtn>
       </StHeader>
+      <OrganizationsContainer>
+      {organizations?.length > 0 ? (
+            organizations.map((org, index) => (
+              <OrganizationCard organization={org} index={index} key={org.id} />
+            ))
+          ) : (
+            <NoOrganizationMessage>
+              📢 소속된 Organization이 없습니다.
+            </NoOrganizationMessage>
+          )}
+      </OrganizationsContainer>
       {modalOpen && (
         <OrganizationModal
           modalRef={modalRef}
@@ -213,16 +225,6 @@ function MainPage() {
           handleCreate={handleCreate}
         />
       )}
-
-{organizations?.length > 0 ? (
-  organizations.map((org, index) => (
-    <OrganizationCard organization={org} index={index} key={org.id} />
-  ))
-) : (
-  <NoOrganizationMessage>
-    📢 소속된 Organization이 없습니다.
-  </NoOrganizationMessage>
-)}
       <Routes>
         {organizations.map((org) => (
           <Route
@@ -244,9 +246,9 @@ const Emoji = styled.p`
 
   @media screen and (max-width: 1000px) {
     padding: 0px 0px;
-    font-size: 50px;
   }
 `;
+
 
 const EmojiContainer = styled.div`
   display: flex;
@@ -429,20 +431,39 @@ const OrganizationName = styled.p`
   display: block; /* 블록 레벨 요소로 만들기 (필요한 경우) */
 `;
 
+const OrganizationsContainer = styled.div`
+padding-left: 80px;
+display: flex;
+flex-wrap: wrap;
+justify-content: start; /* 가로 축에서 중앙 정렬 */
+
+gap: 20px;
+
+@media (max-width: 768px) {
+  padding-left: 0px;
+}
+
+a {
+  color: inherit; /* 상위 요소로부터 색상을 상속받습니다. */
+  text-decoration: none; /* 밑줄 등의 텍스트 장식을 제거합니다. */
+}
+`;
+
 const OrganizationContainer = styled.div`
-  width: 10%;
-  text-align: center;
-  display: inline-block;
-  p,
-  small {
-    margin: 0px; /* Remove top and bottom margins */
-  }
+display: flex;
+flex-direction: column; // 항목을 세로로 정렬
+width: 180px;
+margin: 10px; // 주변 여백
+text-align: center;
+cursor: pointer; // 마우스 오버 시 커서 변경
 `;
 
 const NoOrganizationMessage = styled.div`
   display: flex;
+  width: 100%;
   justify-content: center;
   margin-top: 200px;
+  margin-right: 80px;
   align-items: center;
   font-weight: bold;
   font-size: 20px;

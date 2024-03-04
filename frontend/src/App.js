@@ -20,7 +20,7 @@ export default function App() {
           <Route path="/editProfile" element={<UserProfileEdit />} />
           <Route path="/logout" element={<Mainpage />} />
           <Route path="/about" element={<Mainpage />} />
-          <Route path="/organization/:id" element={<NotePage />} />
+          <Route path="/organization/:id/*" element={<NotePage />} />
           <Route path="/organization/:id/:id" element={<Page />} />
         </Routes>
       </BrowserRouter>

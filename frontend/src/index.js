@@ -16,8 +16,6 @@ const GlobalStyle = createGlobalStyle`
   }
 `;
 
-localStorage.clear();
-
 ReactDOM.render(
   <>
       <App />
