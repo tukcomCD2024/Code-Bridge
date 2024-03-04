@@ -20,7 +20,7 @@ function AuthPage() {
       <AuthBox>
         <ToMain
           style={{ fontSize: "30px", fontWeight: "bold", marginBottom: "30px" }}
-          onClick={() => navigate("/main")}
+          onClick={() => {alert("로그인 안하면 에러날 수 있음");navigate("/main");}}
         >
           ShareNote
         </ToMain>

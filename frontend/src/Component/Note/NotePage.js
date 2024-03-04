@@ -28,7 +28,7 @@ function NoteCard({ note, index }) {
             textDecoration: "underline white",
           }}
         >
-          <small>{formatCreationTime(note.submissionTime)}</small>
+          <small>&nbsp;</small>
         </p>
       </NoteContainer>
     </Link>
@@ -80,9 +80,9 @@ function NoteModal({
 
 function NotePage() {
   const { id } = useParams();
+  const organizationId = String(id);
   const location = useLocation(); // 현재 위치 정보를 가져옴
   const modalRef = useRef();
-  const organizationId = Number(id);
   const navigate = useNavigate();
   const [organization, setOrganization] = useState(null);
   const [myimage, setMyImage] = useState(null);
@@ -119,15 +119,13 @@ function NotePage() {
 
   useEffect(() => {
     const userId = localStorage.getItem('userId');
-    const fetchOrganizations = async () => {
+    const fetchNotesInformation = async () => {
       try {
         const response = await fetch(`/api/user/organization/${userId}`);
         if (response.ok) {
           const organizations = await response.json();
           const matchedOrganization = organizations.find(org => org.id === id);
-          console.log(matchedOrganization);
           if (matchedOrganization) {
-            // 상태 업데이트
             setOrganization(matchedOrganization);
           }
         } else {
@@ -137,33 +135,32 @@ function NotePage() {
         console.error('Error fetching:', error);
       }
     };
-    fetchOrganizations();
+
+    const fetchNotes = async () => {
+      const organizaionId = id;
+      try {
+        const response = await fetch(`/api/user/note/${organizaionId}`);
+          if (response.ok) {
+            const data = await response.json();
+            const fetchedNoteData = data.map(note => ({
+              id: note.id,
+              name: note.title,
+              image: note.noteImageUrl,
+              organizationId: organizationId
+
+            }));
+            setNotes(fetchedNoteData);
+          } else {
+            console.error("Failed to fetch");
+          }
+        } catch (error) {
+          console.error('Error fetching', error);
+        }
+      };
+
+    fetchNotesInformation();
+    fetchNotes();
   }, [id, location]);
-
-  useEffect(() => {
-    // 로컬 스토리지에서 organizations 데이터를 가져옴
-    const storedOrganizations = JSON.parse(
-      localStorage.getItem("organizations")
-    );
-    if (storedOrganizations) {
-      // URL에서 가져온 id와 일치하는 organization을 찾음
-      const foundOrganization = storedOrganizations.find(
-        (org) => org.id === organizationId
-      );
-      setOrganization(foundOrganization);
-    }
-  }, [organizationId]);
-
-  useEffect(() => {
-    // 로컬 스토리지에서 노트 데이터 불러오기
-    const savedNotes = JSON.parse(localStorage.getItem("notes")) || {};
-    // 현재 조직에 대한 노트만 설정
-    if (savedNotes[organizationId]) {
-      setNotes(savedNotes[organizationId]);
-    } else {
-      setNotes([]);
-    }
-  }, [organizationId]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -195,6 +192,7 @@ function NotePage() {
   const handleCloseModal = () => {
     setModalOpen(false);
     setMyImage(defaultImage);
+    localStorage.setItem("recentImageUrl", '');
     setNoteName("");
   };
 
@@ -206,31 +204,54 @@ function NotePage() {
     setOrganizationModalOpen(false);
   };
 
-  const handleCreate = () => {
+  const handleCreate = async (e) => {
+    e.preventDefault();
+
     if (noteName === "") {
       setIsInvalid(true);
       setTimeout(() => setIsInvalid(false), 800);
       return;
     }
-    const newNote = {
-      id: Date.now(),
-      name: noteName,
-      image: myimage || defaultImage,
-      submissionTime: new Date().toISOString(),
-      organizationId: organizationId,
+
+    const organizationId = id;
+    const title = noteName;
+    const createUser = localStorage.getItem("userId");
+    const noteImageUrl = localStorage.getItem('recentImageUrl') || 'https://sharenotebucket.s3.ap-northeast-2.amazonaws.com/NoneImage2.png';
+    
+    const createNote = (noteId) => {
+      const newNote = {
+        id: noteId,
+        name: noteName,
+        image: myimage || defaultImage,
+      };
+
+      const updatedNotes = [...notes, newNote];
+      setNotes(updatedNotes);
+      localStorage.setItem("notes", JSON.stringify(updatedNotes));
+      handleCloseModal();
     };
-
-    // 노트 저장 로직 수정
-    const savedNotes = JSON.parse(localStorage.getItem("notes")) || {};
-    const organizationNotes = savedNotes[organizationId]
-      ? savedNotes[organizationId]
-      : [];
-    const updatedNotes = [...organizationNotes, newNote];
-    savedNotes[organizationId] = updatedNotes;
-
-    setNotes(updatedNotes);
-    localStorage.setItem("notes", JSON.stringify(savedNotes));
-    handleCloseModal();
+    
+    try {
+      const response = await fetch("/api/user/note", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ organizationId, title, createUser, noteImageUrl }),
+      });
+      if (response.ok) {
+        const responseData = await response.json();
+        const noteId = responseData.noteId;
+        createNote(noteId);
+        console.log("생성 성공:", responseData);
+      } else {
+        const errorData = await response.json();
+        alert(`생성 실패: ${errorData.message}`);
+      }
+    } catch (error) {
+      console.error("Error: ", error);
+      alert("처리 중 오류가 발생했습니다.");
+    }
   };
 
   return (
@@ -278,8 +299,6 @@ function NotePage() {
     </div>
   );
 }
-
-
 
 
 const OrganizationInfo = styled.button`
