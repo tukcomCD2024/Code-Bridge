@@ -5,9 +5,11 @@
     android:orientation="vertical"
     android:padding="16dp">
 
-    <!-- 텍스트 표시를 위한 TextView -->
+
+
+    <!-- 텍스트 제목 표시를 위한 TextView -->
     <TextView
-        android:id="@+id/textViewText"
+        android:id="@+id/titleViewText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
@@ -15,9 +17,23 @@
         android:layout_marginEnd="8dp"
         android:layout_marginBottom="8dp"
         android:textColor="@android:color/black"
+        android:textStyle="bold"
         android:textSize="16sp" />
 
-    <!-- 이미지 표시를 위한 ImageView -->
+
+    <TextView
+        android:id="@+id/textViewText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/titleViewText"
+        android:layout_alignParentStart="true"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
+        android:maxLines="3"
+        android:ellipsize="end"
+        android:textColor="@android:color/black"
+        android:textSize="16sp" />
+
     <ImageView
         android:id="@+id/imageViewImage"
         android:layout_width="100dp"

@@ -16,6 +16,7 @@ import java.util.*
 class NoteActivity : AppCompatActivity() {
 
     private lateinit var editTextNote: EditText
+    private lateinit var editTextTitle: EditText
     private lateinit var buttonAddImage: Button
     private lateinit var buttonSaveNote: Button
     private lateinit var imagePreview: ImageView
@@ -39,6 +40,7 @@ class NoteActivity : AppCompatActivity() {
         setContentView(R.layout.activity_note)
 
         editTextNote = findViewById(R.id.editTextNote)
+        editTextTitle = findViewById(R.id.editTextTitle)
         buttonAddImage = findViewById(R.id.buttonAddImage)
         buttonSaveNote = findViewById(R.id.buttonSaveNote)
         imagePreview = findViewById(R.id.imagePreview)
@@ -47,9 +49,11 @@ class NoteActivity : AppCompatActivity() {
         noteId = intent.getStringExtra("note_id")
 
         if (!noteId.isNullOrEmpty()) {
+            val noteTitle = intent.getStringExtra("note_title")
             val noteText = intent.getStringExtra("note_text")
             val noteImageUri = intent.getStringExtra("note_image_uri")
 
+            editTextTitle.setText(noteTitle)
             editTextNote.setText(noteText)
             selectedImageUri = Uri.parse(noteImageUri)
             Glide.with(this).load(selectedImageUri).into(imagePreview)
@@ -63,6 +67,17 @@ class NoteActivity : AppCompatActivity() {
         buttonSaveNote.setOnClickListener {
             saveNote()
         }
+
+        val buttonDeleteImage = findViewById<Button>(R.id.buttonDeleteImage)
+        buttonDeleteImage.setOnClickListener {
+            deleteImage()
+        }
+    }
+
+    private fun deleteImage() {
+        selectedImageUri = null
+        imagePreview.setImageResource(android.R.color.transparent) // 이미지 뷰를 투명 이미지로 설정하여 이미지 제거
+        imagePreview.visibility = ImageView.GONE
     }
 
     private fun openGallery() {
@@ -72,6 +87,7 @@ class NoteActivity : AppCompatActivity() {
     }
 
     private fun saveNote() {
+        val noteTitle = editTextTitle.text.toString().trim()
         val noteText = editTextNote.text.toString().trim()
 
         if (noteText.isEmpty()) {
@@ -85,6 +101,7 @@ class NoteActivity : AppCompatActivity() {
         if (!noteId.isNullOrEmpty()) {
             val note = hashMapOf(
                 "id" to noteId, // NoteId를 유지하도록 수정
+                "title" to noteTitle,
                 "text" to noteText,
                 "imageUri" to selectedImageUri.toString()
             )
@@ -106,6 +123,7 @@ class NoteActivity : AppCompatActivity() {
             val newNoteId = UUID.randomUUID().toString()
             val note = hashMapOf(
                 "id" to newNoteId, // 새로운 노트의 ID 생성
+                "title" to noteTitle,
                 "text" to noteText,
                 "imageUri" to selectedImageUri.toString()
             )

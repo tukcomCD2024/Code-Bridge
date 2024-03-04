@@ -2,6 +2,7 @@ package com.example.sharenote
 
 data class Note(
     val id: String, // 문서의 고유 ID
+    val title: String,
     val text: String,
     val imageUri: String?
 )

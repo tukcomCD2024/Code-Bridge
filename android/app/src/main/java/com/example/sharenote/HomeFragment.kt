@@ -4,6 +4,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.ImageButton
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -21,6 +22,9 @@ class HomeFragment : Fragment(), NoteListAdapter.OnNoteClickListener {
     private lateinit var noteListAdapter: NoteListAdapter
     private var notes: MutableList<Note> = mutableListOf()
 
+
+
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -32,6 +36,15 @@ class HomeFragment : Fragment(), NoteListAdapter.OnNoteClickListener {
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
         noteListAdapter = NoteListAdapter(notes, this)
         recyclerView.adapter = noteListAdapter
+
+
+
+
+        // themesBtn 클릭 시 buttonCreateNote와 recyclerViewNotes의 가시성을 토글합니다.
+        val themesBtn = view.findViewById<ImageButton>(R.id.themesBtn)
+        themesBtn.setOnClickListener {
+            toggleNotesVisibility(themesBtn)
+        }
 
         // Create Note 버튼 클릭 시 NoteActivity로 이동
         val buttonCreateNote = view.findViewById<Button>(R.id.buttonCreateNote)
@@ -55,10 +68,31 @@ class HomeFragment : Fragment(), NoteListAdapter.OnNoteClickListener {
     override fun onNoteClick(note: Note) {
         val intent = Intent(requireContext(), NoteActivity::class.java)
         intent.putExtra("note_id", note.id)
+        intent.putExtra("note_title", note.title)
         intent.putExtra("note_text", note.text)
         intent.putExtra("note_image_uri", note.imageUri)
         startActivity(intent)
     }
+
+    private fun toggleNotesVisibility(themesBtn: ImageButton) {
+        // recyclerViewNotes의 가시성을 토글합니다.
+        recyclerView.visibility = if (recyclerView.visibility == View.VISIBLE) {
+            View.GONE
+        } else {
+            View.VISIBLE
+        }
+
+        // themesBtn 이미지를 변경합니다.
+        val newImageResource = if (recyclerView.visibility == View.VISIBLE) {
+            R.drawable.baseline_keyboard_arrow_right_24 // 토글 후 recyclerView가 보이는 경우
+        } else {
+            R.drawable.baseline_keyboard_arrow_down_24 // 토글 후 recyclerView가 숨겨진 경우
+        }
+
+        // 새로운 이미지로 설정합니다.
+        themesBtn.setImageResource(newImageResource)
+    }
+
 
     private fun createNote() {
         val intent = Intent(requireContext(), NoteActivity::class.java)
@@ -73,9 +107,10 @@ class HomeFragment : Fragment(), NoteListAdapter.OnNoteClickListener {
                 notes.clear()
                 for (document in result) {
                     val noteID = document.getString("id") ?: ""
+                    val noteTitle = document.getString("title") ?:""
                     val noteText = document.getString("text") ?: ""
                     val noteImageUri = document.getString("imageUri") ?: ""
-                    val note = Note(noteID, noteText, noteImageUri)
+                    val note = Note(noteID, noteTitle, noteText, noteImageUri)
                     notes.add(note)
                 }
                 noteListAdapter.notifyDataSetChanged()
