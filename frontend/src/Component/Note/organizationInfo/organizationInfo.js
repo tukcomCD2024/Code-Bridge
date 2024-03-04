@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import styled from "styled-components";
 import toastr from "toastr";
 import "toastr/build/toastr.css";
@@ -15,6 +15,10 @@ const OrganizationInfoModal = ({
 
   const [userNicknames, setUserNicknames] = useState([]);
   const [userEmailInput, setUserEmailInput] = useState(""); // 사용자 이메일 입력 상태 관리
+  const [isSendButtonDisabled, setIsSendButtonDisabled] = useState(false);
+
+  const { id } = useParams();
+  const organizationId = String(id);
 
   const initialNicknames = [
     "닉네임1",
@@ -27,9 +31,6 @@ const OrganizationInfoModal = ({
     "닉네임8",
     "닉네임9",
   ];
-
-  localStorage.setItem("nickname", "돈돈참");
-  localStorage.setItem("organizationId", "돈");
 
   localStorage.setItem("userNicknames", JSON.stringify(initialNicknames));
 
@@ -48,22 +49,24 @@ const OrganizationInfoModal = ({
   // 이메일 전송 처리 함수
   const handleSendInvitation = async () => {
     const nickname = localStorage.getItem('nickname');
-    const organizationId = localStorage.getItem('organizationId');
+
     // 이메일 형식 검증
     if (!validateEmail(userEmailInput)) {
       toastr.remove();
-      toastr.info("유효하지 않는 이메일입니다.");
+      toastr.error("유효하지 않는 이메일입니다.");
       return;
     }
 
-    const endpoint = "/api/email";
+    const endpoint = "/api/user/organization/invitation";
     try {
+    setIsSendButtonDisabled(true);
+    toastr.info("잠시만 기다려주세요...");
       const response = await fetch(endpoint, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email: userEmailInput,nickname,organizationId }), // 입력된 이메일 데이터를 JSON 형태로 변환하여 전송
+        body: JSON.stringify({ email: userEmailInput, nickname, organizationId }), // 입력된 이메일 데이터를 JSON 형태로 변환하여 전송
       });
 
       if (!response.ok) throw new Error("Network response was not ok.");
@@ -71,10 +74,12 @@ const OrganizationInfoModal = ({
       toastr.options.positionClass = "toast-top-right";
       toastr.success("초대 메일이 성공적으로 전송되었습니다.");
       setUserEmailInput("");
+      setIsSendButtonDisabled(false);
     } catch (error) {
       toastr.clear();
       toastr.options.positionClass = "toast-top-right";
       toastr.error("초대 메일 전송에 실패했습니다.");
+      setIsSendButtonDisabled(false);
     }
   };
 
@@ -145,7 +150,10 @@ const OrganizationInfoModal = ({
                 onChange={handleEmailInputChange} // 입력 값 변경 처리
                 placeholder="초대하려는 유저의 이메일을 입력하세요."
               />
-              <SendButton onClick={handleSendInvitation}>보내기</SendButton>
+              <SendButton 
+              onClick={handleSendInvitation} 
+              disabled={isSendButtonDisabled} 
+              style={{ cursor: isSendButtonDisabled ? 'not-allowed' : 'pointer'}}>보내기</SendButton>
             </InvitationInputWrapper>
           </TopContainer>
           <BottomContainer>
