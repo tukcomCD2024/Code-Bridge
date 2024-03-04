@@ -2,7 +2,6 @@ import React, { useEffect, useRef, useState } from "react";
 import styled from "styled-components";
 
 // prosemirror 라이브러리(리치 텍스트 에디터)
-import { undoInputRule } from "prosemirror-inputrules";
 import { Schema, DOMParser, Node, Fragment } from "prosemirror-model";
 import { EditorState, Selection, TextSelection } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
@@ -10,7 +9,7 @@ import { schema as basicSchema } from "prosemirror-schema-basic";
 import { addListNodes } from "prosemirror-schema-list";
 import { exampleSetup } from "prosemirror-example-setup";
 import { keymap } from "prosemirror-keymap";
-import { findParentNodeOfType } from "prosemirror-utils";
+
 
 import { updateImageNode, imagePlugin } from "prosemirror-image-plugin";
 import "./prosemirror_css/prosemirror_image_plugin/common.css";
