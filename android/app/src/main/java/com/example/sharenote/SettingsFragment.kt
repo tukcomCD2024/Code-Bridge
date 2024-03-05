@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import com.example.sharenote.MainActivity
+import com.example.sharenote.MyPageActivity
 import com.example.sharenote.databinding.FragmentSettingsBinding
 
 class SettingsFragment : Fragment() {
@@ -64,16 +65,22 @@ class SettingsFragment : Fragment() {
 
         // Add listeners for other switches...
 
-        binding.buttonComplete.setOnClickListener {
-            goToMainActivity()
+
+
+        binding.button2.setOnClickListener {
+            goToMyPageActivity()
         }
+
     }
 
-    private fun goToMainActivity() {
-        val intent = Intent(activity, MainActivity::class.java)
+
+    private fun goToMyPageActivity() {
+        val intent = Intent(activity, MyPageActivity::class.java)
         startActivity(intent)
         requireActivity().finish()
     }
+
+
 
 
 }

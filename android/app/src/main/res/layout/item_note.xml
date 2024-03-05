@@ -1,59 +1,69 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:padding="16dp">
+    android:orientation="vertical">
 
 
 
-    <!-- 텍스트 제목 표시를 위한 TextView -->
-    <TextView
-        android:id="@+id/titleViewText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentTop="true"
-        android:layout_marginEnd="8dp"
-        android:layout_marginBottom="8dp"
-        android:textColor="@android:color/black"
-        android:textStyle="bold"
-        android:textSize="16sp" />
-
-
-    <TextView
-        android:id="@+id/textViewText"
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/titleViewText"
-        android:layout_alignParentStart="true"
-        android:layout_marginEnd="8dp"
-        android:layout_marginBottom="8dp"
-        android:maxLines="3"
-        android:ellipsize="end"
-        android:textColor="@android:color/black"
-        android:textSize="16sp" />
+        android:layout_marginTop="5dp"
+        android:layout_marginBottom="5dp"
+        android:padding="10dp">
 
-    <ImageView
-        android:id="@+id/imageViewImage"
-        android:layout_width="100dp"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/textViewText"
-        android:layout_alignParentEnd="true"
-        android:layout_marginStart="8dp"
-        android:layout_marginBottom="8dp"
-        android:adjustViewBounds="true"
-        android:scaleType="fitCenter" />
+        <!-- 텍스트 제목 표시를 위한 TextView -->
+        <TextView
+            android:id="@+id/titleViewText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:layout_marginBottom="8dp"
+            android:textColor="@android:color/black"
+            android:textStyle="bold"
+            android:textSize="16sp" />
 
 
-    <Button
-        android:id="@+id/buttonDeleteNote"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="삭제"
-        android:layout_alignStart="@id/textViewText"
-        android:layout_below="@id/imageViewImage"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="8dp"/>
+        <TextView
+            android:id="@+id/textViewText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/titleViewText"
+            android:layout_marginEnd="8dp"
+            android:layout_marginBottom="8dp"
+            android:maxLines="3"
+            android:ellipsize="end"
+            android:textColor="@android:color/black"
+            android:textSize="16sp" />
 
-</RelativeLayout>
+        <ImageView
+            android:id="@+id/imageViewImage"
+            android:layout_width="100dp"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/textViewText"
+            android:layout_alignParentEnd="true"
+            android:layout_marginStart="8dp"
+            android:layout_marginBottom="8dp"
+            android:adjustViewBounds="true"
+            android:scaleType="fitCenter" />
+
+
+        <Button
+            android:id="@+id/buttonDeleteNote"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_centerInParent="true"
+            android:text="삭제"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="8dp"/>
+
+    </RelativeLayout>
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/gray"
+        android:layout_marginVertical="8dp"/>
+</LinearLayout>
