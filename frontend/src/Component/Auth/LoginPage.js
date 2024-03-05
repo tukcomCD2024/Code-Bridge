@@ -20,12 +20,12 @@ const LoginPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+  
     if (password === "" || email === "") {
       alert("이메일(ID)과 비밀번호를 모두 입력해주세요.");
       return;
     }
-
+  
     try {
       const response = await fetch("/api/user/login", {
         method: "POST",
@@ -34,24 +34,32 @@ const LoginPage = () => {
         },
         body: JSON.stringify({ email, password }),
       });
-
+  
+      // Content-Type 헤더를 체크하여 응답 타입 판별
+      const contentType = response.headers.get('content-type');
+  
       if (response.ok) {
-        const data = await response.json();
-        const { name, userId } = data;
-        localStorage.setItem("userId", userId); // 백엔드로부터 받은 유저 (고유)아이디
-        localStorage.setItem("email", email); // 로그인한 아이디
-        console.log(userId);
-        navigate("/main");
+        if (contentType && contentType.includes('application/json')) {
+          const data = await response.json();
+          const { name, userId } = data;
+          localStorage.setItem("userId", userId); // 백엔드로부터 받은 유저 (고유)아이디
+          localStorage.setItem("nickname", name); // 백엔드로부터 받은 유저 닉네임
+          localStorage.setItem("email", email); // 로그인한 아이디
+          navigate("/main");
+        }
       } else {
-        const errorData = await response.json();
-        alert(`로그인 실패: ${errorData.message}`);
+        // 에러 응답 처리
+        if (contentType && contentType.includes('text/plain')) {
+          // 응답이 텍스트 형식인 경우
+          const errorMessage = await response.text();
+          alert(`로그인 실패: ${errorMessage}`);
+        }
       }
     } catch (error) {
       console.error("Error: ", error);
       alert("처리 중 오류가 발생했습니다.");
     }
   };
-
   return (
     <Container>
       <ContentWrapper>
