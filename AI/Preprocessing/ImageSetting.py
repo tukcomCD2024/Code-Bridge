@@ -1,4 +1,4 @@
-from PIL import Image, ImageFilter
+from PIL import Image, ImageFilter, ImageOps
 import cairosvg
 import os
 import numpy as np
@@ -7,7 +7,7 @@ tagsTemp = ['rabbit', 'bear', 'dog', 'cat', 'tiger', 'horse']
 defaultRoute = '../asset/image/sample2/'
 
 
-def getSubdirectoryList(directoryName='svg'):
+def getSubdirectoryList(defaultRoute=defaultRoute, directoryName='svg'):
     directoryPath = defaultRoute + directoryName
     if not os.path.isdir(directoryPath):
         os.mkdir(directoryPath)
@@ -21,15 +21,48 @@ def getImageList(path):
 
 def convertSVGtoPNG():
     for i in getSubdirectoryList():
+        imgTo = i.replace('svg', 'png')
         for j in getImageList(i):
             imgPath = f'{i}/{j}'
-            imgTo = i.replace('svg', 'png')
             imgSavePath = f"{imgTo}/{j[:-4]}.png"
             try:
                 cairosvg.svg2png(url=imgPath, write_to=imgSavePath)
             except:
                 print('fail')
 
+
+def convertColor2Mono():
+    for i in getSubdirectoryList('../asset/image/', 'animals'):
+        imgTo = i.replace('animals', 'monoAnimals')
+        if not os.path.isdir(imgTo):
+            os.mkdir(imgTo)
+        for j in getImageList(i):
+            imgPath = f'{i}/{j}'
+            imgSavePath = f"{imgTo}/{j}"
+
+            image = Image.open(imgPath)
+            image = image.filter(ImageFilter.FIND_EDGES)
+            image = image.filter(ImageFilter.SHARPEN)
+            image = image.convert("L")
+            image = image.convert("RGB")
+            image = image.resize((224, 224))
+
+            image.save(imgSavePath)
+
+
+def boldLine():
+    for dir, subdir, files in os.walk("../asset/image/animalsMono"):
+        directory = dir.replace('animalsMono', 'animalsFilter')
+        if not os.path.isdir(directory):
+            os.mkdir(directory)
+
+        for img in files:
+            imgpath = f'{dir}/{img}'
+            image = Image.open(imgpath)
+            fn = lambda x: 255-x if x > 0 else 0
+            image = ImageOps.invert(image)
+            image = image.convert('L')
+            image.save(imgpath.replace('animalsMono', 'animalsFilter'))
 
 def imageReformByAlpha(img):
     size = 224
@@ -83,7 +116,12 @@ def svgImageResize():
             img.close()
 
 
+# svgImageResize()
+# convertSVGtoPNG()
+# imageReform()
 
-svgImageResize()
-convertSVGtoPNG()
-imageReform()
+# convertColor2Mono()
+boldLine()
+
+for dir, subdir, files in os.walk(defaultRoute):
+    print(dir, subdir, files)
