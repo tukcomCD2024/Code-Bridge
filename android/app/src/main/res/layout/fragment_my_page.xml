@@ -113,6 +113,7 @@
             android:layout_height="wrap_content"
             android:textSize="25sp"
             android:hint="   비밀번호를 입력하세요"
+
             android:textColorHint="@color/brightgray"
             android:background="@drawable/edittext"
             android:backgroundTint="@color/gray"

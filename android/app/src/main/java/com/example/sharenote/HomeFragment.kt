@@ -5,6 +5,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageButton
+import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -13,6 +14,7 @@ import com.example.sharenote.Note
 import com.example.sharenote.NoteActivity
 import com.example.sharenote.R
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.FirebaseFirestore
 
 class HomeFragment : Fragment(), NoteListAdapter.OnNoteClickListener {
@@ -20,6 +22,7 @@ class HomeFragment : Fragment(), NoteListAdapter.OnNoteClickListener {
     private lateinit var auth: FirebaseAuth
     private lateinit var recyclerView: RecyclerView
     private lateinit var noteListAdapter: NoteListAdapter
+    private lateinit var emailTextView: TextView
     private var notes: MutableList<Note> = mutableListOf()
 
 
@@ -36,6 +39,12 @@ class HomeFragment : Fragment(), NoteListAdapter.OnNoteClickListener {
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
         noteListAdapter = NoteListAdapter(notes, this)
         recyclerView.adapter = noteListAdapter
+
+        // emailTextView를 찾습니다.
+        emailTextView = view.findViewById(R.id.emailtextView)
+
+        // 사용자 이메일을 표시합니다.
+        displayUserEmail()
 
 
 
@@ -119,5 +128,16 @@ class HomeFragment : Fragment(), NoteListAdapter.OnNoteClickListener {
                 // Handle any errors
                 // Log.e(TAG, "Error getting documents: ", exception)
             }
+    }
+
+    private fun displayUserEmail() {
+        // FirebaseAuth 인스턴스를 사용하여 현재 사용자를 가져옵니다.
+        val user: FirebaseUser? = auth.currentUser
+        // 사용자가 로그인되어 있는지 확인합니다.
+        user?.let {
+            // 사용자가 로그인되어 있다면, 이메일을 가져와 TextView에 설정합니다.
+            val userEmail = user.email
+            emailTextView.text = userEmail
+        }
     }
 }
