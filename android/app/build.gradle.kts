@@ -67,7 +67,7 @@ dependencies {
     implementation ("com.squareup.retrofit2:adapter-rxjava2:2.9.0")
 
     implementation ("androidx.preference:preference-ktx:1.1.1")
-
+    implementation ("pl.droidsonroids.gif:android-gif-drawable:1.2.19")
 
     implementation ("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
     implementation ("com.github.bumptech.glide:glide:4.12.0")

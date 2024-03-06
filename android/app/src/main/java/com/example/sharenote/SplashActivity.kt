@@ -3,18 +3,25 @@ package com.example.sharenote
 import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
+import android.os.Looper
 import androidx.appcompat.app.AppCompatActivity
 
 class SplashActivity : AppCompatActivity() {
 
-    val SPLASH_VIEW_TIME: Long = 2000 //2초간 스플래시 화면을 보여줌 (ms)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_splash)
 
-        Handler().postDelayed({ //delay를 위한 handler
-            startActivity(Intent(this, LoginActivity::class.java))
-            finish()
-        }, SPLASH_VIEW_TIME)
+        // Actionbar 제거
+        supportActionBar?.hide()
+
+        val handler = Handler(Looper.getMainLooper())
+        handler.postDelayed(Runnable {
+            Intent(this, MainActivity::class.java).apply {
+                startActivity(this)
+                finish()
+            }
+        }, 3000) // 3초 후(3000) 스플래시 화면을 닫습니다
     }
 }
