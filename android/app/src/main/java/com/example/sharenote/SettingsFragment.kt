@@ -63,9 +63,6 @@ class SettingsFragment : Fragment() {
             sharedPreferences.edit().putBoolean("switch5", isChecked).apply()
         }
 
-        // Add listeners for other switches...
-
-
 
         binding.button2.setOnClickListener {
             goToMyPageActivity()
@@ -77,7 +74,6 @@ class SettingsFragment : Fragment() {
     private fun goToMyPageActivity() {
         val intent = Intent(activity, MyPageActivity::class.java)
         startActivity(intent)
-        requireActivity().finish()
     }
 
 

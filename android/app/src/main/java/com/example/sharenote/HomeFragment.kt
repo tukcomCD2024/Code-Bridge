@@ -1,15 +1,22 @@
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageButton
+import android.widget.PopupWindow
+import android.widget.RelativeLayout
 import android.widget.TextView
+import androidx.appcompat.view.menu.MenuPopupHelper
+import androidx.appcompat.widget.PopupMenu
+import androidx.core.widget.PopupMenuCompat
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.sharenote.LoginActivity
+import com.example.sharenote.MyPageActivity
 import com.example.sharenote.Note
 import com.example.sharenote.NoteActivity
 import com.example.sharenote.R
@@ -23,6 +30,8 @@ class HomeFragment : Fragment(), NoteListAdapter.OnNoteClickListener {
     private lateinit var recyclerView: RecyclerView
     private lateinit var noteListAdapter: NoteListAdapter
     private lateinit var emailTextView: TextView
+    private lateinit var menuBtn: ImageButton
+
     private var notes: MutableList<Note> = mutableListOf()
 
 
@@ -39,6 +48,7 @@ class HomeFragment : Fragment(), NoteListAdapter.OnNoteClickListener {
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
         noteListAdapter = NoteListAdapter(notes, this)
         recyclerView.adapter = noteListAdapter
+        menuBtn = view.findViewById(R.id.menuBtn)
 
         // emailTextView를 찾습니다.
         emailTextView = view.findViewById(R.id.emailtextView)
@@ -46,6 +56,10 @@ class HomeFragment : Fragment(), NoteListAdapter.OnNoteClickListener {
         // 사용자 이메일을 표시합니다.
         displayUserEmail()
 
+        // menuBtn을 클릭했을 때 팝업 메뉴를 표시합니다.
+        menuBtn.setOnClickListener {
+            showPopupMenu()
+        }
 
 
 
@@ -82,6 +96,41 @@ class HomeFragment : Fragment(), NoteListAdapter.OnNoteClickListener {
         intent.putExtra("note_image_uri", note.imageUri)
         startActivity(intent)
     }
+
+    private fun showPopupMenu() {
+        val popupView = layoutInflater.inflate(R.layout.menu_layout, null)
+        val popupWindow = PopupWindow(
+            popupView,
+            700,
+            ViewGroup.LayoutParams.WRAP_CONTENT
+        )
+
+        // 팝업 창이 화면 바깥을 터치하면 닫히도록 설정
+        popupWindow.isOutsideTouchable = true
+
+        // 팝업 창을 뷰의 아래에 표시
+        popupWindow.showAsDropDown(menuBtn)
+
+        // 팝업 창에서 각 항목을 클릭할 때의 동작 정의
+        val settingLayoutView = popupView.findViewById<RelativeLayout>(R.id.settingLayout)
+        settingLayoutView.setOnClickListener {
+            // 설정 메뉴 클릭 시 실행할 작업 추가
+            popupWindow.dismiss() // 팝업 창 닫기
+        }
+
+        val memberLayoutView = popupView.findViewById<RelativeLayout>(R.id.memberLayout)
+        memberLayoutView.setOnClickListener {
+            // 멤버 메뉴 클릭 시 실행할 작업 추가
+            popupWindow.dismiss() // 팝업 창 닫기
+        }
+
+        val trashLayoutView = popupView.findViewById<RelativeLayout>(R.id.trashLayout)
+        trashLayoutView.setOnClickListener {
+            // 휴지통 메뉴 클릭 시 실행할 작업 추가
+            popupWindow.dismiss() // 팝업 창 닫기
+        }
+    }
+
 
     private fun toggleNotesVisibility(themesBtn: ImageButton) {
         // recyclerViewNotes의 가시성을 토글합니다.
