@@ -55,3 +55,6 @@ bootJar {
 	archiveFileName = 'shareNote.jar' // 원하는 JAR 파일의 이름으로 변경
 	archiveVersion = "0.0.0"
 }
+jar {
+	enabled = false // -plain 안생김, 기본 JAR 파일 생성을 비활성화
+}
