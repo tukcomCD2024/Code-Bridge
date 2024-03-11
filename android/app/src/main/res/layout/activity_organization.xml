@@ -15,6 +15,7 @@
         android:padding="1dp">
 
         <TextView
+            android:id="@+id/backTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
@@ -59,7 +60,7 @@
     </RelativeLayout>
 
     <RelativeLayout
-        android:layout_width="380dp"
+        android:layout_width="370dp"
         android:layout_height="100dp"
         android:background="@drawable/rectangle_white"
         android:layout_marginLeft="15dp"
@@ -85,6 +86,7 @@
             android:text="팀과 사용"
             android:textStyle="bold"
             android:textSize="16sp" />
+
         <TextView
             android:id="@+id/teamText1"
             android:layout_width="220dp"
@@ -97,6 +99,7 @@
             android:textSize="12sp" />
 
         <CheckBox
+            android:id="@+id/teamCheckBox"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
@@ -105,7 +108,7 @@
     </RelativeLayout>
 
     <RelativeLayout
-        android:layout_width="380dp"
+        android:layout_width="370dp"
         android:layout_height="100dp"
         android:background="@drawable/rectangle_white"
         android:layout_marginLeft="15dp"
@@ -143,6 +146,7 @@
             android:textSize="12sp" />
 
         <CheckBox
+            android:id="@+id/personalCheckBox"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
@@ -151,7 +155,7 @@
     </RelativeLayout>
 
     <RelativeLayout
-        android:layout_width="380dp"
+        android:layout_width="370dp"
         android:layout_height="100dp"
         android:background="@drawable/rectangle_white"
         android:layout_marginLeft="15dp"
@@ -174,7 +178,7 @@
             android:layout_marginTop="15dp"
             android:layout_marginLeft="10dp"
             android:layout_toRightOf="@+id/educational"
-            android:text="학교용"
+            android:text="교육용"
             android:textStyle="bold"
             android:textSize="16sp" />
         <TextView
@@ -189,6 +193,7 @@
             android:textSize="12sp" />
 
         <CheckBox
+            android:id="@+id/educationalCheckBox"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
@@ -198,12 +203,14 @@
 
 
     <Button
-        android:layout_width="380dp"
+        android:id="@+id/continueButton"
+        android:layout_width="370dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="30dp"
         android:layout_marginLeft="15dp"
         android:background="@drawable/rectangle_blue"
         android:text="계속"
+        android:textSize="16dp"
         android:textColor="@color/white"/>
 
 

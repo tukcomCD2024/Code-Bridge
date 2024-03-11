@@ -2,29 +2,22 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.Gravity
 import android.view.LayoutInflater
-import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageButton
+import android.widget.ImageView
 import android.widget.PopupWindow
 import android.widget.RelativeLayout
 import android.widget.TextView
-import androidx.appcompat.view.menu.MenuPopupHelper
-import androidx.appcompat.widget.PopupMenu
-import androidx.core.view.GravityCompat
-import androidx.core.widget.PopupMenuCompat
-import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.sharenote.LoginActivity
-import com.example.sharenote.MainActivity
-import com.example.sharenote.MyPageActivity
 import com.example.sharenote.Note
 import com.example.sharenote.NoteActivity
+import com.example.sharenote.OrganizationActivity
 import com.example.sharenote.R
-import com.google.android.material.navigation.NavigationView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.FirebaseFirestore
@@ -40,7 +33,7 @@ class HomeFragment : Fragment(), NoteListAdapter.OnNoteClickListener {
 
     private lateinit var emailTextView1: TextView
     private lateinit var popupView: View // 팝업 뷰
-
+    private lateinit var setting_circle: ImageView
 
     private var notes: MutableList<Note> = mutableListOf()
 
@@ -61,10 +54,11 @@ class HomeFragment : Fragment(), NoteListAdapter.OnNoteClickListener {
         menuBtn = view.findViewById(R.id.menuBtn)
         profileForm = view.findViewById(R.id.profileForm)
 
-
         // account_layout을 팝업으로 사용하기 위해 팝업 뷰를 초기화합니다.
         popupView = layoutInflater.inflate(R.layout.account_layout, null)
         emailTextView1 = popupView.findViewById(R.id.email)
+
+        setting_circle = popupView.findViewById(R.id.setting_circle)
 
 
 
@@ -87,6 +81,10 @@ class HomeFragment : Fragment(), NoteListAdapter.OnNoteClickListener {
         }
 
 
+
+        setting_circle.setOnClickListener {
+            showAccountMenuPopup()
+        }
 
 
         // themesBtn 클릭 시 buttonCreateNote와 recyclerViewNotes의 가시성을 토글합니다.
@@ -148,6 +146,44 @@ class HomeFragment : Fragment(), NoteListAdapter.OnNoteClickListener {
             popupWindow.dismiss() // 팝업 창 닫기
         }
     }
+
+    private fun showAccountMenuPopup() {
+        val inflater = LayoutInflater.from(requireContext())
+        val popupView = inflater.inflate(R.layout.menu_account, null)
+
+        val popupWindow = PopupWindow(
+            popupView,
+            ViewGroup.LayoutParams.WRAP_CONTENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT
+        )
+
+        // 팝업 창이 화면 바깥을 터치하면 닫히도록 설정
+        popupWindow.isOutsideTouchable = true
+
+        // 팝업 창을 클릭 가능하도록 설정
+        popupWindow.isFocusable = true
+
+        // 팝업 창을 표시할 위치 설정
+        popupWindow.showAsDropDown(setting_circle) // settingCircleImageView가 클릭된 위치에 따라 팝업 창이 표시됩니다.
+
+        // 워크스페이스 생성 또는 참여 항목 클릭 시 처리
+        val workSpaceLayout = popupView.findViewById<RelativeLayout>(R.id.workSpaceLayout)
+        workSpaceLayout.setOnClickListener {
+            startActivity(Intent(requireContext(), OrganizationActivity::class.java))
+            popupWindow.dismiss() // 팝업 창 닫기
+        }
+
+        // 로그아웃 항목 클릭 시 처리
+        val logoutLayout = popupView.findViewById<RelativeLayout>(R.id.logout_Layout)
+        logoutLayout.setOnClickListener {
+            auth.signOut()
+            val loginIntent = Intent(requireContext(), LoginActivity::class.java)
+            startActivity(loginIntent)
+            requireActivity().finish()
+            popupWindow.dismiss() // 팝업 창 닫기
+        }
+    }
+
 
     private fun showPopupMenu() {
         val popupView = layoutInflater.inflate(R.layout.menu_layout, null)
