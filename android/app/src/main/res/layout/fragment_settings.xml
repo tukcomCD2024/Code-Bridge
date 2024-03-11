@@ -288,7 +288,7 @@
                     android:layout_height="wrap_content"
                     android:layout_alignParentEnd="true"
                     android:layout_centerInParent="true"
-                    android:background="@color/white"
+                    android:background="@android:color/transparent"
                     android:text="시스템 설정" />
             </RelativeLayout>
 
@@ -320,12 +320,12 @@
 
                 <Button
                     android:id="@+id/button2"
-                    android:text="개인정보 수정"
-                    android:background="@color/white"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignParentEnd="true"
-                    android:layout_centerInParent="true"/>
+                    android:layout_centerInParent="true"
+                    android:background="@android:color/transparent"
+                    android:text="개인정보 수정" />
             </RelativeLayout>
 
 

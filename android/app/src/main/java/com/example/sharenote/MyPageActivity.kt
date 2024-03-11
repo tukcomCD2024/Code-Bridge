@@ -41,7 +41,7 @@ class MyPageActivity : AppCompatActivity() {
         setContentView(R.layout.activity_my_page)
 
         findViewById<Button>(R.id.backButton).setOnClickListener {
-            startActivity(Intent(this, MainActivity::class.java))
+            startActivity(Intent(this,MainActivity::class.java))
             finish()
         }
 
