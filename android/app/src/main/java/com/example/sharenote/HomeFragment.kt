@@ -1,5 +1,6 @@
 import android.content.Intent
 import android.os.Bundle
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
@@ -11,15 +12,19 @@ import android.widget.RelativeLayout
 import android.widget.TextView
 import androidx.appcompat.view.menu.MenuPopupHelper
 import androidx.appcompat.widget.PopupMenu
+import androidx.core.view.GravityCompat
 import androidx.core.widget.PopupMenuCompat
+import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.sharenote.LoginActivity
+import com.example.sharenote.MainActivity
 import com.example.sharenote.MyPageActivity
 import com.example.sharenote.Note
 import com.example.sharenote.NoteActivity
 import com.example.sharenote.R
+import com.google.android.material.navigation.NavigationView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.FirebaseFirestore
@@ -31,6 +36,11 @@ class HomeFragment : Fragment(), NoteListAdapter.OnNoteClickListener {
     private lateinit var noteListAdapter: NoteListAdapter
     private lateinit var emailTextView: TextView
     private lateinit var menuBtn: ImageButton
+    private lateinit var profileForm: RelativeLayout
+
+    private lateinit var emailTextView1: TextView
+    private lateinit var popupView: View // 팝업 뷰
+
 
     private var notes: MutableList<Note> = mutableListOf()
 
@@ -49,17 +59,33 @@ class HomeFragment : Fragment(), NoteListAdapter.OnNoteClickListener {
         noteListAdapter = NoteListAdapter(notes, this)
         recyclerView.adapter = noteListAdapter
         menuBtn = view.findViewById(R.id.menuBtn)
+        profileForm = view.findViewById(R.id.profileForm)
+
+
+        // account_layout을 팝업으로 사용하기 위해 팝업 뷰를 초기화합니다.
+        popupView = layoutInflater.inflate(R.layout.account_layout, null)
+        emailTextView1 = popupView.findViewById(R.id.email)
+
+
 
         // emailTextView를 찾습니다.
         emailTextView = view.findViewById(R.id.emailtextView)
 
+
+
         // 사용자 이메일을 표시합니다.
         displayUserEmail()
+
+        profileForm.setOnClickListener {
+            // account_layout을 화면 아래에 절반 크기로 보여줌
+            showPopupAccount()
+        }
 
         // menuBtn을 클릭했을 때 팝업 메뉴를 표시합니다.
         menuBtn.setOnClickListener {
             showPopupMenu()
         }
+
 
 
 
@@ -95,6 +121,32 @@ class HomeFragment : Fragment(), NoteListAdapter.OnNoteClickListener {
         intent.putExtra("note_text", note.text)
         intent.putExtra("note_image_uri", note.imageUri)
         startActivity(intent)
+    }
+
+
+    private fun showPopupAccount() {
+        // PopupWindow 생성
+        val popupWindow = PopupWindow(
+            popupView,
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            1200,
+            true
+        )
+
+        popupWindow.isOutsideTouchable = true
+
+        // PopupWindow를 표시할 위치 설정 (아래쪽에 표시)
+        popupWindow?.showAtLocation(view, Gravity.BOTTOM, 0, 0)
+
+        // 팝업 창에서 각 항목을 클릭할 때의 동작 정의
+        val settingLayoutView = popupView.findViewById<RelativeLayout>(R.id.logoutLayout)
+        settingLayoutView.setOnClickListener {
+            auth.signOut()
+            val loginIntent = Intent(requireContext(), LoginActivity::class.java)
+            startActivity(loginIntent)
+            requireActivity().finish()
+            popupWindow.dismiss() // 팝업 창 닫기
+        }
     }
 
     private fun showPopupMenu() {
@@ -179,6 +231,7 @@ class HomeFragment : Fragment(), NoteListAdapter.OnNoteClickListener {
             }
     }
 
+
     private fun displayUserEmail() {
         // FirebaseAuth 인스턴스를 사용하여 현재 사용자를 가져옵니다.
         val user: FirebaseUser? = auth.currentUser
@@ -187,6 +240,7 @@ class HomeFragment : Fragment(), NoteListAdapter.OnNoteClickListener {
             // 사용자가 로그인되어 있다면, 이메일을 가져와 TextView에 설정합니다.
             val userEmail = user.email
             emailTextView.text = userEmail
+            emailTextView1.text = userEmail
         }
     }
 }
