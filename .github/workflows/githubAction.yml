@@ -33,13 +33,14 @@ jobs:
       # gradle을 통해 소스를 빌드
       - name: Build with Gradle
         run: |
-          chmod +x ./backend/shareNote/gradlew
-          ./backend/shareNote/gradlew clean build -x test
+          chmod +x ./gradlew
+          ./gradlew clean build -x test
+        working-directory: ./backend/shareNote
 
       # Jar 파일을 빌드
       - name: Build with Gradle 8.5
-        run: ./backend/shareNote/gradlew bootJar
-
+        run: ./gradlew bootJar
+        working-directory: ./backend/shareNote
       # dockerfile을 통해 이미지를 빌드하고, 이를 docker repo로 push 합니다.
       # 이 때 사용되는 ${{ secrets.DOCKER_REPO }}/directors-dev 는 docker-hub에서 만든 것
       - name: Docker build backend & push to docker repo
