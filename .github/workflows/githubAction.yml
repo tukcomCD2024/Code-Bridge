@@ -17,7 +17,7 @@ on:
 jobs:
   build:
 
-    runs-on: ubuntu-latest 
+    runs-on: ubuntu-latest
     permissions:
       contents: read
 
@@ -33,12 +33,12 @@ jobs:
       # gradle을 통해 소스를 빌드
       - name: Build with Gradle
         run: |
-          chmod +x ./gradlew
-          ./gradlew clean build -x test
+          chmod +x ./backend/shareNote/gradlew
+          ./backend/shareNote/gradlew clean build -x test
 
       # Jar 파일을 빌드
       - name: Build with Gradle 8.5
-        run: ./gradlew bootJar
+        run: ./backend/shareNote/gradlew bootJar
 
       # dockerfile을 통해 이미지를 빌드하고, 이를 docker repo로 push 합니다.
       # 이 때 사용되는 ${{ secrets.DOCKER_REPO }}/directors-dev 는 docker-hub에서 만든 것
