@@ -20,19 +20,20 @@ const LoginPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+
     if (password === "" || email === "") {
       alert("이메일(ID)과 비밀번호를 모두 입력해주세요.");
       return;
     }
   
     try {
+      const token = localStorage.getItem('token');
       const response = await fetch("/api/user/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, password, token }),
       });
   
       // Content-Type 헤더를 체크하여 응답 타입 판별
@@ -45,6 +46,7 @@ const LoginPage = () => {
           localStorage.setItem("userId", userId); // 백엔드로부터 받은 유저 (고유)아이디
           localStorage.setItem("nickname", name); // 백엔드로부터 받은 유저 닉네임
           localStorage.setItem("email", email); // 로그인한 아이디
+          localStorage.removeItem("token");
           navigate("/main");
         }
       } else {

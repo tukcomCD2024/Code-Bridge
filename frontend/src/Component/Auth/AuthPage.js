@@ -18,10 +18,7 @@ function AuthPage() {
         <BookImage src={book1} alt="Book" />
       </ImageWrapper>
       <AuthBox>
-        <ToMain
-          style={{ fontSize: "30px", fontWeight: "bold", marginBottom: "30px" }}
-          onClick={() => {alert("로그인 안하면 에러날 수 있음");navigate("/main");}}
-        >
+        <ToMain>
           ShareNote
         </ToMain>
         <LoginBtn onClick={() => navigate("/login")}>로그인</LoginBtn>
@@ -61,12 +58,9 @@ const AuthBox = styled.div`
 `;
 
 const ToMain = styled.div`
-  cursor: pointer;
-
-  &:hover {
-    color: #202632;
-    text-decoration: underline;
-  }
+  font-size: 30px;
+  font-weight: bold;
+  margin-bottom: 30px;
 `;
 
 const LoginBtn = styled.button`
