@@ -10,7 +10,6 @@ import { addListNodes } from "prosemirror-schema-list";
 import { exampleSetup } from "prosemirror-example-setup";
 import { keymap } from "prosemirror-keymap";
 
-
 import { updateImageNode, imagePlugin } from "prosemirror-image-plugin";
 import "./prosemirror_css/prosemirror_image_plugin/common.css";
 import "./prosemirror_css/prosemirror_image_plugin/withResize.css";
@@ -38,6 +37,7 @@ import { inlinePlaceholderPlugin } from "./utils/inlinePlaceholderPlugin";
 import { hoverButtonPlugin } from "./utils/hoverButtonPlugin";
 import { checkBlockType } from "./utils/checkBlockType";
 import loadingImage from "../../image/loading.gif";
+
 
 function Page() {
   const editorRef = useRef(null);
@@ -94,22 +94,30 @@ function Page() {
       });
     }
 
+    const nickname = localStorage.getItem('nickname'); // 로컬 스토리지에서 닉네임을 가져옵니다.
+
+    // 'awareness' 상태를 업데이트합니다.
+    provider.awareness.setLocalStateField('user', {
+      name: nickname,
+      // 여기에 추가적인 사용자 정보를 포함할 수 있습니다.
+    });
+
     const myCursorBuilder = (user) => {
       const cursor = document.createElement("span");
       cursor.classList.add("ProseMirror-yjs-cursor");
       cursor.setAttribute("style", `border-color: ${user.color}`);
       const userDiv = document.createElement("div");
       userDiv.setAttribute("style", `background-color: ${user.color}`);
-      userDiv.innerText = "닉네임"; // 실제 사용자 이름으로 변경 가능
+      userDiv.innerText = user.name || "누구세요"; // 실제 사용자 이름으로 변경 가능
       cursor.appendChild(userDiv);
 
-      // 일정 시간(예: 5000ms) 후에 사용자 이름을 숨기는 로직
-      let hideTimeout = setTimeout(() => {
-        userDiv.style.display = "none"; // 사용자 이름을 숨김
-      }, 5000); // 5초 후 실행
+      // // 일정 시간(예: 5000ms) 후에 사용자 이름을 숨기는 로직
+      // let hideTimeout = setTimeout(() => {
+      //   userDiv.style.display = "none"; // 사용자 이름을 숨김
+      // }, 5000); // 5초 후 실행
 
-      // Awareness 상태 변경에 따라 사용자 이름을 다시 표시하는 로직 설정
-      cursorAwarenessHandler(provider.awareness, userDiv, hideTimeout);
+      // // Awareness 상태 변경에 따라 사용자 이름을 다시 표시하는 로직 설정
+      // cursorAwarenessHandler(provider.awareness, userDiv, hideTimeout);
 
       return cursor;
     };
@@ -134,6 +142,8 @@ function Page() {
     const myDoc = DOMParser.fromSchema(mySchema).parse(
       document.createElement("div")
     );
+
+    
 
     const view = new EditorView(editorRef.current, {
       state: EditorState.create({
