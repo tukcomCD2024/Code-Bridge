@@ -115,54 +115,56 @@ const SignupPage = () => {
   return (
     <Container>
       <ContentWrapper>
-        <p style={{ fontWeight: "bold", fontSize: "25px" }}>회원가입</p>
-        <Email_InputWrapper>
-          이메일(ID)
-          <Email_Input
-            name="email"
-            type="text"
-            placeholder="이메일을 입력하세요."
-            onChange={handleInputChange} // 이 부분을 추가
-            value={email}
-          />
-          <Email_Duplicate_CheckBtn onClick={handleEmailDuplicateCheck}>
-            중복확인
-          </Email_Duplicate_CheckBtn>
-        </Email_InputWrapper>
-        <Nickname_InputWrapper>
-          닉네임
-          <Nickname_Input
-            name="nickname"
-            type="text"
-            placeholder="닉네임을 입력하세요."
-            onChange={handleInputChange}
-            value={nickname}
-          />
-          <Nickname_Duplicate_CheckBtn onClick={handleNicknameDuplicateCheck}>
-            중복확인
-          </Nickname_Duplicate_CheckBtn>{" "}
-        </Nickname_InputWrapper>
-        <Password_InputWrapper>
-          비밀번호
-          <Password_Input
-            name="password" // 올바른 name 속성 값으로 변경
-            type="password"
-            placeholder="비밀번호를 입력해주세요."
-            value={password}
-            onChange={handleInputChange} // 이 부분을 추가
-          />
-        </Password_InputWrapper>
-        <Passwordcheck_InputWrapper>
-          비밀번호 확인
-          <Passwordcheck_Input
-            name="passwordCheck" // 올바른 name 속성 값으로 변경
-            type="password"
-            placeholder="비밀번호를 한 번 더 입력해주세요."
-            value={passwordCheck}
-            onChange={handleInputChange} // 이 부분을 추가}
-          />
-        </Passwordcheck_InputWrapper>
-        <SignupBtn onClick={handleSubmit}>회원가입</SignupBtn>
+        <form onSubmit={handleSubmit}>
+          <p style={{ fontWeight: "bold", fontSize: "25px" }}>회원가입</p>
+          <Email_InputWrapper>
+            이메일(ID)
+            <Email_Input
+              name="email"
+              type="text"
+              placeholder="이메일을 입력하세요."
+              onChange={handleInputChange}
+              value={email}
+            />
+            <Email_Duplicate_CheckBtn onClick={handleEmailDuplicateCheck}>
+              중복확인
+            </Email_Duplicate_CheckBtn>
+          </Email_InputWrapper>
+          <Nickname_InputWrapper>
+            닉네임
+            <Nickname_Input
+              name="nickname"
+              type="text"
+              placeholder="닉네임을 입력하세요."
+              onChange={handleInputChange}
+              value={nickname}
+            />
+            <Nickname_Duplicate_CheckBtn onClick={handleNicknameDuplicateCheck}>
+              중복확인
+            </Nickname_Duplicate_CheckBtn>{" "}
+          </Nickname_InputWrapper>
+          <Password_InputWrapper>
+            비밀번호
+            <Password_Input
+              name="password"
+              type="password"
+              placeholder="비밀번호를 입력해주세요."
+              value={password}
+              onChange={handleInputChange}
+            />
+          </Password_InputWrapper>
+          <Passwordcheck_InputWrapper>
+            비밀번호 확인
+            <Passwordcheck_Input
+              name="passwordCheck"
+              type="password"
+              placeholder="비밀번호를 한 번 더 입력해주세요."
+              value={passwordCheck}
+              onChange={handleInputChange}
+            />
+          </Passwordcheck_InputWrapper>
+          <SignupBtn type="submit">회원가입</SignupBtn>
+        </form>
         <HomeBtn onClick={() => navigate("/")}>
           <small>홈으로 돌아가기</small>
         </HomeBtn>

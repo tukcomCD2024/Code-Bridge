@@ -1,6 +1,9 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
+import toastr from "toastr";
+import "toastr/build/toastr.css";
+
 import GoogleLoginBtn from "../../image/googleLoginBtn.png";
 
 const LoginPage = () => {
@@ -46,7 +49,10 @@ const LoginPage = () => {
           localStorage.setItem("userId", userId); // 백엔드로부터 받은 유저 (고유)아이디
           localStorage.setItem("nickname", name); // 백엔드로부터 받은 유저 닉네임
           localStorage.setItem("email", email); // 로그인한 아이디
-          localStorage.removeItem("token");
+          if (token != undefined){
+            localStorage.removeItem('token');
+            toastr.success("초대 수락 완료!");
+          }
           navigate("/main");
         }
       } else {
@@ -64,7 +70,8 @@ const LoginPage = () => {
   };
   return (
     <Container>
-      <ContentWrapper>
+    <ContentWrapper>
+      <form onSubmit={handleSubmit}> {/* 폼 요소 추가 */}
         <p style={{ fontWeight: "bold", fontSize: "25px" }}>로그인</p>
         <Email_InputWrapper>
           이메일
@@ -86,24 +93,26 @@ const LoginPage = () => {
             value={password}
           />
         </Password_InputWrapper>
-        <LoginBtn onClick={handleSubmit}>로그인</LoginBtn>
-        <IsNotUser>
-          <p style={{ display: "inline", margin: "0", marginRight: "8px" }}>
-            <small>회원이 아니신가요?</small>
-          </p>
-          <SignupBtn onClick={() => navigate("/signup")}>
-            <small>회원가입하기</small>
-          </SignupBtn>
-        </IsNotUser>
-        <GoogleLoginBtnContainer>
-          <GoogleLoginImg
-            src={GoogleLoginBtn}
-            alt="Google Login Button"
-            onClick={() => navigate("/signup")}
-          />
-        </GoogleLoginBtnContainer>
-      </ContentWrapper>
-    </Container>
+        <LoginBtn type="submit">로그인</LoginBtn>
+      </form>
+      <IsNotUser>
+        <p style={{ display: "inline", margin: "0", marginRight: "8px" }}>
+          <small>회원이 아니신가요?</small>
+        </p>
+        <SignupBtn onClick={() => navigate("/signup")}>
+          <small>회원가입하기</small>
+        </SignupBtn>
+      </IsNotUser>
+      <GoogleLoginBtnContainer>
+        <GoogleLoginImg
+          src={GoogleLoginBtn}
+          alt="Google Login Button"
+          onClick={() => navigate("/signup")}
+        />
+      </GoogleLoginBtnContainer>
+    </ContentWrapper>
+  </Container>
+  
   );
 };
 

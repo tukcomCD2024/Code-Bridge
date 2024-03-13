@@ -20,7 +20,7 @@ const EmailTokenHandler = () => {
       localStorage.setItem('token', token);
     }
 
-    if (isLoggedIn){
+    if (token && isLoggedIn()){
       fetchEmailInvitationToken();
     }
   }, [location]);
@@ -29,8 +29,6 @@ const EmailTokenHandler = () => {
     try {
       const userId = localStorage.getItem('userId');
       const token = localStorage.getItem('token');
-      console.log(userId);
-      console.log(token);
       const response = await fetch("/api/user/organization/invitation/accept", {
         method: "POST",
         headers: {
@@ -43,16 +41,17 @@ const EmailTokenHandler = () => {
 
       if (response.ok) {
         if (contentType && contentType.includes('text/plain')) {
-          localStorage.removeItem("token");
           const responseMessage = await response.text();
           toastr.success(responseMessage);
         }
+      } else {
+        const errorMessage = await response.text();
+        toastr.error(errorMessage);
       }
     } catch (error) {
       console.error("Error: ", error);
-      localStorage.removeItem("token");
-      toastr.error("에러가 발생했습니다.");
     }
+    localStorage.removeItem("token");
   }
 
   if (isLoggedIn()) {

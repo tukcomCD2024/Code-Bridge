@@ -12,11 +12,11 @@ import { keymap } from "prosemirror-keymap";
 
 
 import { updateImageNode, imagePlugin } from "prosemirror-image-plugin";
-import "./ProseMirror_css/prosemirror_image_plugin/common.css";
-import "./ProseMirror_css/prosemirror_image_plugin/withResize.css";
-import "./ProseMirror_css/prosemirror_image_plugin/sideResize.css";
-import "./ProseMirror_css/prosemirror_image_plugin/withoutResize.css";
-import "./ProseMirror_css/ProseMirror.css";
+import "./prosemirror_css/prosemirror_image_plugin/common.css";
+import "./prosemirror_css/prosemirror_image_plugin/withResize.css";
+import "./prosemirror_css/prosemirror_image_plugin/sideResize.css";
+import "./prosemirror_css/prosemirror_image_plugin/withoutResize.css";
+import "./prosemirror_css/ProseMirror.css";
 
 // yjs 라이브러리(동시편집)
 import { WebsocketProvider } from "y-websocket";
