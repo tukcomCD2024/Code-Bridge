@@ -6,7 +6,8 @@ import SignupPage from "./Component/Auth/SignupPage";
 import NotePage from "./Component/Note/NotePage";
 import UserProfileEdit from "./Component/Auth/UserProfileEdit";
 import Page from "./Component/Page/Page";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import EmailTokenHandler from "./Component/Utils/EmailTokenHandler";
+import { BrowserRouter, Routes, Route, Navigate  } from "react-router-dom";
 
 export default function App() {
   return (
@@ -21,6 +22,7 @@ export default function App() {
           <Route path="/logout" element={<Mainpage />} />
           <Route path="/about" element={<Mainpage />} />
           <Route path="/organization/:id/*" element={<NotePage />} />
+          <Route path="/organization/invitation/approve" element={<EmailTokenHandler />} />
           <Route path="/organization/:id/:id" element={<Page />} />
         </Routes>
       </BrowserRouter>
