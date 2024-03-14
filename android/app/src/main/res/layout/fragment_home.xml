@@ -160,13 +160,6 @@
                 android:layout_below="@id/bookText"
                 android:padding="15dp"/>
 
-            <!-- 로그아웃 버튼 -->
-            <Button
-                android:id="@+id/logoutButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="로그아웃"
-                android:layout_below="@+id/list"/>
         </RelativeLayout>
     </ScrollView>
 </RelativeLayout>

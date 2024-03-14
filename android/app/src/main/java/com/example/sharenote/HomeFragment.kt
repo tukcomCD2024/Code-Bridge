@@ -38,8 +38,6 @@ class HomeFragment : Fragment(), NoteListAdapter.OnNoteClickListener {
     private var notes: MutableList<Note> = mutableListOf()
 
 
-
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -54,17 +52,14 @@ class HomeFragment : Fragment(), NoteListAdapter.OnNoteClickListener {
         menuBtn = view.findViewById(R.id.menuBtn)
         profileForm = view.findViewById(R.id.profileForm)
 
-        // account_layout을 팝업으로 사용하기 위해 팝업 뷰를 초기화합니다.
+        // account_layout을 팝업으로 사용하기 위해 팝업 뷰를 초기화
         popupView = layoutInflater.inflate(R.layout.account_layout, null)
         emailTextView1 = popupView.findViewById(R.id.email)
 
         setting_circle = popupView.findViewById(R.id.setting_circle)
 
-
-
         // emailTextView를 찾습니다.
         emailTextView = view.findViewById(R.id.emailtextView)
-
 
 
         // 사용자 이메일을 표시합니다.
@@ -99,14 +94,6 @@ class HomeFragment : Fragment(), NoteListAdapter.OnNoteClickListener {
             createNote()
         }
 
-        // Logout 버튼 클릭 시 로그아웃 처리
-        val logoutButton = view.findViewById<Button>(R.id.logoutButton)
-        logoutButton.setOnClickListener {
-            auth.signOut()
-            val loginIntent = Intent(requireContext(), LoginActivity::class.java)
-            startActivity(loginIntent)
-            requireActivity().finish()
-        }
 
         loadNotesFromFirestore()
         return view

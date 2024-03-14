@@ -7,6 +7,7 @@ import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.example.sharenote.RetrofitClient.apiService
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import okhttp3.ResponseBody
@@ -78,28 +79,46 @@ class SignUpActivity : AppCompatActivity() {
     }
 
     private fun signUpUser() {
-        val auth = FirebaseAuth.getInstance()
+        val userData = UserData(Name, Email, Password)
 
-        if (Email.isNotEmpty() && Password.isNotEmpty()) {
-            auth.createUserWithEmailAndPassword(Email, Password)
-                .addOnCompleteListener(this) { task ->
-                    if (task.isSuccessful) {
-                        // 회원가입이 성공한 경우 사용자 정보를 Firestore에 저장
-                        saveUserDataToFirestore()
+        // Firebase Authentication을 사용하여 사용자 등록
+        auth.createUserWithEmailAndPassword(Email, Password)
+            .addOnCompleteListener(this) { task ->
+                if (task.isSuccessful) {
+                    // 사용자 등록이 성공한 경우 Firestore에 사용자 정보 저장
+                    saveUserDataToFirestore()
 
-                        // 회원가입 성공 메시지 표시
-                        Toast.makeText(this@SignUpActivity, "계정 생성 완료.", Toast.LENGTH_SHORT).show()
+                    // 회원가입 성공 메시지 표시
+                    Toast.makeText(this@SignUpActivity, "계정 생성 완료.", Toast.LENGTH_SHORT).show()
 
-                        // 가입창 종료
-                        finish()
-                    } else {
-                        // 계정 생성 실패
-                        Toast.makeText(this@SignUpActivity, "계정 생성 실패", Toast.LENGTH_SHORT).show()
-                    }
+                    // 가입창 종료
+                    finish()
+                } else {
+                    // 사용자 등록 실패 시 오류 메시지 표시
+                    Toast.makeText(this@SignUpActivity, "회원가입 실패: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
                 }
-        } else {
-            Toast.makeText(this, "이메일과 비밀번호를 입력해주세요.", Toast.LENGTH_SHORT).show()
-        }
+            }
+
+        apiService.signUpUser(userData).enqueue(object : Callback<Void> {
+            override fun onResponse(call: Call<Void>, response: Response<Void>) {
+                if (response.isSuccessful) {
+                    // 회원가입 성공 메시지 표시
+                    Toast.makeText(this@SignUpActivity, "계정 생성 완료.", Toast.LENGTH_SHORT).show()
+
+                    // 가입창 종료
+                    finish()
+                } else {
+                    // 서버 응답이 성공적이지 않은 경우 오류 메시지 표시
+                    val errorBody = response.errorBody()?.string()
+                    Toast.makeText(this@SignUpActivity, "회원가입 실패: $errorBody", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            override fun onFailure(call: Call<Void>, t: Throwable) {
+                // 네트워크 오류 등으로 회원가입 요청 실패
+                Toast.makeText(this@SignUpActivity, "회원가입 요청 실패", Toast.LENGTH_SHORT).show()
+            }
+        })
     }
 
 
@@ -122,6 +141,7 @@ class SignUpActivity : AppCompatActivity() {
                 // Firestore에 데이터 추가 중 오류 발생한 경우
                 Toast.makeText(this, "회원가입에 실패하였습니다.", Toast.LENGTH_SHORT).show()
             }
+
     }
 
     private fun checkDuplicateUsername() {
