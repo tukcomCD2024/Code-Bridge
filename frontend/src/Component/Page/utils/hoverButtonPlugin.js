@@ -2,11 +2,23 @@ import { Plugin, Selection } from "prosemirror-state";
 import down_arrow from "../../../image/down_arrow.svg";
 import typing from "../../../image/typing.gif";
 
+// 문서 내 블록(노드)의 총 수를 계산하는 함수
+function countDocBlocks(doc) {
+  let count = 0;
+  doc.descendants(node => {
+    if (node.type.name === "paragraph" || node.isBlock) { // "paragraph"는 예시입니다. 실제 블록 타입에 따라 조정하세요.
+      count++;
+    }
+  });
+  return count;
+}
+
 // 노트 페이지에서 블록(노드)마다 작은 메뉴창이 뜨게 한다.
 export function hoverButtonPlugin() {
+  const hoverDiv = document.createElement("div");
+
   return new Plugin({
     view(editorView) {
-      const hoverDiv = document.createElement("div");
       hoverDiv.classList.add("hoverDiv"); // CSS 클래스 적용
       document.body.appendChild(hoverDiv); // 바디에 직접 추가
 
@@ -152,7 +164,7 @@ export function hoverButtonPlugin() {
 
         updateButton(editorView, pos, true);
       }
-
+          
       editorView.dom.addEventListener("click", handleInteraction);
       editorView.dom.addEventListener("keydown", (event) => {
         if (event.keyCode === 13) {
@@ -216,5 +228,19 @@ export function hoverButtonPlugin() {
         },
       };
     },
+    
+    appendTransaction(transactions, oldState, newState) {
+      // 변화 전후의 블록(노드) 수를 계산
+      const oldDocBlocks = countDocBlocks(oldState.doc);
+      const newDocBlocks = countDocBlocks(newState.doc);
+    
+      // 블록 수가 줄어든 경우 alert 표시
+      if (newDocBlocks < oldDocBlocks) {
+        hoverDiv.style.visibility = "hidden";
+      }
+    
+      return null; // 추가적인 트랜잭션을 반환하지 않음
+    },
+
   });
 }
