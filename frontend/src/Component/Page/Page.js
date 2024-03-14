@@ -192,6 +192,7 @@ function Page() {
             left: 0,
             width: "100%",
             height: "100%",
+            backgroundColor: "rgba(255, 255, 255, 0.7)", // Optional: Add a light background
           }}
         >
           <img
@@ -205,19 +206,49 @@ function Page() {
           />
         </div>
       )}
-      <div
-        ref={editorRef}
-        id="editor"
-        style={{
-          visibility: isLoaded ? "visible" : "hidden",
-          width: "80%",
-          margin: "0 auto",
-          paddingLeft: "15%",
-        }} // Adjust width and add padding on the left.
-      />
+        <LayoutContainer>
+          <NavigationBar isLoaded={isLoaded}>
+            <p>네비게이션 아이템 1</p>
+            <p>네비게이션 아이템 2</p>
+            {/* 추가적인 네비게이션 아이템들... */}
+          </NavigationBar>
+          <EditorContainer>
+            <div
+              ref={editorRef}
+              id="editor"
+              style={{
+                visibility: isLoaded ? "visible" : "hidden",
+                width: "90%",
+                margin: "0 auto",
+                paddingLeft: "5%",
+              }}
+            />
+          </EditorContainer>
+        </LayoutContainer>
     </div>
   );
 }
+
+
+const LayoutContainer = styled.div`
+  display: flex;
+  height: 100vh; // 전체 화면 높이
+`;
+
+const NavigationBar = styled.div`
+  width: 15%; // 네비게이션 바 너비
+  background-color: #eee; // 네비게이션 바 배경색
+  padding: 20px; // 여백
+  visibility: ${(props) => (props.isLoaded ? "visible" : "hidden")};
+`;
+
+const EditorContainer = styled.div`
+  flex: 1; // 남은 공간을 모두 차지
+  display: flex;
+  // flex-direction: column;
+  // align-items: center;
+  // justify-content: center;
+`;
 
 // 토글 스위치 컨테이너
 const ToggleSwitch = styled.div`
