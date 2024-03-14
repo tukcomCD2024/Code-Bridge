@@ -2,8 +2,8 @@ import React, { useEffect, useRef, useState } from "react";
 import styled from "styled-components";
 
 // prosemirror 라이브러리(리치 텍스트 에디터)
-import { Schema, DOMParser, Node, Fragment } from "prosemirror-model";
-import { EditorState, Selection, TextSelection } from "prosemirror-state";
+import { Schema, DOMParser } from "prosemirror-model";
+import { EditorState, Selection } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
 import { schema as basicSchema } from "prosemirror-schema-basic";
 import { addListNodes } from "prosemirror-schema-list";
@@ -11,11 +11,11 @@ import { exampleSetup } from "prosemirror-example-setup";
 import { keymap } from "prosemirror-keymap";
 
 import { updateImageNode, imagePlugin } from "prosemirror-image-plugin";
-import "./prosemirror_css/prosemirror_image_plugin/common.css";
-import "./prosemirror_css/prosemirror_image_plugin/withResize.css";
-import "./prosemirror_css/prosemirror_image_plugin/sideResize.css";
-import "./prosemirror_css/prosemirror_image_plugin/withoutResize.css";
-import "./prosemirror_css/ProseMirror.css";
+import "./ProseMirror_css/prosemirror_image_plugin/common.css";
+import "./ProseMirror_css/prosemirror_image_plugin/withResize.css";
+import "./ProseMirror_css/prosemirror_image_plugin/sideResize.css";
+import "./ProseMirror_css/prosemirror_image_plugin/withoutResize.css";
+import "./ProseMirror_css/ProseMirror.css";
 
 // yjs 라이브러리(동시편집)
 import { WebsocketProvider } from "y-websocket";
@@ -37,7 +37,6 @@ import { inlinePlaceholderPlugin } from "./utils/inlinePlaceholderPlugin";
 import { hoverButtonPlugin } from "./utils/hoverButtonPlugin";
 import { checkBlockType } from "./utils/checkBlockType";
 import loadingImage from "../../image/loading.gif";
-
 
 function Page() {
   const editorRef = useRef(null);
@@ -95,11 +94,9 @@ function Page() {
     }
 
     const nickname = localStorage.getItem('nickname'); // 로컬 스토리지에서 닉네임을 가져옵니다.
-
     // 'awareness' 상태를 업데이트합니다.
     provider.awareness.setLocalStateField('user', {
       name: nickname,
-      // 여기에 추가적인 사용자 정보를 포함할 수 있습니다.
     });
 
     const myCursorBuilder = (user) => {
@@ -142,8 +139,6 @@ function Page() {
     const myDoc = DOMParser.fromSchema(mySchema).parse(
       document.createElement("div")
     );
-
-    
 
     const view = new EditorView(editorRef.current, {
       state: EditorState.create({

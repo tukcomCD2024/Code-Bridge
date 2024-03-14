@@ -206,9 +206,6 @@ export function hoverButtonPlugin() {
 
       // 클릭 이벤트 리스너 등록
       editorView.dom.addEventListener("click", handleClick);
-
-      //여기까지
-
       window.addEventListener("resize", handleResize);
 
       return {
