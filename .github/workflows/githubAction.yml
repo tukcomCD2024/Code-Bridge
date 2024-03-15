@@ -30,6 +30,17 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
+      - name: make application-email.yml
+        run: |
+          cd ./src/main/resources
+          
+          # application-email.yml 파일을 생성합니다.
+          touch ./application-email.yml
+          
+          # GitHub-Actions 에서 설정한 값을 application-email.yml 파일에 작성합니다.
+          echo "${{ secrets.APPLICATION_EMAIL }}" >> ./application-email.yml
+        shell: bash
+
       # gradle을 통해 소스를 빌드
       - name: Build with Gradle
         run: |
