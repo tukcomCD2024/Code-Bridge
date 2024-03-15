@@ -32,7 +32,7 @@ jobs:
 
       - name: make application-email.yml
         run: |
-          cd ./src/main/resources
+          cd ./backend/shareNote/src/main/resources
           
           # application-email.yml 파일을 생성합니다.
           touch ./application-email.yml
