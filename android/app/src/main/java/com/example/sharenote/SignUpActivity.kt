@@ -9,6 +9,10 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import okhttp3.ResponseBody
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 class SignUpActivity : AppCompatActivity() {
 
@@ -80,22 +84,24 @@ class SignUpActivity : AppCompatActivity() {
             auth.createUserWithEmailAndPassword(Email, Password)
                 .addOnCompleteListener(this) { task ->
                     if (task.isSuccessful) {
-                        Toast.makeText(this, "계정 생성 완료.", Toast.LENGTH_SHORT).show()
-
-                        // 회원가입이 성공한 경우 사용자 정보를 데이터베이스에 저장
+                        // 회원가입이 성공한 경우 사용자 정보를 Firestore에 저장
                         saveUserDataToFirestore()
 
-                        finish() // 가입창 종료
+                        // 회원가입 성공 메시지 표시
+                        Toast.makeText(this@SignUpActivity, "계정 생성 완료.", Toast.LENGTH_SHORT).show()
+
+                        // 가입창 종료
+                        finish()
                     } else {
-                        // 계정 생성 실패 원인을 확인하여 메시지 표시
-                        val errorMessage = task.exception?.message ?: "계정 생성 실패"
-                        Toast.makeText(this, errorMessage, Toast.LENGTH_SHORT).show()
+                        // 계정 생성 실패
+                        Toast.makeText(this@SignUpActivity, "계정 생성 실패", Toast.LENGTH_SHORT).show()
                     }
                 }
         } else {
             Toast.makeText(this, "이메일과 비밀번호를 입력해주세요.", Toast.LENGTH_SHORT).show()
         }
     }
+
 
     private fun saveUserDataToFirestore() {
         val user = hashMapOf(
@@ -104,23 +110,17 @@ class SignUpActivity : AppCompatActivity() {
             "Password" to Password
         )
 
-        // 실제로 데이터를 저장할 Firestore 컬렉션 및 문서 경로를 지정
+        // Firestore에 사용자 정보 저장
         val collectionPath = "users" // 사용자 정보를 저장할 컬렉션 이름
         db.collection(collectionPath).document(FirebaseAuth.getInstance().currentUser!!.uid)
             .set(user)
             .addOnSuccessListener {
                 // Firestore에 데이터가 성공적으로 추가된 경우
-                Toast.makeText(
-                    baseContext, "회원가입에 성공하였습니다.",
-                    Toast.LENGTH_SHORT
-                ).show()
+                Toast.makeText(this, "회원가입에 성공하였습니다.", Toast.LENGTH_SHORT).show()
             }
             .addOnFailureListener {
                 // Firestore에 데이터 추가 중 오류 발생한 경우
-                Toast.makeText(
-                    baseContext, "회원가입에 실패하였습니다.",
-                    Toast.LENGTH_SHORT
-                ).show()
+                Toast.makeText(this, "회원가입에 실패하였습니다.", Toast.LENGTH_SHORT).show()
             }
     }
 
@@ -152,3 +152,4 @@ class SignUpActivity : AppCompatActivity() {
         }
     }
 }
+

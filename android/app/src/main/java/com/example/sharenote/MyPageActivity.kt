@@ -41,7 +41,6 @@ class MyPageActivity : AppCompatActivity() {
         setContentView(R.layout.activity_my_page)
 
         findViewById<Button>(R.id.backButton).setOnClickListener {
-            startActivity(Intent(this, MainActivity::class.java))
             finish()
         }
 
@@ -209,9 +208,7 @@ class MyPageActivity : AppCompatActivity() {
                                 Toast.makeText(this, "사용자 비밀번호 업데이트에 실패했습니다: $e", Toast.LENGTH_SHORT).show()
                             }
                     }
-                    // 마이페이지로 이동
-                    val intent = Intent(this, MainActivity::class.java)
-                    startActivity(intent)
+
                     finish() // 현재 액티비티 종료
                 } else {
                     // 비밀번호 업데이트 실패

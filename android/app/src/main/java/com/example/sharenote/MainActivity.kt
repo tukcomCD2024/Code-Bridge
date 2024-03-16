@@ -2,6 +2,7 @@ package com.example.sharenote
 
 import HomeFragment
 import MyPageFragment
+import SettingsFragment
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
@@ -48,7 +49,7 @@ class MainActivity : AppCompatActivity() {
                 }
                 R.id.fragment_settings -> {
                     supportFragmentManager.beginTransaction()
-                        .replace(R.id.main_container, MyPageFragment())
+                        .replace(R.id.main_container, SettingsFragment())
                         .commit()
                     true
                 }

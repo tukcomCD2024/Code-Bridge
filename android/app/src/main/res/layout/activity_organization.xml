@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:layout_marginBottom="10dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:padding="1dp">
+
+        <TextView
+            android:id="@+id/backTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginLeft="15dp"
+            android:layout_centerVertical="true"
+            android:text="취소"
+            android:textSize="20sp" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="10dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:padding="1dp">
+
+        <TextView
+            android:id="@+id/objective"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginLeft="10dp"
+            android:layout_centerHorizontal="true"
+            android:layout_centerVertical="true"
+            android:text="ShareNote 사용 목적"
+            android:textStyle="bold"
+            android:textSize="30sp"
+            android:textColor="@color/black"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginLeft="10dp"
+            android:layout_below="@+id/objective"
+            android:layout_centerHorizontal="true"
+            android:layout_centerVertical="true"
+            android:text="사용 목적에 맞게 노트를 생성하세요."
+            android:textSize="20sp" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="370dp"
+        android:layout_height="100dp"
+        android:background="@drawable/rectangle_white"
+        android:layout_marginLeft="15dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginBottom="10dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:padding="1dp">
+
+        <ImageView
+            android:id="@+id/team"
+            android:layout_width="100dp"
+            android:layout_height="90dp"
+            android:src="@drawable/team"/>
+
+        <TextView
+            android:id="@+id/teamText"
+            android:layout_width="178dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="15dp"
+            android:layout_marginLeft="10dp"
+            android:layout_toRightOf="@+id/team"
+            android:text="팀과 사용"
+            android:textStyle="bold"
+            android:textSize="16sp" />
+
+        <TextView
+            android:id="@+id/teamText1"
+            android:layout_width="220dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:layout_marginLeft="10dp"
+            android:layout_below="@+id/teamText"
+            android:layout_toRightOf="@+id/team"
+            android:text="팀원들과 문서, 프로젝트, 위키를 함께 작업해 보세요."
+            android:textSize="12sp" />
+
+        <CheckBox
+            android:id="@+id/teamCheckBox"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_toRightOf="@id/teamText1"/>
+
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="370dp"
+        android:layout_height="100dp"
+        android:background="@drawable/rectangle_white"
+        android:layout_marginLeft="15dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginBottom="10dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:padding="1dp">
+
+        <ImageView
+            android:id="@+id/personal"
+            android:layout_width="100dp"
+            android:layout_height="90dp"
+            android:src="@drawable/person"/>
+
+        <TextView
+            android:id="@+id/personalText"
+            android:layout_width="178dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="15dp"
+            android:layout_marginLeft="10dp"
+            android:layout_toRightOf="@+id/personal"
+            android:text="개인용"
+            android:textStyle="bold"
+            android:textSize="16sp" />
+        <TextView
+            android:id="@+id/personalText1"
+            android:layout_width="220dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:layout_marginLeft="10dp"
+            android:layout_below="@+id/personalText"
+            android:layout_toRightOf="@+id/personal"
+            android:text="크레에이티브하게 생각하고 체계적으로 관리하세요. 글쓰기가 쉬워집니다."
+            android:textSize="12sp" />
+
+        <CheckBox
+            android:id="@+id/personalCheckBox"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_toRightOf="@id/personalText1"/>
+
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="370dp"
+        android:layout_height="100dp"
+        android:background="@drawable/rectangle_white"
+        android:layout_marginLeft="15dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginBottom="10dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:padding="1dp">
+
+        <ImageView
+            android:id="@+id/educational"
+            android:layout_width="100dp"
+            android:layout_height="90dp"
+            android:src="@drawable/educational"/>
+
+        <TextView
+            android:id="@+id/educationalText"
+            android:layout_width="178dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="15dp"
+            android:layout_marginLeft="10dp"
+            android:layout_toRightOf="@+id/educational"
+            android:text="교육용"
+            android:textStyle="bold"
+            android:textSize="16sp" />
+        <TextView
+            android:id="@+id/educationalText1"
+            android:layout_width="220dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:layout_marginLeft="10dp"
+            android:layout_below="@+id/educationalText"
+            android:layout_toRightOf="@+id/educational"
+            android:text="메모, 연구, 작업물을 모두 한곳에 보관하세요."
+            android:textSize="12sp" />
+
+        <CheckBox
+            android:id="@+id/educationalCheckBox"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_toRightOf="@id/educationalText1"/>
+
+    </RelativeLayout>
+
+
+    <Button
+        android:id="@+id/continueButton"
+        android:layout_width="370dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="30dp"
+        android:layout_marginLeft="15dp"
+        android:background="@drawable/rectangle_blue"
+        android:text="계속"
+        android:textSize="16dp"
+        android:textColor="@color/white"/>
+
+
+
+
+</LinearLayout>
