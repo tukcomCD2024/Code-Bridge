@@ -1,4 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
+import { useLocation } from 'react-router-dom';
+
 import styled from "styled-components";
 
 // prosemirror 라이브러리(리치 텍스트 에디터)
@@ -39,8 +41,13 @@ import { checkBlockType } from "./utils/checkBlockType";
 import loadingImage from "../../image/loading.gif";
 
 function Page() {
+  const location = useLocation();
+  // URL에서 PAGE 파라미터값 저장
+  const pathSegments = location.pathname.split('/').filter(Boolean); 
+  const noteId = pathSegments[2];
+  
   const editorRef = useRef(null);
-  const [isLoaded, setIsLoaded] = useState(false); // 로딩 상태 관리
+  const [isloaded, setisloaded] = useState(false); // 로딩 상태 관리
 
   const { nodes, marks } = basicSchema.spec;
   const extendedNodes = addListNodes(
@@ -66,7 +73,7 @@ function Page() {
   useEffect(() => {
     if (!editorRef.current) return;
 
-    const roomId = "codebridge_2";
+    const roomId = noteId;
     const ydoc = getYDocInstance(roomId);
     const provider = new WebsocketProvider(
       "wss://demos.yjs.dev/ws", // 웹소켓 서버 주소
@@ -77,7 +84,7 @@ function Page() {
     provider.on("sync", (isSynced) => {
       console.log(`동기화 상태: ${isSynced ? "완료" : "미완료"}`);
       if (isSynced) {
-        setIsLoaded(true); // 동기화 완료 시 로딩 상태 업데이트
+        setisloaded(true); // 동기화 완료 시 로딩 상태 업데이트
       }
     });
 
@@ -181,7 +188,7 @@ function Page() {
 
   return (
     <div>
-      {!isLoaded && (
+      {!isloaded && (
         <div
           style={{
             display: "flex",
@@ -207,7 +214,7 @@ function Page() {
         </div>
       )}
         <LayoutContainer>
-          <NavigationBar isLoaded={isLoaded}>
+          <NavigationBar isloaded={isloaded}>
             <p>네비게이션 아이템 1</p>
             <p>네비게이션 아이템 2</p>
             {/* 추가적인 네비게이션 아이템들... */}
@@ -217,7 +224,7 @@ function Page() {
               ref={editorRef}
               id="editor"
               style={{
-                visibility: isLoaded ? "visible" : "hidden",
+                visibility: isloaded ? "visible" : "hidden",
                 width: "90%",
                 margin: "0 auto",
                 paddingLeft: "5%",
@@ -239,7 +246,7 @@ const NavigationBar = styled.div`
   width: 15%; // 네비게이션 바 너비
   background-color: #eee; // 네비게이션 바 배경색
   padding: 20px; // 여백
-  visibility: ${(props) => (props.isLoaded ? "visible" : "hidden")};
+  visibility: ${(props) => (props.isloaded ? "visible" : "hidden")};
 `;
 
 const EditorContainer = styled.div`
