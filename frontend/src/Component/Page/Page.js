@@ -12,11 +12,11 @@ import { keymap } from "prosemirror-keymap";
 
 
 import { updateImageNode, imagePlugin } from "prosemirror-image-plugin";
-import "./prosemirror_css/prosemirror_image_plugin/common.css";
-import "./prosemirror_css/prosemirror_image_plugin/withResize.css";
-import "./prosemirror_css/prosemirror_image_plugin/sideResize.css";
-import "./prosemirror_css/prosemirror_image_plugin/withoutResize.css";
-import "./prosemirror_css/ProseMirror.css";
+import "./ProseMirror_css/prosemirror_image_plugin/common.css";
+import "./ProseMirror_css/prosemirror_image_plugin/withResize.css";
+import "./ProseMirror_css/prosemirror_image_plugin/sideResize.css";
+import "./ProseMirror_css/prosemirror_image_plugin/withoutResize.css";
+import "./ProseMirror_css/ProseMirror.css";
 
 // yjs 라이브러리(동시편집)
 import { WebsocketProvider } from "y-websocket";
@@ -70,7 +70,7 @@ function Page() {
     const roomId = "codebridge_2";
     const ydoc = getYDocInstance(roomId);
     const provider = new WebsocketProvider(
-      "wss://demos.yjs.dev/ws", // 웹소켓 서버 주소
+      "ws://localhost:4000", // 웹소켓 서버 주소, // 웹소켓 서버 주소
       roomId, // 방 이름
       ydoc
     );

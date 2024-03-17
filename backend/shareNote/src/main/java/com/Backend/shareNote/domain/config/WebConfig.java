@@ -10,7 +10,7 @@ public class WebConfig implements WebMvcConfigurer{
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
 //                .allowedOrigins("http://localhost") // local용
-                .allowedOrigins("http://sharenote.shop","https://sharenote.shop") // 배포시 변경
+                .allowedOrigins("http://sharenote.shop","https://sharenote.shop","http://localhost:3000") // 배포시 변경
                 .allowedMethods("GET", "POST", "PUT", "DELETE")
                 .allowedHeaders("Authorization", "Content-Type")
                 .exposedHeaders("Custom-Header")
