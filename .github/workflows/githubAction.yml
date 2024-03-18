@@ -9,7 +9,7 @@ name: Java CI with Gradle
 
 on:
   push:
-    branches: [ "develop","Backend#105/https설정2" ] # develop 브랜치에 푸쉬하면 스크립트 실행
+    branches: [ "develop","Backend#105/https설정2", "1차데모" ] # develop 브랜치에 푸쉬하면 스크립트 실행
   pull_request:
     branches: [ "develop" ] # develop 브랜치에 풀리퀘되면 스크립트 실행
 
