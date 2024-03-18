@@ -12,3 +12,8 @@ data class UserData(
     val email: String,
     val password: String
 )
+
+data class WorkSpace(
+    val name: String,
+    val owner: String
+)
