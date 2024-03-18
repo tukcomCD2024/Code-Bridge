@@ -102,11 +102,11 @@ const SignupPage = () => {
         toastr.success("회원가입 성공! 로그인을 진행해주세요.");
         navigate("/login");
       } else {
-        // 서버 응답에서 반환된 에러 메시지를 사용하여 사용자에게 보다 구체적인 정보 제공
-        const errorData = await response.json();
+        const errorData = await response.text();
         alert(`회원가입 실패: ${errorData.message}`);
       }
     } catch (error) {
+      
       console.error("Error:", error);
       alert("처리에 실패하였습니다.");
     }
