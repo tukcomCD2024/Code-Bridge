@@ -38,6 +38,7 @@ import { imageSettings, imageNodeSpec } from "./utils/pageSettings";
 import { inlinePlaceholderPlugin } from "./utils/inlinePlaceholderPlugin";
 import { hoverButtonPlugin } from "./utils/hoverButtonPlugin";
 import { checkBlockType } from "./utils/checkBlockType";
+import { cursorColors } from "../Utils/cursorColor"
 import loadingImage from "../../image/loading.gif";
 
 function Page() {
@@ -100,19 +101,55 @@ function Page() {
       });
     }
 
-    const nickname = localStorage.getItem('nickname'); // 로컬 스토리지에서 닉네임을 가져옵니다.
-    // 'awareness' 상태를 업데이트합니다.
-    provider.awareness.setLocalStateField('user', {
-      name: nickname,
+    function getRandomColor() {
+      const index = Math.floor(Math.random() * cursorColors.length);
+      return cursorColors[index];
+    }
+    const connectedUsersYMap = ydoc.getMap('connectedUsers');
+    
+    // localStorage에서 nickname을 가져옵니다.
+    const nickname = localStorage.getItem('nickname');
+    
+    provider.on('status', (event) => {
+      if (event.status === 'connected') {
+        // 이미 연결된 사용자인지 확인합니다.
+        if (connectedUsersYMap.has(nickname)) {
+          alert(`${nickname}는(은) 이미 연결되어 있어 게스트로 진입합니다.`);
+          console.log(`${nickname}는(은) 이미 연결되어 있습니다.`);
+          return;
+        }
+    
+        let userColor = connectedUsersYMap.get(nickname);
+        if (!userColor) {
+          userColor = getRandomColor();
+          connectedUsersYMap.set(nickname, userColor);
+        }
+    
+        provider.awareness.setLocalStateField('user', { name: nickname, color: userColor });
+    
+        connectedUsersYMap.observe(() => {
+          const usersAndColors = [];
+          connectedUsersYMap.forEach((color, name) => {
+            usersAndColors.push({ name, color });
+          });
+        });
+    
+        console.log('연결된 사용자:', Array.from(connectedUsersYMap.keys()));
+      } else if (event.status === 'disconnected') {
+        // 사용자 연결 해제 시 Y.Map에서 해당 사용자를 제거합니다.
+        connectedUsersYMap.delete(nickname);
+      }
     });
+    
 
     const myCursorBuilder = (user) => {
       const cursor = document.createElement("span");
       cursor.classList.add("ProseMirror-yjs-cursor");
       cursor.setAttribute("style", `border-color: ${user.color}`);
+      console.log(user.color);
       const userDiv = document.createElement("div");
       userDiv.setAttribute("style", `background-color: ${user.color}`);
-      userDiv.innerText = user.name || "누구세요"; // 실제 사용자 이름으로 변경 가능
+      userDiv.innerText = user.name;
       cursor.appendChild(userDiv);
 
       // // 일정 시간(예: 5000ms) 후에 사용자 이름을 숨기는 로직
