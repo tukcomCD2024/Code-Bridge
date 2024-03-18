@@ -42,9 +42,8 @@
     </RelativeLayout>
 
     <RelativeLayout
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="15dp"
         android:layout_marginTop="5dp"
         android:layout_marginBottom="10dp"
         android:orientation="horizontal"
@@ -52,26 +51,50 @@
         android:padding="1dp">
 
         <ImageView
-            android:layout_width="match_parent"
-            android:layout_height="300dp"
+            android:layout_width="360dp"
+            android:layout_height="240dp"
             android:src="@drawable/invite"
-
-
-
-
+            android:layout_centerHorizontal="true"
+            android:layout_centerVertical="true"/>
 
     </RelativeLayout>
 
 
-    <Button
-        android:id="@+id/continueButton"
-        android:layout_width="370dp"
+    <RelativeLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:layout_marginLeft="15dp"
-        android:background="@drawable/rectangle_blue"
-        android:text="계속"
-        android:textSize="16dp"
-        android:textColor="@color/white"/>
+        android:layout_marginTop="5dp"
+        android:layout_marginBottom="10dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:padding="1dp">
+
+
+        <Button
+            android:id="@+id/copyLinkButton"
+            android:layout_width="370dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:layout_centerHorizontal="true"
+            android:layout_marginBottom="10dp"
+            android:background="@drawable/rectangle_white"
+            android:text="초대 링크 복사"
+            android:textSize="16dp" />
+
+        <Button
+            android:id="@+id/continueButton"
+            android:layout_width="370dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:layout_below="@+id/copyLinkButton"
+            android:layout_centerHorizontal="true"
+            android:layout_centerVertical="true"
+            android:background="@drawable/rectangle_blue"
+            android:text="계속"
+            android:textSize="16dp"
+            android:textColor="@color/white"/>
+
+    </RelativeLayout>
+
 
 </LinearLayout>
