@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.widget.Button
 import android.widget.CheckBox
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 
 class OrganizationActivity : AppCompatActivity() {
@@ -37,6 +38,17 @@ class OrganizationActivity : AppCompatActivity() {
                     }
                 }
                 updateContinueButtonActivation(checkBoxes)
+            }
+        }
+
+        continueButton.setOnClickListener {
+            // teamCheckBox가 선택되어 있는지 확인
+            if (teamCheckBox.isChecked) {
+                val intent = Intent(this, WorkSpaceActivity::class.java)
+                startActivity(intent)
+            } else {
+                // teamCheckBox가 선택되어 있지 않은 경우 사용자에게 메시지 표시
+                Toast.makeText(this, "팀 선택이 필요합니다.", Toast.LENGTH_SHORT).show()
             }
         }
 
