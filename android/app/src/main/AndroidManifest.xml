@@ -17,6 +17,12 @@
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
         <activity
+            android:name=".InviteActivity"
+            android:exported="false" />
+        <activity
+            android:name=".WorkSpaceActivity"
+            android:exported="false" />
+        <activity
             android:name=".OrganizationActivity"
             android:exported="false" />
         <activity
