@@ -55,7 +55,7 @@ services:
 
   nodejs:
     container_name: nodejs
-    image: qmfdnjssk/share_repository:nodejs
+    image: qmfdnjssk/share_repository:nodejslocal
     ports:
       - "4000:4000"
 
