@@ -42,7 +42,8 @@ function ImagetoBackend({ onImageUpload }) {
       formData.append("multipartFile", selectedFile);
 
       $.ajax({
-        url: "http://localhost:8080/api/image",
+        //url: "http://localhost:8080/api/image",
+        url: "http://sharenote.shop/api/image",
         type: "POST",
         data: formData,
         processData: false,
