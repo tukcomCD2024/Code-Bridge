@@ -104,7 +104,8 @@ public class OrganizationService {
         //쿼리 파라미터로 동작
         //이 링크 클릭 시 토큰을 localStorage에 저장하고
         //login 시 토큰을 가져와서 organization 초대 수락하기
-        emailDTO.setLink("http://localhost:3000/organization/invitation/approve?token=" + Token);
+        //emailDTO.setLink("http://localhost:3000/organization/invitation/approve?token=" + Token);
+        emailDTO.setLink("http://sharenote.shop/organization/invitation/approve?token=" + Token);
         emailService.sendMail(emailDTO);
         return ResponseEntity.ok("초대장 전송 완료");
     }
