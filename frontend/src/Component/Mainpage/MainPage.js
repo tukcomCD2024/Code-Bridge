@@ -468,6 +468,10 @@ const NoOrganizationMessage = styled.div`
   font-weight: bold;
   font-size: 20px;
   color: #666;
+
+  @media screen and (max-width: 768px) {
+    margin-right: 0px;
+  }
 `;
 
 export default MainPage;
