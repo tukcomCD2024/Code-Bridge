@@ -77,7 +77,9 @@ function Page() {
     const roomId = noteId;
     const ydoc = getYDocInstance(roomId);
     const provider = new WebsocketProvider(
-      "wss://demos.yjs.dev/ws", // 웹소켓 서버 주소, // 웹소켓 서버 주소
+      //"wss://demos.yjs.dev/ws", // 웹소켓 서버 주소, // 웹소켓 서버 주소
+      "ws://localhost:4000",
+      //"ws://nodejs:4000", //배포용
       roomId, // 방 이름
       ydoc
     );
