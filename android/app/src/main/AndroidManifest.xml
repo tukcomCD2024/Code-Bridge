@@ -26,6 +26,9 @@
             android:name=".OrganizationActivity"
             android:exported="false" />
         <activity
+            android:name=".AccountActivity"
+            android:exported="false"/>
+        <activity
             android:name=".SplashActivity"
             android:exported="true">
             <intent-filter>

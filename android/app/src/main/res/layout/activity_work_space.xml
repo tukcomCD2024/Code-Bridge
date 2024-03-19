@@ -88,13 +88,14 @@
             android:layout_below="@+id/workSpaceNameText"
             android:textSize="20sp" />
 
-        <TextView
+        <EditText
             android:id="@+id/workSpaceName"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:layout_marginLeft="12dp"
             android:layout_below="@+id/workSpaceNameText"
+            android:background="@android:color/transparent"
             android:hint="가나다 주식회사"
             android:textSize="16sp" />
 

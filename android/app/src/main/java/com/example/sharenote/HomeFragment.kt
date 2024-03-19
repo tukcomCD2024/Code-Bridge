@@ -38,6 +38,7 @@ class HomeFragment : Fragment(), NoteListAdapter.OnNoteClickListener {
     private var notes: MutableList<Note> = mutableListOf()
 
 
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
