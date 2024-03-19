@@ -236,7 +236,7 @@ function Page() {
             left: 0,
             width: "100%",
             height: "100%",
-            backgroundColor: "rgba(255, 255, 255, 0.7)", // Optional: Add a light background
+            backgroundColor: "rgba(255, 255, 255, 0.7)",
           }}
         >
           <img
