@@ -92,6 +92,7 @@ jobs:
             sudo docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
             sudo docker pull ${{ secrets.DOCKER_REPO }}:backend
             sudo docker pull ${{ secrets.DOCKER_REPO }}:frontend
+            sudo docker pull ${{ secrets.DOCKER_REPO }}:nodejs
             docker-compose up -d
             docker image prune -f
 
