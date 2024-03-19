@@ -9,7 +9,7 @@ name: Java CI with Gradle
 
 on:
   push:
-    branches: [ "develop","Backend#123/nodejs서버추가" ] # develop 브랜치에 푸쉬하면 스크립트 실행
+    branches: [ "develop","eee" ] # develop 브랜치에 푸쉬하면 스크립트 실행
   pull_request:
     branches: [ "develop" ] # develop 브랜치에 풀리퀘되면 스크립트 실행
 
@@ -71,7 +71,7 @@ jobs:
       - name: Docker build nodejs & push to docker repo
         run: |
           docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
-          docker build -f ./nodejs/dockerfile --platform linux/amd64 -t ${{ secrets.DOCKER_REPO }}:nodejs ./nodejs
+          docker build -f ./nodejs/Dockerfile --platform linux/amd64 -t ${{ secrets.DOCKER_REPO }}:nodejs ./nodejs
           docker push ${{ secrets.DOCKER_REPO }}:nodejs
     
 
