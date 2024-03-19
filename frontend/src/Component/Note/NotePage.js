@@ -263,7 +263,8 @@ function NotePage() {
         Organization 정보 확인
       </OrganizationInfo>
       <NotesContainer>
-        <StyledAddNoteIcon onClick={handleButtonClick} />
+        <StyledAddNoteIcon onClick={handleButtonClick}/>
+
         {notes.map((note, index) => (
           <NoteCard note={note} index={index} key={note.id} />
         ))}
@@ -336,6 +337,7 @@ const StyledAddNoteIcon = styled(AddNoteIcon)`
   width: 200px;
   cursor: pointer;
   margin-top: 10px;
+  margin-bottom: 50px;
 `;
 
 const StyledImage = styled.img`
