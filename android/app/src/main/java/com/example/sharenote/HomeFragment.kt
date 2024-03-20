@@ -18,6 +18,7 @@ import com.example.sharenote.Note
 import com.example.sharenote.NoteActivity
 import com.example.sharenote.OrganizationActivity
 import com.example.sharenote.R
+import com.example.sharenote.WorkSpace
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.FirebaseFirestore
@@ -154,10 +155,6 @@ class HomeFragment : Fragment(), NoteListAdapter.OnNoteClickListener {
         // 팝업 창을 표시할 위치 설정
         popupWindow.showAsDropDown(setting_circle) // settingCircleImageView가 클릭된 위치에 따라 팝업 창이 표시됩니다.
 
-        val recyclerViewWorkSpace = popupView.findViewById<RecyclerView>(R.id.recyclerViewWorkSpace)
-        val accountActivity = AccountActivity()
-        accountActivity.initWorkSpacesRecyclerView(recyclerViewWorkSpace)
-
         // 워크스페이스 생성 또는 참여 항목 클릭 시 처리
         val workSpaceLayout = popupView.findViewById<RelativeLayout>(R.id.workSpaceLayout)
         workSpaceLayout.setOnClickListener {
@@ -175,6 +172,28 @@ class HomeFragment : Fragment(), NoteListAdapter.OnNoteClickListener {
             popupWindow.dismiss() // 팝업 창 닫기
         }
     }
+
+    // 파이어스토어에서 워크스페이스 데이터를 가져와서 어댑터에 설정하는 함수
+    private fun loadWorkSpacesForPopup(adapter: WorkSpaceListAdapter) {
+        val db = FirebaseFirestore.getInstance()
+        db.collection("workSpaces")
+            .get()
+            .addOnSuccessListener { result ->
+                val workSpaceList = mutableListOf<WorkSpace>()
+                for (document in result) {
+                    val workSpaceName = document.getString("workSpaceName") ?: ""
+                    val owner = document.getString("owner") ?: ""
+                    val workSpace = WorkSpace(workSpaceName, owner)
+                    workSpaceList.add(workSpace)
+                }
+                adapter.notifyDataSetChanged()
+            }
+            .addOnFailureListener { exception ->
+                // 쿼리 실패 시 에러 처리
+                // 예를 들어, 로그 출력 등
+            }
+    }
+
 
 
     private fun showPopupMenu() {
