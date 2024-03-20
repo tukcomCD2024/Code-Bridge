@@ -43,7 +43,7 @@ import loadingImage from "../../image/loading.gif";
 
 function Page() {
   const location = useLocation();
-  const note = location.state;
+  const note = location.state || { name: "노트 목록에서 접속바랍니다.", image: "null" };
   // URL에서 PAGE 파라미터값 저장
   const pathSegments = location.pathname.split('/').filter(Boolean); 
   const noteId = pathSegments[2];
@@ -74,6 +74,8 @@ function Page() {
   );
 
   useEffect(() => {
+
+
     if (!editorRef.current) return;
 
     const roomId = noteId;
