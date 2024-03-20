@@ -14,7 +14,10 @@ toastr.options.positionClass = "toast-top-right";
 
 function NoteCard({ note, index }) {
   return (
-    <Link to={`/organization/${note.organizationId}/${note.id}`}>
+    <Link 
+      to={`/organization/${note.organizationId}/${note.id}`}
+      state={{ name: note.name, image: note.image }}
+    >
       {/* {"📖"} */}
       <NoteContainer>
         <img src={note.image} alt={`Note-Picture-${index}`} />
@@ -263,7 +266,8 @@ function NotePage() {
         Organization 정보 확인
       </OrganizationInfo>
       <NotesContainer>
-        <StyledAddNoteIcon onClick={handleButtonClick} />
+        <StyledAddNoteIcon onClick={handleButtonClick}/>
+
         {notes.map((note, index) => (
           <NoteCard note={note} index={index} key={note.id} />
         ))}
@@ -336,6 +340,7 @@ const StyledAddNoteIcon = styled(AddNoteIcon)`
   width: 200px;
   cursor: pointer;
   margin-top: 10px;
+  margin-bottom: 50px;
 `;
 
 const StyledImage = styled.img`

@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Routes, Route, Link, useLocation, useNavigate  } from "react-router-dom";
+import { Routes, Route, useLocation, useNavigate  } from "react-router-dom";
 import Header from "./Header";
 import NotePage from "../Note/NotePage"; // NotePage 컴포넌트를 가져옴.
 import styled, { keyframes, css } from "styled-components";
@@ -110,7 +110,7 @@ function MainPage() {
         }
       };
       fetchOrganizations();
-    }, [location]);
+    }, [location, userId]);
 
 
   useEffect(() => {
@@ -468,6 +468,10 @@ const NoOrganizationMessage = styled.div`
   font-weight: bold;
   font-size: 20px;
   color: #666;
+
+  @media screen and (max-width: 768px) {
+    margin-right: 0px;
+  }
 `;
 
 export default MainPage;

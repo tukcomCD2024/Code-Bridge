@@ -35,21 +35,21 @@ const SignupPage = () => {
       alert("이메일를 입력하세요.");
       return;
     }
-    fetch(`/user/signup?email=${email}`)
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.isAvailable === false) {
-          // 중복된 닉네임이 있음을 사용자에게 알림
-          alert("이메일의 닉네임이 존재합니다.");
-        } else {
-          setIsEmailAvailable(data.isAvailable);
-          setResultMessage(data.message);
-        }
-      })
-      .catch((error) => {
-        console.error("Error:", error);
-        alert("처리에 실패하였습니다.");
-      });
+    // fetch(`/user/signup?email=${email}`)
+    //   .then((response) => response.json())
+    //   .then((data) => {
+    //     if (data.isAvailable === false) {
+    //       // 중복된 닉네임이 있음을 사용자에게 알림
+    //       alert("이메일의 닉네임이 존재합니다.");
+    //     } else {
+    //       setIsEmailAvailable(data.isAvailable);
+    //       setResultMessage(data.message);
+    //     }
+    //   })
+    //   .catch((error) => {
+    //     console.error("Error:", error);
+    //     alert("처리에 실패하였습니다.");
+    //   });
   };
 
   const handleNicknameDuplicateCheck = () => {
@@ -57,21 +57,21 @@ const SignupPage = () => {
       alert("닉네임을 입력하세요.");
       return;
     }
-    fetch(`/user/signup?nickname=${nickname}`)
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.isAvailable === false) {
-          // 중복된 닉네임이 있음을 사용자에게 알림
-          alert("이미 가입된 닉네임이 존재합니다.");
-        } else {
-          setIsNicknameAvailable(true);
-          setResultMessage(data.message);
-        }
-      })
-      .catch((error) => {
-        console.error("Error:", error);
-        alert("처리에 실패하였습니다.");
-      });
+    // fetch(`/user/signup?nickname=${nickname}`)
+    //   .then((response) => response.json())
+    //   .then((data) => {
+    //     if (data.isAvailable === false) {
+    //       // 중복된 닉네임이 있음을 사용자에게 알림
+    //       alert("이미 가입된 닉네임이 존재합니다.");
+    //     } else {
+    //       setIsNicknameAvailable(true);
+    //       setResultMessage(data.message);
+    //     }
+    //   })
+    //   .catch((error) => {
+    //     console.error("Error:", error);
+    //     alert("처리에 실패하였습니다.");
+    //   });
   };
 
   const handleSubmit = async (e) => {
@@ -106,7 +106,6 @@ const SignupPage = () => {
         alert(`회원가입 실패: ${errorData.message}`);
       }
     } catch (error) {
-      
       console.error("Error:", error);
       alert("처리에 실패하였습니다.");
     }
@@ -126,7 +125,7 @@ const SignupPage = () => {
               onChange={handleInputChange}
               value={email}
             />
-            <Email_Duplicate_CheckBtn onClick={handleEmailDuplicateCheck}>
+            <Email_Duplicate_CheckBtn type="button" onClick={handleEmailDuplicateCheck}>
               중복확인
             </Email_Duplicate_CheckBtn>
           </Email_InputWrapper>
@@ -139,7 +138,7 @@ const SignupPage = () => {
               onChange={handleInputChange}
               value={nickname}
             />
-            <Nickname_Duplicate_CheckBtn onClick={handleNicknameDuplicateCheck}>
+            <Nickname_Duplicate_CheckBtn type="button" onClick={handleNicknameDuplicateCheck}>
               중복확인
             </Nickname_Duplicate_CheckBtn>{" "}
           </Nickname_InputWrapper>

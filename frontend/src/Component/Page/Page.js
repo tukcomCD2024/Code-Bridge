@@ -43,12 +43,14 @@ import loadingImage from "../../image/loading.gif";
 
 function Page() {
   const location = useLocation();
+  const note = location.state || { name: "노트 목록에서 접속바랍니다.", image: "null" };
   // URL에서 PAGE 파라미터값 저장
   const pathSegments = location.pathname.split('/').filter(Boolean); 
   const noteId = pathSegments[2];
   
   const editorRef = useRef(null);
   const [isloaded, setisloaded] = useState(false); // 로딩 상태 관리
+  const [usersAndColors, setUsersAndColors] = useState([]); // 연결된 사용자와 색상 상태
 
   const { nodes, marks } = basicSchema.spec;
   const extendedNodes = addListNodes(
@@ -72,6 +74,8 @@ function Page() {
   );
 
   useEffect(() => {
+
+
     if (!editorRef.current) return;
 
     const roomId = noteId;
@@ -88,7 +92,7 @@ function Page() {
     provider.on("sync", (isSynced) => {
       console.log(`동기화 상태: ${isSynced ? "완료" : "미완료"}`);
       if (isSynced) {
-        setisloaded(true); // 동기화 완료 시 로딩 상태 업데이트
+        setisloaded(true);
       }
     });
 
@@ -104,14 +108,36 @@ function Page() {
       });
     }
 
-    function getRandomColor() {
-      const index = Math.floor(Math.random() * cursorColors.length);
-      return cursorColors[index];
-    }
     const connectedUsersYMap = ydoc.getMap('connectedUsers');
-    
-    // localStorage에서 nickname을 가져옵니다.
     const nickname = localStorage.getItem('nickname');
+
+
+    function updateUsersAndColors() {
+      const updatedUsersAndColors = [];
+      connectedUsersYMap.forEach((color, name) => {
+        updatedUsersAndColors.push({ name, color });
+      });
+      setUsersAndColors(updatedUsersAndColors);
+    }
+
+    function yjsDisconnect() {
+      connectedUsersYMap.delete(nickname);
+  }    
+
+    function getAvailableColors() {
+      const usedColors = new Set();
+      connectedUsersYMap.forEach((color, name) => {
+        usedColors.add(color);
+      });
+      const availableColors = cursorColors.filter(color => !usedColors.has(color));
+      return availableColors;
+    }
+    
+    function getRandomColor() {
+      const availableColors = getAvailableColors();
+      const index = Math.floor(Math.random() * availableColors.length);
+      return availableColors[index];
+    }
     
     provider.on('status', (event) => {
       if (event.status === 'connected') {
@@ -130,30 +156,32 @@ function Page() {
     
         provider.awareness.setLocalStateField('user', { name: nickname, color: userColor });
     
-        connectedUsersYMap.observe(() => {
-          const usersAndColors = [];
-          connectedUsersYMap.forEach((color, name) => {
-            usersAndColors.push({ name, color });
-          });
-        });
-    
-        console.log('연결된 사용자:', Array.from(connectedUsersYMap.keys()));
       } else if (event.status === 'disconnected') {
-        // 사용자 연결 해제 시 Y.Map에서 해당 사용자를 제거합니다.
-        connectedUsersYMap.delete(nickname);
+        yjsDisconnect();
       }
     });
-    
+
+    connectedUsersYMap.observe(() => {
+      updateUsersAndColors();
+    });
+    window.addEventListener("beforeunload", yjsDisconnect);
+    window.addEventListener("popstate", yjsDisconnect);
 
     const myCursorBuilder = (user) => {
       const cursor = document.createElement("span");
       cursor.classList.add("ProseMirror-yjs-cursor");
       cursor.setAttribute("style", `border-color: ${user.color}`);
-      console.log(user.color);
       const userDiv = document.createElement("div");
       userDiv.setAttribute("style", `background-color: ${user.color}`);
       userDiv.innerText = user.name;
       cursor.appendChild(userDiv);
+      
+      // 커서 색상 확인
+      const usersAndColors = [];
+      connectedUsersYMap.forEach((color, name) => {
+        usersAndColors.push({ name, color });
+      });
+      console.log('연결된 사용자와 커서 색상:', usersAndColors);
 
       // // 일정 시간(예: 5000ms) 후에 사용자 이름을 숨기는 로직
       // let hideTimeout = setTimeout(() => {
@@ -221,6 +249,9 @@ function Page() {
     editorRef.current.view = view;
 
     return () => {
+      connectedUsersYMap.unobserve(updateUsersAndColors);
+      window.removeEventListener("beforeunload", yjsDisconnect);
+      window.removeEventListener("popstate", yjsDisconnect);
       view.destroy();
       provider.destroy();
     };
@@ -239,7 +270,7 @@ function Page() {
             left: 0,
             width: "100%",
             height: "100%",
-            backgroundColor: "rgba(255, 255, 255, 0.7)", // Optional: Add a light background
+            backgroundColor: "rgba(255, 255, 255, 0.7)",
           }}
         >
           <img
@@ -255,9 +286,21 @@ function Page() {
       )}
         <LayoutContainer>
           <NavigationBar isloaded={isloaded}>
-            <p>네비게이션 아이템 1</p>
-            <p>네비게이션 아이템 2</p>
-            {/* 추가적인 네비게이션 아이템들... */}
+            <p style={{fontWeight: "bold"}}>📖&nbsp;&nbsp;&nbsp;{note.name}&nbsp;&nbsp;&nbsp;📖</p>
+            <img src={note.image} alt="Note" />
+            <p />
+            <hr />
+            <br />
+            <p>접속중인 유저 목록</p>
+            <p><small>(커서 색상/닉네임)</small></p>
+           <ul>
+            {usersAndColors.map(({ name, color }) => (
+              <li key={name} style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
+                <div style={{ width: '20px', height: '20px', backgroundColor: color, marginRight: '10px' }}></div>
+                {name}
+              </li>
+            ))}
+          </ul>
           </NavigationBar>
           <EditorContainer>
             <div
@@ -276,7 +319,6 @@ function Page() {
   );
 }
 
-
 const LayoutContainer = styled.div`
   display: flex;
   height: 100vh; // 전체 화면 높이
@@ -287,6 +329,19 @@ const NavigationBar = styled.div`
   background-color: #eee; // 네비게이션 바 배경색
   padding: 20px; // 여백
   visibility: ${(props) => (props.isloaded ? "visible" : "hidden")};
+  
+  img {
+    width: 200px; /* 너비 설정 */
+    cursor: pointer;
+    border: 1px solid rgba(0, 0, 0, 0.2); /* 기본 테두리 색상 설정 */
+    object-fit: contain; /* 비율 유지 */
+    border-radius: 5px; /* 이미지에 둥근 모서리 추가 */
+  }
+
+  & > p:nth-of-type(3),
+  & > p:nth-of-type(4) {
+    margin: 0;
+  }
 `;
 
 const EditorContainer = styled.div`

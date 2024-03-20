@@ -7,7 +7,7 @@ import NotePage from "./Component/Note/NotePage";
 import UserProfileEdit from "./Component/Auth/UserProfileEdit";
 import Page from "./Component/Page/Page";
 import EmailTokenHandler from "./Component/Utils/EmailTokenHandler";
-import { BrowserRouter, Routes, Route, Navigate  } from "react-router-dom";
+import { BrowserRouter, Routes, Route  } from "react-router-dom";
 
 export default function App() {
   return (

@@ -121,7 +121,7 @@ const OrganizationInfoModal = ({
 
   // 추방 버튼 클릭 핸들러 함수
   const handleKickUser = (nickname) => {
-    alert(`${nickname}을(를) 추방하려고 합니다. 근데 이거 필요함?`);
+    alert(`${nickname}을(를) 추방하려고 합니다.`);
   };
 
   return (
@@ -131,9 +131,9 @@ const OrganizationInfoModal = ({
           X
         </CloseButton>
         <LeftContainer>
-          <p>나의 Organization</p>
+          <p>현재 Organization</p>
           <LeftInsideContainer>
-            <p style={{ fontWeight: "bold", fontSize: "25px" }}>
+            <p style={{ fontWeight: "bold", fontSize: "25px", whiteSpace: "nowrap", overflow: "hidden", textOverflow:"ellipsis",maxWidth: "270px" }}>
               {organization?.name || "조직 정보 없음"}
             </p>
             <p style={{ fontSize: "100px" }}>{organization?.emoji || ""}</p>
