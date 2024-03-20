@@ -31,7 +31,6 @@ class AccountActivity : AppCompatActivity() {
 
         // 파이어스토어에서 워크스페이스 데이터를 가져와서 어댑터에 설정
         loadWorkSpaces()
-
     }
 
     // 파이어스토어에서 워크스페이스 데이터를 가져와서 어댑터에 설정하는 함수
@@ -40,13 +39,14 @@ class AccountActivity : AppCompatActivity() {
         db.collection("workSpaces")
             .get()
             .addOnSuccessListener { result ->
-                workspaces.clear()
+                // 기존 데이터를 유지한 채로 새로운 데이터를 추가합니다.
                 for (document in result) {
                     val workSpaceName = document.getString("workSpaceName") ?: ""
                     val owner = document.getString("owner") ?: ""
                     val workSpace = WorkSpace(workSpaceName, owner)
                     workspaces.add(workSpace)
                 }
+                // 데이터 변경을 어댑터에 알립니다.
                 workSpaceListAdapter.notifyDataSetChanged()
             }
             .addOnFailureListener { exception ->

@@ -154,6 +154,10 @@ class HomeFragment : Fragment(), NoteListAdapter.OnNoteClickListener {
         // 팝업 창을 표시할 위치 설정
         popupWindow.showAsDropDown(setting_circle) // settingCircleImageView가 클릭된 위치에 따라 팝업 창이 표시됩니다.
 
+        val recyclerViewWorkSpace = popupView.findViewById<RecyclerView>(R.id.recyclerViewWorkSpace)
+        val accountActivity = AccountActivity()
+        accountActivity.initWorkSpacesRecyclerView(recyclerViewWorkSpace)
+
         // 워크스페이스 생성 또는 참여 항목 클릭 시 처리
         val workSpaceLayout = popupView.findViewById<RelativeLayout>(R.id.workSpaceLayout)
         workSpaceLayout.setOnClickListener {
