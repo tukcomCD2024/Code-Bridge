@@ -31,8 +31,8 @@ import {
 } from "y-prosemirror";
 
 // toastr 라이브러리(토스트 메세지)
-import toastr from "toastr";
-import "toastr/build/toastr.css";
+// import toastr from "toastr";
+// import "toastr/build/toastr.css";
 
 import { imageSettings, imageNodeSpec } from "./utils/pageSettings";
 import { inlinePlaceholderPlugin } from "./utils/inlinePlaceholderPlugin";
@@ -101,11 +101,23 @@ function Page() {
       });
     }
 
-    function getRandomColor() {
-      const index = Math.floor(Math.random() * cursorColors.length);
-      return cursorColors[index];
-    }
     const connectedUsersYMap = ydoc.getMap('connectedUsers');
+
+    function getAvailableColors() {
+      const usedColors = new Set();
+      connectedUsersYMap.forEach((color, name) => {
+        usedColors.add(color);
+      });
+      const availableColors = cursorColors.filter(color => !usedColors.has(color));
+      return availableColors;
+    }
+    
+    function getRandomColor() {
+      const availableColors = getAvailableColors();
+      const index = Math.floor(Math.random() * availableColors.length);
+      return availableColors[index];
+    }
+    
     
     // localStorage에서 nickname을 가져옵니다.
     const nickname = localStorage.getItem('nickname');
@@ -134,7 +146,6 @@ function Page() {
           });
         });
     
-        console.log('연결된 사용자:', Array.from(connectedUsersYMap.keys()));
       } else if (event.status === 'disconnected') {
         // 사용자 연결 해제 시 Y.Map에서 해당 사용자를 제거합니다.
         connectedUsersYMap.delete(nickname);
@@ -146,11 +157,13 @@ function Page() {
       const cursor = document.createElement("span");
       cursor.classList.add("ProseMirror-yjs-cursor");
       cursor.setAttribute("style", `border-color: ${user.color}`);
-      console.log(user.color);
+
       const userDiv = document.createElement("div");
       userDiv.setAttribute("style", `background-color: ${user.color}`);
       userDiv.innerText = user.name;
       cursor.appendChild(userDiv);
+      console.log('나의 커서 색상: ', user.color);
+      console.log('연결된 사용자:', Array.from(connectedUsersYMap.keys()));
 
       // // 일정 시간(예: 5000ms) 후에 사용자 이름을 숨기는 로직
       // let hideTimeout = setTimeout(() => {
