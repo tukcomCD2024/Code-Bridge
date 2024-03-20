@@ -9,7 +9,7 @@ name: Java CI with Gradle
 
 on:
   push:
-    branches: [ "develop","Backend#105/https설정2", "1차데모" ] # develop 브랜치에 푸쉬하면 스크립트 실행
+    branches: [ "develop","eee" ] # develop 브랜치에 푸쉬하면 스크립트 실행
   pull_request:
     branches: [ "develop" ] # develop 브랜치에 풀리퀘되면 스크립트 실행
 
@@ -67,6 +67,13 @@ jobs:
           docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
           docker build -f ./frontend/dockerfile --platform linux/amd64 -t ${{ secrets.DOCKER_REPO }}:frontend ./frontend
           docker push ${{ secrets.DOCKER_REPO }}:frontend
+        
+      - name: Docker build nodejs & push to docker repo
+        run: |
+          docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+          docker build -f ./nodejs/Dockerfile --platform linux/amd64 -t ${{ secrets.DOCKER_REPO }}:nodejs ./nodejs
+          docker push ${{ secrets.DOCKER_REPO }}:nodejs
+    
 
       # appleboy/ssh-action@master 액션을 사용하여 지정한 서버에 ssh로 접속하고, script를 실행합니다.
       # script의 내용은 도커의 기존 프로세스들을 제거하고, docker repo로부터 방금 위에서 push한 내용을 pull 받아 실행하는 것입니다.
@@ -85,6 +92,7 @@ jobs:
             sudo docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
             sudo docker pull ${{ secrets.DOCKER_REPO }}:backend
             sudo docker pull ${{ secrets.DOCKER_REPO }}:frontend
+            sudo docker pull ${{ secrets.DOCKER_REPO }}:nodejs
             docker-compose up -d
             docker image prune -f
 

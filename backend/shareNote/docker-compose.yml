@@ -53,6 +53,13 @@ services:
     volumes:
       - ./rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
 
+  nodejs:
+    container_name: nodejs
+    image: qmfdnjssk/share_repository:nodejslocal
+    ports:
+      - "4000:4000"
+
+    restart: on-failure
 
 
 
