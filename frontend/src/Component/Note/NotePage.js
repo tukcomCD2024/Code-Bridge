@@ -14,7 +14,10 @@ toastr.options.positionClass = "toast-top-right";
 
 function NoteCard({ note, index }) {
   return (
-    <Link to={`/organization/${note.organizationId}/${note.id}`}>
+    <Link 
+      to={`/organization/${note.organizationId}/${note.id}`}
+      state={{ name: note.name, image: note.image }}
+    >
       {/* {"📖"} */}
       <NoteContainer>
         <img src={note.image} alt={`Note-Picture-${index}`} />

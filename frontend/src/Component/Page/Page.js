@@ -43,12 +43,14 @@ import loadingImage from "../../image/loading.gif";
 
 function Page() {
   const location = useLocation();
+  const note = location.state;
   // URL에서 PAGE 파라미터값 저장
   const pathSegments = location.pathname.split('/').filter(Boolean); 
   const noteId = pathSegments[2];
   
   const editorRef = useRef(null);
   const [isloaded, setisloaded] = useState(false); // 로딩 상태 관리
+  const [usersAndColors, setUsersAndColors] = useState([]); // 연결된 사용자와 색상 상태
 
   const { nodes, marks } = basicSchema.spec;
   const extendedNodes = addListNodes(
@@ -104,6 +106,15 @@ function Page() {
     const connectedUsersYMap = ydoc.getMap('connectedUsers');
     const nickname = localStorage.getItem('nickname');
 
+
+    function updateUsersAndColors() {
+      const updatedUsersAndColors = [];
+      connectedUsersYMap.forEach((color, name) => {
+        updatedUsersAndColors.push({ name, color });
+      });
+      setUsersAndColors(updatedUsersAndColors);
+    }
+
     function yjsDisconnect() {
       connectedUsersYMap.delete(nickname);
   }    
@@ -140,18 +151,14 @@ function Page() {
     
         provider.awareness.setLocalStateField('user', { name: nickname, color: userColor });
     
-        connectedUsersYMap.observe(() => {
-          const usersAndColors = [];
-          connectedUsersYMap.forEach((color, name) => {
-            usersAndColors.push({ name, color });
-          });
-        });
-    
       } else if (event.status === 'disconnected') {
         yjsDisconnect();
       }
     });
 
+    connectedUsersYMap.observe(() => {
+      updateUsersAndColors();
+    });
     window.addEventListener("beforeunload", yjsDisconnect);
     window.addEventListener("popstate", yjsDisconnect);
 
@@ -237,6 +244,7 @@ function Page() {
     editorRef.current.view = view;
 
     return () => {
+      connectedUsersYMap.unobserve(updateUsersAndColors);
       window.removeEventListener("beforeunload", yjsDisconnect);
       window.removeEventListener("popstate", yjsDisconnect);
       view.destroy();
@@ -273,9 +281,21 @@ function Page() {
       )}
         <LayoutContainer>
           <NavigationBar isloaded={isloaded}>
-            <p>네비게이션 아이템 1</p>
-            <p>네비게이션 아이템 2</p>
-            {/* 추가적인 네비게이션 아이템들... */}
+            <p style={{fontWeight: "bold"}}>📖&nbsp;&nbsp;&nbsp;{note.name}&nbsp;&nbsp;&nbsp;📖</p>
+            <img src={note.image} alt="Note" />
+            <p />
+            <hr />
+            <br />
+            <p>접속중인 유저 목록</p>
+            <p><small>(커서 색상/닉네임)</small></p>
+           <ul>
+            {usersAndColors.map(({ name, color }) => (
+              <li key={name} style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
+                <div style={{ width: '20px', height: '20px', backgroundColor: color, marginRight: '10px' }}></div>
+                {name}
+              </li>
+            ))}
+          </ul>
           </NavigationBar>
           <EditorContainer>
             <div
@@ -304,6 +324,19 @@ const NavigationBar = styled.div`
   background-color: #eee; // 네비게이션 바 배경색
   padding: 20px; // 여백
   visibility: ${(props) => (props.isloaded ? "visible" : "hidden")};
+  
+  img {
+    width: 200px; /* 너비 설정 */
+    cursor: pointer;
+    border: 1px solid rgba(0, 0, 0, 0.2); /* 기본 테두리 색상 설정 */
+    object-fit: contain; /* 비율 유지 */
+    border-radius: 5px; /* 이미지에 둥근 모서리 추가 */
+  }
+
+  & > p:nth-of-type(3),
+  & > p:nth-of-type(4) {
+    margin: 0;
+  }
 `;
 
 const EditorContainer = styled.div`
