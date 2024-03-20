@@ -31,8 +31,8 @@ import {
 } from "y-prosemirror";
 
 // toastr 라이브러리(토스트 메세지)
-// import toastr from "toastr";
-// import "toastr/build/toastr.css";
+import toastr from "toastr";
+import "toastr/build/toastr.css";
 
 import { imageSettings, imageNodeSpec } from "./utils/pageSettings";
 import { inlinePlaceholderPlugin } from "./utils/inlinePlaceholderPlugin";
@@ -77,7 +77,7 @@ function Page() {
     const roomId = noteId;
     const ydoc = getYDocInstance(roomId);
     const provider = new WebsocketProvider(
-      "wss://demos.yjs.dev/ws", // 웹소켓 서버 주소, // 웹소켓 서버 주소
+      "wss://demos.yjs.dev/ws", // 웹소켓 서버 주소
       roomId, // 방 이름
       ydoc
     );
@@ -85,7 +85,7 @@ function Page() {
     provider.on("sync", (isSynced) => {
       console.log(`동기화 상태: ${isSynced ? "완료" : "미완료"}`);
       if (isSynced) {
-        setisloaded(true); // 동기화 완료 시 로딩 상태 업데이트
+        setisloaded(true);
       }
     });
 
@@ -102,6 +102,11 @@ function Page() {
     }
 
     const connectedUsersYMap = ydoc.getMap('connectedUsers');
+    const nickname = localStorage.getItem('nickname');
+
+    function yjsDisconnect() {
+      connectedUsersYMap.delete(nickname);
+  }    
 
     function getAvailableColors() {
       const usedColors = new Set();
@@ -117,10 +122,6 @@ function Page() {
       const index = Math.floor(Math.random() * availableColors.length);
       return availableColors[index];
     }
-    
-    
-    // localStorage에서 nickname을 가져옵니다.
-    const nickname = localStorage.getItem('nickname');
     
     provider.on('status', (event) => {
       if (event.status === 'connected') {
@@ -147,23 +148,28 @@ function Page() {
         });
     
       } else if (event.status === 'disconnected') {
-        // 사용자 연결 해제 시 Y.Map에서 해당 사용자를 제거합니다.
-        connectedUsersYMap.delete(nickname);
+        yjsDisconnect();
       }
     });
-    
+
+    window.addEventListener("beforeunload", yjsDisconnect);
+    window.addEventListener("popstate", yjsDisconnect);
 
     const myCursorBuilder = (user) => {
       const cursor = document.createElement("span");
       cursor.classList.add("ProseMirror-yjs-cursor");
       cursor.setAttribute("style", `border-color: ${user.color}`);
-
       const userDiv = document.createElement("div");
       userDiv.setAttribute("style", `background-color: ${user.color}`);
       userDiv.innerText = user.name;
       cursor.appendChild(userDiv);
-      console.log('나의 커서 색상: ', user.color);
-      console.log('연결된 사용자:', Array.from(connectedUsersYMap.keys()));
+      
+      // 커서 색상 확인
+      const usersAndColors = [];
+      connectedUsersYMap.forEach((color, name) => {
+        usersAndColors.push({ name, color });
+      });
+      console.log('연결된 사용자와 커서 색상:', usersAndColors);
 
       // // 일정 시간(예: 5000ms) 후에 사용자 이름을 숨기는 로직
       // let hideTimeout = setTimeout(() => {
@@ -231,6 +237,8 @@ function Page() {
     editorRef.current.view = view;
 
     return () => {
+      window.removeEventListener("beforeunload", yjsDisconnect);
+      window.removeEventListener("popstate", yjsDisconnect);
       view.destroy();
       provider.destroy();
     };
@@ -285,7 +293,6 @@ function Page() {
     </div>
   );
 }
-
 
 const LayoutContainer = styled.div`
   display: flex;
