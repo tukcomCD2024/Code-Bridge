@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useLocation } from 'react-router-dom';
-
 import styled from "styled-components";
 
 // prosemirror 라이브러리(리치 텍스트 에디터)
@@ -12,27 +11,17 @@ import { addListNodes } from "prosemirror-schema-list";
 import { exampleSetup } from "prosemirror-example-setup";
 import { keymap } from "prosemirror-keymap";
 
+// yjs 라이브러리(동시편집)
+import { WebsocketProvider } from "y-websocket";
+import { getYDocInstance } from "./utils/YjsInstance";
+import { ySyncPlugin, yCursorPlugin, yUndoPlugin, undo, redo } from "y-prosemirror";
+
 import { updateImageNode, imagePlugin } from "prosemirror-image-plugin";
 import "./ProseMirror_css/prosemirror_image_plugin/common.css";
 import "./ProseMirror_css/prosemirror_image_plugin/withResize.css";
 import "./ProseMirror_css/prosemirror_image_plugin/sideResize.css";
 import "./ProseMirror_css/prosemirror_image_plugin/withoutResize.css";
 import "./ProseMirror_css/ProseMirror.css";
-
-// yjs 라이브러리(동시편집)
-import { WebsocketProvider } from "y-websocket";
-import { getYDocInstance } from "./utils/YjsInstance";
-import {
-  ySyncPlugin,
-  yCursorPlugin,
-  yUndoPlugin,
-  undo,
-  redo,
-} from "y-prosemirror";
-
-// toastr 라이브러리(토스트 메세지)
-import toastr from "toastr";
-import "toastr/build/toastr.css";
 
 import { imageSettings, imageNodeSpec } from "./utils/pageSettings";
 import { inlinePlaceholderPlugin } from "./utils/inlinePlaceholderPlugin";
@@ -42,13 +31,15 @@ import { cursorColors } from "../Utils/cursorColor"
 import loadingImage from "../../image/loading.gif";
 
 function Page() {
+  const editorRef = useRef(null);
+  const nickname = localStorage.getItem('nickname');
+
   const location = useLocation();
   const note = location.state || { name: "노트 목록에서 접속바랍니다.", image: "null" };
-  // URL에서 PAGE 파라미터값 저장
+
   const pathSegments = location.pathname.split('/').filter(Boolean); 
   const noteId = pathSegments[2];
   
-  const editorRef = useRef(null);
   const [isloaded, setisloaded] = useState(false); // 로딩 상태 관리
   const [usersAndColors, setUsersAndColors] = useState([]); // 연결된 사용자와 색상 상태
 
@@ -58,6 +49,7 @@ function Page() {
     "paragraph block*",
     "block"
   );
+
   const customParagraphNode = {
     ...nodes.get("paragraph"),
     attrs: {
@@ -68,35 +60,40 @@ function Page() {
       return ["p", { class: node.attrs.class }, 0];
     },
   };
+
   const newParagraphNode = extendedNodes.update(
     "paragraph",
     customParagraphNode
   );
 
+  const defaultNodes = updateImageNode(newParagraphNode, {
+    ...imageSettings,
+  });
+
+  const mySchema = new Schema({
+    nodes: defaultNodes,
+    marks,
+  });
+
   useEffect(() => {
-
-
     if (!editorRef.current) return;
 
     const roomId = noteId;
     const ydoc = getYDocInstance(roomId);
     const provider = new WebsocketProvider(
-      //"wss://demos.yjs.dev/ws", // 웹소켓 서버 주소, // 웹소켓 서버 주소
+      //"wss://demos.yjs.dev/ws", // 웹소켓 서버 주소(데모용)
       //"ws://localhost:4000", //배포용
       //"ws://nodejs:4000", 
       "wss://sharenote.shop/ws",
       roomId, // 방 이름
       ydoc
     );
-
-    provider.on("sync", (isSynced) => {
-      console.log(`동기화 상태: ${isSynced ? "완료" : "미완료"}`);
-      if (isSynced) {
-        setisloaded(true);
-      }
-    });
-
     const yXmlFragment = ydoc.getXmlFragment("prosemirror");
+    const connectedUsersYMap = ydoc.getMap('connectedUsers');
+
+    function yjsDisconnect() {
+      connectedUsersYMap.delete(nickname);
+    }    
 
     function cursorAwarenessHandler(awareness, userDiv, hideTimeout) {
       awareness.on("change", () => {
@@ -107,22 +104,6 @@ function Page() {
         }, 5000);
       });
     }
-
-    const connectedUsersYMap = ydoc.getMap('connectedUsers');
-    const nickname = localStorage.getItem('nickname');
-
-
-    function updateUsersAndColors() {
-      const updatedUsersAndColors = [];
-      connectedUsersYMap.forEach((color, name) => {
-        updatedUsersAndColors.push({ name, color });
-      });
-      setUsersAndColors(updatedUsersAndColors);
-    }
-
-    function yjsDisconnect() {
-      connectedUsersYMap.delete(nickname);
-  }    
 
     function getAvailableColors() {
       const usedColors = new Set();
@@ -138,34 +119,39 @@ function Page() {
       const index = Math.floor(Math.random() * availableColors.length);
       return availableColors[index];
     }
+
+    function updateUsersAndColors() {
+      const updatedUsersAndColors = [];
+      connectedUsersYMap.forEach((color, name) => {
+        updatedUsersAndColors.push({ name, color });
+      });
+      setUsersAndColors(updatedUsersAndColors);
+    }
+
+    provider.on("sync", (isSynced) => {
+      console.log(`동기화 상태: ${isSynced ? "완료" : "미완료"}`);
+      if (isSynced) {
+        setisloaded(true);
+      }
+    });
     
     provider.on('status', (event) => {
       if (event.status === 'connected') {
-        // 이미 연결된 사용자인지 확인합니다.
         if (connectedUsersYMap.has(nickname)) {
           alert(`${nickname}는(은) 이미 연결되어 있어 게스트로 진입합니다.`);
-          console.log(`${nickname}는(은) 이미 연결되어 있습니다.`);
           return;
         }
-    
         let userColor = connectedUsersYMap.get(nickname);
         if (!userColor) {
           userColor = getRandomColor();
           connectedUsersYMap.set(nickname, userColor);
+          updateUsersAndColors();
         }
-    
         provider.awareness.setLocalStateField('user', { name: nickname, color: userColor });
-    
       } else if (event.status === 'disconnected') {
         yjsDisconnect();
       }
     });
-
-    connectedUsersYMap.observe(() => {
-      updateUsersAndColors();
-    });
-    window.addEventListener("beforeunload", yjsDisconnect);
-    window.addEventListener("popstate", yjsDisconnect);
 
     const myCursorBuilder = (user) => {
       const cursor = document.createElement("span");
@@ -194,22 +180,9 @@ function Page() {
       return cursor;
     };
 
-    const defaultNodes = updateImageNode(newParagraphNode, {
-      ...imageSettings,
-    });
-
-    const mySchema = new Schema({
-      nodes: defaultNodes,
-      marks,
-    });
-
-    // Alternatively, define the imageSchema here if it should be separate
-    // const imageSchema = new Schema({
-    //   nodes: updateImageNode(customNodes, {
-    //     ...imageSettings, // Ensure this matches your requirements
-    //   }),
-    //   marks,
-    // });
+    connectedUsersYMap.observe(updateUsersAndColors);
+    window.addEventListener("beforeunload", yjsDisconnect);
+    window.addEventListener("popstate", yjsDisconnect);
 
     const myDoc = DOMParser.fromSchema(mySchema).parse(
       document.createElement("div")
@@ -235,7 +208,7 @@ function Page() {
               return () => observer.unobserve(el);
             },
           }),
-          checkBlockType(),
+          // checkBlockType(),
           keymap({
             "Mod-z": undo,
             "Mod-y": redo,
@@ -286,18 +259,18 @@ function Page() {
       )}
         <LayoutContainer>
           <NavigationBar isloaded={isloaded}>
-            <p style={{fontWeight: "bold"}}>📖&nbsp;&nbsp;&nbsp;{note.name}&nbsp;&nbsp;&nbsp;📖</p>
+            <Notename>📖&nbsp;&nbsp;&nbsp;{note.name}&nbsp;&nbsp;&nbsp;📖</Notename>
+            <br/>
             <img src={note.image} alt="Note" />
             <p />
             <hr />
-            <br />
-            <p>접속중인 유저 목록</p>
+            <p style={{ fontWeight: "bold" }}>접속중인 유저 목록</p>
             <p><small>(커서 색상/닉네임)</small></p>
            <ul>
             {usersAndColors.map(({ name, color }) => (
               <li key={name} style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
                 <div style={{ width: '20px', height: '20px', backgroundColor: color, marginRight: '10px' }}></div>
-                {name}
+                {name} {name === nickname && "(본인)"}
               </li>
             ))}
           </ul>
@@ -332,49 +305,61 @@ const NavigationBar = styled.div`
   
   img {
     width: 200px; /* 너비 설정 */
-    cursor: pointer;
-    border: 1px solid rgba(0, 0, 0, 0.2); /* 기본 테두리 색상 설정 */
     object-fit: contain; /* 비율 유지 */
     border-radius: 5px; /* 이미지에 둥근 모서리 추가 */
   }
 
-  & > p:nth-of-type(3),
-  & > p:nth-of-type(4) {
+  & > p:nth-of-type(2) {
+    margin-bottom: 0;
+  }
+  & > p:nth-of-type(3) {
     margin: 0;
+  }
+
+  @media screen and (max-width: 1500px) {
+    img {
+      width: auto; // 이미지 너비 자동 조정
+      max-width: 100%; // 이미지가 부모 너비를 넘지 않도록
+    }
   }
 `;
 
+const Notename = styled.div`
+  font-size: 20px;
+  font-weight: bold;
+  white-space: nowrap; /* 텍스트를 한 줄로 만들기 */
+  overflow: hidden; /* 오버플로우된 텍스트 숨기기 */
+  text-overflow: ellipsis; /* 오버플로우된 텍스트를 말줄임표로 표시 */
+`;
+
 const EditorContainer = styled.div`
-  flex: 1; // 남은 공간을 모두 차지
+  flex: 1;
   display: flex;
-  // flex-direction: column;
-  // align-items: center;
-  // justify-content: center;
 `;
 
 // 토글 스위치 컨테이너
-const ToggleSwitch = styled.div`
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  width: 50px;
-  height: 24px;
-  border-radius: 12px;
-  background-color: ${(props) =>
-    props.active ? "#007bff" : "#ccc"}; // active 상태에 따라 배경색 변경
-  display: flex;
-  align-items: center;
-  cursor: pointer;
-  justify-content: ${(props) => (props.active ? "flex-end" : "flex-start")};
-`;
+// const ToggleSwitch = styled.div`
+//   position: absolute;
+//   top: 10px;
+//   right: 10px;
+//   width: 50px;
+//   height: 24px;
+//   border-radius: 12px;
+//   background-color: ${(props) =>
+//     props.active ? "#007bff" : "#ccc"}; // active 상태에 따라 배경색 변경
+//   display: flex;
+//   align-items: center;
+//   cursor: pointer;
+//   justify-content: ${(props) => (props.active ? "flex-end" : "flex-start")};
+// `;
 
 // 토글 버튼
-const ToggleButton = styled.div`
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  background-color: white;
-  transition: all 0.3s ease;
-`;
+// const ToggleButton = styled.div`
+//   width: 22px;
+//   height: 22px;
+//   border-radius: 50%;
+//   background-color: white;
+//   transition: all 0.3s ease;
+// `;
 
 export default Page;
