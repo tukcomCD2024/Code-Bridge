@@ -119,7 +119,7 @@ function Page() {
 
     function yjsDisconnect() {
       connectedUsersYMap.delete(nickname);
-      provider.disconnect
+      provider.disconnect();
   }    
 
     function getAvailableColors() {
