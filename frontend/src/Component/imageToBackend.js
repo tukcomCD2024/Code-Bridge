@@ -43,7 +43,7 @@ function ImagetoBackend({ onImageUpload }) {
 
       $.ajax({
         //url: "http://localhost:8080/api/image",
-        url: "http://sharenote.shop/api/image",
+        url: "https://sharenote.shop/api/image",//s 추가
         type: "POST",
         data: formData,
         processData: false,
