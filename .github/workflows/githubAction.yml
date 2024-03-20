@@ -9,9 +9,9 @@ name: Java CI with Gradle
 
 on:
   push:
-    branches: [ "develop","eee" ] # develop 브랜치에 푸쉬하면 스크립트 실행
-  pull_request:
-    branches: [ "develop" ] # develop 브랜치에 풀리퀘되면 스크립트 실행
+    branches: [ "develop","Backend#129/yjsmongodbRefactoring" ] # develop 브랜치에 푸쉬하면 스크립트 실행
+  # pull_request:
+  #   branches: [ "develop" ] # develop 브랜치에 풀리퀘되면 스크립트 실행
 
 # 실제 실행될 내용들을 정의한다.
 jobs:
