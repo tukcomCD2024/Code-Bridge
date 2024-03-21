@@ -25,7 +25,8 @@ export function inlinePlaceholderPlugin() {
             decorations.push(
               Decoration.node(pos, pos + node.nodeSize, {
                 class: "placeholder",
-                style: `--placeholder-text: "${node.type.name}_작성자 이름";`,
+                style: "",
+                // style: `--placeholder-text: "${node.type.name}_작성자 이름";`,
               })
             );
           }
