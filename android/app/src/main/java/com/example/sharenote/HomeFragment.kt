@@ -112,6 +112,7 @@ class HomeFragment : Fragment(), NoteListAdapter.OnNoteClickListener {
 
 
     private fun showPopupAccount() {
+
         // PopupWindow 생성
         val popupWindow = PopupWindow(
             popupView,
@@ -120,12 +121,27 @@ class HomeFragment : Fragment(), NoteListAdapter.OnNoteClickListener {
             true
         )
 
+        // account_layout 내의 RecyclerView를 찾습니다.
+        val recyclerViewWorkSpace = popupView.findViewById<RecyclerView>(R.id.recyclerViewWorkSpace)
+        val workSpaceListAdapter = WorkSpaceListAdapter(mutableListOf(), object :
+            WorkSpaceListAdapter.OnWorkSpaceClickListener {
+            override fun onWorkSpaceClick(workSpace: WorkSpace) {
+                // 워크스페이스를 클릭했을 때 처리할 내용을 여기에 작성합니다.
+            }
+        })
+        recyclerViewWorkSpace.adapter = workSpaceListAdapter
+        recyclerViewWorkSpace.layoutManager = LinearLayoutManager(requireContext())
+
+        // 파이어스토어에서 워크스페이스 데이터를 가져와서 어댑터에 설정
+        loadWorkSpacesForPopup(workSpaceListAdapter)
+
+        // PopupWindow를 화면 아래쪽에 표시합니다.
+        popupWindow.showAtLocation(view, Gravity.BOTTOM, 0, 0)
+
+        // PopupWindow가 바깥을 터치하면 닫히도록 설정합니다.
         popupWindow.isOutsideTouchable = true
 
-        // PopupWindow를 표시할 위치 설정 (아래쪽에 표시)
-        popupWindow?.showAtLocation(view, Gravity.BOTTOM, 0, 0)
-
-        // 팝업 창에서 각 항목을 클릭할 때의 동작 정의
+        // 팝업 창에서 로그아웃 항목을 클릭했을 때의 동작 정의
         val settingLayoutView = popupView.findViewById<RelativeLayout>(R.id.logoutLayout)
         settingLayoutView.setOnClickListener {
             auth.signOut()
@@ -186,7 +202,9 @@ class HomeFragment : Fragment(), NoteListAdapter.OnNoteClickListener {
                     val workSpace = WorkSpace(workSpaceName, owner)
                     workSpaceList.add(workSpace)
                 }
-                adapter.notifyDataSetChanged()
+
+                // 어댑터에 워크스페이스 데이터 설정
+                adapter.setWorkSpaces(workSpaceList)
             }
             .addOnFailureListener { exception ->
                 // 쿼리 실패 시 에러 처리
