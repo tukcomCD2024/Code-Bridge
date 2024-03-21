@@ -93,6 +93,7 @@ function Page() {
 
     function yjsDisconnect() {
       connectedUsersYMap.delete(nickname);
+      provider.disconnect();
     }    
 
     function cursorAwarenessHandler(awareness, userDiv, hideTimeout) {
@@ -104,23 +105,6 @@ function Page() {
         }, 5000);
       });
     }
-
-    const connectedUsersYMap = ydoc.getMap('connectedUsers');
-    const nickname = localStorage.getItem('nickname');
-
-
-    function updateUsersAndColors() {
-      const updatedUsersAndColors = [];
-      connectedUsersYMap.forEach((color, name) => {
-        updatedUsersAndColors.push({ name, color });
-      });
-      setUsersAndColors(updatedUsersAndColors);
-    }
-
-    function yjsDisconnect() {
-      connectedUsersYMap.delete(nickname);
-      provider.disconnect();
-  }    
 
     function getAvailableColors() {
       const usedColors = new Set();
