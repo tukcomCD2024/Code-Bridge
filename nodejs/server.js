@@ -24,7 +24,8 @@ const databaseName = 'shareDB';
 
 function createConnectionString(databaseName) {
   logger.info(`@@@@@@@@@@@mongodb://root:1234@localhost:27017/${databaseName}?authSource=admin`);
-  return `mongodb://root:1234@localhost:27017/${databaseName}?authSource=admin`;
+  //return `mongodb://root:1234@localhost:27017/${databaseName}?authSource=admin`;
+  return `mongodb://root:1234@mongodbService:27017/${databaseName}?authSource=admin`;
 }
 
 const server = http.createServer((req, res) => {
