@@ -18,6 +18,7 @@ import com.example.sharenote.Note
 import com.example.sharenote.NoteActivity
 import com.example.sharenote.OrganizationActivity
 import com.example.sharenote.R
+import com.example.sharenote.SharedPreferencesUtil
 import com.example.sharenote.WorkSpace
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
@@ -63,6 +64,8 @@ class HomeFragment : Fragment(), NoteListAdapter.OnNoteClickListener {
         // emailTextView를 찾습니다.
         emailTextView = view.findViewById(R.id.emailtextView)
 
+        // 최근에 방문한 워크스페이스 ID를 불러옵니다.
+        val recentWorkspaceId = getRecentWorkspaceId()
 
         // 사용자 이메일을 표시합니다.
         displayUserEmail()
@@ -97,7 +100,11 @@ class HomeFragment : Fragment(), NoteListAdapter.OnNoteClickListener {
         }
 
 
-        loadNotesFromFirestore()
+        // 최근 워크스페이스 ID를 loadNotesFromFirestore() 함수로 전달하여 해당 워크스페이스에 속한 노트들을 가져옵니다.
+        recentWorkspaceId?.let {
+            loadNotesFromFirestore(it)
+        }
+
         return view
     }
 
@@ -127,6 +134,7 @@ class HomeFragment : Fragment(), NoteListAdapter.OnNoteClickListener {
             WorkSpaceListAdapter.OnWorkSpaceClickListener {
             override fun onWorkSpaceClick(workSpace: WorkSpace) {
                 // 워크스페이스를 클릭했을 때 처리할 내용을 여기에 작성합니다.
+                saveRecentWorkspaceId(workSpace.id)
             }
         })
         recyclerViewWorkSpace.adapter = workSpaceListAdapter
@@ -199,7 +207,8 @@ class HomeFragment : Fragment(), NoteListAdapter.OnNoteClickListener {
                 for (document in result) {
                     val workSpaceName = document.getString("workSpaceName") ?: ""
                     val owner = document.getString("owner") ?: ""
-                    val workSpace = WorkSpace(workSpaceName, owner)
+                    val id = document.getString("workSpaceId") ?: ""
+                    val workSpace = WorkSpace(workSpaceName, owner, id)
                     workSpaceList.add(workSpace)
                 }
 
@@ -274,9 +283,10 @@ class HomeFragment : Fragment(), NoteListAdapter.OnNoteClickListener {
         startActivity(intent)
     }
 
-    private fun loadNotesFromFirestore() {
+    private fun loadNotesFromFirestore(recentWorkspaceId: String) {
         val db = FirebaseFirestore.getInstance()
         db.collection("notes")
+            .whereEqualTo("workSpaceId", recentWorkspaceId) // 해당 워크스페이스 ID와 일치하는 노트만 가져오기
             .get()
             .addOnSuccessListener { result ->
                 notes.clear()
@@ -297,6 +307,7 @@ class HomeFragment : Fragment(), NoteListAdapter.OnNoteClickListener {
     }
 
 
+
     private fun displayUserEmail() {
         // FirebaseAuth 인스턴스를 사용하여 현재 사용자를 가져옵니다.
         val user: FirebaseUser? = auth.currentUser
@@ -308,4 +319,14 @@ class HomeFragment : Fragment(), NoteListAdapter.OnNoteClickListener {
             emailTextView1.text = userEmail
         }
     }
+
+    // 최근 워크스페이스 ID를 저장하고 불러오기
+    private fun saveRecentWorkspaceId(workspaceId: String) {
+        SharedPreferencesUtil.saveRecentWorkspaceId(requireContext(), workspaceId)
+    }
+
+    private fun getRecentWorkspaceId(): String? {
+        return SharedPreferencesUtil.getRecentWorkspaceId(requireContext())
+    }
 }
+

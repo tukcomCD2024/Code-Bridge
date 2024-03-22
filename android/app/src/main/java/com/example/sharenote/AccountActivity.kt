@@ -43,7 +43,8 @@ class AccountActivity : AppCompatActivity() {
                 for (document in result) {
                     val workSpaceName = document.getString("workSpaceName") ?: ""
                     val owner = document.getString("owner") ?: ""
-                    val workSpace = WorkSpace(workSpaceName, owner)
+                    val id = document.getString("workSpaceId") ?: ""
+                    val workSpace = WorkSpace(workSpaceName, owner, id)
                     workspaces.add(workSpace)
                 }
                 // 데이터 변경을 어댑터에 알립니다.
