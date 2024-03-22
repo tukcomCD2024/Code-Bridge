@@ -55,7 +55,10 @@ jobs:
 
       # dockerfile을 통해 이미지를 빌드하고, 이를 docker repo로 push 합니다.
       # 이 때 사용되는 ${{ secrets.DOCKER_REPO }}/directors-dev 는 docker-hub에서 만든 것
-
+      
+      #docker driver를 사용하여 빌드를 빠르게 하기 위해 buildx를 사용합니다.
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
       # docker login
       - name: Docker login
         run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
