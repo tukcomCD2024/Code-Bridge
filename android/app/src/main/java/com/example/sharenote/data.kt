@@ -15,5 +15,6 @@ data class UserData(
 
 data class WorkSpace(
     val name: String,
-    val owner: String
+    val owner: String,
+    val id : String
 )
