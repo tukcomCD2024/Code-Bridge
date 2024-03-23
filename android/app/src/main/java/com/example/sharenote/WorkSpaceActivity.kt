@@ -1,6 +1,8 @@
 package com.example.sharenote
 
+import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.widget.Button
 import android.widget.EditText
@@ -17,6 +19,7 @@ class WorkSpaceActivity : AppCompatActivity() {
     private lateinit var backTextView: TextView
     private lateinit var auth: FirebaseAuth
     private lateinit var firestore: FirebaseFirestore
+    private lateinit var sharedPreferences: SharedPreferences
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -27,6 +30,10 @@ class WorkSpaceActivity : AppCompatActivity() {
         backTextView = findViewById(R.id.backTextView)
         auth = FirebaseAuth.getInstance()
         firestore = FirebaseFirestore.getInstance()
+
+        // SharedPreferences 초기화
+        sharedPreferences = getSharedPreferences("workSpacePrefs", Context.MODE_PRIVATE)
+
 
         continueButton.setOnClickListener {
             val workSpaceName = workSpaceNameEditText.text.toString().trim()
@@ -51,7 +58,7 @@ class WorkSpaceActivity : AppCompatActivity() {
     private fun saveWorkSpaceToFirestore(workSpaceName: String, email: String) {
         val workSpaceData = hashMapOf(
             "workSpaceName" to workSpaceName,
-            "userEmail" to email
+            "owner" to email
         )
 
         val collectionPath = "workSpaces" // 워크스페이스 정보를 저장할 컬렉션 이름
@@ -60,6 +67,10 @@ class WorkSpaceActivity : AppCompatActivity() {
             .addOnSuccessListener { documentReference ->
                 // 파이어스토어에 데이터가 성공적으로 추가된 경우
                 val workSpaceId = documentReference.id // 새로 생성된 문서의 고유 ID 가져오기
+
+                // 고유 ID를 SharedPreferences에 저장
+                saveWorkSpaceIdToSharedPreferences(workSpaceId)
+
 
                 // 고유 ID를 해당 문서의 필드로 추가하여 다시 업데이트
                 documentReference.update("workSpaceId", workSpaceId)
@@ -79,6 +90,13 @@ class WorkSpaceActivity : AppCompatActivity() {
                 // 파이어스토어에 데이터 추가 중 오류 발생한 경우
                 Toast.makeText(this, "워크스페이스 정보를 저장하는 도중 오류가 발생했습니다.", Toast.LENGTH_SHORT).show()
             }
+    }
+
+    // SharedPreferences에 워크스페이스 ID 저장
+    private fun saveWorkSpaceIdToSharedPreferences(workSpaceId: String) {
+        val editor = sharedPreferences.edit()
+        editor.putString("workSpaceId", workSpaceId)
+        editor.apply()
     }
 
 }

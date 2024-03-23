@@ -53,8 +53,7 @@ class OrganizationActivity : AppCompatActivity() {
         }
 
         backTextView.setOnClickListener {
-            val intent = Intent(this, MainActivity::class.java)
-            startActivity(intent)
+            onBackPressed()
         }
 
     }
