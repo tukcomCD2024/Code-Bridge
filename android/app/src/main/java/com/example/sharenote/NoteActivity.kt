@@ -10,6 +10,7 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import com.bumptech.glide.Glide
+import com.example.sharenote.SharedPreferencesUtil.getRecentWorkspaceId
 import com.google.firebase.firestore.FirebaseFirestore
 import java.util.*
 
@@ -99,11 +100,13 @@ class NoteActivity : AppCompatActivity() {
 
         // 이전에 작성한 데이터가 있는 경우 해당 데이터의 ID를 사용하여 업데이트
         if (!noteId.isNullOrEmpty()) {
+            // 이전에 작성한 데이터가 있는 경우 해당 데이터의 ID를 사용하여 업데이트
             val note = hashMapOf(
                 "id" to noteId, // NoteId를 유지하도록 수정
                 "title" to noteTitle,
                 "text" to noteText,
-                "imageUri" to selectedImageUri.toString()
+                "imageUri" to selectedImageUri.toString(),
+                "workSpaceId" to getRecentWorkspaceId(this) // 최근 워크스페이스 ID 추가
             )
 
             db.collection("notes")
@@ -125,7 +128,8 @@ class NoteActivity : AppCompatActivity() {
                 "id" to newNoteId, // 새로운 노트의 ID 생성
                 "title" to noteTitle,
                 "text" to noteText,
-                "imageUri" to selectedImageUri.toString()
+                "imageUri" to selectedImageUri.toString(),
+                "workSpaceId" to getRecentWorkspaceId(this) // 최근 워크스페이스 ID 추가
             )
 
             db.collection("notes")
@@ -137,10 +141,10 @@ class NoteActivity : AppCompatActivity() {
                     startActivity(intent)
                     finish() // 현재 액티비티 종료
                 }
-
                 .addOnFailureListener { e ->
                     Toast.makeText(this, "노트 저장 실패: $e", Toast.LENGTH_SHORT).show()
                 }
         }
     }
+
 }
