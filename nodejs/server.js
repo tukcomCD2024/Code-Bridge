@@ -68,7 +68,16 @@ yUtils.setPersistence({
     try {
       const persistedYdoc = await mdb.getYDoc(docName);
       const newUpdates = Y.encodeStateAsUpdate(ydoc);
-      await mdb.storeUpdate(docName, newUpdates);
+
+      //작성자의 nickname 추가
+      const authorNickname = 'nickname';
+      //추가 부분
+      const updateWithAuthor =  Y.encodeStateAsUpdate({
+        ...Y.applyUpdate(Y.emptyUpdate, newUpdates),
+        author: authorNickname,
+      });
+
+      await mdb.storeUpdate(docName, updateWithAuthor);
       Y.applyUpdate(ydoc, Y.encodeStateAsUpdate(persistedYdoc));
       ydoc.on('update', async (update) => {
         await mdb.storeUpdate(docName, update);
