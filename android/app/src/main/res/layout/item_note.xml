@@ -56,9 +56,9 @@
             android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"
             android:layout_centerInParent="true"
-            android:text="삭제"
             android:layout_marginTop="8dp"
-            android:layout_marginEnd="8dp"/>
+            android:layout_marginEnd="8dp"
+            android:text="삭제" />
 
     </RelativeLayout>
     <View

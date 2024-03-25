@@ -14,6 +14,7 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.sharenote.LoginActivity
+import com.example.sharenote.MainActivity
 import com.example.sharenote.Note
 import com.example.sharenote.NoteActivity
 import com.example.sharenote.OrganizationActivity
@@ -34,6 +35,7 @@ class HomeFragment : Fragment(), NoteListAdapter.OnNoteClickListener {
     private lateinit var profileForm: RelativeLayout
 
     private lateinit var emailTextView1: TextView
+    private lateinit var workSpaceText: TextView
     private lateinit var popupView: View // 팝업 뷰
     private lateinit var setting_circle: ImageView
 
@@ -58,6 +60,7 @@ class HomeFragment : Fragment(), NoteListAdapter.OnNoteClickListener {
         // account_layout을 팝업으로 사용하기 위해 팝업 뷰를 초기화
         popupView = layoutInflater.inflate(R.layout.account_layout, null)
         emailTextView1 = popupView.findViewById(R.id.email)
+        workSpaceText = view.findViewById(R.id.workSpaceText)
 
         setting_circle = popupView.findViewById(R.id.setting_circle)
 
@@ -69,6 +72,10 @@ class HomeFragment : Fragment(), NoteListAdapter.OnNoteClickListener {
 
         // 사용자 이메일을 표시합니다.
         displayUserEmail()
+
+        recentWorkspaceId?.let {
+            displayWorkspaceName(it)
+        }
 
         profileForm.setOnClickListener {
             // account_layout을 화면 아래에 절반 크기로 보여줌
@@ -135,6 +142,9 @@ class HomeFragment : Fragment(), NoteListAdapter.OnNoteClickListener {
             override fun onWorkSpaceClick(workSpace: WorkSpace) {
                 // 워크스페이스를 클릭했을 때 처리할 내용을 여기에 작성합니다.
                 saveRecentWorkspaceId(workSpace.id)
+                val MainIntent = Intent(requireContext(), MainActivity::class.java)
+                startActivity(MainIntent)
+                requireActivity().finish()
             }
         })
         recyclerViewWorkSpace.adapter = workSpaceListAdapter
@@ -307,6 +317,21 @@ class HomeFragment : Fragment(), NoteListAdapter.OnNoteClickListener {
     }
 
 
+
+    private fun displayWorkspaceName(workspaceId: String) {
+        val db = FirebaseFirestore.getInstance()
+        db.collection("workSpaces")
+            .document(workspaceId)
+            .get()
+            .addOnSuccessListener { document ->
+                val workspaceName = document.getString("workSpaceName")
+                // 가져온 워크스페이스 이름을 TextView에 설정합니다.
+                workSpaceText.text = workspaceName
+            }
+            .addOnFailureListener { exception ->
+                // 워크스페이스 이름을 가져오지 못한 경우 처리할 내용을 여기에 작성합니다.
+            }
+    }
 
     private fun displayUserEmail() {
         // FirebaseAuth 인스턴스를 사용하여 현재 사용자를 가져옵니다.
