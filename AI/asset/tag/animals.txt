@@ -1,0 +1,1 @@
+'Cat', 'Dog', 'Turtle', 'Rabbit', 'Snake', 'Lion', 'Tiger', 'Leopard', 'Cheetah', 'Giraffe', 'Elephant', 'Rhino', 'Crocodile' ', 'Penguin', 'Owl', 'Bear', 'Pig', 'Cow', 'Chicken', 'Eagle', 'Monkey', 'Koala', 'Kangaroo', 'Whale', 'Shark', 'Panda', 'Duck', 'Swan', 'Hedgehog', 'Chameleon', 'Goat', 'Peacock', 'bat', 'zebra', 'wild goose', 'dolphin', 'camel', 'fox', 'wolf', 'sheep'
