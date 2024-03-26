@@ -69,7 +69,7 @@ class WorkSpaceActivity : AppCompatActivity() {
                 val workSpaceId = documentReference.id // 새로 생성된 문서의 고유 ID 가져오기
 
                 // 고유 ID를 SharedPreferences에 저장
-                saveWorkSpaceIdToSharedPreferences(workSpaceId)
+                saveRecentWorkspaceId(workSpaceId)
 
 
                 // 고유 ID를 해당 문서의 필드로 추가하여 다시 업데이트
@@ -93,10 +93,8 @@ class WorkSpaceActivity : AppCompatActivity() {
     }
 
     // SharedPreferences에 워크스페이스 ID 저장
-    private fun saveWorkSpaceIdToSharedPreferences(workSpaceId: String) {
-        val editor = sharedPreferences.edit()
-        editor.putString("workSpaceId", workSpaceId)
-        editor.apply()
+    private fun saveRecentWorkspaceId(workspaceId: String) {
+        SharedPreferencesUtil.saveRecentWorkspaceId(this, workspaceId)
     }
 
 }
