@@ -14,7 +14,7 @@ import { keymap } from "prosemirror-keymap";
 // yjs 라이브러리(동시편집)
 import { WebsocketProvider } from "y-websocket";
 import { getYDocInstance } from "./utils/YjsInstance";
-import { ySyncPlugin, yCursorPlugin, yUndoPlugin, undo, redo, relativePositionToAbsolutePosition  } from "y-prosemirror";
+import { ySyncPlugin, yCursorPlugin, yUndoPlugin, undo, redo  } from "y-prosemirror";
 
 import { updateImageNode, imagePlugin } from "prosemirror-image-plugin";
 import "./ProseMirror_css/prosemirror_image_plugin/common.css";
@@ -29,6 +29,9 @@ import { hoverButtonPlugin } from "./utils/hoverButtonPlugin";
 import { checkBlockType } from "./utils/checkBlockType";
 import { cursorColors } from "../Utils/cursorColor"
 import loadingImage from "../../image/loading.gif";
+
+import toastr from 'toastr';
+import 'toastr/build/toastr.css';
 
 function Page() {
   const editorRef = useRef(null);
@@ -147,7 +150,7 @@ function Page() {
           provider.awareness.setLocalStateField('user', { name: nickname, color: userColor });
           updateUsersAndColors(); // UI 업데이트
         } else {
-          console.log(`${nickname}는(은) 이미 연결되어 있습니다.`);
+          alert(`${nickname}는(은) 이미 연결되어 있습니다.`);
         }
         setisloaded(true);
       }
@@ -256,13 +259,13 @@ function Page() {
       // 해당 줄이 이미 잠겨 있고, 현재 사용자가 잠근 경우 잠금 해제
       if (currentLock === nickname) {
           lineLocks.delete(lineNumber.toString());
-          alert(`[해제] ${lineNumber} 번째 줄`);
+          toastr.info(`[해제] ${lineNumber} 번째 줄`);
       } else {
-          alert(`[경고] ${lineNumber} 번째 줄은 ${currentLock}에 의해 잠금 처리된 상태.`);
+          toastr.warning(`[경고] ${lineNumber} 번째 줄은 ${currentLock}에 의해 잠금 처리된 상태.`);
       }
   } else {
       lineLocks.set(lineNumber.toString(), nickname);
-      alert(`[잠금] ${lineNumber} 번째 줄은 ${nickname}에 의해 잠금.`);
+      toastr.success(`[잠금] ${lineNumber} 번째 줄은 ${nickname}에 의해 잠금.`);
   }
 };
 
@@ -307,7 +310,7 @@ function Page() {
     // });  
     
     editorRef.current.addEventListener('mousedown', (event) => {
-      handleClick(nickname, event); // 'yourNicknameHere'를 사용자의 닉네임으로 교체하세요.
+      handleClick(nickname, event);
   });
 
     return () => {
@@ -389,7 +392,7 @@ const NavigationBar = styled.div`
   width: 15%; // 네비게이션 바 너비
   background-color: #eee; // 네비게이션 바 배경색
   padding: 20px; // 여백
-  visibility: ${(props) => (props.$isloaded ? "visible" : "hidden")};
+  visibility: ${(props) => (props.$isloaded === "true" ? "visible" : "hidden")};
   
   img {
     width: 200px; /* 너비 설정 */
