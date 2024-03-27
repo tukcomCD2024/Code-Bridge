@@ -28,7 +28,17 @@ def checkTagLength(l):
     for i in read:
         if len(i[0]) > l:
             arr.append(i[0])
-
     return arr
+
+
+def tagReform():
+    f = open("../asset/tag/animals.txt")
+    # readline_test.py
+    line = f.readline()
+    line = line.replace("'", '')
+    for i in line.split(', '):
+        print(i.lower(), end=', ')
+    f.close()
+
 
 includeNo()

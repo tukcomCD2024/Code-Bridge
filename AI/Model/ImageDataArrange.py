@@ -1,6 +1,7 @@
 import os
 import shutil
 
+
 def getImageListByHash(path):
     img = [{}]  # imagesWithTag
     for i in os.listdir(path):
@@ -22,7 +23,8 @@ def imageCategorical():
     for routes, dirs, files in os.walk(src):
         print(routes, files, dirs)
         for image in files:
-            os.mkdir(routes+'/'+image[:-4])
-            shutil.move(routes+'/'+image, routes+'/'+image[:-4] + '/' + image)
+            os.mkdir(routes + '/' + image[:-4])
+            shutil.move(routes + '/' + image, routes + '/' + image[:-4] + '/' + image)
+
 
 imageCategorical()
