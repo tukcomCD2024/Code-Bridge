@@ -12,5 +12,3 @@ def create_app():
         return "hello world"
 
     return app
-
-create_app()

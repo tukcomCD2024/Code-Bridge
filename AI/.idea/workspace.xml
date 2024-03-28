@@ -5,11 +5,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="e154c9bb-b9ef-41b8-8757-68a477a765ac" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Flask/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Flask/controllers/example_controllers.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Flask/routes.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Flask/services/example_service.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Flasktest/services/sampleAI.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Flasktest/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/Flasktest/__init__.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -47,7 +45,7 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "WebServerToolWindowFactoryState": "false",
     "git-widget-placeholder": "AIflask",
-    "last_opened_file_path": "C:/Users/Ka/Desktop/Ka/대학교/졸업작품/project/Code-Bridge/AI",
+    "last_opened_file_path": "C:/Users/Ka/Desktop/Ka/대학교/졸업작품/project/Code-Bridge/AI/Flasktest/services",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -59,11 +57,11 @@
 }]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\Ka\Desktop\Ka\대학교\졸업작품\project\Code-Bridge\AI\Flasktest\services" />
+      <recent name="C:\Users\Ka\Desktop\Ka\대학교\졸업작품\project\Code-Bridge\AI\Flasktest\models" />
+      <recent name="C:\Users\Ka\Desktop\Ka\대학교\졸업작품\project\Code-Bridge\AI\Flasktest\daos" />
+      <recent name="C:\Users\Ka\Desktop\Ka\대학교\졸업작품\project\Code-Bridge\AI\Flasktest\controllers" />
       <recent name="C:\Users\Ka\Desktop\Ka\대학교\졸업작품\project\Code-Bridge\AI\asset\image\sample2\png\bear" />
-      <recent name="C:\Users\Ka\Desktop\Ka\대학교\졸업작품\project\Code-Bridge\AI\asset\image\sample\png\bear\test" />
-      <recent name="C:\Users\Ka\Desktop\Ka\대학교\졸업작품\project\Code-Bridge\AI\asset\image\sample\png\bear\train" />
-      <recent name="C:\Users\Ka\Desktop\Ka\대학교\졸업작품\project\Code-Bridge\AI\asset\image\icon3" />
-      <recent name="C:\Users\Ka\Desktop\Ka\대학교\졸업작품\project\Code-Bridge\AI\asset\image" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="C:\Users\Ka\Desktop\Ka\대학교\졸업작품\project\Code-Bridge\AI\asset\image\sample" />
@@ -111,6 +109,7 @@
       <workItem from="1711278420135" duration="1353000" />
       <workItem from="1711447682863" duration="10965000" />
       <workItem from="1711533540558" duration="5801000" />
+      <workItem from="1711552489059" duration="1426000" />
     </task>
     <servers />
   </component>
