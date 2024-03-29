@@ -4,7 +4,7 @@ import styled from "styled-components";
 
 // prosemirror 라이브러리(리치 텍스트 에디터)
 import { Schema, DOMParser } from "prosemirror-model";
-import { EditorState, Selection } from "prosemirror-state";
+import { EditorState, Selection,Plugin } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
 import { schema as basicSchema } from "prosemirror-schema-basic";
 import { addListNodes } from "prosemirror-schema-list";
@@ -14,7 +14,7 @@ import { keymap } from "prosemirror-keymap";
 // yjs 라이브러리(동시편집)
 import { WebsocketProvider } from "y-websocket";
 import { getYDocInstance } from "./utils/YjsInstance";
-import { ySyncPlugin, yCursorPlugin, yUndoPlugin, undo, redo } from "y-prosemirror";
+import { ySyncPlugin, yCursorPlugin, yUndoPlugin, undo, redo  } from "y-prosemirror";
 
 import { updateImageNode, imagePlugin } from "prosemirror-image-plugin";
 import "./ProseMirror_css/prosemirror_image_plugin/common.css";
@@ -29,6 +29,12 @@ import { hoverButtonPlugin } from "./utils/hoverButtonPlugin";
 import { checkBlockType } from "./utils/checkBlockType";
 import { cursorColors } from "../Utils/cursorColor"
 import loadingImage from "../../image/loading.gif";
+
+import toastr from 'toastr';
+import 'toastr/build/toastr.css';
+
+import { v4 as uuidv4 } from "uuid"; // Ensure this import matches your package for uuid generation
+
 
 function Page() {
   const editorRef = useRef(null);
@@ -55,9 +61,16 @@ function Page() {
     attrs: {
       ...nodes.get("paragraph").attrs,
       class: { default: "custom-paragraph" },
+      guid: { default: "" }, // Ensure guid attribute is included
     },
+    parseDOM: [
+      {
+        tag: "p",
+        getAttrs: (dom) => ({guid: dom.getAttribute("data-guid")}),
+      },
+    ],
     toDOM(node) {
-      return ["p", { class: node.attrs.class }, 0];
+      return ["p", { class: node.attrs.class, "data-guid": node.attrs.guid }, 0];
     },
   };
 
@@ -75,16 +88,70 @@ function Page() {
     marks,
   });
 
+const createPlugin = (guidGenerator = uuidv4) => {
+  return new Plugin({
+    props: {
+      // Add a handleClick prop to listen for click events
+      handleClick: (view, pos, event) => {
+        const {doc, schema} = view.state;
+        const {paragraph, image} = schema.nodes;
+
+        // Find the nearest node of type paragraph or image
+        let $pos = doc.resolve(pos);
+        let node = $pos.nodeAfter || $pos.nodeBefore;
+
+        // Ensure node is of the correct type and has a UUID
+        if (node && (node.type === paragraph || node.type === image) && node.attrs.guid) {
+          console.log(`UUID of clicked node: ${node.attrs.guid}`);
+        }
+
+        return false; // Return false to indicate that the editor should continue handling the click event
+      },
+    },
+
+    appendTransaction: (transactions, prevState, nextState) => {
+      const tr = nextState.tr;
+      let modified = false;
+      const generatedIds = new Set(); // 생성된 ID를 추적하기 위한 Set입니다.
+
+      if (transactions.some(transaction => transaction.docChanged)) {
+        const { paragraph } = nextState.schema.nodes;
+        nextState.doc.descendants((node, pos) => {
+          // 기존 guid가 있지만 중복된 경우 또는 guid가 없는 경우 새로운 guid를 생성
+          if (node.type === paragraph) {
+            let currentGuid = node.attrs.guid;
+            // guid가 없거나 이미 생성된 guid Set에 존재하는 경우 새로운 guid 생성
+            if (!currentGuid || generatedIds.has(currentGuid)) {
+              let newGuid;
+              do {
+                newGuid = guidGenerator();
+              } while (generatedIds.has(newGuid)); // 새 guid가 고유할 때까지 반복
+    
+              generatedIds.add(newGuid); // 새로운 guid를 Set에 추가
+              tr.setNodeMarkup(pos, undefined, {...node.attrs, guid: newGuid});
+              modified = true;
+            } else {
+              // 기존 guid가 고유하면 Set에 추가 (중복 체크를 위함)
+              generatedIds.add(currentGuid);
+            }
+          }
+        });
+      }
+      return modified ? tr : null;
+    },
+  });
+};
+
   useEffect(() => {
     if (!editorRef.current) return;
 
     const roomId = noteId;
     const ydoc = getYDocInstance(roomId);
     const provider = new WebsocketProvider(
-      //"wss://demos.yjs.dev/ws", // 웹소켓 서버 주소(데모용)
+      "wss://demos.yjs.dev/ws", // 웹소켓 서버 주소(데모용)
       //"ws://localhost:4000", //배포용
       //"ws://nodejs:4000", 
-      "wss://sharenote.shop/ws",
+      //"wss://sharenote.shop/ws",
       roomId, // 방 이름
       ydoc
     );
@@ -92,8 +159,17 @@ function Page() {
     const connectedUsersYMap = ydoc.getMap('connectedUsers');
 
     function yjsDisconnect() {
+      if (connectedUsersYMap.size === 0) {
+        lineLocks.clear();
+        console.log('모든 사용자가 나갔습니다. lineLocks를 초기화합니다.');
+      }
+
       connectedUsersYMap.delete(nickname);
       provider.disconnect();
+      // cursors.unobserve();
+      // connectedUsersYMap.unobserve();
+      view.destroy();
+      provider.destroy();
     }    
 
     function cursorAwarenessHandler(awareness, userDiv, hideTimeout) {
@@ -105,7 +181,7 @@ function Page() {
         }, 5000);
       });
     }
-
+    
     function getAvailableColors() {
       const usedColors = new Set();
       connectedUsersYMap.forEach((color, name) => {
@@ -129,29 +205,38 @@ function Page() {
       setUsersAndColors(updatedUsersAndColors);
     }
 
-    provider.on("sync", (isSynced) => {
-      console.log(`동기화 상태: ${isSynced ? "완료" : "미완료"}`);
+    provider.once("sync", (isSynced) => {
       if (isSynced) {
+        // 동기화가 완료되었음을 확인한 후, 사용자 색상을 설정합니다.
+        if (!connectedUsersYMap.has(nickname)) {
+          let userColor = getRandomColor(); // 사용자에게 색상을 할당합니다.
+          connectedUsersYMap.set(nickname, userColor); // 연결된 사용자 목록에 추가합니다.
+          provider.awareness.setLocalStateField('user', { name: nickname, color: userColor });
+          updateUsersAndColors(); // UI 업데이트
+        } else {
+          alert(`${nickname}는(은) 이미 연결되어 있습니다.`);
+        }
         setisloaded(true);
       }
     });
+
+
+    provider.awareness.on("change", () => {
+      const usersCursorPosition = [];
+      provider.awareness.getStates().forEach((state, clientId) => {
+        // 여기서는 `selection`이 커서 위치를 담고 있다고 가정
+        if(state.selection) {
+          const user = state.user;
+          const cursorPosition = state.selection.anchor;
+          usersCursorPosition.push({ name: user.name, color: user.color, position: cursorPosition });
+        }
+      });
     
-    provider.on('status', (event) => {
-      if (event.status === 'connected') {
-        if (connectedUsersYMap.has(nickname)) {
-          alert(`${nickname}는(은) 이미 연결되어 있어 게스트로 진입합니다.`);
-          return;
-        }
-        let userColor = connectedUsersYMap.get(nickname);
-        if (!userColor) {
-          userColor = getRandomColor();
-          connectedUsersYMap.set(nickname, userColor);
-          updateUsersAndColors();
-        }
-        provider.awareness.setLocalStateField('user', { name: nickname, color: userColor });
-      } else if (event.status === 'disconnected') {
-        yjsDisconnect();
-      }
+      // 커서 위치 정보를 출력하는 로직 (예시)
+      // console.log("사용자 커서 위치:", usersCursorPosition);
+    
+      // 필요한 경우 상태 업데이트나 UI 변경을 여기에서 수행
+      // 예: setUsersAndCursorPositions(usersCursorPosition); // 컴포넌트 상태 업데이트 함수
     });
 
     const myCursorBuilder = (user) => {
@@ -177,12 +262,11 @@ function Page() {
 
       // // Awareness 상태 변경에 따라 사용자 이름을 다시 표시하는 로직 설정
       // cursorAwarenessHandler(provider.awareness, userDiv, hideTimeout);
-
       return cursor;
     };
 
     connectedUsersYMap.observe(updateUsersAndColors);
-    window.addEventListener("beforeunload", yjsDisconnect);
+    window.addEventListener("unload", yjsDisconnect);
     window.addEventListener("popstate", yjsDisconnect);
 
     const myDoc = DOMParser.fromSchema(mySchema).parse(
@@ -201,6 +285,7 @@ function Page() {
           yUndoPlugin(),
           hoverButtonPlugin(),
           inlinePlaceholderPlugin(),
+          createPlugin(),
           imagePlugin({
             ...imageSettings,
             resizeCallback: (el, updateCallback) => {
@@ -219,15 +304,79 @@ function Page() {
         selection: Selection.atStart(myDoc),
       }),
     });
-
+    
     editorRef.current.view = view;
+
+    const cursors = ydoc.getMap('cursors');
+    const lineLocks = ydoc.getMap('lineLocks');
+
+    // 줄 잠금/해제 함수
+    const toggleLineLock = (lineNumber, nickname) => {
+    const currentLock = lineLocks.get(lineNumber.toString());
+
+    if (currentLock) {
+      // 해당 줄이 이미 잠겨 있고, 현재 사용자가 잠근 경우 잠금 해제
+      if (currentLock === nickname) {
+          lineLocks.delete(lineNumber.toString());
+          toastr.info(`[해제] ${lineNumber} 번째 줄`);
+      } else {
+          toastr.warning(`[경고] ${lineNumber} 번째 줄은 ${currentLock}에 의해 잠금 처리된 상태.`);
+      }
+  } else {
+      lineLocks.set(lineNumber.toString(), nickname);
+      toastr.success(`[잠금] ${lineNumber} 번째 줄은 ${nickname}에 의해 잠금.`);
+  }
+};
+
+    const handleClick = (nickname, event) => {
+      const { clientX, clientY } = event;
+      const coords = { left: clientX, top: clientY };
+      const posAtCoords = view.posAtCoords(coords);
+      if (!posAtCoords) return;
+
+      const pos = posAtCoords.pos;      // 현재 클릭된 노드의 정보와 부모 노드의 정보를 가져옵니다.
+      let calculatedLineNumber = 1;
+
+      // 위치 정보를 통해 해당 노드를 확인
+      const resolvedPos = view.state.doc.resolve(pos);
+
+      // 최상위 노드인 doc에 도달했는지 확인
+      if (resolvedPos.node(resolvedPos.depth) === view.state.doc) {
+          return; // 최상위 노드인 경우 함수 실행 중단
+      }
+
+      // 라인 번호 계산
+      view.state.doc.nodesBetween(0, pos, (node, start) => {
+        if (node.isBlock && start < pos) {
+          calculatedLineNumber++;
+        }
+      });
+
+      toggleLineLock(calculatedLineNumber, nickname);
+    
+      if (pos) {
+        // 사용자의 nickname과 해당 위치를 Y.Map에 저장
+        cursors.set(nickname, { x: clientX, y: clientY, pos: pos.pos, lineNumber: calculatedLineNumber });
+      }
+    };
+
+    // cursors.observe(() => {
+    //   // cursors Y.Map의 모든 항목을 순회
+    //   cursors.forEach((value, key) => {
+    //     console.log(`${key}'s cursor at position:`, value.lineNumber);
+    //     // 실제 렌더링 로직을 구현해야 합니다.
+    //   });
+    // });  
+    
+    editorRef.current.addEventListener('mousedown', (event) => {
+      handleClick(nickname, event);
+  });
 
     return () => {
       connectedUsersYMap.unobserve(updateUsersAndColors);
-      window.removeEventListener("beforeunload", yjsDisconnect);
+      window.removeEventListener("unload", yjsDisconnect);
       window.removeEventListener("popstate", yjsDisconnect);
-      view.destroy();
-      provider.destroy();
+      yjsDisconnect();
     };
   }, []);
 
@@ -259,7 +408,7 @@ function Page() {
         </div>
       )}
         <LayoutContainer>
-          <NavigationBar isloaded={isloaded}>
+          <NavigationBar $isloaded={isloaded.toString()}>
             <Notename>📖&nbsp;&nbsp;&nbsp;{note.name}&nbsp;&nbsp;&nbsp;📖</Notename>
             <br/>
             <img src={note.image} alt="Note" />
@@ -302,7 +451,7 @@ const NavigationBar = styled.div`
   width: 15%; // 네비게이션 바 너비
   background-color: #eee; // 네비게이션 바 배경색
   padding: 20px; // 여백
-  visibility: ${(props) => (props.isloaded ? "visible" : "hidden")};
+  visibility: ${(props) => (props.$isloaded === "true" ? "visible" : "hidden")};
   
   img {
     width: 200px; /* 너비 설정 */

@@ -14,6 +14,7 @@ export const imageNodeSpec = {
     src: {},
     alt: { default: null },
     title: { default: null },
+    guid: { default: "" }, // Add guid attribute
   },
   parseDOM: [
     {
@@ -22,8 +23,9 @@ export const imageNodeSpec = {
         src: dom.getAttribute("src"),
         alt: dom.getAttribute("alt"),
         title: dom.getAttribute("title"),
+        guid: dom.getAttribute("data-guid"), // Handle guid attribute
       }),
     },
   ],
-  toDOM: (node) => ["img", node.attrs],
+  toDOM: (node) => ["img", { ...node.attrs, "data-guid": node.attrs.guid }],
 };

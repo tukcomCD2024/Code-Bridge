@@ -204,9 +204,6 @@ export function hoverButtonPlugin() {
                   start < resolvedPos.pos &&
                   resolvedPos.pos <= start + node.nodeSize
                 ) {
-                  console.log(
-                    `Clicked line number: ${lineNumber}, Node type: ${node.type.name}`
-                  );
                   return false; // 순회 중단
                 }
                 lineNumber++;
