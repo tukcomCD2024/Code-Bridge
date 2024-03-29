@@ -11,4 +11,8 @@ def create_app():
     def hello_world():
         return "hello world"
 
+    @app.route('/ai')
+    def imageSupport():
+        return ""
+
     return app
