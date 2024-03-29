@@ -33,6 +33,9 @@ import loadingImage from "../../image/loading.gif";
 import toastr from 'toastr';
 import 'toastr/build/toastr.css';
 
+import { v4 as uuidv4 } from "uuid"; // Ensure this import matches your package for uuid generation
+
+
 function Page() {
   const editorRef = useRef(null);
   const nickname = localStorage.getItem('nickname');
@@ -58,9 +61,16 @@ function Page() {
     attrs: {
       ...nodes.get("paragraph").attrs,
       class: { default: "custom-paragraph" },
+      guid: { default: "" }, // Ensure guid attribute is included
     },
+    parseDOM: [
+      {
+        tag: "p",
+        getAttrs: (dom) => ({guid: dom.getAttribute("data-guid")}),
+      },
+    ],
     toDOM(node) {
-      return ["p", { class: node.attrs.class }, 0];
+      return ["p", { class: node.attrs.class, "data-guid": node.attrs.guid }, 0];
     },
   };
 
@@ -77,6 +87,60 @@ function Page() {
     nodes: defaultNodes,
     marks,
   });
+
+const createPlugin = (guidGenerator = uuidv4) => {
+  return new Plugin({
+    props: {
+      // Add a handleClick prop to listen for click events
+      handleClick: (view, pos, event) => {
+        const {doc, schema} = view.state;
+        const {paragraph, image} = schema.nodes;
+
+        // Find the nearest node of type paragraph or image
+        let $pos = doc.resolve(pos);
+        let node = $pos.nodeAfter || $pos.nodeBefore;
+
+        // Ensure node is of the correct type and has a UUID
+        if (node && (node.type === paragraph || node.type === image) && node.attrs.guid) {
+          console.log(`UUID of clicked node: ${node.attrs.guid}`);
+        }
+
+        return false; // Return false to indicate that the editor should continue handling the click event
+      },
+    },
+
+    appendTransaction: (transactions, prevState, nextState) => {
+      const tr = nextState.tr;
+      let modified = false;
+      const generatedIds = new Set(); // 생성된 ID를 추적하기 위한 Set입니다.
+
+      if (transactions.some(transaction => transaction.docChanged)) {
+        const { paragraph } = nextState.schema.nodes;
+        nextState.doc.descendants((node, pos) => {
+          // 기존 guid가 있지만 중복된 경우 또는 guid가 없는 경우 새로운 guid를 생성
+          if (node.type === paragraph) {
+            let currentGuid = node.attrs.guid;
+            // guid가 없거나 이미 생성된 guid Set에 존재하는 경우 새로운 guid 생성
+            if (!currentGuid || generatedIds.has(currentGuid)) {
+              let newGuid;
+              do {
+                newGuid = guidGenerator();
+              } while (generatedIds.has(newGuid)); // 새 guid가 고유할 때까지 반복
+    
+              generatedIds.add(newGuid); // 새로운 guid를 Set에 추가
+              tr.setNodeMarkup(pos, undefined, {...node.attrs, guid: newGuid});
+              modified = true;
+            } else {
+              // 기존 guid가 고유하면 Set에 추가 (중복 체크를 위함)
+              generatedIds.add(currentGuid);
+            }
+          }
+        });
+      }
+      return modified ? tr : null;
+    },
+  });
+};
 
   useEffect(() => {
     if (!editorRef.current) return;
@@ -155,13 +219,7 @@ function Page() {
         setisloaded(true);
       }
     });
-    
-    provider.on('status', (event) => {
-      if (event.status === 'disconnected') {
-        console.log("연결 종료");
-        yjsDisconnect();
-      }
-    });
+
 
     provider.awareness.on("change", () => {
       const usersCursorPosition = [];
@@ -227,6 +285,7 @@ function Page() {
           yUndoPlugin(),
           hoverButtonPlugin(),
           inlinePlaceholderPlugin(),
+          createPlugin(),
           imagePlugin({
             ...imageSettings,
             resizeCallback: (el, updateCallback) => {

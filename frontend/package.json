@@ -25,10 +25,12 @@
     "react-scripts": "5.0.1",
     "styled-components": "6.1.8",
     "toastr": "^2.1.4",
+    "uuid": "^9.0.1",
     "y-prosemirror": "^1.2.3",
     "y-websocket": "^1.5.4"
   },
   "devDependencies": {
+    "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
     "@types/react": "18.2.38",
     "@types/react-dom": "18.0.9",
     "loader-utils": "3.2.1",
