@@ -5,6 +5,7 @@ export const imageSettings = {
   hasTitle: false,
   minSize: 30,
   maxSize: 550,
+  defaultAlt: localStorage.getItem("userId"),
 };
 
 export const imageNodeSpec = {
@@ -14,7 +15,8 @@ export const imageNodeSpec = {
     src: {},
     alt: { default: null },
     title: { default: null },
-    guid: { default: "" }, // Add guid attribute
+    // guid: { default: "" }, // Add guid attribute
+    author: { default: null },
   },
   parseDOM: [
     {
@@ -23,9 +25,10 @@ export const imageNodeSpec = {
         src: dom.getAttribute("src"),
         alt: dom.getAttribute("alt"),
         title: dom.getAttribute("title"),
-        guid: dom.getAttribute("data-guid"), // Handle guid attribute
+        // guid: dom.getAttribute("data-guid"), // Handle guid attribute
+        author: dom.getAttribute("data-author"),
       }),
     },
   ],
-  toDOM: (node) => ["img", { ...node.attrs, "data-guid": node.attrs.guid }],
+  toDOM: (node) => ["img", { ...node.attrs, "data-guid": node.attrs.guid, "data-author": node.attrs.author }],
 };
