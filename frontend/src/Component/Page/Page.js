@@ -48,6 +48,7 @@ function Page() {
   
   const [isloaded, setisloaded] = useState(false); // 로딩 상태 관리
   const [usersAndColors, setUsersAndColors] = useState([]); // 연결된 사용자와 색상 상태
+  const [ydoc, setYdoc] = useState(null);
 
   const { nodes, marks } = basicSchema.spec;
   const extendedNodes = addListNodes(
@@ -87,8 +88,8 @@ function Page() {
     nodes: defaultNodes,
     marks,
   });
-
-const createPlugin = (guidGenerator = uuidv4) => {
+  
+const generateBlockIdPlugin = (guidGenerator = uuidv4) => {
   return new Plugin({
     props: {
       // Add a handleClick prop to listen for click events
@@ -112,6 +113,7 @@ const createPlugin = (guidGenerator = uuidv4) => {
       const tr = nextState.tr;
       let modified = false;
       const generatedIds = new Set();
+      const nodeInfo = ydoc.getMap('nodeInfo');
     
       if (transactions.some(transaction => transaction.docChanged)) {
         const { paragraph } = nextState.schema.nodes;
@@ -133,6 +135,7 @@ const createPlugin = (guidGenerator = uuidv4) => {
                     newGuid = guidGenerator();
                   } while (generatedIds.has(newGuid));
                   generatedIds.add(newGuid);
+                  nodeInfo.set(newGuid, { editable: null, locker: null });
                   tr.setNodeMarkup(prevPos, undefined, {...prevNode.attrs, guid: newGuid});
                   modified = true;
                 }
@@ -145,6 +148,7 @@ const createPlugin = (guidGenerator = uuidv4) => {
                     newGuid = guidGenerator();
                   } while (generatedIds.has(newGuid));
                   generatedIds.add(newGuid);
+                  nodeInfo.set(newGuid, { editable: null, locker: null });
                   tr.setNodeMarkup(pos, undefined, {...node.attrs, guid: newGuid});
                   modified = true;
                 } else {
@@ -168,6 +172,7 @@ const createPlugin = (guidGenerator = uuidv4) => {
 
     const roomId = noteId;
     const ydoc = getYDocInstance(roomId);
+    setYdoc(ydoc);
     const provider = new WebsocketProvider(
       "wss://demos.yjs.dev/ws", // 웹소켓 서버 주소(데모용)
       //"ws://localhost:4000", //배포용
@@ -306,11 +311,15 @@ const createPlugin = (guidGenerator = uuidv4) => {
           yUndoPlugin(),
           hoverButtonPlugin(),
           inlinePlaceholderPlugin(),
-          createPlugin(),
+          generateBlockIdPlugin(),
           imagePlugin({
             ...imageSettings,
             resizeCallback: (el, updateCallback) => {
-              const observer = new ResizeObserver(updateCallback);
+              const observer = new ResizeObserver(entries => {
+                window.requestAnimationFrame(() => {
+                  updateCallback();
+                });
+              });
               observer.observe(el);
               return () => observer.unobserve(el);
             },
@@ -399,7 +408,7 @@ const createPlugin = (guidGenerator = uuidv4) => {
       window.removeEventListener("popstate", yjsDisconnect);
       yjsDisconnect();
     };
-  }, []);
+  }, [ydoc]);
 
   return (
     <div>
