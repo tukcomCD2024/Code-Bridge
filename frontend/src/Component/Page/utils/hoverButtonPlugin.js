@@ -41,39 +41,56 @@ export function hoverButtonPlugin() {
 
       hoverButton_plus.addEventListener("click", (event) => {
         event.stopPropagation(); // 이벤트 버블링 방지
-
-        const { state, dispatch } = editorView;
-        let tr = state.tr; // 현재 문서의 트랜잭션
-        const $clickPos = state.doc.resolve(lastPos);
-        let insertPos;
-
-        // 이미지 노드 바로 뒤에 새 노드 삽입
-        if ($clickPos.nodeAfter && $clickPos.nodeAfter.type.name === "image") {
-          // 이미지 노드 바로 뒤의 위치를 삽입 위치로 설정
-          insertPos = $clickPos.pos + $clickPos.nodeAfter.nodeSize;
+      
+        if (lastPos !== null) {
+         const resolvedPos = editorView.state.doc.resolve(lastPos);
+          const node = resolvedPos.node();
+      
+          // 노드가 uuid를 가지고 있는지 확인
+          if (node && node.attrs.guid) {
+            const nickname = localStorage.getItem("nickname");
+            const guid = node.attrs.guid
+            window.toggleLineLock(guid, nickname);
+            } else {
+            console.log('No UUID found for this node.');
+          }
         } else {
-          // 클릭한 위치(lastPos)를 기준으로 해당 노드의 끝 위치를 찾음
-          const endOfNodePos = $clickPos.end($clickPos.depth);
-          // 클릭한 노드의 바로 다음 위치에 새 노드 삽입
-          insertPos = endOfNodePos + 1;
+          console.error('No last position recorded.');
         }
-
-        // 새 노드 삽입
-        const newNode = state.schema.nodes.paragraph.create();
-        tr = tr.insert(insertPos, newNode);
-
-        // 삽입된 노드 내부에 커서 위치시키기
-        const newPos = insertPos + 1; // 노드 삽입 후 새로운 위치 조정
-        tr = tr.setSelection(Selection.near(tr.doc.resolve(newPos)));
-
-        // 트랜잭션 적용
-        dispatch(tr);
-        editorView.focus();
-
-        // hoverDiv 위치 업데이트
-        increaseBrowserHeightForScroll();
-        updateButton(editorView, newPos, true);
       });
+      
+        // const { state, dispatch } = editorView;
+        // let tr = state.tr; // 현재 문서의 트랜잭션
+        // const $clickPos = state.doc.resolve(lastPos);
+        // let insertPos;
+
+        // // 이미지 노드 바로 뒤에 새 노드 삽입
+        // if ($clickPos.nodeAfter && $clickPos.nodeAfter.type.name === "image") {
+        //   // 이미지 노드 바로 뒤의 위치를 삽입 위치로 설정
+        //   insertPos = $clickPos.pos + $clickPos.nodeAfter.nodeSize;
+        // } else {
+        //   // 클릭한 위치(lastPos)를 기준으로 해당 노드의 끝 위치를 찾음
+        //   const endOfNodePos = $clickPos.end($clickPos.depth);
+        //   // 클릭한 노드의 바로 다음 위치에 새 노드 삽입
+        //   insertPos = endOfNodePos + 1;
+        // }
+
+        // // 새 노드 삽입
+        // const newNode = state.schema.nodes.paragraph.create();
+        // tr = tr.insert(insertPos, newNode);
+
+        // // 삽입된 노드 내부에 커서 위치시키기
+        // const newPos = insertPos + 1; // 노드 삽입 후 새로운 위치 조정
+        // tr = tr.setSelection(Selection.near(tr.doc.resolve(newPos)));
+
+        // // 트랜잭션 적용
+        // dispatch(tr);
+        // editorView.focus();
+
+        // // hoverDiv 위치 업데이트
+        // increaseBrowserHeightForScroll();
+        // updateButton(editorView, newPos, true);
+      // });
 
       function increaseBrowserHeightForScroll() {
         const paragraphNodeHeight = 48;

@@ -183,7 +183,7 @@ function Page() {
 
     // 줄 잠금/해제 함수
     const lineLocks = ydoc.getMap('nodeInfo');
-    const toggleLineLock = (guid, nickname) => {
+    window.toggleLineLock = function(guid, nickname) {
     const currentLock = lineLocks.get(guid.toString());
 
       if (currentLock) {
@@ -192,13 +192,11 @@ function Page() {
             lineLocks.delete(guid.toString());
             toastr.info(`편집 잠금이 해제되었습니다.`);
         } else {
-          console.log(currentLock);
-          console.log(currentLock.locker);
-          toastr.warning(`[알림] ${currentLock} 에 의해 편집 불가합니다.`);
+          toastr.error(`[오류] ${currentLock} 에 의해 설정 불가합니다.`);
         }
     } else {
       lineLocks.set(guid.toString(), nickname);
-      toastr.success(`편집 잠금이 설정되었습니다.`);
+      toastr.success(`블록 편집 잠금이 설정되었습니다.`);
     }
   };
 
@@ -210,8 +208,12 @@ function Page() {
 
       if (target.tagName === 'P' && target.hasAttribute('data-guid')) {
         const guid = target.getAttribute('data-guid');
-        toggleLineLock(guid, nickname);
-        console.log(guid);
+        const currentLock = lineLocks.get(guid.toString());
+        if (currentLock) {
+          if (currentLock !== nickname) {
+            toastr.warning(`[알림] ${currentLock} 에 의해 편집 불가합니다.`);
+          }
+        }
       }
     };
 
@@ -244,7 +246,6 @@ function Page() {
       }
     };
 
-    // 노드 편집 잠금 관련 이벤트 핸들러
     editorRef.current.addEventListener('mousedown', (event) => { handleNodeClick(nickname, event); });
     editorRef.current.addEventListener('keydown', (event) => { handleEditAttempt(nickname, event); });
     editorRef.current.addEventListener('mousedown', (event) => { handleEditAttempt(nickname, event); });
