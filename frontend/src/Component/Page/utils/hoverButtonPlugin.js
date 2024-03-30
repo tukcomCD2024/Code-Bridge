@@ -1,5 +1,6 @@
 import { Plugin, Selection } from "prosemirror-state";
 import down_arrow from "../../../image/down_arrow.svg";
+import lock from "../../../image/lock2.gif";
 import typing from "../../../image/typing.gif";
 
 // 문서 내 블록(노드)의 총 수를 계산하는 함수
@@ -24,23 +25,48 @@ export function hoverButtonPlugin() {
 
       let lastPos = null;
 
-      // hoverButton 생성 및 스타일 적용
+      // hoverButton 생성(노드 잠금)
+      const hoverButton_lock = document.createElement("img");
+      hoverButton_lock.src = lock;
+      hoverButton_lock.title = "새 블록 추가";
+      hoverButton_lock.classList.add("hoverButton_lock"); // CSS 클래스 적용
+      hoverDiv.appendChild(hoverButton_lock);
+
+      // hoverButton 생성(블록 추가)
       const hoverButton_plus = document.createElement("img");
       hoverButton_plus.src = down_arrow;
-      hoverButton_plus.title = "새 블록 추가";
+      hoverButton_plus.title = "노드 편집 잠금";
       hoverButton_plus.classList.add("hoverButton_plus"); // CSS 클래스 적용
       hoverDiv.appendChild(hoverButton_plus);
 
-      // hoverButton_2 생성 및 스타일 적용
+      // hoverButton_2 생성(작성자 확인)
       const hoverButton_writer = document.createElement("img");
       hoverButton_writer.src = typing;
       hoverButton_writer.title = "작성자 확인";
       hoverButton_writer.classList.add("hoverButton_writer"); // CSS 클래스 적용
       hoverDiv.appendChild(hoverButton_writer);
 
-      hoverButton_plus.addEventListener("click", (event) => {
+      hoverButton_lock.addEventListener("click", (event) => {
         event.stopPropagation(); // 이벤트 버블링 방지
+      
+        if (lastPos !== null) {
+         const resolvedPos = editorView.state.doc.resolve(lastPos);
+          const node = resolvedPos.node();
+      
+          // 노드가 uuid를 가지고 있는지 확인
+          if (node && node.attrs.guid) {
+            const nickname = localStorage.getItem("nickname");
+            const guid = node.attrs.guid
+            window.toggleLineLock(guid, nickname);
+            } else {
+            console.log('No UUID found for this node.');
+          }
+        } else {
+          console.error('No last position recorded.');
+        }
+      });
 
+      hoverButton_plus.addEventListener("click", (event) => {
         const { state, dispatch } = editorView;
         let tr = state.tr; // 현재 문서의 트랜잭션
         const $clickPos = state.doc.resolve(lastPos);
@@ -73,7 +99,7 @@ export function hoverButtonPlugin() {
         increaseBrowserHeightForScroll();
         updateButton(editorView, newPos, true);
       });
-
+      
       function increaseBrowserHeightForScroll() {
         const paragraphNodeHeight = 48;
         // 현재 문서(body)의 높이
@@ -88,6 +114,10 @@ export function hoverButtonPlugin() {
         try {
           const { doc } = view.state;
           const resolvedPos = doc.resolve(pos);
+
+          hoverButton_plus.style.display = "none";
+          hoverButton_lock.style.display = "none";
+
           if (
             (resolvedPos.depth === 0 &&
               resolvedPos.nodeBefore.type.name !== "paragraph") ||
@@ -108,6 +138,7 @@ export function hoverButtonPlugin() {
             resolvedPos.nodeAfter.type.name === "image"
           ) {
             coords = view.coordsAtPos(resolvedPos.pos);
+            hoverButton_plus.style.display = "block";
           } else {
             // 선택된 위치에서 가장 가까운 블록 노드의 경계를 찾습니다.
             let depth = resolvedPos.depth;
@@ -117,6 +148,7 @@ export function hoverButtonPlugin() {
             const startPos = resolvedPos.start(depth);
             // 시작 위치에 대한 좌표를 계산합니다.
             coords = view.coordsAtPos(startPos);
+            hoverButton_lock.style.display = "block";
           }
 
           // 스크롤 오프셋을 고려하여 좌표 조정
