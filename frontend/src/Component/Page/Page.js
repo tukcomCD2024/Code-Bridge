@@ -4,7 +4,7 @@ import styled from "styled-components";
 
 // prosemirror 라이브러리(리치 텍스트 에디터)
 import { Schema, DOMParser } from "prosemirror-model";
-import { EditorState, Selection,Plugin } from "prosemirror-state";
+import { EditorState, Selection, Plugin } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
 import { schema as basicSchema } from "prosemirror-schema-basic";
 import { addListNodes } from "prosemirror-schema-list";
@@ -33,8 +33,7 @@ import loadingImage from "../../image/loading.gif";
 import toastr from 'toastr';
 import 'toastr/build/toastr.css';
 
-import { v4 as uuidv4 } from "uuid"; // Ensure this import matches your package for uuid generation
-
+import { v4 as uuidv4 } from "uuid";
 
 function Page() {
   const editorRef = useRef(null);
@@ -88,84 +87,6 @@ function Page() {
     nodes: defaultNodes,
     marks,
   });
-  
-const generateBlockIdPlugin = (guidGenerator = uuidv4) => {
-  return new Plugin({
-    props: {
-      // Add a handleClick prop to listen for click events
-      handleClick: (view, pos, event) => {
-        const {doc, schema} = view.state;
-        const {paragraph, image} = schema.nodes;
-
-        // Find the nearest node of type paragraph or image
-        let $pos = doc.resolve(pos);
-        let node = $pos.nodeAfter || $pos.nodeBefore;
-
-        // Ensure node is of the correct type and has a UUID
-        if (node && (node.type === paragraph || node.type === image) && node.attrs.guid) {
-          console.log(`UUID of clicked node: ${node.attrs.guid}`);
-        }
-
-        return false; // Return false to indicate that the editor should continue handling the click event
-      },
-    },
-    appendTransaction: (transactions, prevState, nextState) => {
-      const tr = nextState.tr;
-      let modified = false;
-      const generatedIds = new Set();
-      const nodeInfo = ydoc.getMap('nodeInfo');
-    
-      if (transactions.some(transaction => transaction.docChanged)) {
-        const { paragraph } = nextState.schema.nodes;
-        let prevNode = null; // 이전 노드를 추적하기 위한 변수
-        let prevPos = null; // 이전 노드의 위치를 저장
-    
-        nextState.doc.descendants((node, pos) => {
-          if (node.type === paragraph) {
-            const nodeTextContent = node.textContent;
-            const selection = nextState.selection;
-            const cursorPosition = selection.head || selection.from;
-    
-            if (cursorPosition >= pos && cursorPosition <= pos + node.nodeSize) {
-              const cursorPositionInNode = cursorPosition - pos;
-              if (cursorPositionInNode === 1 && nodeTextContent !== "") {
-                if (prevNode && !generatedIds.has(prevNode.attrs.guid)) {
-                  let newGuid;
-                  do {
-                    newGuid = guidGenerator();
-                  } while (generatedIds.has(newGuid));
-                  generatedIds.add(newGuid);
-                  nodeInfo.set(newGuid, { editable: null, locker: null });
-                  tr.setNodeMarkup(prevPos, undefined, {...prevNode.attrs, guid: newGuid});
-                  modified = true;
-                }
-              } else {
-                // 일반적인 guid 할당 로직
-                let currentGuid = node.attrs.guid;
-                if (!currentGuid || generatedIds.has(currentGuid)) {
-                  let newGuid;
-                  do {
-                    newGuid = guidGenerator();
-                  } while (generatedIds.has(newGuid));
-                  generatedIds.add(newGuid);
-                  nodeInfo.set(newGuid, { editable: null, locker: null });
-                  tr.setNodeMarkup(pos, undefined, {...node.attrs, guid: newGuid});
-                  modified = true;
-                } else {
-                  generatedIds.add(currentGuid);
-                }
-              }
-            }
-            // 현재 노드와 위치를 이전 노드로 업데이트
-            prevNode = node;
-            prevPos = pos;
-          }
-        });
-      }
-      return modified ? tr : null;
-    },
-  });
-};
 
   useEffect(() => {
     if (!editorRef.current) return;
@@ -184,16 +105,156 @@ const generateBlockIdPlugin = (guidGenerator = uuidv4) => {
     const yXmlFragment = ydoc.getXmlFragment("prosemirror");
     const connectedUsersYMap = ydoc.getMap('connectedUsers');
 
+    const generateBlockIdPlugin = (guidGenerator = uuidv4) => {
+      return new Plugin({
+        props: {
+          // Add a handleClick prop to listen for click events
+          handleClick: (view, pos, event) => {
+            const {doc, schema} = view.state;
+            const {paragraph, image} = schema.nodes;
+    
+            // Find the nearest node of type paragraph or image
+            let $pos = doc.resolve(pos);
+            let node = $pos.nodeAfter || $pos.nodeBefore;
+    
+            // Ensure node is of the correct type and has a UUID
+            if (node && (node.type === paragraph || node.type === image) && node.attrs.guid) {
+              console.log(`UUID of clicked node: ${node.attrs.guid}`);
+            }
+    
+            return false; // Return false to indicate that the editor should continue handling the click event
+          },
+        },
+        appendTransaction: (transactions, prevState, nextState) => {
+          const tr = nextState.tr;
+          let modified = false;
+          const generatedIds = new Set();
+          const nodeInfo = ydoc.getMap('nodeInfo');
+        
+          if (transactions.some(transaction => transaction.docChanged)) {
+            const { paragraph } = nextState.schema.nodes;
+            let prevNode = null; // 이전 노드를 추적하기 위한 변수
+            let prevPos = null; // 이전 노드의 위치를 저장
+        
+            nextState.doc.descendants((node, pos) => {
+              if (node.type === paragraph) {
+                const nodeTextContent = node.textContent;
+                const selection = nextState.selection;
+                const cursorPosition = selection.head || selection.from;
+        
+                if (cursorPosition >= pos && cursorPosition <= pos + node.nodeSize) {
+                  const cursorPositionInNode = cursorPosition - pos;
+                  if (cursorPositionInNode === 1 && nodeTextContent !== "") {
+                    if (prevNode && !generatedIds.has(prevNode.attrs.guid)) {
+                      let newGuid;
+                      do {
+                        newGuid = guidGenerator();
+                      } while (generatedIds.has(newGuid));
+                      generatedIds.add(newGuid);
+                      nodeInfo.set(newGuid, { locker: null });
+                      tr.setNodeMarkup(prevPos, undefined, {...prevNode.attrs, guid: newGuid});
+                      modified = true;
+                    }
+                  } else {
+                    // 일반적인 guid 할당 로직
+                    let currentGuid = node.attrs.guid;
+                    if (!currentGuid || generatedIds.has(currentGuid)) {
+                      let newGuid;
+                      do {
+                        newGuid = guidGenerator();
+                      } while (generatedIds.has(newGuid));
+                      generatedIds.add(newGuid);
+                      nodeInfo.set(newGuid, { locker: null });
+                      tr.setNodeMarkup(pos, undefined, {...node.attrs, guid: newGuid});
+                      modified = true;
+                    } else {
+                      generatedIds.add(currentGuid);
+                    }
+                  }
+                }
+                // 현재 노드와 위치를 이전 노드로 업데이트
+                prevNode = node;
+                prevPos = pos;
+              }
+            });
+          }
+          return modified ? tr : null;
+        },
+      });
+    };
+
+    // 줄 잠금/해제 함수
+    const lineLocks = ydoc.getMap('nodeInfo');
+    const toggleLineLock = (blockUUID, nickname) => {
+    const currentLock = lineLocks.get(blockUUID.toString());
+
+      if (currentLock) {
+        // 해당 줄이 이미 잠겨 있고, 현재 사용자가 잠근 경우 잠금 해제
+        if (currentLock === nickname) {
+            lineLocks.delete(blockUUID.toString());
+            toastr.info(`편집 잠금이 해제되었습니다.`);
+        } else {
+            toastr.warning(`[알림] ${currentLock} 에 의해 편집 불가합니다.`);
+        }
+    } else {
+        lineLocks.set(blockUUID.toString(), nickname);
+        toastr.success(`편집 잠금이 설정되었습니다.`);
+    }
+  };
+
+    const handleNodeClick = (nickname, event) => {
+      const { target, clientX, clientY } = event;
+      const coords = { left: clientX, top: clientY };
+      const posAtCoords = view.posAtCoords(coords);
+      if (!posAtCoords) return;
+
+      if (target.tagName === 'P' && target.hasAttribute('data-guid')) {
+        const guid = target.getAttribute('data-guid');
+        toggleLineLock(guid, nickname);
+      }
+    };
+
+    const handleEditAttempt = (nickname, event) => {
+      // keydown 이벤트의 경우, 커서 위치의 노드를 찾아야 합니다.
+      let targetNode;
+      if (event.type === 'keydown') {
+        const selection = document.getSelection();
+        if (selection.rangeCount > 0) {
+          const range = selection.getRangeAt(0);
+          targetNode = range.startContainer.parentNode; // 커서 위치의 상위 노드를 타겟으로 설정
+        }
+      } else {
+        // mousedown 이벤트의 경우, 이벤트 타겟을 직접 사용
+        targetNode = event.target;
+      }
+
+      if (!targetNode) return; // 타겟 노드가 없으면 함수 종료
+
+      // 타겟 노드가 'P' 태그이고 'data-guid' 속성을 가지고 있는지 확인
+      if (targetNode.tagName === 'P' && targetNode.hasAttribute('data-guid')) {
+        const guid = targetNode.getAttribute('data-guid');
+        const currentLock = lineLocks.get(guid);
+        if (currentLock && currentLock !== nickname) {
+          event.preventDefault(); // 편집 방지
+          if (document.activeElement) { // 포커스(커서) 해제
+            document.activeElement.blur();
+          }
+        }
+      }
+    };
+
+    // 노드 편집 잠금 관련 이벤트 핸들러
+    editorRef.current.addEventListener('mousedown', (event) => { handleNodeClick(nickname, event); });
+    editorRef.current.addEventListener('keydown', (event) => { handleEditAttempt(nickname, event); });
+    editorRef.current.addEventListener('mousedown', (event) => { handleEditAttempt(nickname, event); });
+
     function yjsDisconnect() {
       if (connectedUsersYMap.size === 0) {
         lineLocks.clear();
         console.log('모든 사용자가 나갔습니다. lineLocks를 초기화합니다.');
       }
-
       connectedUsersYMap.delete(nickname);
       provider.disconnect();
-      // cursors.unobserve();
-      // connectedUsersYMap.unobserve();
       view.destroy();
       provider.destroy();
     }    
@@ -247,23 +308,23 @@ const generateBlockIdPlugin = (guidGenerator = uuidv4) => {
     });
 
 
-    provider.awareness.on("change", () => {
-      const usersCursorPosition = [];
-      provider.awareness.getStates().forEach((state, clientId) => {
-        // 여기서는 `selection`이 커서 위치를 담고 있다고 가정
-        if(state.selection) {
-          const user = state.user;
-          const cursorPosition = state.selection.anchor;
-          usersCursorPosition.push({ name: user.name, color: user.color, position: cursorPosition });
-        }
-      });
+    // provider.awareness.on("change", () => {
+    //   const usersCursorPosition = [];
+    //   provider.awareness.getStates().forEach((state, clientId) => {
+    //     // 여기서는 `selection`이 커서 위치를 담고 있다고 가정
+    //     if(state.selection) {
+    //       const user = state.user;
+    //       const cursorPosition = state.selection.anchor;
+    //       usersCursorPosition.push({ name: user.name, color: user.color, position: cursorPosition });
+    //     }
+    //   });
     
-      // 커서 위치 정보를 출력하는 로직 (예시)
-      // console.log("사용자 커서 위치:", usersCursorPosition);
+    //   // 커서 위치 정보를 출력하는 로직 (예시)
+    //   // console.log("사용자 커서 위치:", usersCursorPosition);
     
-      // 필요한 경우 상태 업데이트나 UI 변경을 여기에서 수행
-      // 예: setUsersAndCursorPositions(usersCursorPosition); // 컴포넌트 상태 업데이트 함수
-    });
+    //   // 필요한 경우 상태 업데이트나 UI 변경을 여기에서 수행
+    //   // 예: setUsersAndCursorPositions(usersCursorPosition); // 컴포넌트 상태 업데이트 함수
+    // });
 
     const myCursorBuilder = (user) => {
       const cursor = document.createElement("span");
@@ -337,75 +398,13 @@ const generateBlockIdPlugin = (guidGenerator = uuidv4) => {
     
     editorRef.current.view = view;
 
-    const cursors = ydoc.getMap('cursors');
-    const lineLocks = ydoc.getMap('lineLocks');
-
-    // 줄 잠금/해제 함수
-    const toggleLineLock = (lineNumber, nickname) => {
-    const currentLock = lineLocks.get(lineNumber.toString());
-
-    if (currentLock) {
-      // 해당 줄이 이미 잠겨 있고, 현재 사용자가 잠근 경우 잠금 해제
-      if (currentLock === nickname) {
-          lineLocks.delete(lineNumber.toString());
-          toastr.info(`[해제] ${lineNumber} 번째 줄`);
-      } else {
-          toastr.warning(`[경고] ${lineNumber} 번째 줄은 ${currentLock}에 의해 잠금 처리된 상태.`);
-      }
-  } else {
-      lineLocks.set(lineNumber.toString(), nickname);
-      toastr.success(`[잠금] ${lineNumber} 번째 줄은 ${nickname}에 의해 잠금.`);
-  }
-};
-
-    const handleClick = (nickname, event) => {
-      const { clientX, clientY } = event;
-      const coords = { left: clientX, top: clientY };
-      const posAtCoords = view.posAtCoords(coords);
-      if (!posAtCoords) return;
-
-      const pos = posAtCoords.pos;      // 현재 클릭된 노드의 정보와 부모 노드의 정보를 가져옵니다.
-      let calculatedLineNumber = 1;
-
-      // 위치 정보를 통해 해당 노드를 확인
-      const resolvedPos = view.state.doc.resolve(pos);
-
-      // 최상위 노드인 doc에 도달했는지 확인
-      if (resolvedPos.node(resolvedPos.depth) === view.state.doc) {
-          return; // 최상위 노드인 경우 함수 실행 중단
-      }
-
-      // 라인 번호 계산
-      view.state.doc.nodesBetween(0, pos, (node, start) => {
-        if (node.isBlock && start < pos) {
-          calculatedLineNumber++;
-        }
-      });
-
-      toggleLineLock(calculatedLineNumber, nickname);
-    
-      if (pos) {
-        // 사용자의 nickname과 해당 위치를 Y.Map에 저장
-        cursors.set(nickname, { x: clientX, y: clientY, pos: pos.pos, lineNumber: calculatedLineNumber });
-      }
-    };
-
-    // cursors.observe(() => {
-    //   // cursors Y.Map의 모든 항목을 순회
-    //   cursors.forEach((value, key) => {
-    //     console.log(`${key}'s cursor at position:`, value.lineNumber);
-    //     // 실제 렌더링 로직을 구현해야 합니다.
-    //   });
-    // });  
-    
-    editorRef.current.addEventListener('mousedown', (event) => {
-      handleClick(nickname, event);
-  });
-
     return () => {
       connectedUsersYMap.unobserve(updateUsersAndColors);
       window.removeEventListener("unload", yjsDisconnect);
       window.removeEventListener("popstate", yjsDisconnect);
+      editorRef.current.removeEventListener('mousedown', handleNodeClick);
+      editorRef.current.removeEventListener('keydown', handleEditAttempt);
+      editorRef.current.removeEventListener('mousedown', handleEditAttempt);
       yjsDisconnect();
     };
   }, [ydoc]);
