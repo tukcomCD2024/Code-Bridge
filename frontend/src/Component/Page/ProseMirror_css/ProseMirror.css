@@ -388,10 +388,12 @@ img.ProseMirror-separator {
 
 .hoverDiv {
   position: absolute;
-  width: 50px;
-  height: 20px;
-  display: block;
-  visibility: hidden;
+  width: auto; /* 요소들을 포함할 수 있도록 너비를 auto로 조정 */
+  height: 20px; /* 높이는 필요에 따라 조정 */
+  display: flex; /* flexbox 레이아웃을 사용 */
+  justify-content: space-around; /* 내부 요소들 사이에 공간을 균등하게 배분 */
+  align-items: center; /* 내부 요소들을 세로 방향으로 가운데 정렬 */
+  visibility: hidden; /* 초기에는 숨김 처리 */
   padding: 3px;
   border: 1px solid #ccc;
   background: #f9f9f9;
@@ -399,9 +401,9 @@ img.ProseMirror-separator {
   border-radius: 4px;
 }
 
-.hoverButton_plus {
+.hoverButton_plus, .hoverButton_lock {
   cursor: pointer;
-  width: 20px;
+  width: 18px;
   height: 20px;
 }
 
