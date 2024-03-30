@@ -151,7 +151,6 @@ function Page() {
                         newGuid = guidGenerator();
                       } while (generatedIds.has(newGuid));
                       generatedIds.add(newGuid);
-                      nodeInfo.set(newGuid, { locker: null });
                       tr.setNodeMarkup(prevPos, undefined, {...prevNode.attrs, guid: newGuid});
                       modified = true;
                     }
@@ -164,7 +163,6 @@ function Page() {
                         newGuid = guidGenerator();
                       } while (generatedIds.has(newGuid));
                       generatedIds.add(newGuid);
-                      nodeInfo.set(newGuid, { locker: null });
                       tr.setNodeMarkup(pos, undefined, {...node.attrs, guid: newGuid});
                       modified = true;
                     } else {
@@ -185,20 +183,22 @@ function Page() {
 
     // 줄 잠금/해제 함수
     const lineLocks = ydoc.getMap('nodeInfo');
-    const toggleLineLock = (blockUUID, nickname) => {
-    const currentLock = lineLocks.get(blockUUID.toString());
+    const toggleLineLock = (guid, nickname) => {
+    const currentLock = lineLocks.get(guid.toString());
 
       if (currentLock) {
         // 해당 줄이 이미 잠겨 있고, 현재 사용자가 잠근 경우 잠금 해제
         if (currentLock === nickname) {
-            lineLocks.delete(blockUUID.toString());
+            lineLocks.delete(guid.toString());
             toastr.info(`편집 잠금이 해제되었습니다.`);
         } else {
-            toastr.warning(`[알림] ${currentLock} 에 의해 편집 불가합니다.`);
+          console.log(currentLock);
+          console.log(currentLock.locker);
+          toastr.warning(`[알림] ${currentLock} 에 의해 편집 불가합니다.`);
         }
     } else {
-        lineLocks.set(blockUUID.toString(), nickname);
-        toastr.success(`편집 잠금이 설정되었습니다.`);
+      lineLocks.set(guid.toString(), nickname);
+      toastr.success(`편집 잠금이 설정되었습니다.`);
     }
   };
 
@@ -211,6 +211,7 @@ function Page() {
       if (target.tagName === 'P' && target.hasAttribute('data-guid')) {
         const guid = target.getAttribute('data-guid');
         toggleLineLock(guid, nickname);
+        console.log(guid);
       }
     };
 
@@ -250,7 +251,11 @@ function Page() {
 
     function yjsDisconnect() {
       if (connectedUsersYMap.size === 0) {
-        lineLocks.clear();
+        const nodeInfoMap = ydoc.getMap('nodeInfo');
+
+        nodeInfoMap.forEach((value, key) => {
+          nodeInfoMap.delete(key);
+        });
         console.log('모든 사용자가 나갔습니다. lineLocks를 초기화합니다.');
       }
       connectedUsersYMap.delete(nickname);
@@ -402,9 +407,9 @@ function Page() {
       connectedUsersYMap.unobserve(updateUsersAndColors);
       window.removeEventListener("unload", yjsDisconnect);
       window.removeEventListener("popstate", yjsDisconnect);
-      editorRef.current.removeEventListener('mousedown', handleNodeClick);
-      editorRef.current.removeEventListener('keydown', handleEditAttempt);
-      editorRef.current.removeEventListener('mousedown', handleEditAttempt);
+      // editorRef.current.removeEventListener('mousedown', handleNodeClick);
+      // editorRef.current.removeEventListener('keydown', handleEditAttempt);
+      // editorRef.current.removeEventListener('mousedown', handleEditAttempt);
       yjsDisconnect();
     };
   }, [ydoc]);

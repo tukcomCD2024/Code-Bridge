@@ -1,5 +1,6 @@
 import { Plugin, Selection } from "prosemirror-state";
 import down_arrow from "../../../image/down_arrow.svg";
+import lock from "../../../image/lock2.gif";
 import typing from "../../../image/typing.gif";
 
 // 문서 내 블록(노드)의 총 수를 계산하는 함수
@@ -26,8 +27,8 @@ export function hoverButtonPlugin() {
 
       // hoverButton 생성 및 스타일 적용
       const hoverButton_plus = document.createElement("img");
-      hoverButton_plus.src = down_arrow;
-      hoverButton_plus.title = "새 블록 추가";
+      hoverButton_plus.src = lock;
+      hoverButton_plus.title = "노드 편집 잠금";
       hoverButton_plus.classList.add("hoverButton_plus"); // CSS 클래스 적용
       hoverDiv.appendChild(hoverButton_plus);
 
