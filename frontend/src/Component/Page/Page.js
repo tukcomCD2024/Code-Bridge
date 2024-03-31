@@ -183,19 +183,35 @@ function Page() {
 
     // 줄 잠금/해제 함수
     const lineLocks = ydoc.getMap('nodeInfo');
+    const userLocks = ydoc.getMap('userLocks');
     window.toggleLineLock = function(guid, nickname) {
     const currentLock = lineLocks.get(guid.toString());
 
+    // 현재 사용자가 이미 다른 노드를 잠근 경우, 알림창 표시
+    const currentLockedNodeByUser = userLocks.get(nickname);
+    if (currentLockedNodeByUser && currentLockedNodeByUser !== guid.toString()) {
+      // 사용자에게 확인을 요청하는 대화 상자 표시
+      const isConfirmed = window.confirm("최대 1개까지 잠금이 가능합니다.\n이전에 설정한 잠금을 해제하시겠습니까?");
+      if (isConfirmed) {
+        lineLocks.delete(currentLockedNodeByUser);
+        userLocks.delete(nickname); 
+      } else {
+        return;
+      }
+    }
+    
       if (currentLock) {
         // 해당 줄이 이미 잠겨 있고, 현재 사용자가 잠근 경우 잠금 해제
         if (currentLock === nickname) {
             lineLocks.delete(guid.toString());
+            userLocks.delete(nickname);
             toastr.info(`편집 잠금이 해제되었습니다.`);
         } else {
-          toastr.error(`[오류] ${currentLock} 에 의해 설정 불가합니다.`);
+          toastr.error(`[오류] ${currentLock} 에 의해 잠금 불가합니다.`);
         }
     } else {
       lineLocks.set(guid.toString(), nickname);
+      userLocks.set(nickname, guid.toString());
       toastr.success(`블록 편집 잠금이 설정되었습니다.`);
     }
   };
@@ -251,11 +267,28 @@ function Page() {
     editorRef.current.addEventListener('mousedown', (event) => { handleEditAttempt(nickname, event); });
 
     function yjsDisconnect() {
-      if (connectedUsersYMap.size === 0) {
-        const nodeInfoMap = ydoc.getMap('nodeInfo');
+      const lineLocks = ydoc.getMap('nodeInfo');
+      const keysToDelete = [];
+  
+      // 찾기: 해당 사용자가 잠금 설정한 모든 키(노드의 UUID)
+      lineLocks.forEach((value, key) => {
+        if (value === nickname) {
+          keysToDelete.push(key);
+        }
+      });
+    
+      // 삭제: 찾은 모든 키에 대해 잠금 해제
+      keysToDelete.forEach(key => {
+        lineLocks.delete(key);
+      });
+    
+      // userLocks에서도 사용자의 현재 잠금 정보 삭제
+      const userLocks = ydoc.getMap('userLocks');
+      userLocks.delete(nickname);
 
-        nodeInfoMap.forEach((value, key) => {
-          nodeInfoMap.delete(key);
+      if (connectedUsersYMap.size === 0) {
+        lineLocks .forEach((value, key) => {
+          lineLocks .delete(key);
         });
         console.log('모든 사용자가 나갔습니다. lineLocks를 초기화합니다.');
       }

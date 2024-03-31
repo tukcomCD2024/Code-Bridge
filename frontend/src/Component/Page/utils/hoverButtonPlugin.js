@@ -25,19 +25,19 @@ export function hoverButtonPlugin() {
 
       let lastPos = null;
 
-      // hoverButton 생성(노드 잠금)
-      const hoverButton_lock = document.createElement("img");
-      hoverButton_lock.src = lock;
-      hoverButton_lock.title = "새 블록 추가";
-      hoverButton_lock.classList.add("hoverButton_lock"); // CSS 클래스 적용
-      hoverDiv.appendChild(hoverButton_lock);
-
       // hoverButton 생성(블록 추가)
       const hoverButton_plus = document.createElement("img");
       hoverButton_plus.src = down_arrow;
-      hoverButton_plus.title = "노드 편집 잠금";
+      hoverButton_plus.title = "새 블록 추가";
       hoverButton_plus.classList.add("hoverButton_plus"); // CSS 클래스 적용
       hoverDiv.appendChild(hoverButton_plus);
+
+      // hoverButton 생성(노드 잠금)
+      const hoverButton_lock = document.createElement("img");
+      hoverButton_lock.src = lock;
+      hoverButton_lock.title = "노드 편집 잠금";
+      hoverButton_lock.classList.add("hoverButton_lock"); // CSS 클래스 적용
+      hoverDiv.appendChild(hoverButton_lock);
 
       // hoverButton_2 생성(작성자 확인)
       const hoverButton_writer = document.createElement("img");
@@ -115,8 +115,8 @@ export function hoverButtonPlugin() {
           const { doc } = view.state;
           const resolvedPos = doc.resolve(pos);
 
-          hoverButton_plus.style.display = "none";
-          hoverButton_lock.style.display = "none";
+          // hoverButton_plus.style.display = "none";
+          // hoverButton_lock.style.display = "none";
 
           if (
             (resolvedPos.depth === 0 &&
@@ -138,7 +138,8 @@ export function hoverButtonPlugin() {
             resolvedPos.nodeAfter.type.name === "image"
           ) {
             coords = view.coordsAtPos(resolvedPos.pos);
-            hoverButton_plus.style.display = "block";
+            // hoverButton_plus.style.display = "block";
+            hoverButton_lock.style.display = "none";
           } else {
             // 선택된 위치에서 가장 가까운 블록 노드의 경계를 찾습니다.
             let depth = resolvedPos.depth;
@@ -156,7 +157,7 @@ export function hoverButtonPlugin() {
 
           const editorRect = view.dom.getBoundingClientRect();
           hoverDiv.style.left = `${
-            editorRect.left - hoverDiv.offsetWidth - 10
+            editorRect.left - hoverDiv.offsetWidth - 5
           }px`;
           hoverDiv.style.top = `${topWithScroll}px`;
           hoverDiv.style.visibility = "visible";
@@ -198,6 +199,14 @@ export function hoverButtonPlugin() {
       }
           
       editorView.dom.addEventListener("click", handleInteraction);
+      editorView.dom.addEventListener("keyup", (event) => {
+        const { from } = editorView.state.selection;
+        if (from !== null) {
+          if (event.key === "ArrowUp" || event.key === "ArrowDown") {
+            handleInteractionFromCursor(from);
+          }
+      }
+      });
       editorView.dom.addEventListener("keydown", (event) => {
         if (event.keyCode === 13) {
           const { from } = editorView.state.selection;

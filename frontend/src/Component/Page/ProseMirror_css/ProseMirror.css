@@ -401,18 +401,19 @@ img.ProseMirror-separator {
   border-radius: 4px;
 }
 
-.hoverButton_plus, .hoverButton_lock {
+.hoverButton_plus, .hoverButton_lock, .hoverButton_writer {
   cursor: pointer;
   width: 18px;
   height: 20px;
+  margin: 4px;
 }
 
-.hoverButton_writer {
+/* .hoverButton_writer {
   cursor: pointer;
   width: 20px;
   height: 20px;
   margin-left: 8px;
-}
+} */
 
 /* this is a rough fix for the first cursor position when the first paragraph is empty */
 .ProseMirror > .ProseMirror-yjs-cursor:first-child {
