@@ -105,7 +105,7 @@
             </androidx.constraintlayout.widget.ConstraintLayout>
 
             <Button
-                android:id="@+id/buttonCreateNote"
+                android:id="@+id/buttonCreatePage"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
@@ -114,18 +114,20 @@
                 android:text="작성하기" />
 
             <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/recyclerViewNotes"
+                android:id="@+id/recyclerViewPages"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
                 android:layout_marginBottom="16dp"
-                android:layout_below="@+id/buttonCreateNote"/>
+                android:layout_below="@+id/buttonCreatePage"/>
+
+
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/bookText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_below="@id/recyclerViewNotes"
+                android:layout_below="@id/recyclerViewPages"
                 android:layout_marginVertical="10dp"
                 android:background="@color/gray">
 

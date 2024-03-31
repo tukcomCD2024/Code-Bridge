@@ -15,9 +15,9 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.sharenote.LoginActivity
 import com.example.sharenote.MainActivity
-import com.example.sharenote.Note
-import com.example.sharenote.NoteActivity
+import com.example.sharenote.PageActivity
 import com.example.sharenote.OrganizationActivity
+import com.example.sharenote.Page
 import com.example.sharenote.R
 import com.example.sharenote.SharedPreferencesUtil
 import com.example.sharenote.WorkSpace
@@ -25,11 +25,11 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.FirebaseFirestore
 
-class HomeFragment : Fragment(), NoteListAdapter.OnNoteClickListener {
+class HomeFragment : Fragment(), PageListAdapter.OnPageClickListener {
 
     private lateinit var auth: FirebaseAuth
     private lateinit var recyclerView: RecyclerView
-    private lateinit var noteListAdapter: NoteListAdapter
+    private lateinit var pageListAdapter: PageListAdapter
     private lateinit var emailTextView: TextView
     private lateinit var menuBtn: ImageButton
     private lateinit var profileForm: RelativeLayout
@@ -39,7 +39,7 @@ class HomeFragment : Fragment(), NoteListAdapter.OnNoteClickListener {
     private lateinit var popupView: View // 팝업 뷰
     private lateinit var setting_circle: ImageView
 
-    private var notes: MutableList<Note> = mutableListOf()
+    private var pages: MutableList<Page> = mutableListOf()
 
 
 
@@ -50,10 +50,11 @@ class HomeFragment : Fragment(), NoteListAdapter.OnNoteClickListener {
     ): View? {
         val view = inflater.inflate(R.layout.fragment_home, container, false)
         auth = FirebaseAuth.getInstance()
-        recyclerView = view.findViewById(R.id.recyclerViewNotes)
-        recyclerView.layoutManager = LinearLayoutManager(requireContext())
-        noteListAdapter = NoteListAdapter(notes, this)
-        recyclerView.adapter = noteListAdapter
+        recyclerView = view.findViewById(R.id.recyclerViewPages)
+        val layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
+        recyclerView.layoutManager = layoutManager
+        pageListAdapter = PageListAdapter(pages, this)
+        recyclerView.adapter = pageListAdapter
         menuBtn = view.findViewById(R.id.menuBtn)
         profileForm = view.findViewById(R.id.profileForm)
 
@@ -97,30 +98,30 @@ class HomeFragment : Fragment(), NoteListAdapter.OnNoteClickListener {
         // themesBtn 클릭 시 buttonCreateNote와 recyclerViewNotes의 가시성을 토글합니다.
         val themesBtn = view.findViewById<ImageButton>(R.id.themesBtn)
         themesBtn.setOnClickListener {
-            toggleNotesVisibility(themesBtn)
+            togglePagesVisibility(themesBtn)
         }
 
-        // Create Note 버튼 클릭 시 NoteActivity로 이동
-        val buttonCreateNote = view.findViewById<Button>(R.id.buttonCreateNote)
-        buttonCreateNote.setOnClickListener {
-            createNote()
+        // Create Page 버튼 클릭 시 NoteActivity로 이동
+        val buttonCreatePage = view.findViewById<Button>(R.id.buttonCreatePage)
+        buttonCreatePage.setOnClickListener {
+            createPage()
         }
 
 
         // 최근 워크스페이스 ID를 loadNotesFromFirestore() 함수로 전달하여 해당 워크스페이스에 속한 노트들을 가져옵니다.
         recentWorkspaceId?.let {
-            loadNotesFromFirestore(it)
+            loadPagesFromFirestore(it)
         }
 
         return view
     }
 
-    override fun onNoteClick(note: Note) {
-        val intent = Intent(requireContext(), NoteActivity::class.java)
-        intent.putExtra("note_id", note.id)
-        intent.putExtra("note_title", note.title)
-        intent.putExtra("note_text", note.text)
-        intent.putExtra("note_image_uri", note.imageUri)
+    override fun onPageClick(page: Page) {
+        val intent = Intent(requireContext(), PageActivity::class.java)
+        intent.putExtra("page_id", page.id)
+        intent.putExtra("page_title", page.title)
+        intent.putExtra("page_text", page.text)
+        intent.putExtra("page_image_uri", page.imageUri)
         startActivity(intent)
     }
 
@@ -268,7 +269,7 @@ class HomeFragment : Fragment(), NoteListAdapter.OnNoteClickListener {
     }
 
 
-    private fun toggleNotesVisibility(themesBtn: ImageButton) {
+    private fun togglePagesVisibility(themesBtn: ImageButton) {
         // recyclerViewNotes의 가시성을 토글합니다.
         recyclerView.visibility = if (recyclerView.visibility == View.VISIBLE) {
             View.GONE
@@ -288,27 +289,27 @@ class HomeFragment : Fragment(), NoteListAdapter.OnNoteClickListener {
     }
 
 
-    private fun createNote() {
-        val intent = Intent(requireContext(), NoteActivity::class.java)
+    private fun createPage() {
+        val intent = Intent(requireContext(), PageActivity::class.java)
         startActivity(intent)
     }
 
-    private fun loadNotesFromFirestore(recentWorkspaceId: String) {
+    private fun loadPagesFromFirestore(recentWorkspaceId: String) {
         val db = FirebaseFirestore.getInstance()
-        db.collection("notes")
+        db.collection("pages")
             .whereEqualTo("workSpaceId", recentWorkspaceId) // 해당 워크스페이스 ID와 일치하는 노트만 가져오기
             .get()
             .addOnSuccessListener { result ->
-                notes.clear()
+                pages.clear()
                 for (document in result) {
-                    val noteID = document.getString("id") ?: ""
-                    val noteTitle = document.getString("title") ?:""
-                    val noteText = document.getString("text") ?: ""
-                    val noteImageUri = document.getString("imageUri") ?: ""
-                    val note = Note(noteID, noteTitle, noteText, noteImageUri)
-                    notes.add(note)
+                    val pageID = document.getString("id") ?: ""
+                    val pageTitle = document.getString("title") ?:""
+                    val pageText = document.getString("text") ?: ""
+                    val pageImageUri = document.getString("imageUri") ?: ""
+                    val page = Page(pageID, pageTitle, pageText, pageImageUri)
+                    pages.add(page)
                 }
-                noteListAdapter.notifyDataSetChanged()
+                pageListAdapter.notifyDataSetChanged()
             }
             .addOnFailureListener { exception ->
                 // Handle any errors

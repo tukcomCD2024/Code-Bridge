@@ -17,6 +17,9 @@
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
         <activity
+            android:name=".NoteActivity"
+            android:exported="false" />
+        <activity
             android:name=".InviteActivity"
             android:exported="false" />
         <activity
@@ -27,7 +30,7 @@
             android:exported="false" />
         <activity
             android:name=".AccountActivity"
-            android:exported="false"/>
+            android:exported="false" />
         <activity
             android:name=".SplashActivity"
             android:exported="true">
@@ -38,7 +41,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".NoteActivity"
+            android:name=".PageActivity"
             android:exported="false" />
         <activity
             android:name=".MyPageActivity"
