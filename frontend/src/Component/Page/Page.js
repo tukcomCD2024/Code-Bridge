@@ -267,11 +267,28 @@ function Page() {
     editorRef.current.addEventListener('mousedown', (event) => { handleEditAttempt(nickname, event); });
 
     function yjsDisconnect() {
-      if (connectedUsersYMap.size === 0) {
-        const nodeInfoMap = ydoc.getMap('nodeInfo');
+      const lineLocks = ydoc.getMap('nodeInfo');
+      const keysToDelete = [];
+  
+      // 찾기: 해당 사용자가 잠금 설정한 모든 키(노드의 UUID)
+      lineLocks.forEach((value, key) => {
+        if (value === nickname) {
+          keysToDelete.push(key);
+        }
+      });
+    
+      // 삭제: 찾은 모든 키에 대해 잠금 해제
+      keysToDelete.forEach(key => {
+        lineLocks.delete(key);
+      });
+    
+      // userLocks에서도 사용자의 현재 잠금 정보 삭제
+      const userLocks = ydoc.getMap('userLocks');
+      userLocks.delete(nickname);
 
-        nodeInfoMap.forEach((value, key) => {
-          nodeInfoMap.delete(key);
+      if (connectedUsersYMap.size === 0) {
+        lineLocks .forEach((value, key) => {
+          lineLocks .delete(key);
         });
         console.log('모든 사용자가 나갔습니다. lineLocks를 초기화합니다.');
       }
