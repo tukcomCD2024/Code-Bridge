@@ -284,6 +284,14 @@ class HomeFragment : Fragment(), PageListAdapter.OnPageClickListener {
         // 팝업 뷰에서 노트 제목을 입력하는 EditText 찾기
         val noteNameEditText = popupView.findViewById<EditText>(R.id.Note_name)
 
+        // 팝업 창이 화면 바깥을 터치하면 닫히도록 설정
+        popupWindow.isOutsideTouchable = true
+
+        val cancleButton = popupView.findViewById<Button>(R.id.cancleButton)
+        cancleButton.setOnClickListener {
+            popupWindow.dismiss()
+        }
+
         // 팝업 창에서 확인 버튼을 클릭했을 때의 동작 정의
         val confirmButton = popupView.findViewById<Button>(R.id.confirmButton)
         confirmButton.setOnClickListener {

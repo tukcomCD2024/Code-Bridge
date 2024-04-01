@@ -24,7 +24,7 @@
         android:src="@drawable/add_note"
         android:layout_gravity="center"/>
 
-    <TextView
+    <EditText
         android:id="@+id/Note_name"
         android:layout_width="250dp"
         android:layout_height="wrap_content"
@@ -32,6 +32,7 @@
         android:layout_marginBottom="15dp"
         android:layout_gravity="center"
         android:gravity="center"
+        android:background="@drawable/rectangle_white"
         android:hint="노트 제목을 입력하세요"
         android:textSize="20dp"/>
 
