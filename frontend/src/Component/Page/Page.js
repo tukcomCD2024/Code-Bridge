@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import styled from "styled-components";
 
 // prosemirror 라이브러리(리치 텍스트 에디터)
@@ -38,8 +38,10 @@ import { v4 as uuidv4 } from "uuid";
 function Page() {
   const editorRef = useRef(null);
   const nickname = localStorage.getItem('nickname');
+  const userId = localStorage.getItem('userId');
 
   const location = useLocation();
+  const navigate = useNavigate();
   const note = location.state || { name: "노트 목록에서 접속바랍니다.", image: "null" };
 
   const pathSegments = location.pathname.split('/').filter(Boolean); 
@@ -185,6 +187,12 @@ function Page() {
     const lineLocks = ydoc.getMap('nodeInfo');
     const userLocks = ydoc.getMap('userLocks');
     window.toggleLineLock = function(guid, nickname) {
+      if(!nickname || !userId) {
+        toastr.info(`로그인 정보가 없습니다.`);
+        navigate("/login");
+        return;
+      }
+
     const currentLock = lineLocks.get(guid.toString());
 
     // 현재 사용자가 이미 다른 노드를 잠근 경우, 알림창 표시

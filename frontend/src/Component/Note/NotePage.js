@@ -226,6 +226,7 @@ function NotePage() {
         id: noteId,
         name: noteName,
         image: myimage || defaultImage,
+        organizationId: organizationId
       };
 
       const updatedNotes = [...notes, newNote];
