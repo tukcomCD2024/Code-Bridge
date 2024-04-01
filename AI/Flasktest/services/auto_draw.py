@@ -1,7 +1,8 @@
+from keras.models import load_model
 import numpy as np
 from PIL import Image
-from keras.models import load_model
 import operator
+import json, io, os, base64
 
 # imgsrc = r"C:\Users\Ka\Desktop\Ka\programming\AI\AI2\asset\size64Image01\bank\bank.png"
 # imgsrc = r"C:\Users\Ka\Desktop\Ka\programming\AI\AI2\asset\size64Image01\security\security.png"
@@ -29,14 +30,28 @@ def getImage():
 
 
 def getPredict(img):
-    saved_model = load_model("vgg16_softmax_sigmoid_RMS.h5")
+    saved_model = load_model(os.getcwd() + "/Flasktest/services/vgg16_sigmoid_RMS.h5")
     pre = saved_model.predict(img)
 
     return pre
 
 
-def imageMatching():
-    image = getImage()
-    predict = getPredict(image)
-    result = resultByDesc(predict[0])
-    print(result)
+# def imageMatching():
+#     image = getImage()
+#     predict = getPredict(image)
+#     result = resultByDesc(predict[0])
+#     print(result)
+
+
+def readFromJsonToImage(json_data):
+    dict_data = json.loads(json_data)
+
+    img = dict_data['img']
+    img = base64.b64decode(img)
+    return Image.open(io.BytesIO(img))
+
+
+def AI(json_data):
+    image = readFromJsonToImage(json_data)
+    preResult = getPredict(image)
+    return preResult
