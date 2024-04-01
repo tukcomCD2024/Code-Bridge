@@ -1,3 +1,4 @@
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -5,6 +6,7 @@ import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.InputMethodManager
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageButton
@@ -277,12 +279,20 @@ class HomeFragment : Fragment(), PageListAdapter.OnPageClickListener {
         val popupView = inflater.inflate(R.layout.note_layout, null)
         val popupWindow = PopupWindow(
             popupView,
-            ViewGroup.LayoutParams.MATCH_PARENT,
+            900,
             ViewGroup.LayoutParams.WRAP_CONTENT
         )
 
-        // 팝업 뷰에서 노트 제목을 입력하는 EditText 찾기
+        // EditText 참조 가져오기
         val noteNameEditText = popupView.findViewById<EditText>(R.id.Note_name)
+
+
+        // Note_name EditText를 활성화
+        noteNameEditText.isEnabled = true
+
+        // Note_name EditText에 포커스 설정
+        noteNameEditText.requestFocus()
+
 
         // 팝업 창이 화면 바깥을 터치하면 닫히도록 설정
         popupWindow.isOutsideTouchable = true
@@ -311,7 +321,7 @@ class HomeFragment : Fragment(), PageListAdapter.OnPageClickListener {
         }
 
         // 팝업 창을 뷰의 아래에 표시
-        popupWindow.showAtLocation(requireView(), Gravity.CENTER, 0, 0)
+        popupWindow.showAtLocation(requireView(), Gravity.CENTER, 0, -500)
     }
 
 
