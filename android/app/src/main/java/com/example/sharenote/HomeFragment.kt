@@ -1,15 +1,18 @@
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.PopupWindow
 import android.widget.RelativeLayout
 import android.widget.TextView
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -101,10 +104,10 @@ class HomeFragment : Fragment(), PageListAdapter.OnPageClickListener {
             togglePagesVisibility(themesBtn)
         }
 
-        // Create Page 버튼 클릭 시 NoteActivity로 이동
-        val buttonCreatePage = view.findViewById<Button>(R.id.buttonCreatePage)
+        // Create Note 버튼 클릭 시 NoteActivity로 이동
+        val buttonCreatePage = view.findViewById<Button>(R.id.buttonCreateNote)
         buttonCreatePage.setOnClickListener {
-            createPage()
+            showNoteCreationPopup()
         }
 
 
@@ -267,6 +270,81 @@ class HomeFragment : Fragment(), PageListAdapter.OnPageClickListener {
             popupWindow.dismiss() // 팝업 창 닫기
         }
     }
+
+
+    private fun showNoteCreationPopup() {
+        val inflater = LayoutInflater.from(requireContext())
+        val popupView = inflater.inflate(R.layout.note_layout, null)
+        val popupWindow = PopupWindow(
+            popupView,
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT
+        )
+
+        // 팝업 뷰에서 노트 제목을 입력하는 EditText 찾기
+        val noteNameEditText = popupView.findViewById<EditText>(R.id.Note_name)
+
+        // 팝업 창에서 확인 버튼을 클릭했을 때의 동작 정의
+        val confirmButton = popupView.findViewById<Button>(R.id.confirmButton)
+        confirmButton.setOnClickListener {
+            // 사용자가 입력한 노트 제목 가져오기
+            val noteTitle = noteNameEditText.text.toString().trim()
+
+            if (noteTitle.isNotEmpty()) {
+                // 노트 생성 및 저장
+                createNoteInFirestore(noteTitle)
+
+                // 팝업 창 닫기
+                popupWindow.dismiss()
+            } else {
+                // 사용자에게 제목을 입력하도록 메시지 표시 또는 처리
+                Toast.makeText(requireContext(), "노트 제목을 입력하세요.", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        // 팝업 창을 뷰의 아래에 표시
+        popupWindow.showAtLocation(requireView(), Gravity.CENTER, 0, 0)
+    }
+
+
+
+    private fun createNoteInFirestore(noteTitle: String) {
+        // 현재 사용자의 ID 가져오기
+        val currentUser = auth.currentUser
+        val userId = currentUser?.uid
+
+        // 현재 워크스페이스 ID 가져오기 (여기서는 가정하여 사용)
+        val organizationId = getRecentWorkspaceId()
+
+        // Firestore에 새로운 노트 추가
+        val db = FirebaseFirestore.getInstance()
+        val notesCollection = db.collection("notes")
+
+        // 새로운 노트의 ID 생성
+        val newNoteId = notesCollection.document().id
+
+        // 새로운 노트 생성 및 데이터 추가
+        val newNote = hashMapOf(
+            "noteId" to newNoteId,
+            "title" to noteTitle,
+            "organizationId" to organizationId,
+            "userId" to userId,
+            // 기타 필요한 필드 추가
+        )
+
+        // notes 컬렉션에 새로운 노트 추가
+        notesCollection.document(newNoteId)
+            .set(newNote)
+            .addOnSuccessListener {
+                // 성공적으로 노트가 Firestore에 추가됨
+                // 여기에 추가 작업 또는 UI 업데이트를 수행할 수 있음
+            }
+            .addOnFailureListener { e ->
+
+            }
+    }
+
+
 
 
     private fun togglePagesVisibility(themesBtn: ImageButton) {
