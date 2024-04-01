@@ -4,15 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="e154c9bb-b9ef-41b8-8757-68a477a765ac" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/Flasktest/services/vgg16_sigmoid_RMS.h5" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/test.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Flasktest/controllers/example_controllers.py" beforeDir="false" afterPath="$PROJECT_DIR$/Flasktest/controllers/example_controllers.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Flasktest/routes.py" beforeDir="false" afterPath="$PROJECT_DIR$/Flasktest/routes.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Flasktest/services/auto_draw.py" beforeDir="false" afterPath="$PROJECT_DIR$/Flasktest/services/auto_draw.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test.py" beforeDir="false" afterPath="$PROJECT_DIR$/test.py" afterDir="false" />
-    </list>
+    <list default="true" id="e154c9bb-b9ef-41b8-8757-68a477a765ac" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -116,7 +108,7 @@
       <workItem from="1711533540558" duration="5801000" />
       <workItem from="1711552489059" duration="1426000" />
       <workItem from="1711670763474" duration="1123000" />
-      <workItem from="1711883034820" duration="12434000" />
+      <workItem from="1711883034820" duration="13158000" />
     </task>
     <servers />
   </component>
