@@ -51,7 +51,7 @@
 
 
         <Button
-            android:id="@+id/buttonDeleteNote"
+            android:id="@+id/buttonDeletePage"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"

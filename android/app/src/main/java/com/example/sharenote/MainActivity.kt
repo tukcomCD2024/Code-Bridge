@@ -1,13 +1,10 @@
 package com.example.sharenote
 
 import HomeFragment
-import MyPageFragment
 import SettingsFragment
 import android.content.Intent
 import android.os.Bundle
-import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
-import androidx.fragment.app.Fragment
 import com.example.sharenote.databinding.ActivityMainBinding
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.auth.FirebaseAuth
@@ -61,7 +58,7 @@ class MainActivity : AppCompatActivity() {
 
 
     private fun createNote() {
-        val intent = Intent(this, NoteActivity::class.java)
+        val intent = Intent(this, PageActivity::class.java)
         startActivity(intent)
     }
 }

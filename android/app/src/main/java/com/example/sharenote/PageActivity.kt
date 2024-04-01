@@ -14,16 +14,16 @@ import com.example.sharenote.SharedPreferencesUtil.getRecentWorkspaceId
 import com.google.firebase.firestore.FirebaseFirestore
 import java.util.*
 
-class NoteActivity : AppCompatActivity() {
+class PageActivity : AppCompatActivity() {
 
-    private lateinit var editTextNote: EditText
+    private lateinit var editTextPage: EditText
     private lateinit var editTextTitle: EditText
     private lateinit var buttonAddImage: Button
-    private lateinit var buttonSaveNote: Button
+    private lateinit var buttonSavePage: Button
     private lateinit var imagePreview: ImageView
 
     private var selectedImageUri: Uri? = null
-    private var noteId: String? = null
+    private var pageId: String? = null
 
     private val getContent = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == RESULT_OK) {
@@ -38,25 +38,25 @@ class NoteActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_note)
+        setContentView(R.layout.activity_page)
 
-        editTextNote = findViewById(R.id.editTextNote)
+        editTextPage = findViewById(R.id.editTextPage)
         editTextTitle = findViewById(R.id.editTextTitle)
         buttonAddImage = findViewById(R.id.buttonAddImage)
-        buttonSaveNote = findViewById(R.id.buttonSaveNote)
+        buttonSavePage = findViewById(R.id.buttonSavePage)
         imagePreview = findViewById(R.id.imagePreview)
 
         // 이전에 작성한 데이터가 있는지 확인하고 있으면 해당 데이터를 불러옴
-        noteId = intent.getStringExtra("note_id")
+        pageId = intent.getStringExtra("page_id")
 
-        if (!noteId.isNullOrEmpty()) {
-            val noteTitle = intent.getStringExtra("note_title")
-            val noteText = intent.getStringExtra("note_text")
-            val noteImageUri = intent.getStringExtra("note_image_uri")
+        if (!pageId.isNullOrEmpty()) {
+            val pageTitle = intent.getStringExtra("page_title")
+            val pageText = intent.getStringExtra("page_text")
+            val pageImageUri = intent.getStringExtra("page_image_uri")
 
-            editTextTitle.setText(noteTitle)
-            editTextNote.setText(noteText)
-            selectedImageUri = Uri.parse(noteImageUri)
+            editTextTitle.setText(pageTitle)
+            editTextPage.setText(pageText)
+            selectedImageUri = Uri.parse(pageImageUri)
             Glide.with(this).load(selectedImageUri).into(imagePreview)
             imagePreview.visibility = ImageView.VISIBLE
         }
@@ -65,8 +65,8 @@ class NoteActivity : AppCompatActivity() {
             openGallery()
         }
 
-        buttonSaveNote.setOnClickListener {
-            saveNote()
+        buttonSavePage.setOnClickListener {
+            savePage()
         }
 
         val buttonDeleteImage = findViewById<Button>(R.id.buttonDeleteImage)
@@ -87,11 +87,11 @@ class NoteActivity : AppCompatActivity() {
         getContent.launch(intent)
     }
 
-    private fun saveNote() {
-        val noteTitle = editTextTitle.text.toString().trim()
-        val noteText = editTextNote.text.toString().trim()
+    private fun savePage() {
+        val pageTitle = editTextTitle.text.toString().trim()
+        val pageText = editTextPage.text.toString().trim()
 
-        if (noteText.isEmpty()) {
+        if (pageText.isEmpty()) {
             Toast.makeText(this, "노트를 입력하세요", Toast.LENGTH_SHORT).show()
             return
         }
@@ -99,19 +99,19 @@ class NoteActivity : AppCompatActivity() {
         val db = FirebaseFirestore.getInstance()
 
         // 이전에 작성한 데이터가 있는 경우 해당 데이터의 ID를 사용하여 업데이트
-        if (!noteId.isNullOrEmpty()) {
+        if (!pageId.isNullOrEmpty()) {
             // 이전에 작성한 데이터가 있는 경우 해당 데이터의 ID를 사용하여 업데이트
-            val note = hashMapOf(
-                "id" to noteId, // NoteId를 유지하도록 수정
-                "title" to noteTitle,
-                "text" to noteText,
+            val page = hashMapOf(
+                "id" to pageId, // NoteId를 유지하도록 수정
+                "title" to pageTitle,
+                "text" to pageText,
                 "imageUri" to selectedImageUri.toString(),
                 "workSpaceId" to getRecentWorkspaceId(this) // 최근 워크스페이스 ID 추가
             )
 
-            db.collection("notes")
-                .document(noteId!!)
-                .set(note)
+            db.collection("pages")
+                .document(pageId!!)
+                .set(page)
                 .addOnSuccessListener {
                     Toast.makeText(this, "노트 업데이트 성공", Toast.LENGTH_SHORT).show()
                     val intent = Intent(this, MainActivity::class.java)
@@ -123,18 +123,18 @@ class NoteActivity : AppCompatActivity() {
                 }
         } else {
             // 이전에 작성한 데이터가 없는 경우 새로운 노트 생성
-            val newNoteId = UUID.randomUUID().toString()
-            val note = hashMapOf(
-                "id" to newNoteId, // 새로운 노트의 ID 생성
-                "title" to noteTitle,
-                "text" to noteText,
+            val newPageId = UUID.randomUUID().toString()
+            val page = hashMapOf(
+                "id" to newPageId, // 새로운 노트의 ID 생성
+                "title" to pageTitle,
+                "text" to pageText,
                 "imageUri" to selectedImageUri.toString(),
                 "workSpaceId" to getRecentWorkspaceId(this) // 최근 워크스페이스 ID 추가
             )
 
-            db.collection("notes")
-                .document(newNoteId)
-                .set(note)
+            db.collection("pages")
+                .document(newPageId)
+                .set(page)
                 .addOnSuccessListener {
                     Toast.makeText(this, "노트 저장 성공", Toast.LENGTH_SHORT).show()
                     val intent = Intent(this, MainActivity::class.java)

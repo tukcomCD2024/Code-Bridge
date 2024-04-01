@@ -9,7 +9,7 @@
         android:layout_height="wrap_content">
 
         <TextView
-            android:id="@+id/inputNote"
+            android:id="@+id/inputPage"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
@@ -27,10 +27,10 @@
             android:hint="제목 :"
             android:inputType="textPersonName"
             android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-            android:layout_below="@+id/inputNote" />
+            android:layout_below="@+id/inputPage" />
 
         <EditText
-            android:id="@+id/editTextNote"
+            android:id="@+id/editTextPage"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="56dp"
@@ -47,7 +47,7 @@
             android:id="@+id/buttonAddImage"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@id/editTextNote"
+            android:layout_below="@id/editTextPage"
             android:text="이미지 추가"
             android:layout_marginBottom="16dp"/>
 
@@ -74,7 +74,7 @@
             android:layout_marginTop="16dp" />
 
         <Button
-            android:id="@+id/buttonSaveNote"
+            android:id="@+id/buttonSavePage"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerHorizontal="true"

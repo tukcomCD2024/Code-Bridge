@@ -12,7 +12,6 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.example.sharenote.MainActivity
 import com.example.sharenote.MyPageActivity
-import com.example.sharenote.NoteActivity
 import com.example.sharenote.R
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.UserProfileChangeRequest

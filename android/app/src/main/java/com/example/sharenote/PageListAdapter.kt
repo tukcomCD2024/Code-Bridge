@@ -1,4 +1,3 @@
-import android.net.Uri
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -7,29 +6,29 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import com.example.sharenote.Note
+import com.example.sharenote.Page
 import com.example.sharenote.R
 import com.google.firebase.firestore.FirebaseFirestore
 
-class NoteListAdapter(private val notes: MutableList<Note>,private val onNoteClickListener: OnNoteClickListener) :
-    RecyclerView.Adapter<NoteListAdapter.NoteViewHolder>() {
+class PageListAdapter(private val pages: MutableList<Page>, private val onNoteClickListener: OnPageClickListener) :
+    RecyclerView.Adapter<PageListAdapter.PageViewHolder>() {
 
-    interface OnNoteClickListener {
-        fun onNoteClick(note: Note)
+    interface OnPageClickListener {
+        fun onPageClick(page: Page)
     }
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): NoteViewHolder {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PageViewHolder {
         val itemView = LayoutInflater.from(parent.context)
-            .inflate(R.layout.item_note, parent, false)
-        return NoteViewHolder(itemView)
+            .inflate(R.layout.item_page, parent, false)
+        return PageViewHolder(itemView)
     }
 
-    override fun onBindViewHolder(holder: NoteViewHolder, position: Int) {
-        val currentNote = notes[position]
-        holder.titleViewText.text = currentNote.title
-        holder.textViewText.text = currentNote.text
+    override fun onBindViewHolder(holder: PageViewHolder, position: Int) {
+        val currentPage = pages[position]
+        holder.titleViewText.text = currentPage.title
+        holder.textViewText.text = currentPage.text
 
         // 이미지 URI가 있을 경우 Glide를 사용하여 이미지를 로드하여 표시합니다.
-        currentNote.imageUri?.let { uri ->
+        currentPage.imageUri?.let { uri ->
             holder.imageViewImage.visibility = View.VISIBLE
             Glide.with(holder.itemView)
                 .load(uri) // 이미지 URI를 직접 전달합니다.
@@ -39,26 +38,26 @@ class NoteListAdapter(private val notes: MutableList<Note>,private val onNoteCli
             holder.imageViewImage.visibility = View.GONE
         }
 
-        holder.buttonDeleteNote.setOnClickListener {
-            deleteNote(holder.adapterPosition)
+        holder.buttonDeletePage.setOnClickListener {
+            deletePage(holder.adapterPosition)
         }
         // 노트를 클릭하면 해당 노트의 정보를 전달합니다.
         holder.itemView.setOnClickListener {
-            onNoteClickListener.onNoteClick(currentNote)
+            onNoteClickListener.onPageClick(currentPage)
         }
 
     }
 
-    override fun getItemCount() = notes.size
+    override fun getItemCount() = pages.size
 
-    private fun deleteNote(position: Int) {
+    private fun deletePage(position: Int) {
         val db = FirebaseFirestore.getInstance()
-        val noteId = notes[position].id // Note 클래스에 ID 필드가 있다고 가정
-        db.collection("notes").document(noteId)
+        val pageId = pages[position].id // Note 클래스에 ID 필드가 있다고 가정
+        db.collection("pages").document(pageId)
             .delete()
             .addOnSuccessListener {
                 // Firestore에서 문서 삭제 성공 후 RecyclerView에서 해당 아이템 제거
-                notes.removeAt(position)
+                pages.removeAt(position)
                 notifyItemRemoved(position)
             }
             .addOnFailureListener { exception ->
@@ -67,10 +66,10 @@ class NoteListAdapter(private val notes: MutableList<Note>,private val onNoteCli
     }
 
 
-    inner class NoteViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    inner class PageViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val titleViewText: TextView = itemView.findViewById(R.id.titleViewText)
         val textViewText: TextView = itemView.findViewById(R.id.textViewText)
         val imageViewImage: ImageView = itemView.findViewById(R.id.imageViewImage)
-        val buttonDeleteNote: Button = itemView.findViewById(R.id.buttonDeleteNote)
+        val buttonDeletePage: Button = itemView.findViewById(R.id.buttonDeletePage)
     }
 }
