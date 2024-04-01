@@ -95,10 +95,10 @@ function Page() {
     const ydoc = getYDocInstance(roomId);
     setYdoc(ydoc);
     const provider = new WebsocketProvider(
-      "wss://demos.yjs.dev/ws", // 웹소켓 서버 주소(데모용)
+      // "wss://demos.yjs.dev/ws", // 웹소켓 서버 주소(데모용)
       //"ws://localhost:4000", //배포용
       //"ws://nodejs:4000", 
-      //"wss://sharenote.shop/ws",
+      "wss://sharenote.shop/ws",
       roomId, // 방 이름
       ydoc
     );
