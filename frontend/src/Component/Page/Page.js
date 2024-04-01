@@ -197,7 +197,7 @@ function Page() {
 
     // 현재 사용자가 이미 다른 노드를 잠근 경우, 알림창 표시
     const currentLockedNodeByUser = userLocks.get(nickname);
-    if (currentLockedNodeByUser && currentLockedNodeByUser !== guid.toString()) {
+    if (!currentLock && currentLockedNodeByUser && currentLockedNodeByUser !== guid.toString()) {
       // 사용자에게 확인을 요청하는 대화 상자 표시
       const isConfirmed = window.confirm("최대 1개까지 잠금이 가능합니다.\n이전에 설정한 잠금을 해제하시겠습니까?");
       if (isConfirmed) {
