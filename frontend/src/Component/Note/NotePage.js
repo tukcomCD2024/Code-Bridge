@@ -22,7 +22,7 @@ function NoteCard({ note, index }) {
       <NoteContainer>
         <img src={note.image} alt={`Note-Picture-${index}`} />
         <NoteName>
-          <small>{note.name}</small>
+          {note.name}
         </NoteName>
         <p
           style={{
@@ -338,15 +338,17 @@ const OrganizationInfo = styled.button`
 `;
 
 const StyledAddNoteIcon = styled(AddNoteIcon)`
-  width: 200px;
+  width: 193px;
+  height: auto;
   cursor: pointer;
   margin-top: 10px;
-  margin-bottom: 50px;
+  margin-bottom: 60px;
 `;
 
 const StyledImage = styled.img`
   width: ${(props) => (props.$isDefaultImage ? "100%" : "100px")}; // 예시 크기
-  height: auto;
+  height: 320px;
+  max-height: 80%;
   width: 100%; /* 너비를 최대값으로 설정 */
   object-fit: contain;
 `;
@@ -480,7 +482,8 @@ const NoteContainer = styled.div`
 
   img {
     width: 200px; /* 너비 설정 */
-    height: 100%; /* 높이 설정 */
+    height: 320px;
+    max-height: 80%;
     cursor: pointer;
     margin-top: 10px;
     border: 1px solid rgba(0, 0, 0, 0.2); // 블랙 색상에 알파값 0.2로 설정
