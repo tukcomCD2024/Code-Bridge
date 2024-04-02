@@ -6,8 +6,11 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.sharenote.Note
 import com.example.sharenote.R
 
-class NoteListAdapter(private val noteList: List<Note>, private val onItemClick: (String) -> Unit) :
+class NoteListAdapter(private val onItemClick: (String) -> Unit) :
     RecyclerView.Adapter<NoteListAdapter.NoteViewHolder>() {
+
+    private val noteList = mutableListOf<Note>()
+
     inner class NoteViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView), View.OnClickListener {
         // 뷰홀더 초기화 및 클릭 리스너 설정
         init {
@@ -34,8 +37,14 @@ class NoteListAdapter(private val noteList: List<Note>, private val onItemClick:
     override fun onBindViewHolder(holder: NoteViewHolder, position: Int) {
         val currentItem = noteList[position]
         holder.titleTextView.text = currentItem.title
-
     }
 
     override fun getItemCount() = noteList.size
+
+    // 외부에서 노트 목록을 설정하는 메서드
+    fun setNotes(notes: List<Note>) {
+        noteList.clear()
+        noteList.addAll(notes)
+        notifyDataSetChanged()
+    }
 }

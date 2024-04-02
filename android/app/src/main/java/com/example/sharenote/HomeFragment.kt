@@ -1,3 +1,4 @@
+import android.content.ContentValues.TAG
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
@@ -18,8 +19,11 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.sharenote.CreateNoteActivity
 import com.example.sharenote.LoginActivity
 import com.example.sharenote.MainActivity
+import com.example.sharenote.Note
+import com.example.sharenote.NoteActivity
 import com.example.sharenote.PageActivity
 import com.example.sharenote.OrganizationActivity
 import com.example.sharenote.Page
@@ -30,11 +34,11 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.FirebaseFirestore
 
-class HomeFragment : Fragment(), PageListAdapter.OnPageClickListener {
+class HomeFragment : Fragment() {
 
     private lateinit var auth: FirebaseAuth
     private lateinit var recyclerView: RecyclerView
-    private lateinit var pageListAdapter: PageListAdapter
+    private lateinit var noteListAdapter: NoteListAdapter
     private lateinit var emailTextView: TextView
     private lateinit var menuBtn: ImageButton
     private lateinit var profileForm: RelativeLayout
@@ -44,9 +48,6 @@ class HomeFragment : Fragment(), PageListAdapter.OnPageClickListener {
     private lateinit var popupView: View // 팝업 뷰
     private lateinit var setting_circle: ImageView
 
-    private var pages: MutableList<Page> = mutableListOf()
-
-
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -55,11 +56,20 @@ class HomeFragment : Fragment(), PageListAdapter.OnPageClickListener {
     ): View? {
         val view = inflater.inflate(R.layout.fragment_home, container, false)
         auth = FirebaseAuth.getInstance()
-        recyclerView = view.findViewById(R.id.recyclerViewPages)
-        val layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
+        recyclerView = view.findViewById(R.id.recyclerViewNotes)
+        val layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
         recyclerView.layoutManager = layoutManager
-        pageListAdapter = PageListAdapter(pages, this)
-        recyclerView.adapter = pageListAdapter
+
+        // noteListAdapter를 초기화합니다.
+        noteListAdapter = NoteListAdapter { noteId ->
+            // 노트 아이템 클릭 시 NoteActivity로 이동
+            val intent = Intent(requireContext(), NoteActivity::class.java)
+            intent.putExtra("note_id", noteId)
+            startActivity(intent)
+        }
+
+
+        recyclerView.adapter = noteListAdapter
         menuBtn = view.findViewById(R.id.menuBtn)
         profileForm = view.findViewById(R.id.profileForm)
 
@@ -93,12 +103,9 @@ class HomeFragment : Fragment(), PageListAdapter.OnPageClickListener {
             showPopupMenu()
         }
 
-
-
         setting_circle.setOnClickListener {
             showAccountMenuPopup()
         }
-
 
         // themesBtn 클릭 시 buttonCreateNote와 recyclerViewNotes의 가시성을 토글합니다.
         val themesBtn = view.findViewById<ImageButton>(R.id.themesBtn)
@@ -109,26 +116,18 @@ class HomeFragment : Fragment(), PageListAdapter.OnPageClickListener {
         // Create Note 버튼 클릭 시 NoteActivity로 이동
         val buttonCreatePage = view.findViewById<Button>(R.id.buttonCreateNote)
         buttonCreatePage.setOnClickListener {
-            showNoteCreationPopup()
+            createNote()
         }
-
 
         // 최근 워크스페이스 ID를 loadNotesFromFirestore() 함수로 전달하여 해당 워크스페이스에 속한 노트들을 가져옵니다.
         recentWorkspaceId?.let {
-            loadPagesFromFirestore(it)
+            loadNotesFromFirestore(it)
         }
 
         return view
     }
 
-    override fun onPageClick(page: Page) {
-        val intent = Intent(requireContext(), PageActivity::class.java)
-        intent.putExtra("page_id", page.id)
-        intent.putExtra("page_title", page.title)
-        intent.putExtra("page_text", page.text)
-        intent.putExtra("page_image_uri", page.imageUri)
-        startActivity(intent)
-    }
+
 
 
     private fun showPopupAccount() {
@@ -274,96 +273,6 @@ class HomeFragment : Fragment(), PageListAdapter.OnPageClickListener {
     }
 
 
-    private fun showNoteCreationPopup() {
-        val inflater = LayoutInflater.from(requireContext())
-        val popupView = inflater.inflate(R.layout.note_layout, null)
-        val popupWindow = PopupWindow(
-            popupView,
-            900,
-            ViewGroup.LayoutParams.WRAP_CONTENT
-        )
-
-        // EditText 참조 가져오기
-        val noteNameEditText = popupView.findViewById<EditText>(R.id.Note_name)
-
-
-        // Note_name EditText를 활성화
-        noteNameEditText.isEnabled = true
-
-        // Note_name EditText에 포커스 설정
-        noteNameEditText.requestFocus()
-
-
-        // 팝업 창이 화면 바깥을 터치하면 닫히도록 설정
-        popupWindow.isOutsideTouchable = true
-
-        val cancleButton = popupView.findViewById<Button>(R.id.cancleButton)
-        cancleButton.setOnClickListener {
-            popupWindow.dismiss()
-        }
-
-        // 팝업 창에서 확인 버튼을 클릭했을 때의 동작 정의
-        val confirmButton = popupView.findViewById<Button>(R.id.confirmButton)
-        confirmButton.setOnClickListener {
-            // 사용자가 입력한 노트 제목 가져오기
-            val noteTitle = noteNameEditText.text.toString().trim()
-
-            if (noteTitle.isNotEmpty()) {
-                // 노트 생성 및 저장
-                createNoteInFirestore(noteTitle)
-
-                // 팝업 창 닫기
-                popupWindow.dismiss()
-            } else {
-                // 사용자에게 제목을 입력하도록 메시지 표시 또는 처리
-                Toast.makeText(requireContext(), "노트 제목을 입력하세요.", Toast.LENGTH_SHORT).show()
-            }
-        }
-
-        // 팝업 창을 뷰의 아래에 표시
-        popupWindow.showAtLocation(requireView(), Gravity.CENTER, 0, -500)
-    }
-
-
-
-    private fun createNoteInFirestore(noteTitle: String) {
-        // 현재 사용자의 ID 가져오기
-        val currentUser = auth.currentUser
-        val userId = currentUser?.uid
-
-        // 현재 워크스페이스 ID 가져오기 (여기서는 가정하여 사용)
-        val organizationId = getRecentWorkspaceId()
-
-        // Firestore에 새로운 노트 추가
-        val db = FirebaseFirestore.getInstance()
-        val notesCollection = db.collection("notes")
-
-        // 새로운 노트의 ID 생성
-        val newNoteId = notesCollection.document().id
-
-        // 새로운 노트 생성 및 데이터 추가
-        val newNote = hashMapOf(
-            "noteId" to newNoteId,
-            "title" to noteTitle,
-            "organizationId" to organizationId,
-            "userId" to userId,
-            // 기타 필요한 필드 추가
-        )
-
-        // notes 컬렉션에 새로운 노트 추가
-        notesCollection.document(newNoteId)
-            .set(newNote)
-            .addOnSuccessListener {
-                // 성공적으로 노트가 Firestore에 추가됨
-                // 여기에 추가 작업 또는 UI 업데이트를 수행할 수 있음
-            }
-            .addOnFailureListener { e ->
-
-            }
-    }
-
-
-
 
     private fun togglePagesVisibility(themesBtn: ImageButton) {
         // recyclerViewNotes의 가시성을 토글합니다.
@@ -385,33 +294,36 @@ class HomeFragment : Fragment(), PageListAdapter.OnPageClickListener {
     }
 
 
-    private fun createPage() {
-        val intent = Intent(requireContext(), PageActivity::class.java)
+    private fun createNote() {
+        val intent = Intent(requireContext(), CreateNoteActivity::class.java)
         startActivity(intent)
     }
 
-    private fun loadPagesFromFirestore(recentWorkspaceId: String) {
+
+    private fun loadNotesFromFirestore(recentWorkspaceId: String) {
         val db = FirebaseFirestore.getInstance()
-        db.collection("pages")
-            .whereEqualTo("workSpaceId", recentWorkspaceId) // 해당 워크스페이스 ID와 일치하는 노트만 가져오기
+        db.collection("notes")
+            .whereEqualTo("organizationId", recentWorkspaceId) // 해당 조직 ID와 일치하는 노트만 가져오기
             .get()
             .addOnSuccessListener { result ->
-                pages.clear()
+                val notes = mutableListOf<Note>()
                 for (document in result) {
-                    val pageID = document.getString("id") ?: ""
-                    val pageTitle = document.getString("title") ?:""
-                    val pageText = document.getString("text") ?: ""
-                    val pageImageUri = document.getString("imageUri") ?: ""
-                    val page = Page(pageID, pageTitle, pageText, pageImageUri)
-                    pages.add(page)
+                    val noteId = document.getString("noteId") ?: ""
+                    val title = document.getString("title") ?: ""
+                    val organizationId = document.getString("organizationId") ?: ""
+                    val userId = document.getString("userId") ?: ""
+                    val note = Note(noteId, title, organizationId, userId)
+                    notes.add(note) // 새로운 노트를 어댑터에 추가합니다.
                 }
-                pageListAdapter.notifyDataSetChanged()
+                // 어댑터에 데이터 설정
+                noteListAdapter.setNotes(notes)
             }
             .addOnFailureListener { exception ->
-                // Handle any errors
-                // Log.e(TAG, "Error getting documents: ", exception)
+                Log.e(TAG, "Error getting notes:", exception)
             }
     }
+
+
 
 
 
