@@ -10,7 +10,10 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Document(collection = "organizations")
 @Builder
@@ -49,9 +52,14 @@ public class Organization {
         private List<Page> pages;
         //page에 order 필드 추가!!
 
+        // 좋아요 받은 사람들
+        private LikesInfo likesInfo;
+
+
 
         // 생성자, 게터, 세터 등 필요한 메서드들 추가
     }
+
 
     // 내부 클래스로 Page 정의
     @Getter
@@ -68,6 +76,41 @@ public class Organization {
             this.blocks.add(blockId);
         }
     }
+
+    public static class LikesInfo {
+        private Map<String, UserLike> userLikes = new HashMap<>();
+
+        public void addLike(String userUuid, String blockId, String likerUuid) {
+            userLikes.computeIfAbsent(userUuid, k -> new UserLike())
+                    .addBlockLike(blockId, likerUuid);
+
+        }
+
+        // 필요한 메서드 추가...
+    }
+
+    public static class UserLike {
+        private Map<String, BlockLike> blockLikes = new HashMap<>();
+
+        public void addBlockLike(String blockId, String likerUuid) {
+            blockLikes.computeIfAbsent(blockId, k -> new BlockLike())
+                    .addLiker(likerUuid);
+        }
+
+        // 필요한 메서드 추가...
+    }
+
+    public static class BlockLike {
+        private List<String> likers = new ArrayList<>();
+
+        public void addLiker(String likerUuid) {
+            likers.add(likerUuid);
+        }
+
+        // 필요한 메서드 추가...
+    }
+
+
 
     public void addPageToNote(String noteId, Page newPage) {
         for (Note note : this.notes) {

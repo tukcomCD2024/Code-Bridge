@@ -1,6 +1,7 @@
 package com.Backend.shareNote.domain.Oraganization.service;
 
 import com.Backend.shareNote.domain.Oraganization.entity.Organization;
+import com.Backend.shareNote.domain.Oraganization.likesdto.LikesDTO;
 import com.Backend.shareNote.domain.Oraganization.notedto.NoteCreateDTO;
 import com.Backend.shareNote.domain.Oraganization.notedto.NoteDeleteDTO;
 import com.Backend.shareNote.domain.Oraganization.notedto.NoteSearchDTO;
@@ -34,6 +35,7 @@ public class NoteService {
                 .createUser(noteCreateDTO.getUserId())
                 .pages(new ArrayList<Organization.Page>())
                 .noteImageUrl(noteCreateDTO.getNoteImageUrl())
+                .likesInfo(new Organization.LikesInfo())
                 .build();
         noteRepository.save(note);
         // organization에 note 추가
@@ -75,7 +77,7 @@ public class NoteService {
     }
 
     public String updateNote(NoteUpdateDTO noteUpdateDTO) {
-        Organization oranization = organizationRepository.findById(noteUpdateDTO.getOrganizationId())
+        Organization organization = organizationRepository.findById(noteUpdateDTO.getOrganizationId())
                 .orElseThrow(()->new IllegalArgumentException("해당하는 organization이 없습니다."));
 
         Organization.Note note = noteRepository.findById(noteUpdateDTO.getNoteId())
@@ -85,7 +87,7 @@ public class NoteService {
         note.setNoteImageUrl(noteUpdateDTO.getNoteImageUrl());
 
         //organization에서 note 업데이트
-        oranization.getNotes().stream()
+        organization.getNotes().stream()
                 .filter(n -> n.getId().equals(note.getId()))
                 .findFirst()
                 .ifPresent(n -> {
@@ -94,7 +96,23 @@ public class NoteService {
                 });
 
         noteRepository.save(note);
-        organizationRepository.save(oranization);
+        organizationRepository.save(organization);
         return "노트 수정 성공!";
+    }
+
+    public ResponseEntity<Object> blockLikes(LikesDTO likesDTO) {
+        // organization 찾기
+        Organization organization = organizationRepository.findById(likesDTO.getOrganizationId())
+                .orElseThrow(()->new IllegalArgumentException("해당하는 organization이 없습니다."));
+        // note 찾기
+        organization.getNotes().stream()
+                .filter(n -> n.getId().equals(likesDTO.getNoteId()))
+                .findFirst()
+                .ifPresent(n -> {
+                    n.getLikesInfo().addLike(likesDTO.getHeartReceiver(), likesDTO.getBlockId(), likesDTO.getLover());
+                });
+        organizationRepository.save(organization);
+        return ResponseEntity.ok("좋아요 성공!");
+
     }
 }
