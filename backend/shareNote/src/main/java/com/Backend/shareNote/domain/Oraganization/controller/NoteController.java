@@ -1,6 +1,7 @@
 package com.Backend.shareNote.domain.Oraganization.controller;
 
 import com.Backend.shareNote.domain.Oraganization.entity.Organization;
+import com.Backend.shareNote.domain.Oraganization.likesdto.LikesDTO;
 import com.Backend.shareNote.domain.Oraganization.notedto.NoteCreateDTO;
 import com.Backend.shareNote.domain.Oraganization.notedto.NoteDeleteDTO;
 import com.Backend.shareNote.domain.Oraganization.notedto.NoteSearchDTO;
@@ -39,5 +40,10 @@ public class NoteController {
     public String updateNote(@RequestBody NoteUpdateDTO noteUpdateDTO){
         return noteService.updateNote(noteUpdateDTO);
 
+    }
+
+    @PostMapping("/user/note/block/likes")
+    public ResponseEntity<String> blockLikes(@RequestBody LikesDTO likesDTO){
+        return noteService.blockLikes(likesDTO);
     }
 }
