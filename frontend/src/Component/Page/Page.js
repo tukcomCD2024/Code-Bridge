@@ -512,6 +512,7 @@ function Page() {
                 paddingLeft: "8%",
                 paddingRight: "5%",
               }}
+              
             />
 
         </EditorContainer>
@@ -522,14 +523,14 @@ function Page() {
 
 const LayoutContainer = styled.div`
   display: flex;
-  height: 209vh;
 `;
 
 const EditorContainer = styled.div`
   flex: 1;
   display: flex;
+  height: 200vh;
   margin-left: 15%; // 네비게이션 바 너비만큼 왼쪽 여백 추가
-  `;
+`;
 
 const NavigationBar = styled.div`
   width: 13%; // 네비게이션 바 너비
@@ -556,11 +557,14 @@ const NavigationBar = styled.div`
   }
 
   @media screen and (max-width: 1500px) {
-    // visibility: hidden;
     img {
       width: auto; // 이미지 너비 자동 조정
       max-width: 100%; // 이미지가 부모 너비를 넘지 않도록
     }
+  }
+
+@media (max-width: 768px) {
+    visibility: hidden;
   }
 `;
 
