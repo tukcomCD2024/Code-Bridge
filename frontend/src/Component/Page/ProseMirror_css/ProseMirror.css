@@ -179,21 +179,30 @@ img.ProseMirror-separator {
 }
 
 .ProseMirror-menubar {
+  max-width: 90%;
   border-top-left-radius: inherit;
   border-top-right-radius: inherit;
   position: relative;
+  
   min-height: 1em;
   color: #666;
-  padding: 1px 6px;
-  top: 0;
-  left: 0;
+  padding: 6px 6px;
+  margin-top: 40px;
+  margin-left: auto;
+  margin-right: auto;
+  top: 0px;
+  left: 0px;
   right: 0;
   border-bottom: 1px solid silver;
-  background: white;
+  background: #fafafa;
   z-index: 10;
   -moz-box-sizing: border-box;
   box-sizing: border-box;
   overflow: visible;
+
+  @media (max-width: 768px) {
+    display: none;
+   }
 }
 
 .ProseMirror-icon {
@@ -331,13 +340,21 @@ img.ProseMirror-separator {
 }
 #editor,
 .editor {
-  background: white;
-  color: black;
-  background-clip: padding-box;
+  background-image: url('/src/image/note_paper\(8\).svg');
+  background-size: 100% 135%;
+   background-repeat: no-repeat; 
+  background-position: center -10px; 
   border-radius: 4px;
-  /* border: 2px solid rgba(0, 0, 0, 0.2); */
   padding: 5px 0;
   margin-bottom: 23px;
+
+  @media (max-width: 768px) {
+      background: white;
+      color: black;
+      background-clip: padding-box;
+      background-position: 0px 0px;
+      border: 2px solid rgba(0, 0, 0, 0.2);
+  }
 }
 
 .ProseMirror p:first-child,
@@ -383,7 +400,7 @@ img.ProseMirror-separator {
 }
 
 .custom-paragraph:hover {
-  background-color: #f9f9f9;
+  border-bottom:2px dashed #ff6161c6;
 }
 
 .hoverDiv {

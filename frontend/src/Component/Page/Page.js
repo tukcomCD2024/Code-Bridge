@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import styled from "styled-components";
 
 // prosemirror 라이브러리(리치 텍스트 에디터)
@@ -38,8 +38,10 @@ import { v4 as uuidv4 } from "uuid";
 function Page() {
   const editorRef = useRef(null);
   const nickname = localStorage.getItem('nickname');
+  const userId = localStorage.getItem('userId');
 
   const location = useLocation();
+  const navigate = useNavigate();
   const note = location.state || { name: "노트 목록에서 접속바랍니다.", image: "null" };
 
   const pathSegments = location.pathname.split('/').filter(Boolean); 
@@ -62,15 +64,16 @@ function Page() {
       ...nodes.get("paragraph").attrs,
       class: { default: "custom-paragraph" },
       guid: { default: "" }, // Ensure guid attribute is included
+      nickname: { default: nickname },
     },
     parseDOM: [
       {
         tag: "p",
-        getAttrs: (dom) => ({guid: dom.getAttribute("data-guid")}),
+        getAttrs: (dom) => ({guid: dom.getAttribute("data-guid"), nickname: dom.getAttribute("data-nickname"),}),
       },
     ],
     toDOM(node) {
-      return ["p", { class: node.attrs.class, "data-guid": node.attrs.guid }, 0];
+      return ["p", { class: node.attrs.class, "data-guid": node.attrs.guid, "data-nickname": node.attrs.nickname}, 0];
     },
   };
 
@@ -107,24 +110,6 @@ function Page() {
 
     const generateBlockIdPlugin = (guidGenerator = uuidv4) => {
       return new Plugin({
-        props: {
-          // Add a handleClick prop to listen for click events
-          handleClick: (view, pos, event) => {
-            const {doc, schema} = view.state;
-            const {paragraph, image} = schema.nodes;
-    
-            // Find the nearest node of type paragraph or image
-            let $pos = doc.resolve(pos);
-            let node = $pos.nodeAfter || $pos.nodeBefore;
-    
-            // Ensure node is of the correct type and has a UUID
-            if (node && (node.type === paragraph || node.type === image) && node.attrs.guid) {
-              console.log(`UUID of clicked node: ${node.attrs.guid}`);
-            }
-    
-            return false; // Return false to indicate that the editor should continue handling the click event
-          },
-        },
         appendTransaction: (transactions, prevState, nextState) => {
           const tr = nextState.tr;
           let modified = false;
@@ -185,11 +170,17 @@ function Page() {
     const lineLocks = ydoc.getMap('nodeInfo');
     const userLocks = ydoc.getMap('userLocks');
     window.toggleLineLock = function(guid, nickname) {
+      if(!nickname || !userId) {
+        toastr.info(`로그인 정보가 없습니다.`);
+        navigate("/login");
+        return;
+      }
+
     const currentLock = lineLocks.get(guid.toString());
 
     // 현재 사용자가 이미 다른 노드를 잠근 경우, 알림창 표시
     const currentLockedNodeByUser = userLocks.get(nickname);
-    if (currentLockedNodeByUser && currentLockedNodeByUser !== guid.toString()) {
+    if (!currentLock && currentLockedNodeByUser && currentLockedNodeByUser !== guid.toString()) {
       // 사용자에게 확인을 요청하는 대화 상자 표시
       const isConfirmed = window.confirm("최대 1개까지 잠금이 가능합니다.\n이전에 설정한 잠금을 해제하시겠습니까?");
       if (isConfirmed) {
@@ -499,12 +490,15 @@ function Page() {
               id="editor"
               style={{
                 visibility: isloaded ? "visible" : "hidden",
-                width: "90%",
+                width: "100%",
                 margin: "0 auto",
-                paddingLeft: "5%",
+                paddingLeft: "8%",
+                paddingRight: "5%",
               }}
+              
             />
-          </EditorContainer>
+
+        </EditorContainer>
         </LayoutContainer>
     </div>
   );
@@ -512,14 +506,25 @@ function Page() {
 
 const LayoutContainer = styled.div`
   display: flex;
-  height: 100vh; // 전체 화면 높이
+`;
+
+const EditorContainer = styled.div`
+  flex: 1;
+  display: flex;
+  height: 200vh;
+  margin-left: 15%; // 네비게이션 바 너비만큼 왼쪽 여백 추가
 `;
 
 const NavigationBar = styled.div`
-  width: 15%; // 네비게이션 바 너비
+  width: 13%; // 네비게이션 바 너비
   background-color: #eee; // 네비게이션 바 배경색
+  position: fixed;
+  height: 93%; // 전체 화면 높이
   padding: 20px; // 여백
   visibility: ${(props) => (props.$isloaded === "true" ? "visible" : "hidden")};
+  // border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 5px;
+  box-shadow: 6px 8px 4px #ccc;
   
   img {
     width: 200px; /* 너비 설정 */
@@ -540,6 +545,10 @@ const NavigationBar = styled.div`
       max-width: 100%; // 이미지가 부모 너비를 넘지 않도록
     }
   }
+
+@media (max-width: 768px) {
+    visibility: hidden;
+  }
 `;
 
 const Notename = styled.div`
@@ -548,11 +557,6 @@ const Notename = styled.div`
   white-space: nowrap; /* 텍스트를 한 줄로 만들기 */
   overflow: hidden; /* 오버플로우된 텍스트 숨기기 */
   text-overflow: ellipsis; /* 오버플로우된 텍스트를 말줄임표로 표시 */
-`;
-
-const EditorContainer = styled.div`
-  flex: 1;
-  display: flex;
 `;
 
 // 토글 스위치 컨테이너
