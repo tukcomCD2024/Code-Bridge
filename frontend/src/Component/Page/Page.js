@@ -507,12 +507,14 @@ function Page() {
               id="editor"
               style={{
                 visibility: isloaded ? "visible" : "hidden",
-                width: "90%",
+                width: "100%",
                 margin: "0 auto",
-                paddingLeft: "5%",
+                paddingLeft: "8%",
+                paddingRight: "5%",
               }}
             />
-          </EditorContainer>
+
+        </EditorContainer>
         </LayoutContainer>
     </div>
   );
@@ -520,14 +522,25 @@ function Page() {
 
 const LayoutContainer = styled.div`
   display: flex;
-  height: 100vh; // 전체 화면 높이
+  height: 209vh;
 `;
 
+const EditorContainer = styled.div`
+  flex: 1;
+  display: flex;
+  margin-left: 15%; // 네비게이션 바 너비만큼 왼쪽 여백 추가
+  `;
+
 const NavigationBar = styled.div`
-  width: 15%; // 네비게이션 바 너비
+  width: 13%; // 네비게이션 바 너비
   background-color: #eee; // 네비게이션 바 배경색
+  position: fixed;
+  height: 93%; // 전체 화면 높이
   padding: 20px; // 여백
   visibility: ${(props) => (props.$isloaded === "true" ? "visible" : "hidden")};
+  // border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 5px;
+  box-shadow: 6px 8px 4px #ccc;
   
   img {
     width: 200px; /* 너비 설정 */
@@ -543,6 +556,7 @@ const NavigationBar = styled.div`
   }
 
   @media screen and (max-width: 1500px) {
+    // visibility: hidden;
     img {
       width: auto; // 이미지 너비 자동 조정
       max-width: 100%; // 이미지가 부모 너비를 넘지 않도록
@@ -556,11 +570,6 @@ const Notename = styled.div`
   white-space: nowrap; /* 텍스트를 한 줄로 만들기 */
   overflow: hidden; /* 오버플로우된 텍스트 숨기기 */
   text-overflow: ellipsis; /* 오버플로우된 텍스트를 말줄임표로 표시 */
-`;
-
-const EditorContainer = styled.div`
-  flex: 1;
-  display: flex;
 `;
 
 // 토글 스위치 컨테이너

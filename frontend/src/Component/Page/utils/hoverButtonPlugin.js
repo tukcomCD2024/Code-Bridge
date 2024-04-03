@@ -96,27 +96,28 @@ export function hoverButtonPlugin() {
         editorView.focus();
 
         // hoverDiv 위치 업데이트
-        increaseBrowserHeightForScroll();
+        increaseEditorHeightForScroll();
         updateButton(editorView, newPos, true);
       });
       
-      function increaseBrowserHeightForScroll() {
-        const paragraphNodeHeight = 48;
-        // 현재 문서(body)의 높이
-        const currentBodyHeight = document.body.scrollHeight;
-
-        document.body.style.height = `${
-          currentBodyHeight + paragraphNodeHeight
-        }px`;
+      function increaseEditorHeightForScroll() {
+        const paragraphNodeHeight = 48; // 추가할 높이 값
+        // 에디터의 root 요소를 선택합니다. 아이디나 클래스명을 에디터에 맞게 조정해야 합니다.
+        const editorElement = document.querySelector('.ProseMirror'); // 예시로 '.ProseMirror' 클래스 사용
+      
+        if (editorElement) {
+          // 에디터 내부의 현재 높이를 계산합니다.
+          const currentEditorHeight = editorElement.scrollHeight;
+          // 에디터의 높이를 조정합니다.
+          editorElement.style.height = `${currentEditorHeight + paragraphNodeHeight}px`;
+        }
       }
+      
 
       function updateButton(view, pos, show) {
         try {
           const { doc } = view.state;
           const resolvedPos = doc.resolve(pos);
-
-          // hoverButton_plus.style.display = "none";
-          // hoverButton_lock.style.display = "none";
 
           if (
             (resolvedPos.depth === 0 &&
@@ -138,7 +139,6 @@ export function hoverButtonPlugin() {
             resolvedPos.nodeAfter.type.name === "image"
           ) {
             coords = view.coordsAtPos(resolvedPos.pos);
-            // hoverButton_plus.style.display = "block";
             hoverButton_lock.style.display = "none";
           } else {
             // 선택된 위치에서 가장 가까운 블록 노드의 경계를 찾습니다.
@@ -212,7 +212,7 @@ export function hoverButtonPlugin() {
           const { from } = editorView.state.selection;
           if (from !== null) {
             handleInteractionFromCursor(from);
-            increaseBrowserHeightForScroll();
+            increaseEditorHeightForScroll();
           }
         }
       });
