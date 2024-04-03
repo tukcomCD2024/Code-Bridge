@@ -1,6 +1,7 @@
 package com.Backend.shareNote.domain.Oraganization.service;
 
 import com.Backend.shareNote.domain.Oraganization.entity.Organization;
+import com.Backend.shareNote.domain.Oraganization.exception.SelfLikedException;
 import com.Backend.shareNote.domain.Oraganization.likesdto.LikesDTO;
 import com.Backend.shareNote.domain.Oraganization.notedto.NoteCreateDTO;
 import com.Backend.shareNote.domain.Oraganization.notedto.NoteDeleteDTO;
@@ -100,19 +101,33 @@ public class NoteService {
         return "노트 수정 성공!";
     }
 
-    public ResponseEntity<Object> blockLikes(LikesDTO likesDTO) {
+    public ResponseEntity<String> blockLikes(LikesDTO likesDTO) {
         // organization 찾기
         Organization organization = organizationRepository.findById(likesDTO.getOrganizationId())
                 .orElseThrow(()->new IllegalArgumentException("해당하는 organization이 없습니다."));
-        // note 찾기
-        organization.getNotes().stream()
-                .filter(n -> n.getId().equals(likesDTO.getNoteId()))
-                .findFirst()
-                .ifPresent(n -> {
-                    n.getLikesInfo().addLike(likesDTO.getHeartReceiver(), likesDTO.getBlockId(), likesDTO.getLover());
-                });
-        organizationRepository.save(organization);
-        return ResponseEntity.ok("좋아요 성공!");
 
+        ResponseEntity<String> responseEntity = null;
+
+        try {
+            // note 찾기 및 좋아요 처리
+            Optional<Organization.Note> noteOptional = organization.getNotes().stream()
+                    .filter(n -> n.getId().equals(likesDTO.getNoteId()))
+                    .findFirst();
+
+            if (noteOptional.isPresent()) {
+                // 노트가 존재해
+                if(noteOptional.get().getLikesInfo().addLike(likesDTO.getHeartReceiver(), likesDTO.getBlockId(), likesDTO.getLover())){
+                    responseEntity = ResponseEntity.ok("좋아요 성공!");
+                } else {
+                    responseEntity = ResponseEntity.ok("좋아요 취소!");
+                }
+            } else {
+                return ResponseEntity.badRequest().body("해당하는 노트가 없습니다.");
+            }
+        } catch (SelfLikedException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+        organizationRepository.save(organization);
+        return responseEntity;
     }
 }

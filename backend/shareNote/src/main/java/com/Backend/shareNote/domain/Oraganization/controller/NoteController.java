@@ -43,7 +43,7 @@ public class NoteController {
     }
 
     @PostMapping("/user/note/block/likes")
-    public ResponseEntity<Object> blockLikes(@RequestBody LikesDTO likesDTO){
+    public ResponseEntity<String> blockLikes(@RequestBody LikesDTO likesDTO){
         return noteService.blockLikes(likesDTO);
     }
 }
