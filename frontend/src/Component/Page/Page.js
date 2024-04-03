@@ -64,15 +64,16 @@ function Page() {
       ...nodes.get("paragraph").attrs,
       class: { default: "custom-paragraph" },
       guid: { default: "" }, // Ensure guid attribute is included
+      nickname: { default: nickname },
     },
     parseDOM: [
       {
         tag: "p",
-        getAttrs: (dom) => ({guid: dom.getAttribute("data-guid")}),
+        getAttrs: (dom) => ({guid: dom.getAttribute("data-guid"), nickname: dom.getAttribute("data-nickname"),}),
       },
     ],
     toDOM(node) {
-      return ["p", { class: node.attrs.class, "data-guid": node.attrs.guid }, 0];
+      return ["p", { class: node.attrs.class, "data-guid": node.attrs.guid, "data-nickname": node.attrs.nickname}, 0];
     },
   };
 
@@ -109,24 +110,6 @@ function Page() {
 
     const generateBlockIdPlugin = (guidGenerator = uuidv4) => {
       return new Plugin({
-        props: {
-          // Add a handleClick prop to listen for click events
-          handleClick: (view, pos, event) => {
-            const {doc, schema} = view.state;
-            const {paragraph, image} = schema.nodes;
-    
-            // Find the nearest node of type paragraph or image
-            let $pos = doc.resolve(pos);
-            let node = $pos.nodeAfter || $pos.nodeBefore;
-    
-            // Ensure node is of the correct type and has a UUID
-            if (node && (node.type === paragraph || node.type === image) && node.attrs.guid) {
-              console.log(`UUID of clicked node: ${node.attrs.guid}`);
-            }
-    
-            return false; // Return false to indicate that the editor should continue handling the click event
-          },
-        },
         appendTransaction: (transactions, prevState, nextState) => {
           const tr = nextState.tr;
           let modified = false;
