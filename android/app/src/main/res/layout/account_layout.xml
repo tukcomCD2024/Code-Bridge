@@ -73,7 +73,7 @@
                 android:background="@drawable/rectangle_white">
 
                 <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/recyclerViewNotes"
+                    android:id="@+id/recyclerViewWorkSpace"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
