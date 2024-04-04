@@ -56,23 +56,21 @@ def downloadIcon(tags):
 
             imgSubFolder = img_folder + t + '/'
 
-            n = getIconCount()
-            print(n)
-            for i in range(n):
-                el = driver.find_element(By.XPATH, iconExistPath)
-                if el.text != 'No icon sets match your search':
-                    driver.find_element(By.XPATH, f'//*[@id="app"]/div[2]/div/div/div[2]/div[2]/div/div/div/a[{1}]/iconify-icon').click()
-                    driver.find_element(By.XPATH, '//*[@id="app"]/dialog/div/div/div[3]/div/div[1]/section[1]/button[1]').click()
-                    source = driver.find_element(By.XPATH, '//*[@id="app"]/dialog/div/div/div[3]/div/div[3]/div/textarea').get_attribute("value")
-                    source = source.replace('"1em"', '"224"')
+            el = driver.find_element(By.XPATH, iconExistPath)
+            if el.text != 'No icon sets match your search':
+                driver.find_element(By.XPATH, f'//*[@id="app"]/div[2]/div/div/div[2]/div[2]/div/div/div/a[{1}]/iconify-icon').click()
+                driver.find_element(By.XPATH, '//*[@id="app"]/dialog/div/div/div[3]/div/div[1]/section[1]/button[1]').click()
+                source = driver.find_element(By.XPATH, '//*[@id="app"]/dialog/div/div/div[3]/div/div[3]/div/textarea').get_attribute("value")
+                source = source.replace('"1em"', '"224"')
 
-                    imgSource = imgSubFolder + t + "-" + c + ".svg"
-                    f = open(imgSource, 'w')
-                    f.write('<?xml version="1.0" encoding="UTF-8"?>')
-                    f.write(source)
-                    print(source)
-                    driver.find_element(By.XPATH, '//*[@id="app"]/dialog/div/button').click()
-                    break
+                imgSource = imgSubFolder + t + "-" + c + ".svg"
+                f = open(imgSource, 'w')
+                f.write('<?xml version="1.0" encoding="UTF-8"?>')
+                f.write(source)
+                print(source)
+                driver.find_element(By.XPATH, '//*[@id="app"]/dialog/div/button').click()
+            else:
+                print("no image {}-{}".format(t, c))
 
 
 def makeDirectory(tags):
