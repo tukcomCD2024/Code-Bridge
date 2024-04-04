@@ -63,8 +63,8 @@ class HomeFragment : Fragment() {
         // noteListAdapter를 초기화합니다.
         noteListAdapter = NoteListAdapter { noteId ->
             // 노트 아이템 클릭 시 NoteActivity로 이동
+            saveRecentNoteId(noteId) // 클릭된 노트의 ID를 저장합니다.
             val intent = Intent(requireContext(), NoteActivity::class.java)
-            intent.putExtra("note_id", noteId)
             startActivity(intent)
         }
 
@@ -361,6 +361,10 @@ class HomeFragment : Fragment() {
 
     private fun getRecentWorkspaceId(): String? {
         return SharedPreferencesUtil.getRecentWorkspaceId(requireContext())
+    }
+
+    private fun saveRecentNoteId(noteId: String) {
+        SharedPreferencesUtil.saveRecentNoteId(requireContext(), noteId)
     }
 }
 
