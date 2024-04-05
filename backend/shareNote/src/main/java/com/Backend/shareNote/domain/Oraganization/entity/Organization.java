@@ -67,7 +67,7 @@ public class Organization {
         private String id;
         private String createUser;
         private List<String> blocks;
-        private String routingKey;
+
 
         // 생성자, 게터, 세터 등 필요한 메서드들 추가
         public void addBlock(String blockId) {
