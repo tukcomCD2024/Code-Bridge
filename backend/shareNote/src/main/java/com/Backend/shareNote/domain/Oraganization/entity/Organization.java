@@ -5,9 +5,11 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -33,6 +35,8 @@ public class Organization {
     private List<Note> notes;
 
     private String emoji;
+    @CreatedDate
+    private LocalDateTime createdAt;
 
     // 내부 클래스로 Note 정의
     @Builder //신기하다
@@ -53,6 +57,9 @@ public class Organization {
         // 좋아요 받은 사람들
         private LikesInfo likesInfo;
 
+        @CreatedDate
+        private LocalDateTime createdAt;
+
 
 
         // 생성자, 게터, 세터 등 필요한 메서드들 추가
@@ -66,13 +73,9 @@ public class Organization {
         @Id //수동으로 id 생성
         private String id;
         private String createUser;
-        private List<String> blocks;
+        @CreatedDate
+        private LocalDateTime createdAt;
 
-
-        // 생성자, 게터, 세터 등 필요한 메서드들 추가
-        public void addBlock(String blockId) {
-            this.blocks.add(blockId);
-        }
     }
     @Getter
     @Slf4j
@@ -150,20 +153,7 @@ public class Organization {
         }
     }
 
-    // Page에 Block 추가하는 메서드
-    public void addBlockToPage(String noteId, String pageId, String blockId) {
-        for (Note note : this.notes) {
-            if (note.getId().equals(noteId)) {
-                for (Page page : note.getPages()) {
-                    if (page.getId().equals(pageId)) {
-                        page.getBlocks().add(blockId);
-                        return;
-                    }
-                }
-            }
-        }
-    }
-    // 생성자, 게터, 세터 등 필요한 메서드들 추가
+
 
 
 }

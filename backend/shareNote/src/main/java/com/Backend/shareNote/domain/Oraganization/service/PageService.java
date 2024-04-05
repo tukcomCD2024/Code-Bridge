@@ -21,18 +21,17 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class PageService {
     private final OrganizationRepository organizationRepository;
-    private final PageRepository pageRepository;
+
     @Transactional
     public ResponseEntity<PageSearchDTO> createPage(PageCreateDTO pageCreateDTO) {
-        UUID routingKey = UUID.randomUUID();
+
         //page 생성
         Organization.Page page = Organization.Page.builder()
                 .createUser(pageCreateDTO.getCreateUserId())
-                .blocks(new ArrayList<String>())
                 .id(new ObjectId().toString())
                 .build();
 
-        pageRepository.save(page);
+
 
         Organization organization = organizationRepository.findById(pageCreateDTO.getOrganizationId()).get();
         organization.addPageToNote(pageCreateDTO.getNoteId(), page);
@@ -41,7 +40,7 @@ public class PageService {
 
         PageSearchDTO pageSearchDTO = new PageSearchDTO();
         pageSearchDTO.setPageId(page.getId());
-        pageSearchDTO.setRoutingKey(routingKey.toString());
+
 
         return ResponseEntity.ok(pageSearchDTO);
     }

@@ -5,10 +5,12 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -29,8 +31,8 @@ public class Users {
     @Setter
     private List<String> organizations;
 
-    @Field("created_at")
-    private Date createdAt;
+    @CreatedDate
+    private LocalDateTime createdAt;
 
 
 

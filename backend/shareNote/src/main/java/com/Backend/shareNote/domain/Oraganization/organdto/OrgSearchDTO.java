@@ -38,7 +38,6 @@ public class OrgSearchDTO {
     @NoArgsConstructor
     public static class PageDto {
         private String id;
-        private List<String> blocks; // 블록의 ID만 포함
     }
 
     // Organization 엔티티를 DTO로 변환하는 메서드
@@ -60,7 +59,6 @@ public class OrgSearchDTO {
                             .map(page -> {
                                 PageDto pageDto = new PageDto();
                                 pageDto.setId(page.getId());
-                                pageDto.setBlocks(page.getBlocks());
                                 return pageDto;
                             })
                             .collect(Collectors.toList()));
