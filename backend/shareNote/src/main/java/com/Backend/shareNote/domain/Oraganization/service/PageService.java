@@ -30,7 +30,6 @@ public class PageService {
                 .createUser(pageCreateDTO.getCreateUserId())
                 .blocks(new ArrayList<String>())
                 .id(new ObjectId().toString())
-                .routingKey(routingKey.toString())
                 .build();
 
         pageRepository.save(page);
