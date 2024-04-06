@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
-from Flasktest.services import auto_draw
-from Flasktest.services import example_service
+from app.services import auto_draw
+from app.services import example_service
 
 bp = Blueprint(name='example',
                import_name=__name__,

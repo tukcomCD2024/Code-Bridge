@@ -1,3 +1,3 @@
-import Flasktest
+import app
 
-Flasktest.create_app()
+app.create_app()

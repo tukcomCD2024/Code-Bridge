@@ -7,7 +7,7 @@ def create_app():
         app.run()
 
     #route list
-    from Flasktest.routes import routelist
+    from app.routes import routelist
     routelist(app)
 
     @app.route('/')
