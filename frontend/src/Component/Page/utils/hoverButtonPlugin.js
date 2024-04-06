@@ -211,6 +211,14 @@ export function hoverButtonPlugin() {
         if (event.keyCode === 13) {
           const { from } = editorView.state.selection;
           if (from !== null) {
+            hoverDiv.style.visibility = "hidden";
+          }
+        }
+      });
+      editorView.dom.addEventListener("keyup", (event) => {
+        if (event.keyCode === 13) {
+          const { from } = editorView.state.selection;
+          if (from !== null) {
             handleInteractionFromCursor(from);
             increaseEditorHeightForScroll();
           }
