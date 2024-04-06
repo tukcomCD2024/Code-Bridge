@@ -96,12 +96,13 @@ function Page() {
 
     const roomId = noteId;
     const ydoc = getYDocInstance(roomId);
+    console.log(ydoc);
     setYdoc(ydoc);
     const provider = new WebsocketProvider(
-      // "wss://demos.yjs.dev/ws", // 웹소켓 서버 주소(데모용)
+      "wss://demos.yjs.dev/ws", // 웹소켓 서버 주소(데모용)
       //"ws://localhost:4000", //배포용
       //"ws://nodejs:4000", 
-      "wss://sharenote.shop/ws",
+      // "wss://sharenote.shop/ws",
       roomId, // 방 이름
       ydoc
     );
@@ -288,16 +289,6 @@ function Page() {
       view.destroy();
       provider.destroy();
     }    
-
-    function cursorAwarenessHandler(awareness, userDiv, hideTimeout) {
-      awareness.on("change", () => {
-        clearTimeout(hideTimeout);
-        userDiv.style.display = ""; // 사용자 이름을 다시 보이게 함
-        hideTimeout = setTimeout(() => {
-          userDiv.style.display = "none"; // 5초 후에 다시 사용자 이름을 숨김
-        }, 5000);
-      });
-    }
     
     function getAvailableColors() {
       const usedColors = new Set();
@@ -337,25 +328,6 @@ function Page() {
       }
     });
 
-
-    // provider.awareness.on("change", () => {
-    //   const usersCursorPosition = [];
-    //   provider.awareness.getStates().forEach((state, clientId) => {
-    //     // 여기서는 `selection`이 커서 위치를 담고 있다고 가정
-    //     if(state.selection) {
-    //       const user = state.user;
-    //       const cursorPosition = state.selection.anchor;
-    //       usersCursorPosition.push({ name: user.name, color: user.color, position: cursorPosition });
-    //     }
-    //   });
-    
-    //   // 커서 위치 정보를 출력하는 로직 (예시)
-    //   // console.log("사용자 커서 위치:", usersCursorPosition);
-    
-    //   // 필요한 경우 상태 업데이트나 UI 변경을 여기에서 수행
-    //   // 예: setUsersAndCursorPositions(usersCursorPosition); // 컴포넌트 상태 업데이트 함수
-    // });
-
     const myCursorBuilder = (user) => {
       const cursor = document.createElement("span");
       cursor.classList.add("ProseMirror-yjs-cursor");
@@ -372,13 +344,6 @@ function Page() {
       });
       console.log('연결된 사용자와 커서 색상:', usersAndColors);
 
-      // // 일정 시간(예: 5000ms) 후에 사용자 이름을 숨기는 로직
-      // let hideTimeout = setTimeout(() => {
-      //   userDiv.style.display = "none"; // 사용자 이름을 숨김
-      // }, 5000); // 5초 후 실행
-
-      // // Awareness 상태 변경에 따라 사용자 이름을 다시 표시하는 로직 설정
-      // cursorAwarenessHandler(provider.awareness, userDiv, hideTimeout);
       return cursor;
     };
 
@@ -558,30 +523,5 @@ const Notename = styled.div`
   overflow: hidden; /* 오버플로우된 텍스트 숨기기 */
   text-overflow: ellipsis; /* 오버플로우된 텍스트를 말줄임표로 표시 */
 `;
-
-// 토글 스위치 컨테이너
-// const ToggleSwitch = styled.div`
-//   position: absolute;
-//   top: 10px;
-//   right: 10px;
-//   width: 50px;
-//   height: 24px;
-//   border-radius: 12px;
-//   background-color: ${(props) =>
-//     props.active ? "#007bff" : "#ccc"}; // active 상태에 따라 배경색 변경
-//   display: flex;
-//   align-items: center;
-//   cursor: pointer;
-//   justify-content: ${(props) => (props.active ? "flex-end" : "flex-start")};
-// `;
-
-// 토글 버튼
-// const ToggleButton = styled.div`
-//   width: 22px;
-//   height: 22px;
-//   border-radius: 50%;
-//   background-color: white;
-//   transition: all 0.3s ease;
-// `;
 
 export default Page;
