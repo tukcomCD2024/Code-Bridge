@@ -1,7 +1,8 @@
 import { Plugin, Selection } from "prosemirror-state";
 import down_arrow from "../../../image/down_arrow.svg";
 import lock from "../../../image/lock2.gif";
-import typing from "../../../image/typing.gif";
+import { library, icon } from '@fortawesome/fontawesome-svg-core';
+import { faHeart } from '@fortawesome/free-solid-svg-icons';
 
 // 문서 내 블록(노드)의 총 수를 계산하는 함수
 function countDocBlocks(doc) {
@@ -38,13 +39,16 @@ export function hoverButtonPlugin() {
       hoverButton_lock.title = "노드 편집 잠금";
       hoverButton_lock.classList.add("hoverButton_lock"); // CSS 클래스 적용
       hoverDiv.appendChild(hoverButton_lock);
-
+      
       // hoverButton_2 생성(작성자 확인)
-      const hoverButton_writer = document.createElement("img");
-      hoverButton_writer.src = typing;
-      hoverButton_writer.title = "작성자 확인";
-      hoverButton_writer.classList.add("hoverButton_writer"); // CSS 클래스 적용
+      const hoverButton_writer = document.createElement("span");
+      library.add(faHeart);
+      const heartIcon = icon(faHeart).node[0];
+      hoverButton_writer.appendChild(heartIcon);
+      hoverButton_writer.classList.add("hoverButton_writer");
+      hoverButton_writer.title = "좋아요";
       hoverDiv.appendChild(hoverButton_writer);
+
 
       hoverButton_lock.addEventListener("click", (event) => {
         event.stopPropagation(); // 이벤트 버블링 방지

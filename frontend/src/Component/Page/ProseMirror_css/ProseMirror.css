@@ -425,12 +425,36 @@ img.ProseMirror-separator {
   margin: 4px;
 }
 
-/* .hoverButton_writer {
+@keyframes heartbeat {
+  0% {
+    transform: scale(0.95);
+  }
+  50% {
+    transform: scale(1.10);
+  }
+  100%{
+    transform: scale(0.95);
+  }
+}
+
+.hoverButton_writer {
   cursor: pointer;
   width: 20px;
-  height: 20px;
-  margin-left: 8px;
-} */
+  height: 31px;
+  margin-left: 4px;
+  fill: white;
+  color: black;
+  opacity: 0.3;
+  font-size: 21px;
+}
+
+.hoverButton_writer:hover {
+  animation: heartbeat 1s infinite;
+  fill: red;
+  color: red;
+  opacity: 1;
+  transition: opacity 500ms;
+}
 
 /* this is a rough fix for the first cursor position when the first paragraph is empty */
 .ProseMirror > .ProseMirror-yjs-cursor:first-child {
