@@ -202,7 +202,7 @@ function Page() {
                         newGuid = guidGenerator();
                       } while (generatedIds.has(newGuid));
                       generatedIds.add(newGuid);
-                      tr.setNodeMarkup(prevPos, undefined, {...prevNode.attrs, guid: newGuid});
+                      tr.setNodeMarkup(pos, undefined, {...node.attrs, guid: newGuid});
                       modified = true;
                     }
                   } else {
