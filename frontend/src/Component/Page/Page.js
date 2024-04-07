@@ -87,7 +87,7 @@ function Page() {
 
   const mySchema = new Schema({
     nodes: defaultNodes,
-    marks,
+    marks: basicSchema.spec.marks,
   });
 
   useEffect(() => {
@@ -181,7 +181,6 @@ function Page() {
           const tr = nextState.tr;
           let modified = false;
           const generatedIds = new Set();
-          const nodeInfo = ydoc.getMap('nodeInfo');
         
           if (transactions.some(transaction => transaction.docChanged)) {
             const { paragraph } = nextState.schema.nodes;

@@ -72,8 +72,10 @@ export function hoverButtonPlugin() {
         const $clickPos = state.doc.resolve(lastPos);
         let insertPos;
 
-        // 이미지 노드 바로 뒤에 새 노드 삽입
-        if ($clickPos.nodeAfter && $clickPos.nodeAfter.type.name === "image") {
+        if ($clickPos.nodeBefore == null && $clickPos.nodeAfter && $clickPos.nodeAfter.type.name === "image") {
+          // 문서 시작 부분에 이미지가 있는 경우
+          insertPos = 1;
+        } else if ($clickPos.nodeAfter && $clickPos.nodeAfter.type.name === "image") {
           // 이미지 노드 바로 뒤의 위치를 삽입 위치로 설정
           insertPos = $clickPos.pos + $clickPos.nodeAfter.nodeSize;
         } else {
@@ -102,8 +104,7 @@ export function hoverButtonPlugin() {
       
       function increaseEditorHeightForScroll() {
         const paragraphNodeHeight = 48; // 추가할 높이 값
-        // 에디터의 root 요소를 선택합니다. 아이디나 클래스명을 에디터에 맞게 조정해야 합니다.
-        const editorElement = document.querySelector('.ProseMirror'); // 예시로 '.ProseMirror' 클래스 사용
+        const editorElement = document.querySelector('.ProseMirror'); 
       
         if (editorElement) {
           // 에디터 내부의 현재 높이를 계산합니다.
@@ -113,31 +114,34 @@ export function hoverButtonPlugin() {
         }
       }
       
-
       function updateButton(view, pos, show) {
         try {
           const { doc } = view.state;
           const resolvedPos = doc.resolve(pos);
-
-          if (
-            (resolvedPos.depth === 0 &&
-              resolvedPos.nodeBefore.type.name !== "paragraph") ||
-            (resolvedPos.depth === 0 && !show)
-          ) {
+      
+          // 버튼을 숨기는 경우 또는 depth가 0이고 이전 노드가 paragraph가 아닌 경우
+          if ((resolvedPos.depth === 0 && resolvedPos.nodeBefore && resolvedPos.nodeBefore.type.name !== "paragraph") || 
+              (resolvedPos.depth === 0 && !show)) {
             hoverDiv.style.visibility = "hidden";
             return;
           }
-
+      
           // 마지막 위치 업데이트
           lastPos = pos;
-
+      
           let coords;
-
-          // 이미지 노드인 경우 해당 노드의 정확한 위치를 사용
-          if (
+      
+          // 이미지 노드가 문서의 시작에 있을 때
+          if (pos === 1 && resolvedPos.nodeAfter && resolvedPos.nodeAfter.type.name === "image") {
+            // 문서 시작에 있는 이미지의 좌표
+            coords = view.coordsAtPos(1);
+            // 이 경우에는 lock 버튼을 숨깁니다.
+            hoverButton_lock.style.display = "none";
+          } else if (
             resolvedPos.nodeAfter &&
             resolvedPos.nodeAfter.type.name === "image"
           ) {
+            // 문서 중간에 있는 이미지 노드 다음의 좌표
             coords = view.coordsAtPos(resolvedPos.pos);
             hoverButton_lock.style.display = "none";
           } else {
@@ -151,21 +155,33 @@ export function hoverButtonPlugin() {
             coords = view.coordsAtPos(startPos);
             hoverButton_lock.style.display = "block";
           }
-
+          
           // 스크롤 오프셋을 고려하여 좌표 조정
           const topWithScroll = coords.top + window.scrollY;
-
+      
           const editorRect = view.dom.getBoundingClientRect();
-          hoverDiv.style.left = `${
-            editorRect.left - hoverDiv.offsetWidth - 5
-          }px`;
+          hoverDiv.style.left = `${editorRect.left - hoverDiv.offsetWidth - 5}px`;
           hoverDiv.style.top = `${topWithScroll}px`;
           hoverDiv.style.visibility = "visible";
+      
         } catch (error) {
           console.error("Failed to update button position:", error);
         }
       }
 
+      function increaseEditorHeightForScroll() {
+        const paragraphNodeHeight = 48; // 추가할 높이 값
+        // 에디터의 root 요소를 선택합니다. 아이디나 클래스명을 에디터에 맞게 조정해야 합니다.
+        const editorElement = document.querySelector('.ProseMirror'); // 예시로 '.ProseMirror' 클래스 사용
+      
+        if (editorElement) {
+          // 에디터 내부의 현재 높이를 계산합니다.
+          const currentEditorHeight = editorElement.scrollHeight;
+          // 에디터의 높이를 조정합니다.
+          editorElement.style.height = `${currentEditorHeight + paragraphNodeHeight}px`;
+        }
+      }
+      
       function handleInteraction(event) {
         const { pos } = editorView.posAtCoords({
           left: event.clientX,
