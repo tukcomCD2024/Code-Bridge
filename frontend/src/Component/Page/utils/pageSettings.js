@@ -1,4 +1,5 @@
 import { defaultSettings } from "prosemirror-image-plugin";
+import { v4 as uuidv4 } from "uuid";
 
 export const imageSettings = {
   ...defaultSettings,
@@ -6,6 +7,10 @@ export const imageSettings = {
   minSize: 30,
   maxSize: 550,
   defaultAlt: localStorage.getItem("userId"),
+  extraAttributes: {
+    'owner': localStorage.getItem("userId"), 
+    'data-guid': uuidv4(),
+  },
 };
 
 export const imageNodeSpec = {
@@ -15,6 +20,7 @@ export const imageNodeSpec = {
     src: {},
     alt: { default: null },
     title: { default: null },
+    guid: { default: null },
     author: { default: null },
   },
   parseDOM: [
@@ -24,9 +30,10 @@ export const imageNodeSpec = {
         src: dom.getAttribute("src"),
         alt: dom.getAttribute("alt"),
         title: dom.getAttribute("title"),
+        guid: dom.getAttribute("data-guid"),
         author: dom.getAttribute("data-author"),
       }),
     },
   ],
-  toDOM: (node) => ["img", { ...node.attrs, "data-guid": node.attrs.guid, "data-author": node.attrs.author }],
+  toDOM: node => ["img", { ...node.attrs, "data-guid": node.attrs.guid, "data-author": node.attrs.author }],
 };

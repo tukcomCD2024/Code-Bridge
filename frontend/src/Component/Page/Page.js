@@ -49,7 +49,6 @@ function Page() {
   
   const [isloaded, setisloaded] = useState(false); // 로딩 상태 관리
   const [usersAndColors, setUsersAndColors] = useState([]); // 연결된 사용자와 색상 상태
-  const [ydoc, setYdoc] = useState(null);
 
   const { nodes, marks } = basicSchema.spec;
   const extendedNodes = addListNodes(
@@ -88,7 +87,7 @@ function Page() {
 
   const mySchema = new Schema({
     nodes: defaultNodes,
-    marks,
+    marks: basicSchema.spec.marks,
   });
 
   useEffect(() => {
@@ -96,7 +95,6 @@ function Page() {
 
     const roomId = noteId;
     const ydoc = getYDocInstance(roomId);
-    setYdoc(ydoc);
     const provider = new WebsocketProvider(
       // "wss://demos.yjs.dev/ws", // 웹소켓 서버 주소(데모용)
       //"ws://localhost:4000", //배포용
@@ -107,6 +105,75 @@ function Page() {
     );
     const yXmlFragment = ydoc.getXmlFragment("prosemirror");
     const connectedUsersYMap = ydoc.getMap('connectedUsers');
+    const lineLocks = ydoc.getMap('nodeInfo');
+    const userLocks = ydoc.getMap('userLocks');
+
+    provider.on("sync", (isSynced) => {
+      const nicknameWithSuffix = `${nickname}_다중 접속`;
+      if (isSynced) {
+        const isSingleConnected = connectedUsersYMap.has(nickname);
+        const isMultiConnected = connectedUsersYMap.has(nicknameWithSuffix);
+    
+        if (isSingleConnected && isMultiConnected) {
+          const isConfirmed = window.confirm("동시 접속 가능한 횟수를 초과하셨습니다.\n기존 접속을 종료하고 새로 접속하시겠습니까?");
+          if (isConfirmed) {
+            connectedUsersYMap.set(nicknameWithSuffix, 'kicked');
+          } else {
+            navigate(`/organization/${pathSegments[1]}`);
+            return;
+          }
+        }
+    
+        let userColor = connectedUsersYMap.get(nickname) || connectedUsersYMap.get(nicknameWithSuffix) || getRandomColor();
+        
+        if (!isSingleConnected) {
+          connectedUsersYMap.set(nickname, userColor);
+          provider.awareness.setLocalStateField('user', { name: nickname, color: userColor });
+        } else {
+          connectedUsersYMap.set(nicknameWithSuffix, userColor);
+          provider.awareness.setLocalStateField('user', { name: nicknameWithSuffix, color: userColor });
+        }
+        updateUsersAndColors(); // UI 업데이트
+        setisloaded(true);
+      }
+    });
+    
+    function onlineUpdate(event) {
+      updateUsersAndColors(); 
+      const userState = provider.awareness.getLocalState();
+      if (userState && userState.user && userState.user.name) {
+        const nickname = userState.user.name;
+        if (connectedUsersYMap.get(nickname) === 'kicked') {
+          toastr.warning("연결 정보가 없습니다!");
+          navigate(`/organization/${pathSegments[1]}`);
+          return;
+        }
+      }
+    }
+   connectedUsersYMap.observe(onlineUpdate);
+
+    function yjsDisconnect() {
+      const keysToDelete = [];
+
+      lineLocks.forEach((value, key) => {
+        if (value === nickname) {
+          keysToDelete.push(key);
+        }
+      });
+      keysToDelete.forEach(key => lineLocks.delete(key));
+      userLocks.delete(nickname);
+    
+      // Yjs 연결 해제 및 리소스 정리
+      const userState = provider.awareness.getLocalState();
+      if (userState && userState.user) {
+        connectedUsersYMap.delete(userState.user.name);
+      }
+    
+      // 연결 해제 및 리소스 정리
+      view.destroy();
+      provider.destroy();
+      provider.disconnect();
+    }  
 
     const generateBlockIdPlugin = (guidGenerator = uuidv4) => {
       return new Plugin({
@@ -114,7 +181,6 @@ function Page() {
           const tr = nextState.tr;
           let modified = false;
           const generatedIds = new Set();
-          const nodeInfo = ydoc.getMap('nodeInfo');
         
           if (transactions.some(transaction => transaction.docChanged)) {
             const { paragraph } = nextState.schema.nodes;
@@ -136,7 +202,7 @@ function Page() {
                         newGuid = guidGenerator();
                       } while (generatedIds.has(newGuid));
                       generatedIds.add(newGuid);
-                      tr.setNodeMarkup(prevPos, undefined, {...prevNode.attrs, guid: newGuid});
+                      tr.setNodeMarkup(pos, undefined, {...node.attrs, guid: newGuid});
                       modified = true;
                     }
                   } else {
@@ -167,8 +233,6 @@ function Page() {
     };
 
     // 줄 잠금/해제 함수
-    const lineLocks = ydoc.getMap('nodeInfo');
-    const userLocks = ydoc.getMap('userLocks');
     window.toggleLineLock = function(guid, nickname) {
       if(!nickname || !userId) {
         toastr.info(`로그인 정보가 없습니다.`);
@@ -253,52 +317,6 @@ function Page() {
       }
     };
 
-    editorRef.current.addEventListener('mousedown', (event) => { handleNodeClick(nickname, event); });
-    editorRef.current.addEventListener('keydown', (event) => { handleEditAttempt(nickname, event); });
-    editorRef.current.addEventListener('mousedown', (event) => { handleEditAttempt(nickname, event); });
-
-    function yjsDisconnect() {
-      const lineLocks = ydoc.getMap('nodeInfo');
-      const keysToDelete = [];
-  
-      // 찾기: 해당 사용자가 잠금 설정한 모든 키(노드의 UUID)
-      lineLocks.forEach((value, key) => {
-        if (value === nickname) {
-          keysToDelete.push(key);
-        }
-      });
-    
-      // 삭제: 찾은 모든 키에 대해 잠금 해제
-      keysToDelete.forEach(key => {
-        lineLocks.delete(key);
-      });
-    
-      // userLocks에서도 사용자의 현재 잠금 정보 삭제
-      const userLocks = ydoc.getMap('userLocks');
-      userLocks.delete(nickname);
-
-      if (connectedUsersYMap.size === 0) {
-        lineLocks .forEach((value, key) => {
-          lineLocks .delete(key);
-        });
-        console.log('모든 사용자가 나갔습니다. lineLocks를 초기화합니다.');
-      }
-      connectedUsersYMap.delete(nickname);
-      provider.disconnect();
-      view.destroy();
-      provider.destroy();
-    }    
-
-    function cursorAwarenessHandler(awareness, userDiv, hideTimeout) {
-      awareness.on("change", () => {
-        clearTimeout(hideTimeout);
-        userDiv.style.display = ""; // 사용자 이름을 다시 보이게 함
-        hideTimeout = setTimeout(() => {
-          userDiv.style.display = "none"; // 5초 후에 다시 사용자 이름을 숨김
-        }, 5000);
-      });
-    }
-    
     function getAvailableColors() {
       const usedColors = new Set();
       connectedUsersYMap.forEach((color, name) => {
@@ -322,40 +340,6 @@ function Page() {
       setUsersAndColors(updatedUsersAndColors);
     }
 
-    provider.once("sync", (isSynced) => {
-      if (isSynced) {
-        // 동기화가 완료되었음을 확인한 후, 사용자 색상을 설정합니다.
-        if (!connectedUsersYMap.has(nickname)) {
-          let userColor = getRandomColor(); // 사용자에게 색상을 할당합니다.
-          connectedUsersYMap.set(nickname, userColor); // 연결된 사용자 목록에 추가합니다.
-          provider.awareness.setLocalStateField('user', { name: nickname, color: userColor });
-          updateUsersAndColors(); // UI 업데이트
-        } else {
-          alert(`${nickname}는(은) 이미 연결되어 있습니다.`);
-        }
-        setisloaded(true);
-      }
-    });
-
-
-    // provider.awareness.on("change", () => {
-    //   const usersCursorPosition = [];
-    //   provider.awareness.getStates().forEach((state, clientId) => {
-    //     // 여기서는 `selection`이 커서 위치를 담고 있다고 가정
-    //     if(state.selection) {
-    //       const user = state.user;
-    //       const cursorPosition = state.selection.anchor;
-    //       usersCursorPosition.push({ name: user.name, color: user.color, position: cursorPosition });
-    //     }
-    //   });
-    
-    //   // 커서 위치 정보를 출력하는 로직 (예시)
-    //   // console.log("사용자 커서 위치:", usersCursorPosition);
-    
-    //   // 필요한 경우 상태 업데이트나 UI 변경을 여기에서 수행
-    //   // 예: setUsersAndCursorPositions(usersCursorPosition); // 컴포넌트 상태 업데이트 함수
-    // });
-
     const myCursorBuilder = (user) => {
       const cursor = document.createElement("span");
       cursor.classList.add("ProseMirror-yjs-cursor");
@@ -372,19 +356,17 @@ function Page() {
       });
       console.log('연결된 사용자와 커서 색상:', usersAndColors);
 
-      // // 일정 시간(예: 5000ms) 후에 사용자 이름을 숨기는 로직
-      // let hideTimeout = setTimeout(() => {
-      //   userDiv.style.display = "none"; // 사용자 이름을 숨김
-      // }, 5000); // 5초 후 실행
-
-      // // Awareness 상태 변경에 따라 사용자 이름을 다시 표시하는 로직 설정
-      // cursorAwarenessHandler(provider.awareness, userDiv, hideTimeout);
       return cursor;
     };
 
     connectedUsersYMap.observe(updateUsersAndColors);
+    window.addEventListener("pagehide", yjsDisconnect);
     window.addEventListener("unload", yjsDisconnect);
     window.addEventListener("popstate", yjsDisconnect);
+
+    editorRef.current.addEventListener('mousedown', (event) => { handleNodeClick(nickname, event); });
+    editorRef.current.addEventListener('keydown', (event) => { handleEditAttempt(nickname, event); });
+    editorRef.current.addEventListener('mousedown', (event) => { handleEditAttempt(nickname, event); });
 
     const myDoc = DOMParser.fromSchema(mySchema).parse(
       document.createElement("div")
@@ -430,14 +412,14 @@ function Page() {
 
     return () => {
       connectedUsersYMap.unobserve(updateUsersAndColors);
+      connectedUsersYMap.unobserve(onlineUpdate);
+      window.removeEventListener("pagehide", yjsDisconnect);
       window.removeEventListener("unload", yjsDisconnect);
       window.removeEventListener("popstate", yjsDisconnect);
-      // editorRef.current.removeEventListener('mousedown', handleNodeClick);
-      // editorRef.current.removeEventListener('keydown', handleEditAttempt);
-      // editorRef.current.removeEventListener('mousedown', handleEditAttempt);
       yjsDisconnect();
+
     };
-  }, [ydoc]);
+  }, []);
 
   return (
     <div>
@@ -558,30 +540,5 @@ const Notename = styled.div`
   overflow: hidden; /* 오버플로우된 텍스트 숨기기 */
   text-overflow: ellipsis; /* 오버플로우된 텍스트를 말줄임표로 표시 */
 `;
-
-// 토글 스위치 컨테이너
-// const ToggleSwitch = styled.div`
-//   position: absolute;
-//   top: 10px;
-//   right: 10px;
-//   width: 50px;
-//   height: 24px;
-//   border-radius: 12px;
-//   background-color: ${(props) =>
-//     props.active ? "#007bff" : "#ccc"}; // active 상태에 따라 배경색 변경
-//   display: flex;
-//   align-items: center;
-//   cursor: pointer;
-//   justify-content: ${(props) => (props.active ? "flex-end" : "flex-start")};
-// `;
-
-// 토글 버튼
-// const ToggleButton = styled.div`
-//   width: 22px;
-//   height: 22px;
-//   border-radius: 50%;
-//   background-color: white;
-//   transition: all 0.3s ease;
-// `;
 
 export default Page;
