@@ -1,4 +1,4 @@
-package com.Backend.shareNote.domain.Oraganization.notedto;
+package com.Backend.shareNote.domain.Oraganization.DTOs.notedto;
 
 import lombok.Data;
 

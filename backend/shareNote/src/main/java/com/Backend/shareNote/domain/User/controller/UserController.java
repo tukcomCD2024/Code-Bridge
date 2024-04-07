@@ -25,4 +25,14 @@ public class UserController {
         return UserService.login(userLoginDTO);
     }
 
+    @PostMapping("/user/uniqueEmail/{email}")
+    public ResponseEntity<Boolean> emailOnly(@PathVariable String email) {
+        return UserService.uniqueEmail(email);
+    }
+
+    @PostMapping("/user/uniqueNickname/{nickname}")
+    public ResponseEntity<Boolean> nicknameOnly(@PathVariable String nickname) {
+        return UserService.uniqueNickname(nickname);
+    }
+
 }

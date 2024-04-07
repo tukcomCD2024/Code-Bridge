@@ -1,4 +1,4 @@
-package com.Backend.shareNote.domain.Oraganization.likesdto;
+package com.Backend.shareNote.domain.Oraganization.DTOs.likesdto;
 
 import lombok.Data;
 

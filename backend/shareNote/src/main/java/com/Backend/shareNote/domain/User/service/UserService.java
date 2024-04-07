@@ -1,7 +1,6 @@
 package com.Backend.shareNote.domain.User.service;
 
-import com.Backend.shareNote.domain.Jwt.JwtService;
-import com.Backend.shareNote.domain.Oraganization.organdto.AcceptInvitationDTO;
+import com.Backend.shareNote.domain.Oraganization.DTOs.organdto.AcceptInvitationDTO;
 import com.Backend.shareNote.domain.Oraganization.service.OrganizationService;
 import com.Backend.shareNote.domain.User.dto.UserLoginDTO;
 import com.Backend.shareNote.domain.User.dto.UserSignUpDTO;
@@ -75,5 +74,15 @@ public class UserService {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("서버 오류가 발생했습니다");
         }
+    }
+
+    public ResponseEntity<Boolean> uniqueEmail(String email) {
+        Optional<Users> userOptional = userRepository.findByEmail(email);
+        return ResponseEntity.ok(userOptional.isEmpty());
+    }
+
+    public ResponseEntity<Boolean> uniqueNickname(String nickname) {
+        Optional<Users> userOptional = userRepository.findByNickname(nickname);
+        return ResponseEntity.ok(userOptional.isEmpty());
     }
 }
