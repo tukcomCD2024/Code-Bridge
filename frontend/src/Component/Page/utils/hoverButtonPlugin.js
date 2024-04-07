@@ -40,14 +40,21 @@ export function hoverButtonPlugin() {
       hoverButton_lock.classList.add("hoverButton_lock"); // CSS 클래스 적용
       hoverDiv.appendChild(hoverButton_lock);
       
-      // hoverButton_2 생성(작성자 확인)
-      const hoverButton_writer = document.createElement("span");
+      // hoverButton 생성(좋아요)
+      const hoverButton_like = document.createElement("span");
       library.add(faHeart);
       const heartIcon = icon(faHeart).node[0];
-      hoverButton_writer.appendChild(heartIcon);
-      hoverButton_writer.classList.add("hoverButton_writer");
-      hoverButton_writer.title = "좋아요";
-      hoverDiv.appendChild(hoverButton_writer);
+      hoverButton_like.appendChild(heartIcon);
+      hoverButton_like.classList.add("hoverButton_like");
+      hoverButton_like.title = "좋아요";
+      hoverDiv.appendChild(hoverButton_like);
+
+
+      // hoverButton_like 요소에 클릭 이벤트 리스너 추가
+      hoverButton_like.addEventListener("click", function() {
+        this.classList.toggle("hoverButton_like");
+        this.classList.toggle("hoverButton_like_fullRedHeart");
+      });
 
 
       hoverButton_lock.addEventListener("click", (event) => {

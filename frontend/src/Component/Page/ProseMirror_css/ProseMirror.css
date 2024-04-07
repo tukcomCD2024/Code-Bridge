@@ -418,11 +418,19 @@ img.ProseMirror-separator {
   border-radius: 4px;
 }
 
-.hoverButton_plus, .hoverButton_lock, .hoverButton_writer {
+.hoverButton_plus, .hoverButton_lock, .hoverButton_like, .hoverButton_like_fullRedHeart {
   cursor: pointer;
   width: 18px;
   height: 20px;
   margin: 4px;
+}
+
+.hoverButton_plus:hover {
+  animation: verticalBeat 1s infinite;
+}
+
+.hoverButton_lock:hover {
+animation: spin 2s ease-in-out infinite;
 }
 
 @keyframes heartbeat {
@@ -436,8 +444,27 @@ img.ProseMirror-separator {
     transform: scale(0.95);
   }
 }
+@keyframes verticalBeat {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(2px);
+  }
+}
+@keyframes spin {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(10deg);
+  }
+  75% {
+    transform: rotate(-10deg);
+  }
+}
 
-.hoverButton_writer {
+.hoverButton_like {
   cursor: pointer;
   width: 20px;
   height: 31px;
@@ -448,7 +475,25 @@ img.ProseMirror-separator {
   font-size: 21px;
 }
 
-.hoverButton_writer:hover {
+.hoverButton_like:hover {
+  animation: heartbeat 1s infinite;
+  transition: opacity 500ms;
+  fill: gray;
+  color: gray;
+  opacity: 1;
+}
+
+.hoverButton_like_fullRedHeart {
+  cursor: pointer;
+  width: 20px;
+  height: 31px;
+  margin-left: 4px;
+  fill: red;
+  color: red;
+  font-size: 21px;
+}
+
+.hoverButton_like_fullRedHeart:hover {
   animation: heartbeat 1s infinite;
   fill: red;
   color: red;
