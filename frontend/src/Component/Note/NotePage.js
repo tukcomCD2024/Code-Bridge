@@ -153,6 +153,7 @@ function NotePage() {
 
             }));
             setNotes(fetchedNoteData);
+            localStorage.setItem("notes", JSON.stringify(fetchedNoteData));
           } else {
             console.error("Failed to fetch");
           }
@@ -257,6 +258,45 @@ function NotePage() {
       alert("처리 중 오류가 발생했습니다.");
     }
   };
+  
+  const removeOrganization = async () => {
+    const userLoginId = localStorage.getItem("email");
+    let notes = localStorage.getItem("notes");
+    let notesArray = JSON.parse(notes);
+    const isConfirmed = window.confirm(`"${organization?.name}" 의 모든 데이터를 삭제하시겠습니까?\n\n${notesArray.length}개의 모든 노트가 삭제됩니다.`);
+
+    if (isConfirmed) {
+      try {
+        const response = await fetch("/api/user/organization", {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ organizationId, userLoginId }),
+        });
+        const contentType = response.headers.get('content-type');
+        // 삭제 성공
+        if (response.ok) {
+          if (contentType && contentType.includes('application/json')) {
+          navigate("/main");
+          toastr.info("정상적으로 삭제되었습니다.");
+          }
+        // 비정상적 상황
+        } else {
+          if (contentType && contentType.includes('text/plain')) {
+            const errorMessage = await response.text();
+            alert(`실패: ${errorMessage}`);
+          } else {
+            alert("이미 삭제된 Organization 입니다.");
+            navigate("/main");
+          }
+        }
+      } catch (error) {
+        console.error("Error: ", error);
+        alert("처리 중 오류가 발생했습니다.");
+      }
+  }
+};
 
   return (
     <div>
@@ -266,6 +306,9 @@ function NotePage() {
       <OrganizationInfo onClick={handleOpenOrganizationModal}>
         Organization 정보 확인
       </OrganizationInfo>
+      <OrganizationDelete onClick={removeOrganization}>
+        Organization 삭제
+      </OrganizationDelete>
       <NotesContainer>
         <StyledAddNoteIcon onClick={handleButtonClick}/>
 
@@ -334,6 +377,37 @@ const OrganizationInfo = styled.button`
     background-color: #cccccc;
     border-color: #cccccc;
     color: #000000;
+  }
+`;
+
+const OrganizationDelete = styled.button`
+  display: flex;
+  flex-direction: column;
+  margin-top: 10px;
+  margin: 10px auto; /* Auto margin for centering horizontally */
+  max-width: 1360px;
+  width: 100%;
+  height: 40px;
+  border: 2px solid #FF0000;
+  border-radius: 10px;
+  background-color: #FF0000;
+  text-align: center;
+  align-items: center;
+  line-height: 40px;
+  font-size: 16px;
+  color:  #ffffff;
+  cursor: pointer;
+
+  @media screen and (max-width: 768px) {
+    flex-direction: column;
+    gap: 0px;
+    width: 100%;
+  }
+
+  &:hover {
+    background-color: #FF6666;
+    border-color: #FF6666;
+    color:  #ffffff
   }
 `;
 
