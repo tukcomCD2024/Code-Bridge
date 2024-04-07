@@ -42,6 +42,7 @@ public class Organization {
     @Builder //신기하다
     @Getter
     @Setter
+    @Document(collection = "notes")
     public static class Note {
         @Id
         private String id;
@@ -69,6 +70,7 @@ public class Organization {
     // 내부 클래스로 Page 정의
     @Getter
     @Builder
+    @Document(collection = "pages")
     public static class Page {
         @Id //수동으로 id 생성
         private String id;
@@ -144,12 +146,23 @@ public class Organization {
     }
 
     public void deletePageFromNote(String noteId, String pageId) {
+        boolean isDeleted = false;
         // 페이지 삭제
         for (Note note : this.notes) {
             if (note.getId().equals(noteId)) {
-                note.getPages().removeIf(page -> page.getId().equals(pageId));
+                for (Page page : note.getPages()) {
+                    if (page.getId().equals(pageId)) {
+                        note.getPages().remove(page);
+                        isDeleted = true;
+                        break;
+                    }
+                }
                 break;
             }
+        }
+        if (!isDeleted) {
+            // 이게 무슨 예왼지는 모르겠지만
+            throw new IllegalArgumentException("해당하는 페이지가 없습니다.");
         }
     }
 

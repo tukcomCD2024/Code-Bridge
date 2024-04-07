@@ -1,7 +1,6 @@
 package com.Backend.shareNote.domain.User.service;
 
-import com.Backend.shareNote.domain.Jwt.JwtService;
-import com.Backend.shareNote.domain.Oraganization.organdto.AcceptInvitationDTO;
+import com.Backend.shareNote.domain.Oraganization.DTOs.organdto.AcceptInvitationDTO;
 import com.Backend.shareNote.domain.Oraganization.service.OrganizationService;
 import com.Backend.shareNote.domain.User.dto.UserLoginDTO;
 import com.Backend.shareNote.domain.User.dto.UserSignUpDTO;

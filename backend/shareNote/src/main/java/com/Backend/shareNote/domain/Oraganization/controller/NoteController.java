@@ -1,11 +1,11 @@
 package com.Backend.shareNote.domain.Oraganization.controller;
 
 import com.Backend.shareNote.domain.Oraganization.entity.Organization;
-import com.Backend.shareNote.domain.Oraganization.likesdto.LikesDTO;
-import com.Backend.shareNote.domain.Oraganization.notedto.NoteCreateDTO;
-import com.Backend.shareNote.domain.Oraganization.notedto.NoteDeleteDTO;
-import com.Backend.shareNote.domain.Oraganization.notedto.NoteSearchDTO;
-import com.Backend.shareNote.domain.Oraganization.notedto.NoteUpdateDTO;
+import com.Backend.shareNote.domain.Oraganization.DTOs.likesdto.LikesDTO;
+import com.Backend.shareNote.domain.Oraganization.DTOs.notedto.NoteCreateDTO;
+import com.Backend.shareNote.domain.Oraganization.DTOs.notedto.NoteDeleteDTO;
+import com.Backend.shareNote.domain.Oraganization.DTOs.notedto.NoteSearchDTO;
+import com.Backend.shareNote.domain.Oraganization.DTOs.notedto.NoteUpdateDTO;
 import com.Backend.shareNote.domain.Oraganization.service.NoteService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

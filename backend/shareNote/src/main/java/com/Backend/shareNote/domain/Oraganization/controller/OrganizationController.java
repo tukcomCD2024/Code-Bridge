@@ -1,6 +1,7 @@
 package com.Backend.shareNote.domain.Oraganization.controller;
 
-import com.Backend.shareNote.domain.Oraganization.organdto.*;
+import com.Backend.shareNote.domain.Oraganization.DTOs.organdto.*;
+
 import com.Backend.shareNote.domain.Oraganization.service.OrganizationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
