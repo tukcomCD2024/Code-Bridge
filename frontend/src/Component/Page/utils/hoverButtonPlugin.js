@@ -220,8 +220,9 @@ export function hoverButtonPlugin() {
           }
       }
       });
+      
       editorView.dom.addEventListener("keydown", (event) => {
-        if (event.keyCode === 13) {
+        if (event.keyCode === 13 || event.key === "ArrowUp" || event.key === "ArrowDown") {
           const { from } = editorView.state.selection;
           if (from !== null) {
             hoverDiv.style.visibility = "hidden";
