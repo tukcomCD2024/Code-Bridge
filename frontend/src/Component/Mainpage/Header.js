@@ -4,8 +4,6 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBars } from "@fortawesome/free-solid-svg-icons";
 import logo from "../../image/logo_person.gif";
 
-//import "./OrganizationTemplate.css";
-
 import { useNavigate } from "react-router-dom";
 
 const Header = ({ toggle, setToggle }) => {
@@ -22,20 +20,14 @@ const Header = ({ toggle, setToggle }) => {
       </StNavLogo>
 
       <StNavMenu>
-        {/* <li onClick={() => navigate("/login")}>로그인(삭제)</li>
-        <li onClick={() => navigate("/signup")}>회원가입(삭제)</li> */}
           <li onClick={() => {navigate("/"); localStorage.clear();}}>로그아웃</li>
         <li onClick={() => navigate("/editProfile")}>회원정보수정</li>
-        <li onClick={() => navigate("/about")}>About</li>
       </StNavMenu>
 
       {toggle ? (
         <StNavMenuNone>
-          {/* <li onClick={() => navigate("/login")}>로그인(삭제)</li>
-          <li onClick={() => navigate("/signup")}>회원가입(삭제)</li> */}
           <li onClick={() => {navigate("/"); localStorage.clear();}}>로그아웃</li>
           <li onClick={() => navigate("/editProfile")}>회원정보수정</li>
-          <li onClick={() => navigate("/about")}>About</li>
         </StNavMenuNone>
       ) : null}
 
