@@ -7,7 +7,7 @@ import typing from "../../../image/typing.gif";
 function countDocBlocks(doc) {
   let count = 0;
   doc.descendants(node => {
-    if (node.type.name === "paragraph" || node.isBlock) { // "paragraph"는 예시입니다. 실제 블록 타입에 따라 조정하세요.
+    if (node.type.name === "paragraph" || node.isBlock) {
       count++;
     }
   });
@@ -102,18 +102,6 @@ export function hoverButtonPlugin() {
         updateButton(editorView, newPos, true);
       });
       
-      function increaseEditorHeightForScroll() {
-        const paragraphNodeHeight = 48; // 추가할 높이 값
-        const editorElement = document.querySelector('.ProseMirror'); 
-      
-        if (editorElement) {
-          // 에디터 내부의 현재 높이를 계산합니다.
-          const currentEditorHeight = editorElement.scrollHeight;
-          // 에디터의 높이를 조정합니다.
-          editorElement.style.height = `${currentEditorHeight + paragraphNodeHeight}px`;
-        }
-      }
-      
       function updateButton(view, pos, show) {
         try {
           const { doc } = view.state;
@@ -171,8 +159,7 @@ export function hoverButtonPlugin() {
 
       function increaseEditorHeightForScroll() {
         const paragraphNodeHeight = 48; // 추가할 높이 값
-        // 에디터의 root 요소를 선택합니다. 아이디나 클래스명을 에디터에 맞게 조정해야 합니다.
-        const editorElement = document.querySelector('.ProseMirror'); // 예시로 '.ProseMirror' 클래스 사용
+        const editorElement = document.querySelector('.ProseMirror');
       
         if (editorElement) {
           // 에디터 내부의 현재 높이를 계산합니다.
@@ -196,7 +183,6 @@ export function hoverButtonPlugin() {
           updateButton(editorView, pos, false);
           return;
         }
-
         updateButton(editorView, pos, true);
       }
 
@@ -213,7 +199,18 @@ export function hoverButtonPlugin() {
 
         updateButton(editorView, pos, true);
       }
-          
+
+      function handleResize() {
+        try {
+          if (lastPos !== null) {
+            updateButton(editorView, lastPos, true);
+          }
+        } catch (error) {
+          console.error("Failed to handle resize:", error);
+        }
+      }
+
+      window.addEventListener("resize", handleResize);
       editorView.dom.addEventListener("click", handleInteraction);
       editorView.dom.addEventListener("keyup", (event) => {
         const { from } = editorView.state.selection;
@@ -241,52 +238,10 @@ export function hoverButtonPlugin() {
         }
       });
 
-      function handleResize() {
-        try {
-          if (lastPos !== null) {
-            updateButton(editorView, lastPos, true);
-          }
-        } catch (error) {
-          console.error("Failed to handle resize:", error);
-        }
-      }
-
-      function handleClick(event) {
-        const { pos } = editorView.posAtCoords({
-          left: event.clientX,
-          top: event.clientY,
-        });
-        if (pos !== null) {
-          const resolvedPos = editorView.state.doc.resolve(pos);
-          let lineNumber = 1;
-          editorView.state.doc.nodesBetween(
-            0,
-            resolvedPos.pos,
-            (node, start) => {
-              if (node.isBlock) {
-                // 클릭된 위치가 현재 노드의 범위 내에 있는지 확인합니다.
-                if (
-                  start < resolvedPos.pos &&
-                  resolvedPos.pos <= start + node.nodeSize
-                ) {
-                  return false; // 순회 중단
-                }
-                lineNumber++;
-              }
-            }
-          );
-        }
-      }
-
-      // 클릭 이벤트 리스너 등록
-      editorView.dom.addEventListener("click", handleClick);
-      window.addEventListener("resize", handleResize);
-
       return {
         destroy() {
           hoverDiv.remove();
           window.removeEventListener("resize", handleResize);
-          editorView.dom.removeEventListener("click", handleClick);
         },
       };
     },
@@ -303,6 +258,5 @@ export function hoverButtonPlugin() {
     
       return null; // 추가적인 트랜잭션을 반환하지 않음
     },
-
   });
 }
