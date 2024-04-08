@@ -8,6 +8,7 @@ import android.widget.EditText
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.example.sharenote.RetrofitClient.apiService
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
@@ -18,12 +19,20 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 
 class LoginActivity : AppCompatActivity() {
     private var auth: FirebaseAuth? = null
     private lateinit var mGoogleSignInClient: GoogleSignInClient
     private val RC_SIGN_IN = 9001 // Google 로그인 요청 코드
+
+    private lateinit var Email: String
+    private lateinit var Password: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -48,7 +57,9 @@ class LoginActivity : AppCompatActivity() {
         // Google 로그인 버튼
         val googleLoginButton = findViewById<ImageView>(R.id.googleLoginButton)
         googleLoginButton.setOnClickListener {
-            signInWithGoogle()
+            val email = findViewById<EditText>(R.id.idEditText).text.toString()
+            val password = findViewById<EditText>(R.id.passwordEditText).text.toString()
+            login(email, password)
         }
     }
 
@@ -60,6 +71,44 @@ class LoginActivity : AppCompatActivity() {
 
         mGoogleSignInClient = GoogleSignIn.getClient(this, gso)
     }
+
+
+    // HTTP 통신을 통한 로그인 시도
+    private fun login(email: String, password: String) {
+        // 입력 받은 이메일과 비밀번호를 이용하여 로그인 요청
+        GlobalScope.launch(Dispatchers.IO) {
+            try {
+                // Retrofit을 사용하여 로그인 요청 보내기
+                val response = apiService.login(email, password)
+                if (response.isSuccessful) {
+                    // 로그인 성공
+                    // 사용자 데이터를 받아온다면 처리 가능
+                    val intent = Intent(this@LoginActivity, MainActivity::class.java)
+                    startActivity(intent)
+                    finish() // 현재 액티비티 종료
+                } else {
+                    // 로그인 실패
+                    // 실패 처리
+                    runOnUiThread {
+                        Toast.makeText(
+                            baseContext, "로그인 실패",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                }
+            } catch (e: Exception) {
+                // 예외 처리
+                runOnUiThread {
+                    Toast.makeText(
+                        baseContext, "로그인 중 오류 발생",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
+        }
+    }
+
+
 
     private fun signInWithEmail(email: String, password: String) {
         if (email.isNotEmpty() && password.isNotEmpty()) {
