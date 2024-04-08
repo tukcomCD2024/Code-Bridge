@@ -31,6 +31,7 @@ class LoginActivity : AppCompatActivity() {
     private lateinit var mGoogleSignInClient: GoogleSignInClient
     private val RC_SIGN_IN = 9001 // Google 로그인 요청 코드
 
+    private lateinit var Name: String
     private lateinit var Email: String
     private lateinit var Password: String
 
@@ -75,38 +76,43 @@ class LoginActivity : AppCompatActivity() {
 
     // HTTP 통신을 통한 로그인 시도
     private fun login(email: String, password: String) {
-        // 입력 받은 이메일과 비밀번호를 이용하여 로그인 요청
+        Email = email
+        Password = password
+
         GlobalScope.launch(Dispatchers.IO) {
             try {
-                // Retrofit을 사용하여 로그인 요청 보내기
-                val response = apiService.login(email, password)
+                // 이메일과 비밀번호로 사용자 인증을 시도
+                val userData = UserData("", Email, Password) // 이름은 사용되지 않으므로 빈 문자열로 설정
+                val response = apiService.login(userData)
                 if (response.isSuccessful) {
-                    // 로그인 성공
-                    // 사용자 데이터를 받아온다면 처리 가능
-                    val intent = Intent(this@LoginActivity, MainActivity::class.java)
-                    startActivity(intent)
-                    finish() // 현재 액티비티 종료
+                    val user = response.body()
+                    if (user != null) {
+                        // 로그인 성공 시 MainActivity로 이동
+                        val intent = Intent(this@LoginActivity, MainActivity::class.java)
+                        startActivity(intent)
+                        finish()
+                    }
                 } else {
-                    // 로그인 실패
-                    // 실패 처리
-                    runOnUiThread {
+                    withContext(Dispatchers.Main) {
                         Toast.makeText(
-                            baseContext, "로그인 실패",
+                            this@LoginActivity,
+                            "로그인에 실패하였습니다.",
                             Toast.LENGTH_SHORT
                         ).show()
                     }
                 }
             } catch (e: Exception) {
-                // 예외 처리
-                runOnUiThread {
+                withContext(Dispatchers.Main) {
                     Toast.makeText(
-                        baseContext, "로그인 중 오류 발생",
+                        this@LoginActivity,
+                        "로그인 중 오류가 발생하였습니다.",
                         Toast.LENGTH_SHORT
                     ).show()
                 }
             }
         }
     }
+
 
 
 

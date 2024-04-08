@@ -15,5 +15,5 @@ interface ApiService {
     fun signUpUser(@Body userData: UserData): Call<Void>
 
     @POST("login")
-    suspend fun login(@Body userData: UserData): Response<User>
+    suspend fun login(@Body userData: UserData): Response<UserData>
 }
