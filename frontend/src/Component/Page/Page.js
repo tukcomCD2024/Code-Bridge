@@ -35,6 +35,11 @@ import 'toastr/build/toastr.css';
 
 import { v4 as uuidv4 } from "uuid";
 
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faLeftLong, faRightLong, faSquarePlus, faTrashCan } from "@fortawesome/free-solid-svg-icons";
+
+
+
 function Page() {
   const editorRef = useRef(null);
   const nickname = localStorage.getItem('nickname');
@@ -455,6 +460,38 @@ function Page() {
             <img src={note.image} alt="Note" />
             <p />
             <hr />
+            <PageRemoteContainer>
+              <PageCheck>
+                <ArrowBox>
+                  <FontAwesomeIcon icon={faLeftLong} /*onClick={prevPage}*/ />
+                </ArrowBox>
+                  메인 페이지
+                <ArrowBox>
+                  <FontAwesomeIcon icon={faRightLong} /*onClick={nextPage}*/ />
+                </ArrowBox>
+              </PageCheck>
+              <PageRemote>
+                 <LeftPageRemote>
+                  <CreateRemoveBtn>                  
+                    <FontAwesomeIcon icon={faSquarePlus} /*onClick={createPage}*/ style={{ color: '#007bff' }} title="페이지 추가"/>
+                    <FontAwesomeIcon icon={faTrashCan} /*onClick={removePage}*/ style={{ color: '#707070'}} title="현재 페이지 삭제"/>
+                  </CreateRemoveBtn>
+                 </LeftPageRemote>
+                 <RightPageRemote>
+                  <InputContainer>
+                    <InputPageNumber 
+                      type="number" 
+                      maxLength="2" 
+                      min="0"
+                      onInput={(e) => e.target.value = e.target.value.slice(0, 2)} // 최대 2자리 숫자 입력 제한
+                    />
+                      <PageDisplay>/ 0 페이지</PageDisplay>
+                  </InputContainer>
+                  <GoButton>이동하기</GoButton>
+                 </RightPageRemote>
+              </PageRemote>
+            </PageRemoteContainer>
+            <hr />
             <p style={{ fontWeight: "bold" }}>접속중인 유저 목록</p>
             <p><small>(커서 색상/닉네임)</small></p>
            <ul>
@@ -539,6 +576,132 @@ const Notename = styled.div`
   white-space: nowrap; /* 텍스트를 한 줄로 만들기 */
   overflow: hidden; /* 오버플로우된 텍스트 숨기기 */
   text-overflow: ellipsis; /* 오버플로우된 텍스트를 말줄임표로 표시 */
+`;
+const PageRemoteContainer = styled.div`
+  width: 100%; // 기본 너비
+
+  @media (min-width: 2000px) { // 화면 너비가 2560px 이상일 때
+    width: 90%;
+    margin: 0 auto;
+  }
+`;
+
+const PageCheck = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 19px;
+  gap: 25px;
+
+  @media (max-width: 1600px) {
+    font-size: 17px;
+  }
+`;
+
+const PageRemote = styled.div`
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  height: 100px;
+  position: relative;
+  margin-top: 10px;
+  margin-bottom: 20px;
+`;
+
+const LeftPageRemote = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center; 
+  height: 85%;
+  border-right: 2px solid #ccc;
+`;
+
+const RightPageRemote = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  margin-left: auto; /* 왼쪽에 자동 마진을 줘서 오른쪽 정렬 */
+  margin-right: auto;
+  width: fit-content; /* 내용에 맞는 너비 */
+`;
+
+// 입력 필드와 페이지 표시를 위한 스타일
+const InputPageNumber = styled.input`
+  width: 35px; // 입력칸의 너비
+  text-align: center; // 텍스트 중앙 정렬
+`;
+
+const InputContainer = styled.div`
+  display: flex; // Flex 컨테이너 설정
+  flex-direction: row; // 가로 방향으로 나열
+  align-items: center; // 요소들을 세로 방향으로 가운데 정렬
+`;
+
+const PageDisplay = styled.span`
+  font-size: 16px; // 글씨 크기
+  margin-left: 5px;
+
+  @media (max-width: 1600px) {
+    font-size: 13px;
+  }
+`;
+
+const GoButton = styled.button`
+  padding: 8px; // 버튼 내부 여백
+
+  width: 100%;
+  border-radius: 4px; // 테두리 둥글게
+  background-color: #28a745; // 버튼 배경색
+  color: white; // 버튼 글자색
+  border: none; // 테두리 제거
+  cursor: pointer; // 마우스 오버 시 커서 변경
+  margin-top: 5px;
+
+  &:hover {
+    background-color: #218838; // 마우스 오버 시 버튼 배경색 변경
+  }
+
+  @media (max-width: 1400px) {
+    width: 80%;
+  }
+`;
+
+const CreateRemoveBtn = styled.div`
+  width: 25px;
+  padding: 20px;
+  font-size: 30px;
+  cursor: pointer;
+`;
+const ArrowBox = styled.div`
+  width: 25px;
+  height: auto;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  font-size: 25px;
+  color: #333333;
+
+  &:hover{
+    animation: horizontalBeat 1s infinite;
+  }
+
+  @keyframes horizontalBeat {
+    0%, 100% {
+      transform: translateX(0);
+    }
+    50% {
+      transform: translateX(2px);
+    }
+  }
+
+  @media (max-width: 1600px) {
+    font-size: 20px;
+  }
 `;
 
 export default Page;

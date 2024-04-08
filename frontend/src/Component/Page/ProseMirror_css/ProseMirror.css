@@ -426,7 +426,7 @@ img.ProseMirror-separator {
 }
 
 .hoverButton_plus:hover {
-  animation: verticalBeat 1s infinite;
+  animation: verticalBeat 1s ease-in-out infinite;
 }
 
 .hoverButton_lock:hover {
@@ -469,17 +469,14 @@ animation: spin 2s ease-in-out infinite;
   width: 20px;
   height: 31px;
   margin-left: 4px;
-  fill: white;
-  color: black;
-  opacity: 0.3;
+  fill: gray;
+  color: gray;
   font-size: 21px;
 }
 
 .hoverButton_like:hover {
   animation: heartbeat 1s infinite;
   transition: opacity 500ms;
-  fill: gray;
-  color: gray;
   opacity: 1;
 }
 
@@ -495,10 +492,8 @@ animation: spin 2s ease-in-out infinite;
 
 .hoverButton_like_fullRedHeart:hover {
   animation: heartbeat 1s infinite;
-  fill: red;
-  color: red;
-  opacity: 1;
   transition: opacity 500ms;
+  opacity: 1;
 }
 
 /* this is a rough fix for the first cursor position when the first paragraph is empty */
