@@ -46,7 +46,7 @@ class WorkSpaceActivity : AppCompatActivity() {
             if (workSpaceName.isNotEmpty()) {
                 val currentUserEmail = auth.currentUser?.email
                 currentUserEmail?.let { email ->
-                    saveWorkSpaceToFirestore(workSpaceName, email)
+
                     val workSpace = WorkSpace(workSpaceName, email,"")
                     saveWorkSpaceToMongoDB(workSpace)
                 }
