@@ -27,6 +27,7 @@ import com.example.sharenote.NoteActivity
 import com.example.sharenote.PageActivity
 import com.example.sharenote.OrganizationActivity
 import com.example.sharenote.Page
+import com.example.sharenote.PaintActivity
 import com.example.sharenote.R
 import com.example.sharenote.SharedPreferencesUtil
 import com.example.sharenote.WorkSpace
@@ -42,6 +43,8 @@ class HomeFragment : Fragment() {
     private lateinit var emailTextView: TextView
     private lateinit var menuBtn: ImageButton
     private lateinit var profileForm: RelativeLayout
+
+    private lateinit var MoveDraw: Button
 
     private lateinit var emailTextView1: TextView
     private lateinit var workSpaceText: TextView
@@ -63,8 +66,8 @@ class HomeFragment : Fragment() {
         // noteListAdapter를 초기화합니다.
         noteListAdapter = NoteListAdapter { noteId ->
             // 노트 아이템 클릭 시 NoteActivity로 이동
+            saveRecentNoteId(noteId) // 클릭된 노트의 ID를 저장합니다.
             val intent = Intent(requireContext(), NoteActivity::class.java)
-            intent.putExtra("note_id", noteId)
             startActivity(intent)
         }
 
@@ -72,6 +75,8 @@ class HomeFragment : Fragment() {
         recyclerView.adapter = noteListAdapter
         menuBtn = view.findViewById(R.id.menuBtn)
         profileForm = view.findViewById(R.id.profileForm)
+
+        MoveDraw = view.findViewById(R.id.MoveDraw)
 
         // account_layout을 팝업으로 사용하기 위해 팝업 뷰를 초기화
         popupView = layoutInflater.inflate(R.layout.account_layout, null)
@@ -91,6 +96,12 @@ class HomeFragment : Fragment() {
 
         recentWorkspaceId?.let {
             displayWorkspaceName(it)
+        }
+
+        MoveDraw.setOnClickListener {
+            val Drawintent = Intent(requireContext(), PaintActivity::class.java)
+            startActivity(Drawintent)
+            requireActivity().finish()
         }
 
         profileForm.setOnClickListener {
@@ -361,6 +372,10 @@ class HomeFragment : Fragment() {
 
     private fun getRecentWorkspaceId(): String? {
         return SharedPreferencesUtil.getRecentWorkspaceId(requireContext())
+    }
+
+    private fun saveRecentNoteId(noteId: String) {
+        SharedPreferencesUtil.saveRecentNoteId(requireContext(), noteId)
     }
 }
 

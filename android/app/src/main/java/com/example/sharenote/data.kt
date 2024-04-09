@@ -16,7 +16,12 @@ data class Page(
 )
 
 data class UserData(
-    val name: String,
+    val nickname: String,
+    val email: String,
+    val password: String
+)
+
+data class LoginData(
     val email: String,
     val password: String
 )

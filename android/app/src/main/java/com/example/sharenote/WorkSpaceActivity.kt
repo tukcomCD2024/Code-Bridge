@@ -9,8 +9,13 @@ import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.example.sharenote.SharedPreferencesUtil.saveRecentWorkspaceId
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class WorkSpaceActivity : AppCompatActivity() {
 
@@ -41,7 +46,9 @@ class WorkSpaceActivity : AppCompatActivity() {
             if (workSpaceName.isNotEmpty()) {
                 val currentUserEmail = auth.currentUser?.email
                 currentUserEmail?.let { email ->
-                    saveWorkSpaceToFirestore(workSpaceName, email)
+
+                    val workSpace = WorkSpace(workSpaceName, email,"")
+                    saveWorkSpaceToMongoDB(workSpace)
                 }
             } else {
                 // 워크스페이스 이름이 비어있는 경우
@@ -90,6 +97,40 @@ class WorkSpaceActivity : AppCompatActivity() {
                 // 파이어스토어에 데이터 추가 중 오류 발생한 경우
                 Toast.makeText(this, "워크스페이스 정보를 저장하는 도중 오류가 발생했습니다.", Toast.LENGTH_SHORT).show()
             }
+    }
+
+
+    private fun saveWorkSpaceToMongoDB(workSpace: WorkSpace) {
+        GlobalScope.launch(Dispatchers.IO) {
+            try {
+                val response = RetrofitClient.apiService.sendWorkSpaceData(workSpace)
+                if (response.isSuccessful) {
+                    // MongoDB에 데이터 저장 성공
+                    val workSpaceId = response.body()?.string() ?: ""
+                    saveRecentWorkspaceId(workSpaceId)
+
+                    val intent = Intent(this@WorkSpaceActivity, InviteActivity::class.java)
+                    intent.putExtra("workSpaceId", workSpaceId)
+                    startActivity(intent)
+                    finish()
+                } else {
+                    // MongoDB에 데이터 저장 실패
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(
+                            this@WorkSpaceActivity,
+                            "워크스페이스 정보를 저장하는 데 실패했습니다.",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                }
+            } catch (e: Exception) {
+                // 네트워크 오류 등 예외 처리
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(this@WorkSpaceActivity, "네트워크 오류가 발생했습니다.", Toast.LENGTH_SHORT)
+                        .show()
+                }
+            }
+        }
     }
 
     // SharedPreferences에 워크스페이스 ID 저장

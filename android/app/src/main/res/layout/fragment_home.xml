@@ -160,7 +160,14 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_below="@id/bookText"
-                android:padding="15dp"/>
+                android:padding="15dp" />
+            <Button
+                android:id="@+id/MoveDraw"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/list"
+                android:text="그림판"/>
+
 
         </RelativeLayout>
     </ScrollView>

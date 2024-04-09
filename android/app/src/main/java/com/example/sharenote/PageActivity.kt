@@ -46,6 +46,8 @@ class PageActivity : AppCompatActivity() {
         buttonSavePage = findViewById(R.id.buttonSavePage)
         imagePreview = findViewById(R.id.imagePreview)
 
+
+
         // 이전에 작성한 데이터가 있는지 확인하고 있으면 해당 데이터를 불러옴
         pageId = intent.getStringExtra("page_id")
 
@@ -98,6 +100,8 @@ class PageActivity : AppCompatActivity() {
 
         val db = FirebaseFirestore.getInstance()
 
+        val recentNoteId = SharedPreferencesUtil.getRecentNoteId(this)
+
         // 이전에 작성한 데이터가 있는 경우 해당 데이터의 ID를 사용하여 업데이트
         if (!pageId.isNullOrEmpty()) {
             // 이전에 작성한 데이터가 있는 경우 해당 데이터의 ID를 사용하여 업데이트
@@ -106,7 +110,8 @@ class PageActivity : AppCompatActivity() {
                 "title" to pageTitle,
                 "text" to pageText,
                 "imageUri" to selectedImageUri.toString(),
-                "workSpaceId" to getRecentWorkspaceId(this) // 최근 워크스페이스 ID 추가
+                "workSpaceId" to getRecentWorkspaceId(this), // 최근 워크스페이스 ID 추가
+                "noteId" to recentNoteId
             )
 
             db.collection("pages")
@@ -114,7 +119,7 @@ class PageActivity : AppCompatActivity() {
                 .set(page)
                 .addOnSuccessListener {
                     Toast.makeText(this, "노트 업데이트 성공", Toast.LENGTH_SHORT).show()
-                    val intent = Intent(this, MainActivity::class.java)
+                    val intent = Intent(this, NoteActivity::class.java)
                     startActivity(intent)
                     finish() // 현재 액티비티 종료
                 }
@@ -129,7 +134,8 @@ class PageActivity : AppCompatActivity() {
                 "title" to pageTitle,
                 "text" to pageText,
                 "imageUri" to selectedImageUri.toString(),
-                "workSpaceId" to getRecentWorkspaceId(this) // 최근 워크스페이스 ID 추가
+                "workSpaceId" to getRecentWorkspaceId(this), // 최근 워크스페이스 ID 추가
+                "noteId" to recentNoteId
             )
 
             db.collection("pages")
@@ -137,7 +143,7 @@ class PageActivity : AppCompatActivity() {
                 .set(page)
                 .addOnSuccessListener {
                     Toast.makeText(this, "노트 저장 성공", Toast.LENGTH_SHORT).show()
-                    val intent = Intent(this, MainActivity::class.java)
+                    val intent = Intent(this, NoteActivity::class.java)
                     startActivity(intent)
                     finish() // 현재 액티비티 종료
                 }
