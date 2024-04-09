@@ -59,6 +59,9 @@ physical_device_desc: "device: 0, name: NVIDIA GeForce GTX 1050, pci bus id: 000
 ]
 ```
 
+### np.objects가 발견되지 않는 오류가 발생할 경우
+- numpy 버전 문제로 conda install numpy=1.23.4를 입력하여 다운 그레이드 한다.
+=======
 
 
 
