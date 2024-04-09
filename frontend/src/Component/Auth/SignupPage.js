@@ -9,9 +9,8 @@ const SignupPage = () => {
   const [nickname, setNickname] = useState("");
   const [password, setPassword] = useState("");
   const [passwordCheck, setPasswordCheck] = useState("");
-  const [isEmailAvailable, setIsEmailAvailable] = useState(true);
-  const [isNicknameAvailable, setIsNicknameAvailable] = useState(true);
-  const [resultMessage, setResultMessage] = useState(""); // 상태 추가
+  const [isEmailValid, setIsEmailValid] = useState(false); // 이메일 유효성 검사 상태
+  const [isNicknameValid, setIsNicknameValid] = useState(false); // 닉네임 유효성 검사 상태
 
   const navigate = useNavigate();
 
@@ -19,10 +18,10 @@ const SignupPage = () => {
     const { name, value } = e.target;
     if (name === "email") {
       setEmail(value);
-      setIsEmailAvailable(true); // 이메일 변경 시 사용 가능 여부 재설정
+      setIsEmailValid(false);      // 이메일 변경 시 유효성 재검증
     } else if (name === "nickname") {
       setNickname(value);
-      setIsNicknameAvailable(true); // 닉네임 변경 시 사용 가능 여부 재설정
+      setIsNicknameValid(false); // 닉네임 변경 시 유효성 재검증
     } else if (name === "password") {
       setPassword(value);
     } else if (name === "passwordCheck") {
@@ -32,7 +31,7 @@ const SignupPage = () => {
 
   const handleEmailDuplicateCheck = async () => {
     if (email === "") {
-      alert("이메일를 입력하세요."); 
+      alert("이메일을 입력하세요.");
       return;
     }
     try {
@@ -40,13 +39,19 @@ const SignupPage = () => {
         method: "POST",
       });
       if (response.ok) {
-        const data = await response.json();
-        console.log(response);
-        alert("입력하신 이메일의 계정이 이미 존재합니다.");
+        const isUnique = await response.json();
+        if (isUnique) {
+          setIsEmailValid(true);
+          toastr.remove();
+          toastr.info("사용 가능한 이메일 주소입니다.");
+        } else {
+          setEmail("");
+          alert("입력하신 이메일의 계정이 이미 존재합니다.");
+        }
+      } else if (response.status === 404) {
+        alert("서버에서 요청한 리소스를 찾을 수 없습니다.");
       } else {
-        console.log(response);
-        setIsEmailAvailable(email);
-        toastr.info("사용 가능한 이메일 주소입니다."); 
+        throw new Error(`[오류] 에러 코드: ${response.status}`);
       }
     } catch (error) {
       console.error("Error:", error);
@@ -54,28 +59,34 @@ const SignupPage = () => {
     }
   };
   
-
-
-  const handleNicknameDuplicateCheck = () => {
+  const handleNicknameDuplicateCheck = async () => {
     if (nickname === "") {
       alert("닉네임을 입력하세요.");
       return;
     }
-    // fetch(`/user/signup?nickname=${nickname}`)
-    //   .then((response) => response.json())
-    //   .then((data) => {
-    //     if (data.isAvailable === false) {
-    //       // 중복된 닉네임이 있음을 사용자에게 알림
-    //       alert("이미 가입된 닉네임이 존재합니다.");
-    //     } else {
-    //       setIsNicknameAvailable(true);
-    //       setResultMessage(data.message);
-    //     }
-    //   })
-    //   .catch((error) => {
-    //     console.error("Error:", error);
-    //     alert("처리에 실패하였습니다.");
-    //   });
+    try {
+        const response = await fetch(`/api/user/uniqueNickname/${nickname}`, {
+          method: "POST",
+        });
+        if (response.ok) {
+          const isUnique = await response.json();
+          if (isUnique) {
+            setIsNicknameValid(true);
+            toastr.remove();
+            toastr.info("사용 가능한 닉네임입니다.");
+          } else {
+            setNickname("");
+            alert("입력하신 닉네임이 이미 존재합니다.");
+          }
+        } else if (response.status === 404) {
+          alert("서버에서 요청한 리소스를 찾을 수 없습니다.");
+        } else {
+          throw new Error(`[오류] 에러 코드: ${response.status}`);
+        }
+      } catch (error) {
+        console.error("Error:", error);
+        alert("처리에 실패하였습니다.");
+      }
   };
 
   const handleSubmit = async (e) => {
@@ -91,6 +102,18 @@ const SignupPage = () => {
       return;
     } else if (password !== passwordCheck) {
       alert("비밀번호와 비밀번호 확인이 일치하지 않습니다.");
+      return;
+    }
+
+    if(!isEmailValid) {
+      toastr.remove();
+      toastr.error("이메일 중복확인 후 진행하세요.");
+      return;
+    }
+
+    if(!isNicknameValid) {
+      toastr.remove();
+      toastr.error("닉네임 중복확인 후 진행하세요.");
       return;
     }
 
@@ -166,7 +189,10 @@ const SignupPage = () => {
               onChange={handleInputChange}
             />
           </Passwordcheck_InputWrapper>
-          <SignupBtn type="submit">회원가입</SignupBtn>
+          <SignupBtn
+            type="submit"
+            style={{ cursor: !(isEmailValid && isNicknameValid && password && password === passwordCheck) ? 'not-allowed' : 'pointer'}}
+          >회원가입</SignupBtn>
         </form>
         <HomeBtn onClick={() => navigate("/")}>
           <small>홈으로 돌아가기</small>
