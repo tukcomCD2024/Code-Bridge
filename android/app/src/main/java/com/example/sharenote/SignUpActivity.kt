@@ -1,89 +1,181 @@
 package com.example.sharenote
 
+import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.widget.Button
 import android.widget.EditText
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.example.sharenote.RetrofitClient.apiService
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import okhttp3.ResponseBody
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 class SignUpActivity : AppCompatActivity() {
-    private var isUsernameAvailable = false
-    private val TAG = "SignUpActivity"
+
+    private lateinit var auth: FirebaseAuth
+    private lateinit var firestore: FirebaseFirestore
+
+    private lateinit var emailEditText: EditText
+    private lateinit var passwordEditText: EditText
+    private lateinit var confirmPasswordEditText: EditText
+    private lateinit var nameEditText: EditText
+
+    private lateinit var Name: String
+    private lateinit var Email: String
+    private lateinit var Password: String
+
+    private val db = FirebaseFirestore.getInstance()
+
+    private var isUsernameAvailable = false // 중복된 닉네임 여부를 저장하는 변수
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_signup)
+        setContentView(R.layout.activity_sign_up)
 
-        findViewById<Button>(R.id.checkDuplicateButton).setOnClickListener {
-            val username = findViewById<EditText>(R.id.usernameEditText).text.toString()
-            checkDuplicateUsername(username)
-        }
+        auth = FirebaseAuth.getInstance()
+        firestore = FirebaseFirestore.getInstance()
 
-        findViewById<Button>(R.id.signupButton).setOnClickListener {
-            val email = findViewById<EditText>(R.id.emailEditText).text.toString()
-            val password = findViewById<EditText>(R.id.passwordEditText).text.toString()
-            val username = findViewById<EditText>(R.id.usernameEditText).text.toString()
+        emailEditText = findViewById(R.id.emailEditText)
+        passwordEditText = findViewById(R.id.passwordEditText)
+        confirmPasswordEditText = findViewById(R.id.confirmPasswordEditText)
+        nameEditText = findViewById(R.id.usernameEditText)
 
-            if (isUsernameAvailable) {
-                signUp(email, password, username)
+        val signUpButton = findViewById<Button>(R.id.signupButton)
+        signUpButton.setOnClickListener {
+            // 사용자 입력값을 가져와서 변수에 초기화
+            Name = nameEditText.text.toString()
+            Email = emailEditText.text.toString()
+            Password = passwordEditText.text.toString()
+            val confirmPassword = confirmPasswordEditText.text.toString()
+
+            if (Name.isBlank() || Email.isBlank() || Password.isBlank() || confirmPassword.isBlank()) {
+                Toast.makeText(this, "모든 필드를 입력하세요.", Toast.LENGTH_SHORT).show()
             } else {
-                Toast.makeText(
-                    baseContext, "닉네임 중복을 확인해주세요.",
-                    Toast.LENGTH_SHORT
-                ).show()
+                // 모든 필드가 채워져 있는 경우에만 회원가입 진행
+                if (isUsernameAvailable && Password == confirmPassword) {
+                    signUpUser()
+                } else if (!isUsernameAvailable) {
+                    Toast.makeText(this, "닉네임을 확인해주세요.", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(this, "비밀번호가 일치하지 않습니다. 다시 입력해주세요.", Toast.LENGTH_SHORT).show()
+                }
             }
+
+        }
+
+        // 중복 확인 버튼
+        val checkDuplicateButton = findViewById<Button>(R.id.checkDuplicateButton)
+        checkDuplicateButton.setOnClickListener {
+            // 중복 확인 버튼을 눌렀을 때 중복 여부 확인
+            checkDuplicateUsername()
+        }
+
+        // 로그인하기 텍스트 클릭 시 LoginActivity로 이동
+        val loginLink = findViewById<TextView>(R.id.loginLink)
+        loginLink.setOnClickListener {
+            val loginIntent = Intent(this, LoginActivity::class.java)
+            startActivity(loginIntent)
         }
     }
 
-    private fun checkDuplicateUsername(username: String) {
-        // 중복 확인 로직을 구현
-        // 사용 가능하면 isUsernameAvailable 변수를 true로 설정
-        // 중복된 경우 Toast 메시지를 표시하고 isUsernameAvailable 변수를 false로 설정
-        // 예시로 항상 사용 가능한 상태로 설정
-        isUsernameAvailable = true
-    }
+    private fun signUpUser() {
+        val userData = UserData(Name, Email, Password)
 
-    private fun signUp(email: String, password: String, username: String) {
-        FirebaseAuth.getInstance().createUserWithEmailAndPassword(email, password)
-            .addOnCompleteListener { task ->
+        // Firebase Authentication을 사용하여 사용자 등록
+        auth.createUserWithEmailAndPassword(Email, Password)
+            .addOnCompleteListener(this) { task ->
                 if (task.isSuccessful) {
-                    val user = FirebaseAuth.getInstance().currentUser
-                    saveUserData(user?.uid, username, email)
-                    Toast.makeText(
-                        baseContext, "회원가입에 성공하였습니다.",
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    // 사용자 등록이 성공한 경우 Firestore에 사용자 정보 저장
+                    saveUserDataToFirestore()
+                    // 회원가입 성공 메시지 표시
+                    Toast.makeText(this@SignUpActivity, "계정 생성 완료.", Toast.LENGTH_SHORT).show()
+
+                    // 가입창 종료
                     finish()
                 } else {
-                    Toast.makeText(
-                        baseContext, "회원가입에 실패하였습니다.",
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    // 사용자 등록 실패 시 오류 메시지 표시
+                    Toast.makeText(this@SignUpActivity, "회원가입 실패: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
                 }
             }
+
+        saveUserDataToFirestore()
+
+        apiService.signUpUser(userData).enqueue(object : Callback<Void> {
+            override fun onResponse(call: Call<Void>, response: Response<Void>) {
+                if (response.isSuccessful) {
+                    // 회원가입 성공 메시지 표시
+                    Toast.makeText(this@SignUpActivity, "계정 생성 완료 - M", Toast.LENGTH_SHORT).show()
+
+                    // 가입창 종료
+                    finish()
+                } else {
+                    // 서버 응답이 성공적이지 않은 경우 오류 메시지 표시
+                    val errorBody = response.errorBody()?.string()
+                    Toast.makeText(this@SignUpActivity, "회원가입 실패: $errorBody", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            override fun onFailure(call: Call<Void>, t: Throwable) {
+                // 네트워크 오류 등으로 회원가입 요청 실패
+                Toast.makeText(this@SignUpActivity, "회원가입 요청 실패", Toast.LENGTH_SHORT).show()
+            }
+        })
     }
 
-    private fun saveUserData(userId: String?, username: String, email: String) {
-        val db = FirebaseFirestore.getInstance()
+
+    private fun saveUserDataToFirestore() {
         val user = hashMapOf(
-            "username" to username,
-            "email" to email
-            // 추가 필요한 정보
+            "Name" to Name,
+            "Email" to Email,
+            "Password" to Password
         )
 
-        if (userId != null) {
+        // Firestore에 사용자 정보 저장
+        val collectionPath = "users" // 사용자 정보를 저장할 컬렉션 이름
+        db.collection(collectionPath).document(auth.currentUser!!.uid)
+            .set(user)
+            .addOnSuccessListener {
+                // Firestore에 데이터가 성공적으로 추가된 경우
+                Toast.makeText(this, "회원가입에 성공하였습니다.", Toast.LENGTH_SHORT).show()
+            }
+            .addOnFailureListener {
+                // Firestore에 데이터 추가 중 오류 발생한 경우
+                Toast.makeText(this, "회원가입에 실패하였습니다.", Toast.LENGTH_SHORT).show()
+            }
+
+    }
+
+    private fun checkDuplicateUsername() {
+        val enteredName = nameEditText.text.toString()
+
+        if (enteredName.isNotEmpty()) {
+            // 닉네임이 비어 있지 않은 경우에만 중복 확인 쿼리 수행
             db.collection("users")
-                .document(userId)
-                .set(user)
-                .addOnSuccessListener {
-                    Log.d(TAG, "DocumentSnapshot successfully written!")
+                .whereEqualTo("Name", enteredName)
+                .get()
+                .addOnSuccessListener { documents ->
+                    isUsernameAvailable = documents.isEmpty // 중복 여부를 저장
+                    if (isUsernameAvailable) {
+                        // 중복된 닉네임이 없으면 사용 가능
+                        Toast.makeText(this, "사용 가능한 닉네임입니다.", Toast.LENGTH_SHORT).show()
+                    } else {
+                        // 중복된 닉네임이 존재하면 사용 불가능
+                        Toast.makeText(this, "이미 사용 중인 닉네임입니다.", Toast.LENGTH_SHORT).show()
+                    }
                 }
                 .addOnFailureListener { e ->
-                    Log.w(TAG, "Error writing document", e)
+                    // 쿼리 중 오류 발생
+                    Toast.makeText(this, "중복 확인 중 오류가 발생했습니다.", Toast.LENGTH_SHORT).show()
                 }
+        } else {
+            // 닉네임이 비어 있는 경우에 대한 처리
+            Toast.makeText(this, "닉네임을 입력하세요.", Toast.LENGTH_SHORT).show()
         }
     }
 }
+

@@ -1,0 +1,8 @@
+{"level":"info","message":"@@@@@@@@@@@mongodb://root:1234@localhost:27017/shareDB?authSource=admin","timestamp":"2024-03-18T16:16:59.554Z"}
+{"level":"info","message":"Server listening on port 4000","timestamp":"2024-03-18T16:16:59.570Z"}
+{"level":"error","message":"웹소켓 도착하긴 함","timestamp":"2024-03-18T16:23:10.828Z"}
+{"level":"info","message":"웹소켓 연결 요청 URL: /65f86a6eb43c401e2cf6f734","timestamp":"2024-03-18T16:23:10.829Z"}
+{"level":"error","message":"웹소켓 도착하긴 함","timestamp":"2024-03-18T16:23:21.149Z"}
+{"level":"info","message":"웹소켓 연결 요청 URL: /65f86a78b43c401e2cf6f735","timestamp":"2024-03-18T16:23:21.150Z"}
+{"level":"error","message":"웹소켓 도착하긴 함","timestamp":"2024-03-18T16:23:25.298Z"}
+{"level":"info","message":"웹소켓 연결 요청 URL: /65f86a6eb43c401e2cf6f734","timestamp":"2024-03-18T16:23:25.298Z"}

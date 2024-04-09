@@ -1,12 +1,15 @@
 package com.Backend.shareNote.domain.Oraganization.controller;
 
 import com.Backend.shareNote.domain.Oraganization.entity.Organization;
-import com.Backend.shareNote.domain.Oraganization.notedto.NoteCreateDTO;
-import com.Backend.shareNote.domain.Oraganization.notedto.NoteDeleteDTO;
-import com.Backend.shareNote.domain.Oraganization.notedto.NoteUpdateDTO;
+import com.Backend.shareNote.domain.Oraganization.DTOs.likesdto.LikesDTO;
+import com.Backend.shareNote.domain.Oraganization.DTOs.notedto.NoteCreateDTO;
+import com.Backend.shareNote.domain.Oraganization.DTOs.notedto.NoteDeleteDTO;
+import com.Backend.shareNote.domain.Oraganization.DTOs.notedto.NoteSearchDTO;
+import com.Backend.shareNote.domain.Oraganization.DTOs.notedto.NoteUpdateDTO;
 import com.Backend.shareNote.domain.Oraganization.service.NoteService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -14,10 +17,11 @@ import java.util.List;
 @RestController
 @Slf4j
 @RequiredArgsConstructor
+@RequestMapping("/api")
 public class NoteController {
     private final NoteService noteService;
     @PostMapping("/user/note")
-    public String createNote(@RequestBody NoteCreateDTO noteCreateDTO){
+    public ResponseEntity<NoteSearchDTO> createNote(@RequestBody NoteCreateDTO noteCreateDTO){
         return noteService.createNote(noteCreateDTO);
 
     }
@@ -36,5 +40,10 @@ public class NoteController {
     public String updateNote(@RequestBody NoteUpdateDTO noteUpdateDTO){
         return noteService.updateNote(noteUpdateDTO);
 
+    }
+
+    @PostMapping("/user/note/block/likes")
+    public ResponseEntity<String> blockLikes(@RequestBody LikesDTO likesDTO){
+        return noteService.blockLikes(likesDTO);
     }
 }

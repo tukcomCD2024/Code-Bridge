@@ -12,7 +12,7 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class S3Controller {
     private final S3UploadService s3UploadService;
-    @PostMapping("/image")
+    @PostMapping("/api/image")
     public S3ImageDTO uploadReview(@RequestParam("multipartFile") MultipartFile multipartFile) throws IOException {
         S3ImageDTO s3ImageDto = new S3ImageDTO(s3UploadService.saveFile(multipartFile));
         return s3ImageDto;

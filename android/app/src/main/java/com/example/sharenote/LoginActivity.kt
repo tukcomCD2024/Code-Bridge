@@ -17,7 +17,7 @@ import com.google.android.gms.common.api.ApiException
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.GoogleAuthProvider
-
+import com.google.firebase.firestore.FirebaseFirestore
 
 
 class LoginActivity : AppCompatActivity() {
@@ -34,7 +34,7 @@ class LoginActivity : AppCompatActivity() {
         configureGoogleSignIn()
 
         // 회원가입 창으로
-        findViewById<View>(R.id.signupButton).setOnClickListener {
+        findViewById<View>(R.id.signupLink).setOnClickListener {
             startActivity(Intent(this, SignUpActivity::class.java))
         }
 
@@ -121,8 +121,28 @@ class LoginActivity : AppCompatActivity() {
 
     private fun moveMainPage(user: FirebaseUser?) {
         if (user != null) {
-            startActivity(Intent(this, MainActivity::class.java))
-            finish()
+            val db = FirebaseFirestore.getInstance()
+            db.collection("workSpaces")
+                .whereEqualTo("owner", user.email)
+                .get()
+                .addOnSuccessListener { documents ->
+                    if (documents.isEmpty) {
+                        // 워크스페이스가 없는 경우 OrganizationActivity로 이동
+                        startActivity(Intent(this, OrganizationActivity::class.java))
+                    } else {
+                        // 워크스페이스가 있는 경우 MainActivity로 이동
+                        startActivity(Intent(this, MainActivity::class.java))
+                    }
+                    finish()
+                }
+                .addOnFailureListener { exception ->
+                    // 쿼리 실패 시 에러 처리
+                    Toast.makeText(
+                        baseContext, "워크스페이스를 확인하는 중 오류가 발생하였습니다.",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    finish()
+                }
         }
     }
 }
