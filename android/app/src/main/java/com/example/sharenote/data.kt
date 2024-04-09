@@ -34,3 +34,14 @@ data class WorkSpace(
     val owner: String,
     val id : String
 )
+
+data class Organization(
+    val name: String,
+    val owner: String,
+    val emoji: String
+)
+data class OrganizationResponse(
+    val owner: String,
+    val emoji: String,
+    val organizationId: String
+)
