@@ -1,10 +1,11 @@
 package com.example.sharenote
 
 data class Note(
-    val noteId: String,
-    val title: String,
     val organizationId: String,
-    val userId: String
+    val title: String,
+    val userId: String,
+    val noteImageUrl: String,
+    val noteId: String
     // 필요한 다른 필드 추가
 )
 
@@ -17,14 +18,11 @@ data class Page(
 
 data class UserData(
     val nickname: String,
+    val userId: String,
     val email: String,
     val password: String
 )
 
-data class LoginData(
-    val email: String,
-    val password: String
-)
 
 data class WorkSpace(
     val name: String,
