@@ -120,7 +120,7 @@ function NotePage() {
     return allowedExtensions.includes(fileExtension);
   };
 
-  useEffect(() => {
+
     const userId = localStorage.getItem('userId');
     const fetchNotesInformation = async () => {
       try {
@@ -139,18 +139,17 @@ function NotePage() {
       }
     };
 
+    useEffect(() => {
     const fetchNotes = async () => {
-      const organizaionId = id;
       try {
-        const response = await fetch(`/api/user/note/${organizaionId}`);
+        const response = await fetch(`/api/user/note/${organizationId}`);
           if (response.ok) {
             const data = await response.json();
             const fetchedNoteData = data.map(note => ({
               id: note.id,
               name: note.title,
               image: note.noteImageUrl,
-              organizationId: organizationId
-
+              organizationId: id
             }));
             setNotes(fetchedNoteData);
             localStorage.setItem("notes", JSON.stringify(fetchedNoteData));
@@ -201,6 +200,7 @@ function NotePage() {
   };
 
   const handleOpenOrganizationModal = () => {
+    fetchNotesInformation();
     setOrganizationModalOpen(true);
   };
 
