@@ -30,27 +30,31 @@ const SignupPage = () => {
     }
   };
 
-  const handleEmailDuplicateCheck = () => {
+  const handleEmailDuplicateCheck = async () => {
     if (email === "") {
-      alert("이메일를 입력하세요.");
+      alert("이메일를 입력하세요."); 
       return;
     }
-    // fetch(`/user/signup?email=${email}`)
-    //   .then((response) => response.json())
-    //   .then((data) => {
-    //     if (data.isAvailable === false) {
-    //       // 중복된 닉네임이 있음을 사용자에게 알림
-    //       alert("이메일의 닉네임이 존재합니다.");
-    //     } else {
-    //       setIsEmailAvailable(data.isAvailable);
-    //       setResultMessage(data.message);
-    //     }
-    //   })
-    //   .catch((error) => {
-    //     console.error("Error:", error);
-    //     alert("처리에 실패하였습니다.");
-    //   });
+    try {
+      const response = await fetch(`/api/user/uniqueEmail/${email}`, {
+        method: "POST",
+      });
+      if (response.ok) {
+        const data = await response.json();
+        console.log(response);
+        alert("입력하신 이메일의 계정이 이미 존재합니다.");
+      } else {
+        console.log(response);
+        setIsEmailAvailable(email);
+        toastr.info("사용 가능한 이메일 주소입니다."); 
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      alert("처리에 실패하였습니다.");
+    }
   };
+  
+
 
   const handleNicknameDuplicateCheck = () => {
     if (nickname === "") {

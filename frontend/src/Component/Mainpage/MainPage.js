@@ -186,12 +186,11 @@ function MainPage() {
         const errorData = await response.json();
         alert(`생성 실패: ${errorData.message}`);
       }
-    } catch (error) {      console.error("Error: ", error);
+    } catch (error) {      
+      console.error("Error: ", error);
       alert("처리 중 오류가 발생했습니다.");
     }
   };
-
-  
 
   return (
     <StContainer>
