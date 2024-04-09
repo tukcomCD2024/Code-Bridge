@@ -384,11 +384,6 @@ const SignupBtn = styled.button`
   }
 `;
 
-const IsNotUser = styled.div`
-  display: "flex";
-  align-items: "center";
-`;
-
 const HomeBtn = styled.span`
   display: "inline-block";
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);

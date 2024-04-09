@@ -20,20 +20,6 @@ const OrganizationInfoModal = ({
   const { id } = useParams();
   const organizationId = String(id);
 
-  const initialNicknames = [
-    "닉네임1",
-    "닉네임2",
-    "닉네임3",
-    "닉네임4",
-    "닉네임5",
-    "닉네임6",
-    "닉네임7",
-    "닉네임8",
-    "닉네임9",
-  ];
-
-  localStorage.setItem("userNicknames", JSON.stringify(initialNicknames));
-
   // 이메일 입력 처리 함수
   const handleEmailInputChange = (event) => {
     setUserEmailInput(event.target.value);
@@ -159,10 +145,10 @@ const OrganizationInfoModal = ({
           <BottomContainer>
             {" "}
             <Title>
-              &nbsp;&nbsp;◾ 멤버 목록 ({initialNicknames.length}명)
+              &nbsp;&nbsp;◾ 멤버 목록 ({organization.members.length}명)
             </Title>
             <UserList>
-              {userNicknames.map((nickname, index) => (
+              {organization.members.map((nickname, index) => (
                 <div
                   key={index}
                   style={{
@@ -269,7 +255,7 @@ const BottomContainer = styled.div`
 
 const UserList = styled.div`
   background: #ffffff;
-  padding: 12px 15px;
+  padding: 11px 20px;
   border: 1px solid #d0d0d0;
   width: 100%;
   height: 100%;

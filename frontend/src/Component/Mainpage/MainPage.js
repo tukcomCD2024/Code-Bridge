@@ -95,11 +95,11 @@ function MainPage() {
         const response = await fetch(`/api/user/organization/${userId}`);
           if (response.ok) {
             const data = await response.json();
-            // 전체 데이터에서 id(Organization 고유값), name(Organization 이름), emoji(Organization 대표마크)만 추출
-            const fetchedOrganizationData = data.map(org => ({
+              const fetchedOrganizationData = data.map(org => ({
               id: org.id,
               name: org.name,
-              emoji: org.emoji
+              emoji: org.emoji,
+              members: org.members,
             }));
             setOrganizations(fetchedOrganizationData);
           } else {
