@@ -78,19 +78,16 @@ class LoginActivity : AppCompatActivity() {
     private fun login(email: String, password: String) {
         GlobalScope.launch(Dispatchers.IO) {
             try {
-                // 이메일과 비밀번호로 사용자 인증을 시도
-                val userData = UserData("", "", email, password) // 이름은 사용되지 않으므로 빈 문자열로 설정
+                val userData = UserData("", "", email, password)
                 val response = apiService.login(userData)
                 if (response.isSuccessful) {
-                    val user = response.body()
-                    if (user != null) {
-                        val name = user.nickname
-                        val userId = user.userId
-                        val userEmail = user.email
+                    val userResponse = response.body()
+                    if (userResponse != null) {
 
-                        // SharedPreferences나 다른 저장소에 사용자 정보 저장
-                        SharedPreferencesUtil.saveUserData(this@LoginActivity, name, userId, userEmail)
-
+                        val name = userResponse.name
+                        val id = userResponse.userId
+                        // SharedPreferences에 저장
+                        SharedPreferencesUtil.saveUserData(this@LoginActivity, name, id, email)
                         // 로그인 성공 시 MainActivity로 이동
                         val intent = Intent(this@LoginActivity, MainActivity::class.java)
                         startActivity(intent)
@@ -109,13 +106,14 @@ class LoginActivity : AppCompatActivity() {
                 withContext(Dispatchers.Main) {
                     Toast.makeText(
                         this@LoginActivity,
-                        "로그인 중 오류가 발생하였습니다.${e.message}",
+                        "${e.message}",
                         Toast.LENGTH_SHORT
                     ).show()
                 }
             }
         }
     }
+
 
 
 

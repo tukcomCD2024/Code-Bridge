@@ -23,6 +23,11 @@ data class UserData(
     val password: String
 )
 
+data class UserResponse(
+    val name: String,
+    val userId: String
+)
+
 
 data class WorkSpace(
     val name: String,
