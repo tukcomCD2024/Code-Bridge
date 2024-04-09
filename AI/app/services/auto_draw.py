@@ -29,8 +29,15 @@ def getImage():
     return img
 
 
+def resize(image):
+    image = image.resize((224, 224))
+    image = np.array(image)
+    image = np.expand_dims(image, axis=0)
+    return image
+
+
 def getPredict(img):
-    saved_model = load_model(os.getcwd() + "/Flasktest/services/vgg16_sigmoid_RMS.h5")
+    saved_model = load_model(os.getcwd() + "/app/services/vgg16_sigmoid_RMS.h5")
     pre = saved_model.predict(img)
 
     return pre
@@ -53,5 +60,5 @@ def readFromJsonToImage(json_data):
 
 def AI(json_data):
     image = readFromJsonToImage(json_data)
-    preResult = getPredict(image)
+    preResult = getPredict(resize(image))
     return preResult
