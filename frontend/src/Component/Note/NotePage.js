@@ -232,7 +232,7 @@ function NotePage() {
 
       const updatedNotes = [...notes, newNote];
       setNotes(updatedNotes);
-      localStorage.setItem("notes", JSON.stringify(updatedNotes));
+      fetchNotesInformation();
       handleCloseModal();
     };
     
@@ -261,9 +261,7 @@ function NotePage() {
   
   const removeOrganization = async () => {
     const userLoginId = localStorage.getItem("email");
-    let notes = localStorage.getItem("notes");
-    let notesArray = JSON.parse(notes);
-    const isConfirmed = window.confirm(`"${organization?.name}" 의 데이터를 삭제하시겠습니까?\n\n${notesArray.length}개의 모든 노트가 삭제됩니다.`);
+    const isConfirmed = window.confirm(`"${organization?.name}" 의 모든 데이터를 삭제하시겠습니까? \n\n${organization.notes.length}개의 노트가 삭제되고, ${organization.members.length}명의 멤버가 추방됩니다.\n계속 진행하시려면 확인을 눌러주세요.`);
 
     if (isConfirmed) {
       try {
