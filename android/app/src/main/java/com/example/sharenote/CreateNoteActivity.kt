@@ -9,6 +9,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.auth.User
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -35,21 +36,25 @@ class CreateNoteActivity : AppCompatActivity() {
         backTextView = findViewById(R.id.backTextView)
 
         // 현재 워크스페이스 ID를 가져와서 organizationId에 저장
-        organizationId = getRecentWorkspaceId() ?: ""
+        //organizationId = getRecentWorkspaceId() ?: ""
 
         // 현재 로그인한 사용자의 ID 가져오기
-        userId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
+        //userId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
+
 
         backTextView.setOnClickListener {
             onBackPressed()
         }
 
         continueButton.setOnClickListener {
-            val noteTitle = noteTitleEditText.text.toString().trim()
+            val title = noteTitleEditText.text.toString().trim()
 
-            if (noteTitle.isNotEmpty()) {
+            if (title.isNotEmpty()) {
+                val organizationId = getRecentWorkspaceId() ?: ""
+                val userId = getUserId() ?: ""
+
                 val noteImageUrl = "http~" // NoteImageUrl 값은 임시로 설정했습니다.
-                val noteData = Note(organizationId, noteTitle, userId, noteImageUrl,"")
+                val noteData = UserNote(organizationId, title, userId, noteImageUrl)
                 sendNoteDataToMongoDB(noteData)
             } else {
                 Toast.makeText(this, "노트 제목을 입력하세요.", Toast.LENGTH_SHORT).show()
@@ -92,18 +97,33 @@ class CreateNoteActivity : AppCompatActivity() {
     }
 
 
-    private fun sendNoteDataToMongoDB(note: Note) {
+    private fun sendNoteDataToMongoDB(note: UserNote) {
         GlobalScope.launch(Dispatchers.IO) {
             try {
                 val response = RetrofitClient.apiService.sendNoteData(note)
                 if (response.isSuccessful) {
+                    // MongoDB에 데이터 저장 성공
+                    val noteResponse = response.body()
+                    if (noteResponse != null) {
+                        val noteId = noteResponse.noteId
 
-                    Toast.makeText(this@CreateNoteActivity, "노트가 성공적으로 저장되었습니다.", Toast.LENGTH_SHORT).show()
-                    // 저장이 완료되면 메인 화면으로 이동
-                    val intent = Intent(this@CreateNoteActivity, MainActivity::class.java)
-                    startActivity(intent)
-                    finish()
+                        saveRecentNoteId(noteId) // noteId 저장
 
+
+                        // 저장이 완료되면 메인 화면으로 이동
+                        val intent = Intent(this@CreateNoteActivity, MainActivity::class.java)
+                        startActivity(intent)
+                        finish()
+                    } else {
+                        // 반환된 데이터가 없을 경우 에러 처리
+                        withContext(Dispatchers.Main) {
+                            Toast.makeText(
+                                this@CreateNoteActivity,
+                                "노트 정보를 받아오지 못했습니다.",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    }
                 } else {
                     // MongoDB에 데이터 저장 실패
                     withContext(Dispatchers.Main) {
@@ -118,18 +138,26 @@ class CreateNoteActivity : AppCompatActivity() {
             } catch (e: Exception) {
                 // 네트워크 오류 등 예외 처리
                 withContext(Dispatchers.Main) {
-                    Toast.makeText(this@CreateNoteActivity, "네트워크 오류가 발생했습니다.", Toast.LENGTH_SHORT)
-                        .show()
+                    Toast.makeText(
+                        this@CreateNoteActivity,
+                        "네트워크 오류가 발생했습니다.",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
             }
         }
     }
 
-
-
-
-
     private fun getRecentWorkspaceId(): String? {
         return SharedPreferencesUtil.getRecentWorkspaceId(this)
     }
+
+    private fun getUserId(): String? {
+        return SharedPreferencesUtil.getUserId(this)
+    }
+
+    private fun saveRecentNoteId(noteId: String) {
+        SharedPreferencesUtil.saveRecentNoteId(this, noteId)
+    }
+
 }

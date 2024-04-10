@@ -21,6 +21,6 @@ interface ApiService {
     suspend fun sendWorkSpaceData(@Body organization: Organization): Response<OrganizationResponse>
 
     @POST("note")
-    suspend fun sendNoteData(@Body note: Note): Response<ResponseBody>
+    suspend fun sendNoteData(@Body note: UserNote): Response<NoteResponse>
 
 }
