@@ -6,9 +6,6 @@ import App from "./App";
 import "./styles.css";
 
 const GlobalFontStyle = createGlobalStyle`
-    @import url("https://spoqa.github.io/spoqa-han-sans/css/SpoqaHanSansNeo.css");
-    @import url("https://cdn.jsdelivr.net/gh/toss/tossface/dist/tossface.css");
-
   * {
     font-family: "Spoqa Han Sans Neo", "Tossface","sans-serif";
   }
