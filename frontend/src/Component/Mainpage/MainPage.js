@@ -87,7 +87,16 @@ function MainPage() {
   const [isInvalid, setIsInvalid] = useState(false);
   
   const location = useLocation(); // 현재 위치 정보를 가져옴
+  const navigate = useNavigate(); // useNavigate 훅 사용
   const userId = localStorage.getItem('userId');
+
+  useEffect(() => {
+    if(!userId){
+      navigate("/login");
+      alert("계정 정보가 없습니다. 로그인 후 접속하세요.");
+      return;
+    }
+  }, [location]);
 
   useEffect(() => {
     const fetchOrganizations = async () => {
