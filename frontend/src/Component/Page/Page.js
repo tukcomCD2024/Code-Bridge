@@ -50,10 +50,36 @@ function Page() {
   const note = location.state || { name: "노트 목록에서 접속바랍니다.", image: "null" };
 
   const pathSegments = location.pathname.split('/').filter(Boolean); 
+  const organizationId = pathSegments[1];
   const noteId = pathSegments[2];
   
+  const [noteinfo, setNoteInfo] = useState(null);
   const [isloaded, setisloaded] = useState(false); // 로딩 상태 관리
   const [usersAndColors, setUsersAndColors] = useState([]); // 연결된 사용자와 색상 상태
+
+  useEffect(() => {
+    const fetchNoteInfo = async () => {
+    try {
+      const response = await fetch(`/api/user/note/${organizationId}`);
+        if (response.ok) {
+          const data = await response.json();
+          const noteData = data.find(note => note.id === noteId); 
+          if (noteData) { 
+            setNoteInfo({
+              id: noteData.id,
+              name: noteData.title,
+              image: noteData.noteImageUrl,
+            });
+          }
+        } else {
+          console.error("Failed to fetch");
+        }
+      } catch (error) {
+        console.error('Error fetching', error);
+      }
+    };
+    fetchNoteInfo();
+  }, [location, noteId]);
 
   const { nodes, marks } = basicSchema.spec;
   const extendedNodes = addListNodes(
@@ -455,9 +481,9 @@ function Page() {
       )}
         <LayoutContainer>
           <NavigationBar $isloaded={isloaded.toString()}>
-            <Notename>📖&nbsp;&nbsp;&nbsp;{note.name}&nbsp;&nbsp;&nbsp;📖</Notename>
+          <Notename>📖&nbsp;&nbsp;&nbsp;{noteinfo ? noteinfo.name : "Loading..."}&nbsp;&nbsp;&nbsp;📖</Notename>
             <br/>
-            <img src={note.image} alt="Note" />
+            <img src={noteinfo ? noteinfo.image : 'https://sharenotebucket.s3.ap-northeast-2.amazonaws.com/NoneImage2.png'} alt="Note" />
             <p />
             <hr />
             <PageRemoteContainer>
