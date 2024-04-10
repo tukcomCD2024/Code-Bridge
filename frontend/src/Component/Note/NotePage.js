@@ -11,12 +11,10 @@ import toastr from "toastr";
 import "toastr/build/toastr.css";
 toastr.options.positionClass = "toast-top-right";
 
-
 function NoteCard({ note, index }) {
   return (
     <Link 
       to={`/organization/${note.organizationId}/${note.id}`}
-      state={{ name: note.name, image: note.image }}
     >
       {/* {"📖"} */}
       <NoteContainer>
@@ -120,9 +118,8 @@ function NotePage() {
     return allowedExtensions.includes(fileExtension);
   };
 
-
     const userId = localStorage.getItem('userId');
-    const fetchNotesInformation = async () => {
+    const fetchOrganizationInfo = async () => {
       try {
         const response = await fetch(`/api/user/organization/${userId}`);
         if (response.ok) {
@@ -152,7 +149,7 @@ function NotePage() {
               organizationId: id
             }));
             setNotes(fetchedNoteData);
-            localStorage.setItem("notes", JSON.stringify(fetchedNoteData));
+            // localStorage.setItem("notes", JSON.stringify(fetchedNoteData));
           } else {
             console.error("Failed to fetch");
           }
@@ -161,7 +158,7 @@ function NotePage() {
         }
       };
 
-    fetchNotesInformation();
+    fetchOrganizationInfo();
     fetchNotes();
   }, [id, location]);
 
@@ -200,7 +197,7 @@ function NotePage() {
   };
 
   const handleOpenOrganizationModal = () => {
-    fetchNotesInformation();
+    fetchOrganizationInfo();
     setOrganizationModalOpen(true);
   };
 
@@ -232,7 +229,7 @@ function NotePage() {
 
       const updatedNotes = [...notes, newNote];
       setNotes(updatedNotes);
-      fetchNotesInformation();
+      fetchOrganizationInfo();
       handleCloseModal();
     };
     
@@ -260,6 +257,12 @@ function NotePage() {
   };
   
   const removeOrganization = async () => {
+    if (organization?.name == null) {
+      toastr.info("정보를 불러오지 못했습니다.");
+      navigate("/main");
+      return;
+    }
+
     const userLoginId = localStorage.getItem("email");
     const isConfirmed = window.confirm(`"${organization?.name}" 의 모든 데이터를 삭제하시겠습니까? \n\n${organization.notes.length}개의 노트가 삭제되고, ${organization.members.length}명의 멤버가 추방됩니다.\n계속 진행하시려면 확인을 눌러주세요.`);
 

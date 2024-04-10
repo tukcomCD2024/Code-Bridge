@@ -163,7 +163,7 @@ function MainPage() {
   
       const updatedOrganizations = [...organizations, newOrganization];
       setOrganizations(updatedOrganizations);
-      localStorage.setItem("organizations", JSON.stringify(updatedOrganizations));
+      // localStorage.setItem("organizations", JSON.stringify(updatedOrganizations));
       handleCloseModal();
     };
   

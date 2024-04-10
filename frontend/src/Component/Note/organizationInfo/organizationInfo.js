@@ -13,7 +13,6 @@ const OrganizationInfoModal = ({
   const modalRef = useRef();
   const navigate = useNavigate();
 
-  const [userNicknames, setUserNicknames] = useState([]);
   const [userEmailInput, setUserEmailInput] = useState(""); // 사용자 이메일 입력 상태 관리
   const [isSendButtonDisabled, setIsSendButtonDisabled] = useState(false);
 
@@ -80,12 +79,6 @@ const OrganizationInfoModal = ({
       toastr.options.positionClass = "toast-top-right";
       toastr.info("정보를 불러오지 못했습니다.");
       navigate("/main");
-    }
-
-    // 로컬 스토리지에서 유저 이메일 배열을 읽어와 상태에 저장합니다.
-    const storedEmails = localStorage.getItem("userNicknames");
-    if (storedEmails) {
-      setUserNicknames(JSON.parse(storedEmails));
     }
   }, [organization, navigate]);
 
