@@ -9,6 +9,7 @@ import Page from "./Component/Page/Page";
 import EmailTokenHandler from "./Component/Utils/EmailTokenHandler";
 import { BrowserRouter, Routes, Route  } from "react-router-dom";
 
+// mainPageId는 noteId와 동일함
 export default function App() {
   return (
     <div className="App">
@@ -21,9 +22,10 @@ export default function App() {
           <Route path="/editProfile" element={<UserProfileEdit />} />
           <Route path="/logout" element={<Mainpage />} />
           <Route path="/about" element={<Mainpage />} />
-          <Route path="/organization/:id/*" element={<NotePage />} />
           <Route path="/organization/invitation/approve" element={<EmailTokenHandler />} />
-          <Route path="/organization/:id/:id" element={<Page />} />
+          <Route path="/organization/:id/*" element={<NotePage />} /> 
+          <Route path="/organization/:id/:mainPageId" element={<Page />} />
+          <Route path="/organization/:id/:mainPageId/:subPageId" element={<Page />} /> 
         </Routes>
       </BrowserRouter>
     </div>

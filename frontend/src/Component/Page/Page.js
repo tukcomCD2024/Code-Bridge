@@ -47,11 +47,16 @@ function Page() {
 
   const location = useLocation();
   const navigate = useNavigate();
-  const note = location.state || { name: "노트 목록에서 접속바랍니다.", image: "null" };
 
   const pathSegments = location.pathname.split('/').filter(Boolean); 
   const organizationId = pathSegments[1];
   const noteId = pathSegments[2];
+  let pageId;
+
+  // 페이지 ID가 URL에 포함되어 있는 경우
+  if(pathSegments.length > 3) {
+    pageId = pathSegments[3];
+  }
   
   const [noteinfo, setNoteInfo] = useState(null);
   const [isloaded, setisloaded] = useState(false); // 로딩 상태 관리
@@ -124,7 +129,7 @@ function Page() {
   useEffect(() => {
     if (!editorRef.current) return;
 
-    const roomId = noteId;
+    const roomId = pageId || noteId;
     const ydoc = getYDocInstance(roomId);
     const provider = new WebsocketProvider(
       // "wss://demos.yjs.dev/ws", // 웹소켓 서버 주소(데모용)
@@ -450,7 +455,7 @@ function Page() {
       yjsDisconnect();
 
     };
-  }, []);
+  }, [pageId]);
 
   return (
     <div>
