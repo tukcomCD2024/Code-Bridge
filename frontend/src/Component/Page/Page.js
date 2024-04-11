@@ -36,7 +36,7 @@ import 'toastr/build/toastr.css';
 import { v4 as uuidv4 } from "uuid";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faLeftLong, faRightLong, faSquarePlus, faTrashCan } from "@fortawesome/free-solid-svg-icons";
+import { faLeftLong, faRightLong, faSquarePlus, faTrashCan, faList, faGear } from "@fortawesome/free-solid-svg-icons";
 
 
 
@@ -47,13 +47,44 @@ function Page() {
 
   const location = useLocation();
   const navigate = useNavigate();
-  const note = location.state || { name: "노트 목록에서 접속바랍니다.", image: "null" };
 
   const pathSegments = location.pathname.split('/').filter(Boolean); 
+  const organizationId = pathSegments[1];
   const noteId = pathSegments[2];
+  let pageId;
+
+  // 페이지 ID가 URL에 포함되어 있는 경우
+  if(pathSegments.length > 3) {
+    pageId = pathSegments[3];
+  }
   
+  const [noteinfo, setNoteInfo] = useState(null);
   const [isloaded, setisloaded] = useState(false); // 로딩 상태 관리
   const [usersAndColors, setUsersAndColors] = useState([]); // 연결된 사용자와 색상 상태
+
+  useEffect(() => {
+    const fetchNoteInfo = async () => {
+    try {
+      const response = await fetch(`/api/user/note/${organizationId}`);
+        if (response.ok) {
+          const data = await response.json();
+          const noteData = data.find(note => note.id === noteId); 
+          if (noteData) { 
+            setNoteInfo({
+              id: noteData.id,
+              name: noteData.title,
+              image: noteData.noteImageUrl,
+            });
+          }
+        } else {
+          console.error("Failed to fetch");
+        }
+      } catch (error) {
+        console.error('Error fetching', error);
+      }
+    };
+    fetchNoteInfo();
+  }, [location, noteId]);
 
   const { nodes, marks } = basicSchema.spec;
   const extendedNodes = addListNodes(
@@ -98,7 +129,7 @@ function Page() {
   useEffect(() => {
     if (!editorRef.current) return;
 
-    const roomId = noteId;
+    const roomId = pageId || noteId;
     const ydoc = getYDocInstance(roomId);
     const provider = new WebsocketProvider(
       // "wss://demos.yjs.dev/ws", // 웹소켓 서버 주소(데모용)
@@ -143,7 +174,7 @@ function Page() {
       }
     });
     
-    function onlineUpdate(event) {
+    function onlineUpdate() {
       updateUsersAndColors(); 
       const userState = provider.awareness.getLocalState();
       if (userState && userState.user && userState.user.name) {
@@ -424,7 +455,7 @@ function Page() {
       yjsDisconnect();
 
     };
-  }, []);
+  }, [pageId]);
 
   return (
     <div>
@@ -455,11 +486,21 @@ function Page() {
       )}
         <LayoutContainer>
           <NavigationBar $isloaded={isloaded.toString()}>
-            <Notename>📖&nbsp;&nbsp;&nbsp;{note.name}&nbsp;&nbsp;&nbsp;📖</Notename>
-            <br/>
-            <img src={note.image} alt="Note" />
-            <p />
-            <hr />
+          <NoteHeaderContainer>
+            <Notename>📖&nbsp;&nbsp;&nbsp;{noteinfo ? noteinfo.name : "Loading..."}&nbsp;&nbsp;&nbsp;📖</Notename>
+              <br/>
+              <img src={noteinfo ? noteinfo.image : 'https://sharenotebucket.s3.ap-northeast-2.amazonaws.com/NoneImage2.png'} alt="Note" />
+              <NoteBtnContainer>
+                <NoteBtn onClick={() => navigate(`/organization/${organizationId}`)}>
+                  <FontAwesomeIcon icon={faList} />
+                    &nbsp;&nbsp;&nbsp;노트 목록
+                  </NoteBtn>
+                  <NoteBtn>
+                    노트 설정&nbsp;&nbsp;&nbsp;
+                    <FontAwesomeIcon icon={faGear} />
+                </NoteBtn>
+              </NoteBtnContainer>
+            </NoteHeaderContainer>
             <PageRemoteContainer>
               <PageCheck>
                 <ArrowBox>
@@ -570,6 +611,15 @@ const NavigationBar = styled.div`
   }
 `;
 
+const NoteHeaderContainer = styled.div`
+  padding-top: 15px;
+  padding-bottom: 1px;
+  width: 13vw;
+  background-color: rgba(250, 190, 88, 0.1); 
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 5px; 
+`;
+
 const Notename = styled.div`
   font-size: 20px;
   font-weight: bold;
@@ -577,12 +627,41 @@ const Notename = styled.div`
   overflow: hidden; /* 오버플로우된 텍스트 숨기기 */
   text-overflow: ellipsis; /* 오버플로우된 텍스트를 말줄임표로 표시 */
 `;
+
+const NoteBtnContainer = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 10px;
+  margin-bottom: 15px;
+  gap: 10px;
+`;
+
+const NoteBtn = styled.button`
+  padding: 8px 10px; // 버튼 내부 여백
+
+  border-radius: 4px; // 테두리 둥글게
+  background-color: #6c757d; // 버튼 배경색
+  color: white; // 버튼 글자색
+  border: none; // 테두리 제거
+  cursor: pointer; // 마우스 오버 시 커서 변경
+
+  &:hover {
+    background-color: #555555; // 마우스 오버 시 버튼 배경색 변경
+  }
+
+  @media (max-width: 1400px) {
+    width: 50%;
+  }
+`;
+
 const PageRemoteContainer = styled.div`
   width: 100%; // 기본 너비
+  margin-top: 15px;
 
   @media (min-width: 2000px) { // 화면 너비가 2560px 이상일 때
     width: 90%;
-    margin: 0 auto;
+    margin: 15px auto;
   }
 `;
 

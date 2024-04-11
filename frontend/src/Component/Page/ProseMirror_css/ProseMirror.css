@@ -378,14 +378,6 @@ img.ProseMirror-separator {
 }
 
 /* 아래부터는 직접 추가한 css 설정 */
-/*  문단(텍스트) 블록 단위 */
-/* .placeholder::before {
-  content: var(--placeholder-text);
-  color: #aaa;
-  cursor: text;
-  position: absolute;
-} */
-
 /*  문단(텍스트) 블록 단위_알록달록 */
 .placeholder::before {
   content: var(--placeholder-text);
@@ -418,7 +410,7 @@ img.ProseMirror-separator {
   border-radius: 4px;
 }
 
-.hoverButton_plus, .hoverButton_lock, .hoverButton_like, .hoverButton_like_fullRedHeart {
+.hoverButton_plus, .hoverButton_lock{
   cursor: pointer;
   width: 18px;
   height: 20px;
@@ -433,68 +425,95 @@ img.ProseMirror-separator {
 animation: spin 2s ease-in-out infinite;
 }
 
-@keyframes heartbeat {
-  0% {
-    transform: scale(0.95);
-  }
-  50% {
-    transform: scale(1.10);
-  }
-  100%{
-    transform: scale(0.95);
-  }
-}
-@keyframes verticalBeat {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(2px);
-  }
-}
-@keyframes spin {
-  0%, 100% {
-    transform: rotate(0deg);
-  }
-  25% {
-    transform: rotate(10deg);
-  }
-  75% {
-    transform: rotate(-10deg);
-  }
+.hoverButton_like,
+.hoverButton_like_fullRedHeart {
+  cursor: pointer;
+  width: 23px;
+  height: 32px;
+  margin: 0px 4px;
+  font-size: 22px;
 }
 
 .hoverButton_like {
-  cursor: pointer;
-  width: 20px;
-  height: 31px;
-  margin-left: 4px;
   fill: gray;
   color: gray;
-  font-size: 21px;
-}
-
-.hoverButton_like:hover {
-  animation: heartbeat 1s infinite;
-  transition: opacity 500ms;
-  opacity: 1;
 }
 
 .hoverButton_like_fullRedHeart {
-  cursor: pointer;
-  width: 20px;
-  height: 31px;
-  margin-left: 4px;
   fill: red;
   color: red;
-  font-size: 21px;
 }
 
+.hoverButton_like:hover,
 .hoverButton_like_fullRedHeart:hover {
   animation: heartbeat 1s infinite;
-  transition: opacity 500ms;
-  opacity: 1;
 }
+
+
+@keyframes heartbeat {
+  0% {
+    transform: scale(1.0);
+  }
+  15% {
+    transform: scale(0.9);
+  }
+  30% {
+    transform: scale(1.1);
+  }
+  45% {
+    transform: scale(0.9); 
+  }
+  60% {
+    transform: scale(1.05); 
+  }
+  75% {
+    transform: scale(0.95);
+  }
+  90% {
+    transform: scale(1.03);
+  }
+  100% {
+    transform: scale(1.0);
+  }
+}
+@keyframes verticalBeat {
+  0% {
+    transform: translateY(0);
+  }
+  25% {
+    transform: translateY(1px);
+  }
+  50% {
+    transform: translateY(-1px);
+  }
+  75% {
+    transform: translateY(1px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  20% {
+    transform: rotate(10deg);
+  }
+  40% {
+    transform: rotate(-10deg);
+  }
+  60% {
+    transform: rotate(5deg);
+  }
+  80% {
+    transform: rotate(-5deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
 
 /* this is a rough fix for the first cursor position when the first paragraph is empty */
 .ProseMirror > .ProseMirror-yjs-cursor:first-child {
