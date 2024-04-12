@@ -111,7 +111,11 @@ class WorkSpaceActivity : AppCompatActivity() {
                     val workSpaceResponse = response.body() // 응답 데이터 파싱
                     if (workSpaceResponse != null) {
                         // 반환된 데이터로부터 워크스페이스 ID 추출
+                        val workSpaceName = organization.name
                         val workSpaceId = workSpaceResponse.organizationId
+
+                        // 워크스페이스 이름을 SharedPreferences에 저장
+                        saveRecentWorkspaceName(workSpaceName)
 
                         // 추출한 ID를 SharedPreferences에 저장
                         saveRecentWorkspaceId(workSpaceId)
@@ -156,6 +160,10 @@ class WorkSpaceActivity : AppCompatActivity() {
     // SharedPreferences에 워크스페이스 ID 저장
     private fun saveRecentWorkspaceId(workspaceId: String) {
         SharedPreferencesUtil.saveRecentWorkspaceId(this, workspaceId)
+    }
+
+    private fun saveRecentWorkspaceName(workspaceName: String) {
+        SharedPreferencesUtil.saveRecentWorkspaceName(this, workspaceName)
     }
 
 }

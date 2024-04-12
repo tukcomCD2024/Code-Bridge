@@ -6,6 +6,8 @@ object SharedPreferencesUtil {
     private const val PREF_NAME = "MyPrefs"
     private const val KEY_RECENT_WORKSPACE_ID = "recent_workspace_id"
 
+    private const val KEY_RECENT_WORKSPACE_NAME = "recent_workspace_name"
+
     private const val PREF_NAME1 = "MyPrefs1"
     private const val KEY_RECENT_NOTE_ID = "recent_note_id"
 
@@ -25,6 +27,18 @@ object SharedPreferencesUtil {
     fun getRecentWorkspaceId(context: Context): String? {
         val sharedPrefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
         return sharedPrefs.getString(KEY_RECENT_WORKSPACE_ID, null)
+    }
+
+    // 최근 워크스페이스 이름 저장
+    fun saveRecentWorkspaceName(context: Context, workspaceName: String) {
+        val sharedPrefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+        sharedPrefs.edit().putString(KEY_RECENT_WORKSPACE_NAME, workspaceName).apply()
+    }
+
+    // 최근 워크스페이스 이름 불러오기
+    fun getRecentWorkspaceName(context: Context): String? {
+        val sharedPrefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+        return sharedPrefs.getString(KEY_RECENT_WORKSPACE_NAME, null)
     }
 
     // 최근 노트 ID 저장

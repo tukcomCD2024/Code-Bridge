@@ -93,7 +93,9 @@ class HomeFragment : Fragment() {
         val recentWorkspaceId = getRecentWorkspaceId()
 
         // 사용자 이메일을 표시합니다.
-        displayUserEmail()
+        val userEmail = SharedPreferencesUtil.getUserEmail(requireContext())
+        emailTextView.text = userEmail
+        emailTextView1.text = userEmail
 
         recentWorkspaceId?.let {
             displayWorkspaceName(it)
