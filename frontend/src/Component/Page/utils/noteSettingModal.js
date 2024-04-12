@@ -33,7 +33,7 @@ const NoteSettingModal = ({
     // 노트 정보 수정 함수
     const handleModify = async () => {
       const title = noteNameInput || note?.name || "노트 정보 없음";
-      const noteImageUrl = localStorage.getItem('recentImageUrl') || 'https://sharenotebucket.s3.ap-northeast-2.amazonaws.com/NoneImage2.png';
+      const noteImageUrl = localStorage.getItem('recentImageUrl') || note?.image || 'https://sharenotebucket.s3.ap-northeast-2.amazonaws.com/NoneImage2.png';
       const endpoint = "/api/user/note";
       try {
         setIsModifyButtonDisabled(true);
@@ -47,6 +47,7 @@ const NoteSettingModal = ({
         if (response.ok) {
             toastr.info("노트 수정 완료!");
             setNoteNameInput("");
+            handleCloseModal();
         } 
       } catch (error) {
         alert("처리에 실패했습니다.");
