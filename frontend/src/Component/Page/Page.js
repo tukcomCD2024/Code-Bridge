@@ -101,7 +101,7 @@ function Page() {
   useEffect(() => {
     const fetchNoteInfo = async () => {
     try {
-      const response = await fetch(`/api/user/note`);
+      const response = await fetch(`/api/user/note/${organizationId}`);
         if (response.ok) {
           const data = await response.json();
           const noteData = data.find(note => note.id === noteId); 

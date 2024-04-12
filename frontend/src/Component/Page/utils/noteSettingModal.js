@@ -44,7 +44,6 @@ const NoteSettingModal = ({
           },
           body: JSON.stringify({ title, noteImageUrl, organizationId, noteId }),
         });
-        const contentType = response.headers.get('content-type');
         if (response.ok) {
             toastr.info("노트 수정 완료!");
             setNoteNameInput("");
