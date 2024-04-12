@@ -428,9 +428,10 @@ animation: spin 2s ease-in-out infinite;
 .hoverButton_like,
 .hoverButton_like_fullRedHeart {
   cursor: pointer;
-  width: 23px;
-  height: 32px;
+  width: 22px;
+  height: 20px;
   margin: 0px 4px;
+  margin-bottom: 12px;
   font-size: 22px;
 }
 
