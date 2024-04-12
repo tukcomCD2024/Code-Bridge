@@ -80,7 +80,6 @@ function ImagetoBackend({ onImageUpload }) {
 const ImageUploadWrapper = styled.label`
   display: block;
   margin: 0;
-  margin-top: 10px;
   cursor: pointer;
   padding: 0 80px;
 `;
@@ -90,9 +89,7 @@ const ImageUploadButton = styled.span`
   line-height: 40px;
   width: 200px;
   border-radius: 10px;
-  border-color: #cccccc;
-  border-width: 1px; /* Add border-width property */
-  border-style: solid; /* Add border-style property */
+  border: 1px solid #cccccc;
   background-color: #ffffff;
 `;
 
