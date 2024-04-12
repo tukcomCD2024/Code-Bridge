@@ -113,6 +113,7 @@ function Page() {
             });
           }
         } else {
+          console.error(response.status);
           console.error("Failed to fetch");
         }
       } catch (error) {
@@ -120,7 +121,7 @@ function Page() {
       }
     };
     fetchNoteInfo();
-  }, [location, noteId]);
+  }, [location, noteId, noteinfo]);
 
   const { nodes, marks } = basicSchema.spec;
   const extendedNodes = addListNodes(

@@ -35,7 +35,6 @@ const NoteSettingModal = ({
       const title = noteNameInput || note?.name || "노트 정보 없음";
       const noteImageUrl = localStorage.getItem('recentImageUrl') || 'https://sharenotebucket.s3.ap-northeast-2.amazonaws.com/NoneImage2.png';
       const endpoint = "/api/user/note";
-
       try {
         setIsModifyButtonDisabled(true);
         const response = await fetch(endpoint, {
@@ -43,20 +42,16 @@ const NoteSettingModal = ({
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ title, noteImageUrl, organizationId, noteId }), // 입력된 이메일 데이터를 JSON 형태로 변환하여 전송
+          body: JSON.stringify({ title, noteImageUrl, organizationId, noteId }),
         });
         const contentType = response.headers.get('content-type');
         if (response.ok) {
-          if (contentType && contentType.includes('text/plain')) {
-            const responseText = await response.text();
-            toastr.info(`${responseText.message}`);;
+            toastr.info("노트 수정 완료!");
             setNoteNameInput("");
-          }
-        } else {
-          console.error("실패 코드:", response.status);
-        }
+        } 
       } catch (error) {
         alert("처리에 실패했습니다.");
+        console.error('Error:', error);
       }
       setIsModifyButtonDisabled(false);
     };
