@@ -28,7 +28,9 @@ import { inlinePlaceholderPlugin } from "./utils/inlinePlaceholderPlugin";
 import { hoverButtonPlugin } from "./utils/hoverButtonPlugin";
 import { checkBlockType } from "./utils/checkBlockType";
 import { cursorColors } from "../Utils/cursorColor"
+import NoteSettingModal from "./utils/noteSettingModal";
 import loadingImage from "../../image/loading.gif";
+
 
 import toastr from 'toastr';
 import 'toastr/build/toastr.css';
@@ -37,8 +39,6 @@ import { v4 as uuidv4 } from "uuid";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faLeftLong, faRightLong, faSquarePlus, faTrashCan, faList, faGear } from "@fortawesome/free-solid-svg-icons";
-
-
 
 function Page() {
   const editorRef = useRef(null);
@@ -61,6 +61,42 @@ function Page() {
   const [noteinfo, setNoteInfo] = useState(null);
   const [isloaded, setisloaded] = useState(false); // 로딩 상태 관리
   const [usersAndColors, setUsersAndColors] = useState([]); // 연결된 사용자와 색상 상태
+  const [noteSettingModalOpen, setNoteSettingModalOpen] = useState(false);
+  const [myimage, setMyImage] = useState(null);
+
+  const uploadImage = (e) => {
+    const selectedFile = e.target.files[0];
+
+    // 파일이 선택되었고, 이미지 파일인 경우에만 처리
+    if (selectedFile && isImageFile(selectedFile)) {
+      setMyImage(URL.createObjectURL(selectedFile));
+    } else {
+      // 이미지 파일이 아닌 경우에 대한 처리 (예: 경고 메시지 등)
+      alert("올바른 이미지 파일을 선택해주세요.");
+    }
+  };
+
+  // 이미지 파일 여부를 확인하는 함수
+  const isImageFile = (file) => {
+    const allowedExtensions = ["jpg", "jpeg", "png", "gif"]; // 허용된 확장자들
+
+    // 파일 이름에서 확장자 추출
+    const fileName = file.name;
+    const fileExtension = fileName.split(".").pop().toLowerCase();
+
+    // 허용된 확장자들 중에 포함되어 있는지 확인
+    return allowedExtensions.includes(fileExtension);
+  };
+
+  const handleOpenNoteSettingModal = () => {
+    setNoteSettingModalOpen(true);
+  };
+
+  const handleCloseNoteSettingModal = () => {
+    localStorage.setItem("recentImageUrl", '');
+    setMyImage(null);
+    setNoteSettingModalOpen(false);
+  };
 
   useEffect(() => {
     const fetchNoteInfo = async () => {
@@ -77,6 +113,7 @@ function Page() {
             });
           }
         } else {
+          console.error(response.status);
           console.error("Failed to fetch");
         }
       } catch (error) {
@@ -84,7 +121,7 @@ function Page() {
       }
     };
     fetchNoteInfo();
-  }, [location, noteId]);
+  }, [location, noteId, noteinfo]);
 
   const { nodes, marks } = basicSchema.spec;
   const extendedNodes = addListNodes(
@@ -487,15 +524,17 @@ function Page() {
         <LayoutContainer>
           <NavigationBar $isloaded={isloaded.toString()}>
           <NoteHeaderContainer>
-            <Notename>📖&nbsp;&nbsp;&nbsp;{noteinfo ? noteinfo.name : "Loading..."}&nbsp;&nbsp;&nbsp;📖</Notename>
-              <br/>
+            <Notename>
+              <span>📖&nbsp;</span>
+              <span>{noteinfo ? noteinfo.name : "Loading..."}</span>
+            </Notename>
               <img src={noteinfo ? noteinfo.image : 'https://sharenotebucket.s3.ap-northeast-2.amazonaws.com/NoneImage2.png'} alt="Note" />
               <NoteBtnContainer>
                 <NoteBtn onClick={() => navigate(`/organization/${organizationId}`)}>
                   <FontAwesomeIcon icon={faList} />
                     &nbsp;&nbsp;&nbsp;노트 목록
                   </NoteBtn>
-                  <NoteBtn>
+                  <NoteBtn onClick={handleOpenNoteSettingModal}>
                     노트 설정&nbsp;&nbsp;&nbsp;
                     <FontAwesomeIcon icon={faGear} />
                 </NoteBtn>
@@ -533,12 +572,12 @@ function Page() {
               </PageRemote>
             </PageRemoteContainer>
             <hr />
-            <p style={{ fontWeight: "bold" }}>접속중인 유저 목록</p>
-            <p><small>(커서 색상/닉네임)</small></p>
+            <p style={{ fontWeight: "bold", marginBottom: "0px" }}>접속중인 유저 목록</p>
+            <p style={{ marginTop:"0px" }}><small>(커서 색상/닉네임)</small></p>
            <ul>
             {usersAndColors.map(({ name, color }) => (
-              <li key={name} style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
-                <div style={{ width: '20px', height: '20px', backgroundColor: color, marginRight: '10px' }}></div>
+              <li key={name} style={{ display: 'flex', alignItems: 'center', marginBottom: '10px', marginLeft: '13px' }}>
+                <div style={{ width: '20px', height: '20px', backgroundColor: color, marginRight: '13px' }}></div>
                 {name} {name === nickname && "(본인)"}
               </li>
             ))}
@@ -555,11 +594,19 @@ function Page() {
                 paddingLeft: "8%",
                 paddingRight: "5%",
               }}
-              
             />
-
         </EditorContainer>
         </LayoutContainer>
+
+        {noteSettingModalOpen && (
+        <NoteSettingModal
+          modalOpen={noteSettingModalOpen}
+          handleCloseModal={handleCloseNoteSettingModal}
+          myimage={myimage}
+          uploadImage={uploadImage}
+          note={noteinfo}
+        />
+      )}
     </div>
   );
 }
@@ -590,6 +637,7 @@ const NavigationBar = styled.div`
     width: 200px; /* 너비 설정 */
     object-fit: contain; /* 비율 유지 */
     border-radius: 5px; /* 이미지에 둥근 모서리 추가 */
+    box-shadow: 1px 2px 1px #ccc;
   }
 
   & > p:nth-of-type(2) {
@@ -601,8 +649,8 @@ const NavigationBar = styled.div`
 
   @media screen and (max-width: 1500px) {
     img {
-      width: auto; // 이미지 너비 자동 조정
-      max-width: 100%; // 이미지가 부모 너비를 넘지 않도록
+      width: auto;
+      max-width: 100%; 
     }
   }
 
@@ -612,20 +660,42 @@ const NavigationBar = styled.div`
 `;
 
 const NoteHeaderContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center; 
   padding-top: 15px;
   padding-bottom: 1px;
   width: 13vw;
   background-color: rgba(250, 190, 88, 0.1); 
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   border-radius: 5px; 
+
+  img {
+    width: 88%; /* 너비 설정 */
+  }
 `;
 
 const Notename = styled.div`
-  font-size: 20px;
+  display: flex;
+  justify-content: space-between; 
+  align-items: center;
+  margin-bottom: 10px;
+  padding: 3px 10px;
+  font-size: 18px;
   font-weight: bold;
-  white-space: nowrap; /* 텍스트를 한 줄로 만들기 */
-  overflow: hidden; /* 오버플로우된 텍스트 숨기기 */
-  text-overflow: ellipsis; /* 오버플로우된 텍스트를 말줄임표로 표시 */
+  width: 80%;
+  background-color: rgba(255, 253, 208, 0.8);
+  border: 2px solid rgba(54, 69, 79, 0.2); 
+  border-radius: 7px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  @media screen and (max-width: 1500px) {
+      width: auto;
+      max-width: 100%; 
+  }
 `;
 
 const NoteBtnContainer = styled.div`
@@ -633,13 +703,16 @@ const NoteBtnContainer = styled.div`
   align-items: center;
   justify-content: center;
   margin: 10px;
-  margin-bottom: 15px;
   gap: 10px;
+
+  @media (min-width: 1800px) {
+    width: 88%; // 화면 너비가 1800px 이상일 때 버튼의 너비를 88%로 설정
+  }
 `;
 
 const NoteBtn = styled.button`
+  width: 100%;
   padding: 8px 10px; // 버튼 내부 여백
-
   border-radius: 4px; // 테두리 둥글게
   background-color: #6c757d; // 버튼 배경색
   color: white; // 버튼 글자색
@@ -649,10 +722,6 @@ const NoteBtn = styled.button`
   &:hover {
     background-color: #555555; // 마우스 오버 시 버튼 배경색 변경
   }
-
-  @media (max-width: 1400px) {
-    width: 50%;
-  }
 `;
 
 const PageRemoteContainer = styled.div`
@@ -660,7 +729,7 @@ const PageRemoteContainer = styled.div`
   margin-top: 15px;
 
   @media (min-width: 2000px) { // 화면 너비가 2560px 이상일 때
-    width: 90%;
+    width: 75%;
     margin: 15px auto;
   }
 `;
@@ -682,6 +751,7 @@ const PageRemote = styled.div`
   width: 100%;
   align-items: center;
   justify-content: center;
+  border-radius: 5px;
   background: white;
   height: 100px;
   position: relative;

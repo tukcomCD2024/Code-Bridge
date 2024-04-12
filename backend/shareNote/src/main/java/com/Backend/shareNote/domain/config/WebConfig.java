@@ -11,7 +11,7 @@ public class WebConfig implements WebMvcConfigurer{
         registry.addMapping("/**")
 //                .allowedOrigins("http://localhost") // local용
                 .allowedOrigins("http://sharenote.shop","https://sharenote.shop","http://localhost:3000") // 배포시 변경
-                .allowedMethods("GET", "POST", "PUT", "DELETE")
+                .allowedMethods("GET", "POST", "PUT", "DELETE", "PATCH")
                 .allowedHeaders("Authorization", "Content-Type")
                 .exposedHeaders("Custom-Header")
                 .allowCredentials(true)
