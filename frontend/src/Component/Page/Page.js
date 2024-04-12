@@ -28,7 +28,9 @@ import { inlinePlaceholderPlugin } from "./utils/inlinePlaceholderPlugin";
 import { hoverButtonPlugin } from "./utils/hoverButtonPlugin";
 import { checkBlockType } from "./utils/checkBlockType";
 import { cursorColors } from "../Utils/cursorColor"
+import NoteSettingModal from "./utils/noteSettingModal";
 import loadingImage from "../../image/loading.gif";
+
 
 import toastr from 'toastr';
 import 'toastr/build/toastr.css';
@@ -37,8 +39,6 @@ import { v4 as uuidv4 } from "uuid";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faLeftLong, faRightLong, faSquarePlus, faTrashCan, faList, faGear } from "@fortawesome/free-solid-svg-icons";
-
-
 
 function Page() {
   const editorRef = useRef(null);
@@ -61,11 +61,47 @@ function Page() {
   const [noteinfo, setNoteInfo] = useState(null);
   const [isloaded, setisloaded] = useState(false); // 로딩 상태 관리
   const [usersAndColors, setUsersAndColors] = useState([]); // 연결된 사용자와 색상 상태
+  const [noteSettingModalOpen, setNoteSettingModalOpen] = useState(false);
+  const [myimage, setMyImage] = useState(null);
+
+  const uploadImage = (e) => {
+    const selectedFile = e.target.files[0];
+
+    // 파일이 선택되었고, 이미지 파일인 경우에만 처리
+    if (selectedFile && isImageFile(selectedFile)) {
+      setMyImage(URL.createObjectURL(selectedFile));
+    } else {
+      // 이미지 파일이 아닌 경우에 대한 처리 (예: 경고 메시지 등)
+      alert("올바른 이미지 파일을 선택해주세요.");
+    }
+  };
+
+  // 이미지 파일 여부를 확인하는 함수
+  const isImageFile = (file) => {
+    const allowedExtensions = ["jpg", "jpeg", "png", "gif"]; // 허용된 확장자들
+
+    // 파일 이름에서 확장자 추출
+    const fileName = file.name;
+    const fileExtension = fileName.split(".").pop().toLowerCase();
+
+    // 허용된 확장자들 중에 포함되어 있는지 확인
+    return allowedExtensions.includes(fileExtension);
+  };
+
+  const handleOpenNoteSettingModal = () => {
+    setNoteSettingModalOpen(true);
+  };
+
+  const handleCloseNoteSettingModal = () => {
+    localStorage.setItem("recentImageUrl", '');
+    setMyImage(null);
+    setNoteSettingModalOpen(false);
+  };
 
   useEffect(() => {
     const fetchNoteInfo = async () => {
     try {
-      const response = await fetch(`/api/user/note/${organizationId}`);
+      const response = await fetch(`/api/user/note`);
         if (response.ok) {
           const data = await response.json();
           const noteData = data.find(note => note.id === noteId); 
@@ -497,7 +533,7 @@ function Page() {
                   <FontAwesomeIcon icon={faList} />
                     &nbsp;&nbsp;&nbsp;노트 목록
                   </NoteBtn>
-                  <NoteBtn>
+                  <NoteBtn onClick={handleOpenNoteSettingModal}>
                     노트 설정&nbsp;&nbsp;&nbsp;
                     <FontAwesomeIcon icon={faGear} />
                 </NoteBtn>
@@ -557,11 +593,19 @@ function Page() {
                 paddingLeft: "8%",
                 paddingRight: "5%",
               }}
-              
             />
-
         </EditorContainer>
         </LayoutContainer>
+
+        {noteSettingModalOpen && (
+        <NoteSettingModal
+          modalOpen={noteSettingModalOpen}
+          handleCloseModal={handleCloseNoteSettingModal}
+          myimage={myimage}
+          uploadImage={uploadImage}
+          note={noteinfo}
+        />
+      )}
     </div>
   );
 }
