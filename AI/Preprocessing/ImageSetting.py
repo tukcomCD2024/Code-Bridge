@@ -20,25 +20,29 @@ def getImageList(path):
 
 
 def convertSVGtoPNG():
-    for i in getSubdirectoryList():
-        imgTo = i.replace('svg', 'png')
-        for j in getImageList(i):
-            imgPath = f'{i}/{j}'
-            imgSavePath = f"{imgTo}/{j[:-4]}.png"
+    for dir, subdir, files in os.walk("../asset/image/icon1"):
+        # imgTo = i.replace('svg', 'png')
+        for j in files:
+            imgPath = f'{dir}/{j}'
+            imgSavePath = f"{dir}/{j[:-4]}.png"
+            if '.png' in j:
+                print("png file")
+                continue
             try:
                 cairosvg.svg2png(url=imgPath, write_to=imgSavePath)
+                os.remove(imgPath)
             except:
                 print('fail')
 
 
 def convertColor2Mono():
-    for i in getSubdirectoryList('../asset/image/', 'animals'):
-        imgTo = i.replace('animals', 'monoAnimals')
-        if not os.path.isdir(imgTo):
-            os.mkdir(imgTo)
-        for j in getImageList(i):
-            imgPath = f'{i}/{j}'
-            imgSavePath = f"{imgTo}/{j}"
+    for dir, subdirs, files in os.walk('../asset/image/animals'):
+        # imgTo = dir.replace('animals', 'monoAnimals')
+        # if not os.path.isdir(imgTo):
+        #     os.mkdir(imgTo)
+        for j in files:
+            imgPath = f'{dir}/{j}'
+            # imgSavePath = f"{imgTo}/{j}"
 
             image = Image.open(imgPath)
             image = image.filter(ImageFilter.FIND_EDGES)
@@ -47,7 +51,8 @@ def convertColor2Mono():
             image = image.convert("RGB")
             image = image.resize((224, 224))
 
-            image.save(imgSavePath)
+            # image.save(imgSavePath)
+            image.save(imgPath)
 
 
 def boldLine():
@@ -66,6 +71,7 @@ def boldLine():
 
 def imageReformByAlpha(img):
     size = 224
+    img = img.convert("RGBA")
 
     array = np.array(img)
     imageArray = []
@@ -79,30 +85,32 @@ def imageReformByAlpha(img):
 def imageReform():
     directoryName = 'png'
 
-    for i in getSubdirectoryList(directoryName):
-        for imageFile in getImageList(i):
-            imgPath = f'{i}/{imageFile}'
+    for dir, subdir, files in os.walk("../asset/image/icon1"):
+        for imageFile in files:
+            imgPath = f'{dir}/{imageFile}'
 
             img = Image.open(imgPath)
 
             resized = imageReformByAlpha(img).convert('L')
-            imageSavePath = i.replace(directoryName, 'resizedImage')
+            imageSavePath = dir.replace(directoryName, 'resizedImage')
             # imageSavePath = f"{defaultRoute}resizedImage/{i}/{imageFile}"
-            resized.save(f'{imageSavePath}/{imageFile}')
+            resized.save(f'{dir}/{imageFile}')
 
-            monochrome = resized.convert('RGB')
-            reformImage = monochrome.filter(ImageFilter.BoxBlur(radius=2))
-            reformImage = reformImage.convert('L')
-            imageSavePath = i.replace(directoryName, 'reformImage')
-            # imageSavePath = f"{defaultRoute}reformImage/{i}/{imageFile}"
-            reformImage.save(f'{imageSavePath}/{imageFile}')
+            # monochrome = resized.convert('RGB')
+            # reformImage = monochrome.filter(ImageFilter.BoxBlur(radius=2))
+            # reformImage = reformImage.convert('L')
+            # imageSavePath = dir.replace(directoryName, 'reformImage')
+            # # imageSavePath = f"{defaultRoute}reformImage/{i}/{imageFile}"
+            # reformImage.save(f'{imageSavePath}/{imageFile}')
 
 
 def svgImageResize():
-    for i in getSubdirectoryList():
-        for imageName in getImageList(i):
-            imgPath = f'{i}/{imageName}'
+    for dir, subdir, files in os.walk("../asset/image/icon1"):
+        for imageName in files:
+            imgPath = f'{dir}/{imageName}'
 
+            if not '.svg' in imageName:
+                continue
             img = open(imgPath, 'r')
             imgSource = img.read()
             img.close()
@@ -116,12 +124,12 @@ def svgImageResize():
             img.close()
 
 
-# svgImageResize()
-# convertSVGtoPNG()
-# imageReform()
+svgImageResize()
+convertSVGtoPNG()
+imageReform()
 
 # convertColor2Mono()
-boldLine()
+# boldLine()
 
-for dir, subdir, files in os.walk(defaultRoute):
-    print(dir, subdir, files)
+# for dir, subdir, files in os.walk(defaultRoute):
+#     print(dir, subdir, files)

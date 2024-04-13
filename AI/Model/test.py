@@ -1,4 +1,8 @@
 import numpy as np
+
+models = ['cnn3Depth32.h5', 'cnn4Depth32.h5', 'cnn4-2Depth32.h5', 'cnn5Depth32.h5', 'cnn6Depth32.h5']
+
+
 def resultByDesc(result):
     x = {}
     for i in range(len(result)):
@@ -7,22 +11,28 @@ def resultByDesc(result):
 
     print(x)
     import operator
-    print(sorted(x.items(), key=operator.itemgetter(1), reverse=True)[:40])
+    return sorted(x.items(), key=operator.itemgetter(1), reverse=True)[:40]
+
 
 from PIL import Image
+
 # imgsrc = r"C:\Users\Ka\Desktop\Ka\programming\AI\AI2\asset\size64Image01\bank\bank.png"
 # imgsrc = r"C:\Users\Ka\Desktop\Ka\programming\AI\AI2\asset\size64Image01\security\security.png"
 imgsrc = r"C:\Users\Ka\Desktop\Ka\programming\AI\sample\heart.png"
 
 img = Image.open(imgsrc)
-img = img.resize((224,224))
+img = img.resize((128, 128))
 img = img.convert("RGB")
 img = np.asarray(img)
 img = np.expand_dims(img, axis=0)
 from keras.models import load_model
-saved_model = load_model("vgg16_softmax.h5")
-output = saved_model.predict(img)
 
-print(output)
+# saved_model = load_model("vgg16_softmax.h5")
+for i in models:
+    saved_model = load_model(i)
+    output = saved_model.predict(img)
 
-resultByDesc(output[0])
+    print(output)
+
+    print(resultByDesc(output[0]))
+    print()
