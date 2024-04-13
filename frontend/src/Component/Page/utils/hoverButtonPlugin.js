@@ -160,7 +160,7 @@ export function hoverButtonPlugin() {
       
           const editorRect = view.dom.getBoundingClientRect();
           hoverDiv.style.left = `${editorRect.left - hoverDiv.offsetWidth - 5}px`;
-          hoverDiv.style.top = `${topWithScroll}px`;
+          hoverDiv.style.top = `${topWithScroll-4}px`;
           hoverDiv.style.visibility = "visible";
       
         } catch (error) {

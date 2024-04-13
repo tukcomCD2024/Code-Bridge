@@ -69,7 +69,7 @@ const NoteSettingModal = ({
         return;
       }
   
-      const isConfirmed = window.confirm(`"${note?.name}" 의 모든 노트 데이터를 삭제하시겠습니까?`);
+      const isConfirmed = window.confirm(`"${note?.name}" 의 노트 데이터를 모두 삭제하시겠습니까?`);
     
       if (isConfirmed) {
         try {

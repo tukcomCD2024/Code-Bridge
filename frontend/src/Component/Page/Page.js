@@ -694,7 +694,7 @@ const Notename = styled.div`
 
   @media screen and (max-width: 1500px) {
       width: auto;
-      max-width: 100%; 
+      max-width: 80%; 
   }
 `;
 
@@ -718,9 +718,18 @@ const NoteBtn = styled.button`
   color: white; // 버튼 글자색
   border: none; // 테두리 제거
   cursor: pointer; // 마우스 오버 시 커서 변경
+  font-size: auto;
 
   &:hover {
     background-color: #555555; // 마우스 오버 시 버튼 배경색 변경
+  }
+
+  @media (max-width: 1700px) {
+    font-size: 12px;
+  }
+
+  @media (max-width: 1600px) {
+    font-size: 10px;
   }
 `;
 
