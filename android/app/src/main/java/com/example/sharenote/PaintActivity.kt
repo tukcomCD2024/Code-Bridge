@@ -2,7 +2,6 @@ package com.example.sharenote
 
 import android.annotation.SuppressLint
 import android.content.Intent
-import android.graphics.Color
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Button
@@ -10,9 +9,11 @@ import android.widget.ImageButton
 import com.mihir.drawingcanvas.drawingView
 import android.widget.Toast
 
+
 class PaintActivity : AppCompatActivity() {
     private lateinit var backButton : Button
-    private lateinit var drawing_view : com.mihir.drawingcanvas.drawingView
+    //
+    private lateinit var drawing_view : drawingView
     private lateinit var btn_undo : ImageButton
     private lateinit var btn_redo : ImageButton
     private lateinit var btn_color : ImageButton
