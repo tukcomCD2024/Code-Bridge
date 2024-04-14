@@ -4,7 +4,7 @@ import os
 import numpy as np
 
 tagsTemp = ['rabbit', 'bear', 'dog', 'cat', 'tiger', 'horse']
-defaultRoute = '../asset/image/sample2/'
+defaultRoute = "../asset/image/svg"
 
 
 def getSubdirectoryList(defaultRoute=defaultRoute, directoryName='svg'):
@@ -20,7 +20,7 @@ def getImageList(path):
 
 
 def convertSVGtoPNG():
-    for dir, subdir, files in os.walk("../asset/image/icon1"):
+    for dir, subdir, files in os.walk(defaultRoute):
         # imgTo = i.replace('svg', 'png')
         for j in files:
             imgPath = f'{dir}/{j}'
@@ -64,10 +64,11 @@ def boldLine():
         for img in files:
             imgpath = f'{dir}/{img}'
             image = Image.open(imgpath)
-            fn = lambda x: 255-x if x > 0 else 0
+            fn = lambda x: 255 - x if x > 0 else 0
             image = ImageOps.invert(image)
             image = image.convert('L')
             image.save(imgpath.replace('animalsMono', 'animalsFilter'))
+
 
 def imageReformByAlpha(img):
     size = 224
@@ -85,27 +86,18 @@ def imageReformByAlpha(img):
 def imageReform():
     directoryName = 'png'
 
-    for dir, subdir, files in os.walk("../asset/image/icon1"):
+    for dir, subdir, files in os.walk(defaultRoute):
         for imageFile in files:
             imgPath = f'{dir}/{imageFile}'
 
             img = Image.open(imgPath)
 
             resized = imageReformByAlpha(img).convert('L')
-            imageSavePath = dir.replace(directoryName, 'resizedImage')
-            # imageSavePath = f"{defaultRoute}resizedImage/{i}/{imageFile}"
             resized.save(f'{dir}/{imageFile}')
-
-            # monochrome = resized.convert('RGB')
-            # reformImage = monochrome.filter(ImageFilter.BoxBlur(radius=2))
-            # reformImage = reformImage.convert('L')
-            # imageSavePath = dir.replace(directoryName, 'reformImage')
-            # # imageSavePath = f"{defaultRoute}reformImage/{i}/{imageFile}"
-            # reformImage.save(f'{imageSavePath}/{imageFile}')
 
 
 def svgImageResize():
-    for dir, subdir, files in os.walk("../asset/image/icon1"):
+    for dir, subdir, files in os.walk(defaultRoute):
         for imageName in files:
             imgPath = f'{dir}/{imageName}'
 
