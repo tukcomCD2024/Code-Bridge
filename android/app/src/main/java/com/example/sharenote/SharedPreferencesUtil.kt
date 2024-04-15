@@ -11,6 +11,9 @@ object SharedPreferencesUtil {
     private const val PREF_NAME1 = "MyPrefs1"
     private const val KEY_RECENT_NOTE_ID = "recent_note_id"
 
+    private const val KEY_RECENT_PAGE_ID = "recent_page_id"
+    private const val KEY_RECENT_ROUTINGKEY_ID = "recent_routingkey_id"
+
     // 유저 정보 저장
     private const val PREF_NAME_USER = "MyPrefs_user"
     private const val KEY_USER_NAME = "user_name"
@@ -51,6 +54,30 @@ object SharedPreferencesUtil {
     fun getRecentNoteId(context: Context): String? {
         val sharedPrefs = context.getSharedPreferences(PREF_NAME1, Context.MODE_PRIVATE)
         return sharedPrefs.getString(KEY_RECENT_NOTE_ID, null)
+    }
+
+    // 최근 페이지 ID 저장
+    fun saveRecentPageId(context: Context, pageId: String) {
+        val sharedPrefs = context.getSharedPreferences(PREF_NAME1, Context.MODE_PRIVATE)
+        sharedPrefs.edit().putString(KEY_RECENT_PAGE_ID, pageId).apply()
+    }
+
+    // 최근 페이지 ID 불러오기
+    fun getRecentPageId(context: Context): String? {
+        val sharedPrefs = context.getSharedPreferences(PREF_NAME1, Context.MODE_PRIVATE)
+        return sharedPrefs.getString(KEY_RECENT_PAGE_ID, null)
+    }
+
+    // 최근 루팅키 ID 저장
+    fun saveRecentKeyId(context: Context, keyId: String) {
+        val sharedPrefs = context.getSharedPreferences(PREF_NAME1, Context.MODE_PRIVATE)
+        sharedPrefs.edit().putString(KEY_RECENT_ROUTINGKEY_ID, keyId).apply()
+    }
+
+    // 최근 루팅키 ID 불러오기
+    fun getRecentKeyId(context: Context): String? {
+        val sharedPrefs = context.getSharedPreferences(PREF_NAME1, Context.MODE_PRIVATE)
+        return sharedPrefs.getString(KEY_RECENT_ROUTINGKEY_ID, null)
     }
 
     // 사용자 정보 저장

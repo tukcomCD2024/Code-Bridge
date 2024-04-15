@@ -56,3 +56,14 @@ data class OrganizationResponse(
     val emoji: String,
     val organizationId: String
 )
+
+data class PageData(
+    val organizationId: String,
+    val noteId: String,
+    val createUserId: String
+)
+
+data class PageResponse(
+    val pageId: String,
+    val routingKey: String
+)
