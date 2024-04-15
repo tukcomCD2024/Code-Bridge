@@ -14,7 +14,7 @@ import com.example.sharenote.SharedPreferencesUtil.getRecentWorkspaceId
 import com.google.firebase.firestore.FirebaseFirestore
 import java.util.*
 
-class PreviousPageActivity : AppCompatActivity() {
+class PreviousPage : AppCompatActivity() {
 
     private lateinit var editTextPage: EditText
     private lateinit var editTextTitle: EditText

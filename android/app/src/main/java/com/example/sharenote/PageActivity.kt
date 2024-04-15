@@ -8,11 +8,12 @@ import com.example.sharenote.SharedPreferencesUtil
 
 class PageActivity : AppCompatActivity() {
 
+    private lateinit var webView: WebView
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_page)
 
-        val webView: WebView = findViewById(R.id.webView)
+        webView = findViewById(R.id.webView)
 
         // SharedPreferencesUtil을 사용하여 WorkSpaceId와 NoteId를 불러옵니다.
         val workspaceId = SharedPreferencesUtil.getRecentWorkspaceId(this)
