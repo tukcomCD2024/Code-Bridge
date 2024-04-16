@@ -60,7 +60,7 @@ class PageActivity : AppCompatActivity() {
         val workspaceId = SharedPreferencesUtil.getRecentWorkspaceId(this)
         val noteId = SharedPreferencesUtil.getRecentNoteId(this)
 
-        webView.loadUrl("sharenote.shop/organization/661944a532a485420decd9cc/661944b432a485420decd9cd")
+        webView.loadUrl("https://sharenote.shop/organization/661e853088064809385d6215/661e853488064809385d6216")
 
         // 플로팅 버튼 클릭시 에니메이션 동작 기능
         floating.setOnClickListener {
