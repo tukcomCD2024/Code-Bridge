@@ -69,7 +69,7 @@ const NoteSettingModal = ({
         return;
       }
   
-      const isConfirmed = window.confirm(`"${note?.name}" 의 모든 노트 데이터를 삭제하시겠습니까?`);
+      const isConfirmed = window.confirm(`"${note?.name}" 의 노트 데이터를 모두 삭제하시겠습니까?`);
     
       if (isConfirmed) {
         try {
@@ -159,7 +159,9 @@ const NoteSettingModal = ({
               </NoteModifyWrapper>
             </TopContainer>
             <BottomContainer>
-              <FontAwesomeIcon icon={faTrashCan} onClick={removeNote} style={{ color: "#707070", marginLeft:"auto", fontSize: "30px", cursor: "pointer"}} title="노트 삭제"/>
+              <IconWrapper>
+                <FontAwesomeIcon icon={faTrashCan} onClick={removeNote} style={{ color: "#707070", padding:"5px", fontSize: "30px", cursor: "pointer"}} title="노트 삭제"/>
+              </IconWrapper>
             </BottomContainer>
           </RightContainer>
         </ModalContent>
@@ -253,6 +255,15 @@ const BottomContainer = styled.div`
   justify-content: center;
   align-items: center;
   padding: 0px 10px; // 내부 여백 추가
+`;
+
+const IconWrapper = styled.div`
+  margin-left: auto;
+  border-radius: 5px;
+
+  &:hover {
+    background-color: #DDDDDD;
+  }
 `;
 
 const CloseButton = styled.button`
