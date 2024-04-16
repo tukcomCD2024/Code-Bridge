@@ -84,7 +84,7 @@ class SignUpActivity : AppCompatActivity() {
     }
 
     private fun signUpUser() {
-        val userData = UserData(Name, Email, Password)
+        val userData = UserData(Name, "", Email, Password)
 
         // Firebase Authentication을 사용하여 사용자 등록
         auth.createUserWithEmailAndPassword(Email, Password)

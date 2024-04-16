@@ -78,6 +78,7 @@ class HomeFragment : Fragment() {
 
         MoveDraw = view.findViewById(R.id.MoveDraw)
 
+
         // account_layout을 팝업으로 사용하기 위해 팝업 뷰를 초기화
         popupView = layoutInflater.inflate(R.layout.account_layout, null)
         emailTextView1 = popupView.findViewById(R.id.email)
@@ -92,7 +93,9 @@ class HomeFragment : Fragment() {
         val recentWorkspaceId = getRecentWorkspaceId()
 
         // 사용자 이메일을 표시합니다.
-        displayUserEmail()
+        val userEmail = SharedPreferencesUtil.getUserEmail(requireContext())
+        emailTextView.text = userEmail
+        emailTextView1.text = userEmail
 
         recentWorkspaceId?.let {
             displayWorkspaceName(it)
@@ -103,6 +106,7 @@ class HomeFragment : Fragment() {
             startActivity(Drawintent)
             requireActivity().finish()
         }
+
 
         profileForm.setOnClickListener {
             // account_layout을 화면 아래에 절반 크기로 보여줌
@@ -323,7 +327,8 @@ class HomeFragment : Fragment() {
                     val title = document.getString("title") ?: ""
                     val organizationId = document.getString("organizationId") ?: ""
                     val userId = document.getString("userId") ?: ""
-                    val note = Note(noteId, title, organizationId, userId)
+                    val noteImageUrl = document.getString("noteImageUrl") ?: ""
+                    val note = Note(organizationId, title, userId, noteImageUrl, noteId)
                     notes.add(note) // 새로운 노트를 어댑터에 추가합니다.
                 }
                 // 어댑터에 데이터 설정
