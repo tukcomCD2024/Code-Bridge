@@ -673,6 +673,8 @@ const NoteHeaderContainer = styled.div`
 
   img {
     width: 88%; /* 너비 설정 */
+    height: auto;
+    max-height: 220px;
   }
 `;
 
