@@ -2,10 +2,14 @@ package com.example.sharenote
 
 import android.annotation.SuppressLint
 import android.content.Intent
+import android.graphics.Color
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.view.View
 import android.widget.Button
 import android.widget.ImageButton
+import android.widget.Toast
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.mihir.drawingcanvas.drawingView
 import android.widget.Toast
 
@@ -13,12 +17,15 @@ import android.widget.Toast
 class PaintActivity : AppCompatActivity() {
     private lateinit var backButton : Button
     //
-    private lateinit var drawing_view : drawingView
-    private lateinit var btn_undo : ImageButton
-    private lateinit var btn_redo : ImageButton
-    private lateinit var btn_color : ImageButton
-    private lateinit var btn_brush : ImageButton
-    private lateinit var btn_clearscreen : ImageButton
+    private lateinit var drawingView : drawingView
+    private lateinit var btnUndo : ImageButton
+    private lateinit var btnRedo : ImageButton
+    private lateinit var btnColor : ImageButton
+    private lateinit var btnBrush : ImageButton
+    private lateinit var btnClearscreen : ImageButton
+
+    private lateinit var autoDrawButton : FloatingActionButton
+    private lateinit var aiSendButton : Button
 
     @SuppressLint("MissingInflatedId")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -26,43 +33,72 @@ class PaintActivity : AppCompatActivity() {
         setContentView(R.layout.activity_paint)
 
         backButton = findViewById(R.id.backButton)
-        drawing_view = findViewById(R.id.drawing_view)
-        btn_undo = findViewById(R.id.btn_undo)
-        btn_redo = findViewById(R.id.btn_redo)
-        btn_brush = findViewById(R.id.btn_brush)
-        btn_color = findViewById(R.id.btn_color)
-        btn_clearscreen = findViewById(R.id.btn_clearscreen)
+        drawingView = findViewById(R.id.drawing_view)
+        btnUndo = findViewById(R.id.btn_undo)
+        btnRedo = findViewById(R.id.btn_redo)
+        btnBrush = findViewById(R.id.btn_brush)
+        btnColor = findViewById(R.id.btn_color)
+        btnClearscreen = findViewById(R.id.btn_clearscreen)
+
+        autoDrawButton = findViewById(R.id.autoDrawButton)
+        aiSendButton = findViewById(R.id.aiButton)
 
         backButton.setOnClickListener {
             val intent = Intent(this, MainActivity::class.java)
             startActivity(intent)
         }
 
-        btn_undo.setOnClickListener {
-            drawing_view.undo()
+        btnUndo.setOnClickListener {
+            drawingView.undo()
         }
 
-        btn_redo.setOnClickListener {
-            drawing_view.redo()
+        btnRedo.setOnClickListener {
+            drawingView.redo()
         }
 
-        btn_color.setOnClickListener {
-            drawing_view.setBrushColor(R.color.yellow)
+        btnColor.setOnClickListener {
+            drawingView.setBrushColor(Color.RED)
         }
 
-        btn_brush.setOnClickListener {
-            drawing_view.setSizeForBrush(25)//0-35
-            drawing_view.setBrushAlpha(100) //0-255
+        btnBrush.setOnClickListener {
+            drawingView.setSizeForBrush(25)//0-35
+            drawingView.setBrushAlpha(100) //0-255
         }
-        btn_clearscreen.setOnClickListener {
-            drawing_view.clearDrawingBoard()
+        btnClearscreen.setOnClickListener {
+            drawingView.clearDrawingBoard()
         }
-        val alpha = drawing_view.getBrushAlpha()
-        drawing_view.erase()
-        val brushSize = drawing_view.getBrushSize()
-        val brushColor = drawing_view.getBrushColor()
+        aiSendButton.setOnClickListener {
+            // 테스트 로직(autoDraw로 그린 선만 노란색으로 바꾸기)
+            drawingView.autoDraw()
 
-        val drawing = drawing_view.getDrawing()
+
+            // 이미지를 압축하는 로직
+
+            // AI 서버에 전송하는 로직
+        }
+
+        autoDrawButton.setOnClickListener {
+            if (drawingView.getDrawingMode() == 0) {
+                drawingView.setDrawingMode(1)
+                Toast.makeText(this, "Auto Draw Mode : " + drawingView.getDrawingMode(), Toast.LENGTH_SHORT).show()
+                aiSendButton.visibility = View.VISIBLE
+                autoDrawButton.backgroundTintList = resources.getColorStateList(R.color.blue)
+                drawingView.setBrushColor(Color.BLUE)
+            } else {
+                drawingView.setDrawingMode(0)
+                Toast.makeText(this, "Auto Draw Mode : " + drawingView.getDrawingMode(), Toast.LENGTH_SHORT).show()
+                aiSendButton.visibility = View.GONE
+                autoDrawButton.backgroundTintList = resources.getColorStateList(R.color.white)
+                drawingView.setBrushColor(Color.RED)
+            }
+        }
+
+        val alpha = drawingView.getBrushAlpha()
+        drawingView.erase()
+        val brushSize = drawingView.getBrushSize()
+        val brushColor = drawingView.getBrushColor()
+
+        val drawing = drawingView.getDrawing()
     }
 
 //        backButton = findViewById(R.id.backButton)

@@ -7,7 +7,11 @@ import android.util.AttributeSet
 import android.util.TypedValue
 import android.view.MotionEvent
 import android.view.View
+import android.widget.Toast
 import androidx.annotation.IntRange
+import java.io.File
+import java.io.FileOutputStream
+import java.io.OutputStream
 
 // 배경 지식 코너(그리기 작업 핵심 삼총사)
 // Paint 객체 : 스타일과 색상 관리 (색상, 굵기, 투명도 등)
@@ -41,13 +45,24 @@ class drawingView(context: Context, attrs: AttributeSet) : View(context,attrs){
     private var mUndoPath = ArrayList<CustomPath>()
 
     // autoDraw 모드로 실행되는 선들 저장
-    private var AutoDrawPath = ArrayList<CustomPath>()
+    private var autoDrawPath = ArrayList<CustomPath>()
 
-    
+    // 0을 기본 모드, 1을 autoDraw 모드로 설정
+    private var drawingMode:Int = 0;
+
+    private var autoDrawUndoPath = ArrayList<CustomPath>()
 
     // 클래스가 인스턴스화 될 때 호출되는 초기화 블록
     init {
         setUpDrawing()
+    }
+
+    fun getDrawingMode(): Int {
+        return drawingMode
+    }
+
+    fun setDrawingMode(mode: Int) {
+        drawingMode = mode
     }
 
     private fun setUpDrawing() {
@@ -70,6 +85,52 @@ class drawingView(context: Context, attrs: AttributeSet) : View(context,attrs){
         canvas =  Canvas(mCanvasBitmap!!)
     }
 
+    // 실험용 autoDraw
+    fun autoDraw() {
+//autoDraw로 그린 선만 전부 노란색으로 바꾸기 성공 코드
+//        for(path in autoDrawPath){
+//            path.color = Color.YELLOW
+//        }
+//        invalidate()
+
+
+        // autoDraw로 그린 선으로 만들어진 비트맵을 압축하기
+        // 새로운 비트맵 생성
+        val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bitmap)
+
+        canvas?.drawColor(Color.WHITE)
+
+        // 임시 Paint 객체 생성
+        val paint = Paint().apply {
+            color = currentColor
+            style = Paint.Style.STROKE
+            strokeJoin = Paint.Join.ROUND
+            strokeCap = Paint.Cap.ROUND
+            strokeWidth = mBrushSize.toFloat()
+            alpha = mAlpha
+        }
+
+        // autoDrawPath에 저장된 모든 Path를 새로운 캔버스에 그림
+        for (path in autoDrawPath) {
+            paint.color = path.color
+            paint.strokeWidth = path.brushThickness.toFloat()
+            paint.alpha = path.alpha
+            canvas.drawPath(path, paint)
+        }
+
+        // 파일로 저장하기 위해 OutputStream 생성
+        val file = File(context.getExternalFilesDir(null), "image.png")
+
+        val outputStream: OutputStream = FileOutputStream(file)
+        // 비트맵을 PNG 형식으로 압축
+        bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream)
+        outputStream.close()
+        Toast.makeText(context, "이미지 저장 완료", Toast.LENGTH_SHORT).show()
+
+
+    }
+
     // 뷰를 다시 그려야 할 때 호출됨.
     // ex) View가 처음 로딩, 뷰의 크기 변경, 뷰 내의 데이터 변경 -> 그래픽 업데이트 필요한 상황
     override fun onDraw(canvas: Canvas?) {
@@ -85,6 +146,14 @@ class drawingView(context: Context, attrs: AttributeSet) : View(context,attrs){
             mDrawPaint!!.alpha = path.alpha
 
             // 매개변수로 path 와 Paint 객체(색깔, 굵기, 투명도 등의 스타일)를 받음
+            canvas?.drawPath(path,mDrawPaint!!)
+        }
+
+        // autoDraw로 그린 선이 안남고 사라지길래 추가해 봄
+        for(path in autoDrawPath){
+            mDrawPaint!!.strokeWidth = path.brushThickness.toFloat()
+            mDrawPaint!!.color=  path.color
+            mDrawPaint!!.alpha = path.alpha
             canvas?.drawPath(path,mDrawPaint!!)
         }
 
@@ -121,7 +190,7 @@ class drawingView(context: Context, attrs: AttributeSet) : View(context,attrs){
                     }
                 }
             }
-            // 사용자가 화며을 터치한 채로 움직일 때 발생
+            // 사용자가 화면을 터치한 채로 움직일 때 발생
             MotionEvent.ACTION_MOVE ->{
                 if (touchX != null) {
                     if (touchY != null) {
@@ -135,7 +204,10 @@ class drawingView(context: Context, attrs: AttributeSet) : View(context,attrs){
             MotionEvent.ACTION_UP ->{
                 // 현재 그리고 있는 경로를 mPaths에 추가
                 // mDrawPath는 방금 그린 선이야
-                mPaths.add(mDrawPath!!)
+                if(drawingMode == 0)
+                    mPaths.add(mDrawPath!!)
+                else if(drawingMode == 1)
+                    autoDrawPath.add(mDrawPath!!)
                 // 다음 그리기 작업을 위해 새로운 Path 객체 생성
                 mDrawPath = CustomPath(currentColor,mBrushSize,mAlpha)
             }
@@ -209,7 +281,11 @@ class drawingView(context: Context, attrs: AttributeSet) : View(context,attrs){
      * will undo strokes, can be changed by redo()
      */
     fun undo(){
-        if (mPaths.size > 0){
+        if(drawingMode == 0){
+            // mPaths에 아무것도 없으면 그냥 리턴
+            if (mPaths.size == 0){
+                return
+            }
             // mPaths에 마지막으로 추가된 놈 임시 보호
             mUndoPath.add(mPaths[mPaths.size -1])
             // mPaths에서 마지막 놈 제거
@@ -217,13 +293,26 @@ class drawingView(context: Context, attrs: AttributeSet) : View(context,attrs){
             // 다시 그리기
             invalidate()
         }
+        else if(drawingMode == 1){
+            if (autoDrawPath.size == 0){
+                return
+            }
+            autoDrawUndoPath.add(autoDrawPath[autoDrawPath.size -1])
+            autoDrawPath.removeAt(autoDrawPath.size -1)
+            invalidate()
+        }
+
     }
 
     /**
      * will redo the undo-ed strokes
      */
     fun redo(){
-        if (mUndoPath.size >0){
+        if(drawingMode == 0){
+            // mUndoPath에 아무것도 없으면 그냥 리턴
+            if (mUndoPath.size == 0){
+                return
+            }
             // 임시 보관한 놈 다시 mPaths에 추가
             mPaths.add(mUndoPath[mUndoPath.size -1])
             // 임시 보관 해제
@@ -231,12 +320,20 @@ class drawingView(context: Context, attrs: AttributeSet) : View(context,attrs){
             // 다시 그리기
             invalidate()
         }
-
+        else if(drawingMode == 1){
+            if (autoDrawPath.size == 0){
+                return
+            }
+            autoDrawPath.add(autoDrawUndoPath[autoDrawUndoPath.size -1])
+            autoDrawUndoPath.removeAt(autoDrawUndoPath.size -1)
+            invalidate()
+        }
     }
     /**
      * will remove all the stores but not those saved in redo()
      */
     fun clearDrawingBoard(){
+        autoDrawPath.clear()
         // 싹 Path들 날려
         mPaths.clear()
         // 다시 그리기
@@ -251,4 +348,6 @@ class drawingView(context: Context, attrs: AttributeSet) : View(context,attrs){
 
 
     }
+
+
 }
