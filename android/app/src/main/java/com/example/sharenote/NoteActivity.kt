@@ -6,9 +6,14 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.ImageButton
 import android.widget.TextView
+import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class NoteActivity : AppCompatActivity(), PageListAdapter.OnPageClickListener {
 
@@ -39,9 +44,12 @@ class NoteActivity : AppCompatActivity(), PageListAdapter.OnPageClickListener {
         }
 
         createPageButton.setOnClickListener {
-            // PageActivity로 이동하는 Intent 생성
-            val intent = Intent(this, PageActivity::class.java)
-            startActivity(intent)
+            val organizationId = getRecentWorkSpaceId() ?: ""
+            val noteId = getRecentNoteId() ?: ""
+            val userId = getUserId() ?: ""
+
+            val pageData = PageData(organizationId, noteId, userId)
+            sendPageDataToMongoDB(pageData)
         }
 
         // 최근에 사용한 노트의 ID 가져오기
@@ -83,6 +91,74 @@ class NoteActivity : AppCompatActivity(), PageListAdapter.OnPageClickListener {
                 // Handle any errors
                 // Log.e(TAG, "Error getting documents: ", exception)
             }
+    }
+
+    private fun sendPageDataToMongoDB(page: PageData) {
+        GlobalScope.launch(Dispatchers.IO) {
+            try {
+                val response = RetrofitClient.apiService.sendPageData(page)
+                if (response.isSuccessful) {
+                    // MongoDB에 데이터 저장 성공
+                    val pageResponse = response.body()
+                    if (pageResponse != null) {
+                        val pageId = pageResponse.pageId
+                        val keyId = pageResponse.routingKey
+
+                        saveRecentPageId(pageId)
+                        saveRecentKeyId(keyId)
+
+
+                        // 저장이 완료되면 메인 화면으로 이동
+                        val intent = Intent(this@NoteActivity, PageActivity::class.java)
+                        startActivity(intent)
+                        finish()
+                    } else {
+                        // 반환된 데이터가 없을 경우 에러 처리
+                        withContext(Dispatchers.Main) {
+                            Toast.makeText(
+                                this@NoteActivity,
+                                "노트 정보를 받아오지 못했습니다.",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    }
+                } else {
+                    // MongoDB에 데이터 저장 실패
+                    withContext(Dispatchers.Main) {
+                        val errorMessage = "노트 정보를 저장하는 데 실패했습니다. 오류 코드: ${response.code()}"
+                        Toast.makeText(
+                            this@NoteActivity,
+                            errorMessage,
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                }
+            } catch (e: Exception) {
+                // 네트워크 오류 등 예외 처리
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(
+                        this@NoteActivity,
+                        "네트워크 오류가 발생했습니다.",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
+        }
+    }
+    private fun saveRecentPageId(pageId: String) {
+        SharedPreferencesUtil.saveRecentPageId(this, pageId)
+    }
+    private fun saveRecentKeyId(keyId: String) {
+        SharedPreferencesUtil.saveRecentKeyId(this, keyId)
+    }
+    private fun getUserId(): String? {
+        return SharedPreferencesUtil.getUserId(this)
+    }
+    private fun getRecentWorkSpaceId(): String? {
+        return SharedPreferencesUtil.getRecentWorkspaceId(this)
+    }
+    private fun getRecentNoteId(): String? {
+        return SharedPreferencesUtil.getRecentNoteId(this)
     }
 }
 

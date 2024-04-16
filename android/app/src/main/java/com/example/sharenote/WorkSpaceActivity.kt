@@ -63,6 +63,7 @@ class WorkSpaceActivity : AppCompatActivity() {
 
     }
 
+
     private fun saveWorkSpaceToFirestore(workSpaceName: String, email: String) {
         val workSpaceData = hashMapOf(
             "workSpaceName" to workSpaceName,

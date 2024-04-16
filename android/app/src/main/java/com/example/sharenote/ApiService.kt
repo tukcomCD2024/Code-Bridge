@@ -23,4 +23,7 @@ interface ApiService {
     @POST("note")
     suspend fun sendNoteData(@Body note: UserNote): Response<NoteResponse>
 
+    @POST("page")
+    suspend fun sendPageData(@Body page: PageData): Response<PageResponse>
+
 }
