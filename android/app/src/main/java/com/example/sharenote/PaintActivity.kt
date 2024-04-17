@@ -11,7 +11,6 @@ import android.widget.ImageButton
 import android.widget.Toast
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.mihir.drawingcanvas.drawingView
-import android.widget.Toast
 
 
 class PaintActivity : AppCompatActivity() {
