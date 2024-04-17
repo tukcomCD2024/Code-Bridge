@@ -257,6 +257,14 @@ function Page() {
         }
       }
     });
+    provider.on('status', event => {
+      if (event.status === 'disconnected') {
+        const userState = provider.awareness.getLocalState();
+        if (userState && userState.user) {
+          connectedUsersYMap.delete(userState.user.name);
+        }
+      }
+    });
     
     function onlineUpdate() {
       updateUsersAndColors(); 
