@@ -252,7 +252,7 @@ function Page() {
       if (isMobileWebView()) {
         checkLocalStorage().then(() => {
           if (isSynced) {
-            console.log("모바일 환경");
+            toastr.info("모바일 환경");
             handleUserConnection();
           }
         }).catch(error => {
