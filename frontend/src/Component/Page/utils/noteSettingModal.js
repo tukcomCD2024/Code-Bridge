@@ -218,8 +218,9 @@ const LeftInsideContainer = styled(HalfContainer)`
   background-color: rgba(250, 190, 88, 0.2); 
 
   img{
-    width: 100%;
+    width: auto;
     height: auto;
+    max-width: 100%;
     max-height: 180px;
   }
 `;
