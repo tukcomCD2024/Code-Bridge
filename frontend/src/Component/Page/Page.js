@@ -98,13 +98,15 @@ function Page() {
   };
 
   useEffect(() => {
+    let isCancelled = false;
+
     const fetchNoteInfo = async () => {
-    try {
-      const response = await fetch(`/api/user/note/${organizationId}`);
-        if (response.ok) {
+      try {
+        const response = await fetch(`/api/user/note/${organizationId}`);
+        if (response.ok && !isCancelled) {
           const data = await response.json();
-          const noteData = data.find(note => note.id === noteId); 
-          if (noteData) { 
+          const noteData = data.find(note => note.id === noteId);
+          if (noteData && !isCancelled) {
             setNoteInfo({
               id: noteData.id,
               name: noteData.title,
@@ -112,15 +114,21 @@ function Page() {
             });
           }
         } else {
-          console.error(response.status);
-          console.error("Failed to fetch");
+          console.error(`Failed to fetch: HTTP status ${response.status}`);
         }
       } catch (error) {
-        console.error('Error fetching', error);
+        if (!isCancelled) {
+          console.error('Error fetching', error);
+        }
       }
     };
+
     fetchNoteInfo();
-  }, [location, noteId, noteinfo]);
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [location, organizationId, noteId]);
 
   const { nodes, marks } = basicSchema.spec;
   const extendedNodes = addListNodes(
@@ -658,6 +666,7 @@ function Page() {
           myimage={myimage}
           uploadImage={uploadImage}
           note={noteinfo}
+          setNoteInfo={setNoteInfo}
         />
       )}
     </div>
