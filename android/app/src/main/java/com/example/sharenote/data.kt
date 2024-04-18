@@ -64,6 +64,5 @@ data class PageData(
 )
 
 data class PageResponse(
-    val pageId: String,
-    val routingKey: String
+    val pageId: String
 )

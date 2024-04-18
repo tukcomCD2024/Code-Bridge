@@ -102,10 +102,10 @@ class NoteActivity : AppCompatActivity(), PageListAdapter.OnPageClickListener {
                     val pageResponse = response.body()
                     if (pageResponse != null) {
                         val pageId = pageResponse.pageId
-                        val keyId = pageResponse.routingKey
+
 
                         saveRecentPageId(pageId)
-                        saveRecentKeyId(keyId)
+
 
 
                         // 저장이 완료되면 메인 화면으로 이동
@@ -148,9 +148,7 @@ class NoteActivity : AppCompatActivity(), PageListAdapter.OnPageClickListener {
     private fun saveRecentPageId(pageId: String) {
         SharedPreferencesUtil.saveRecentPageId(this, pageId)
     }
-    private fun saveRecentKeyId(keyId: String) {
-        SharedPreferencesUtil.saveRecentKeyId(this, keyId)
-    }
+
     private fun getUserId(): String? {
         return SharedPreferencesUtil.getUserId(this)
     }
