@@ -81,5 +81,8 @@ dependencies {
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
 
     //implementation ("com.github.Miihir79:DrawingCanvas:1.1.2")
+    implementation ("com.squareup.okhttp3:okhttp:4.9.3")
+    implementation ("com.jakewharton.retrofit:retrofit2-kotlin-coroutines-adapter:0.9.2")
+
 
 }
