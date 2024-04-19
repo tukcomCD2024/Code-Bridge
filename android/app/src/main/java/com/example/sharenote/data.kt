@@ -1,5 +1,7 @@
 package com.example.sharenote
 
+import okhttp3.MultipartBody
+
 data class Note(
     val organizationId: String,
     val title: String,
@@ -66,4 +68,13 @@ data class PageData(
 data class PageResponse(
     val pageId: String,
     val routingKey: String
+)
+
+data class ImageData(
+    val multipartFile: MultipartBody.Part
+)
+
+data class ImageResponse(
+    val image_url: String
+
 )
