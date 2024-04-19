@@ -30,6 +30,12 @@
             android:name=".ImageSelect"
             android:exported="false" />
         <activity
+            android:name=".test"
+            android:exported="false" />
+        <activity
+            android:name=".ImageSelect"
+            android:exported="false" />
+        <activity
             android:name=".PreviousPage"
             android:exported="false" />
         <activity

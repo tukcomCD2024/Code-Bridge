@@ -145,6 +145,11 @@ class drawingView(context: Context, attrs: AttributeSet) : View(context,attrs){
         val fileName = UUID.randomUUID().toString() + ".png"
         // 비트맵을 멀티파트 바디 파트로 변환
         val imagePart = convertBitmapToMultipartBodyPart(bitmap, "multipartFile", fileName)
+        val outputStream: OutputStream = FileOutputStream(file)
+        // 비트맵을 PNG 형식으로 압축
+        bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream)
+        outputStream.close()
+        //Toast.makeText(context, "이미지 저장 완료", Toast.LENGTH_SHORT).show()
 
         // 3. 이미지 업로드 API 호출
         CoroutineScope(Dispatchers.IO).launch {
@@ -153,6 +158,8 @@ class drawingView(context: Context, attrs: AttributeSet) : View(context,attrs){
                 withContext(Dispatchers.Main) {
                     if (response.isSuccessful && response.body() != null) {
                         Toast.makeText(context, "이미지 업로드 성공!", Toast.LENGTH_SHORT).show()
+        // 비트맵을 멀티파트 바디 파트로 변환
+        val imagePart = convertBitmapToMultipartBodyPart(bitmap, "multipartFile", "drawing.png")
 
                         Log.e("imageUpload", "이미지 업로드 성공! ${response.body()!!.image_url})")
 
