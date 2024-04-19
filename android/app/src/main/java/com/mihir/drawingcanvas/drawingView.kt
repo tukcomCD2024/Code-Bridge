@@ -4,14 +4,36 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.*
 import android.util.AttributeSet
+import android.util.Log
 import android.util.TypedValue
 import android.view.MotionEvent
 import android.view.View
 import android.widget.Toast
 import androidx.annotation.IntRange
+import com.example.sharenote.ImageResponse
+
+
+import com.example.sharenote.RetrofitClient.apiService2
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+
+import okhttp3.Call
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+
+import okhttp3.RequestBody.Companion.toRequestBody
+
+import retrofit2.Callback
+import retrofit2.Response
+import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileOutputStream
 import java.io.OutputStream
+
+
+
 
 // 배경 지식 코너(그리기 작업 핵심 삼총사)
 // Paint 객체 : 스타일과 색상 관리 (색상, 굵기, 투명도 등)
@@ -85,7 +107,7 @@ class drawingView(context: Context, attrs: AttributeSet) : View(context,attrs){
         canvas =  Canvas(mCanvasBitmap!!)
     }
 
-    // 실험용 autoDraw
+    // 설명 : 캔버스는 그림을 그리기 위한 도구이고 그 결과가 비트맵에 저장됩니다.
     fun autoDraw() {
 //autoDraw로 그린 선만 전부 노란색으로 바꾸기 성공 코드
 //        for(path in autoDrawPath){
@@ -126,15 +148,78 @@ class drawingView(context: Context, attrs: AttributeSet) : View(context,attrs){
         // 비트맵을 PNG 형식으로 압축
         bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream)
         outputStream.close()
-        Toast.makeText(context, "이미지 저장 완료", Toast.LENGTH_SHORT).show()
+        //Toast.makeText(context, "이미지 저장 완료", Toast.LENGTH_SHORT).show()
+
+        // 비트맵을 멀티파트 바디 파트로 변환
+        val imagePart = convertBitmapToMultipartBodyPart(bitmap, "multipartFile", "drawing.png")
+
+        // 3. 이미지 업로드 API 호출
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val response = apiService2.uploadImage(imagePart)
+                withContext(Dispatchers.Main) {
+                    if (response.isSuccessful && response.body() != null) {
+                        Toast.makeText(context, "이미지 업로드 성공!", Toast.LENGTH_SHORT).show()
+
+                        Log.e("imageUpload", "이미지 업로드 성공! ${response.body()!!.image_url})")
 
 
+                    } else {
+                        Log.e("DrawingView", "이미지 업로드 실패: ${response.message()}")
+                        Toast.makeText(context, "이미지 업로드 실패: ${response.message()}", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            } catch (t: Throwable) {
+                withContext(Dispatchers.Main) {
+                    Log.e("DrawingView", "네트워크 오류: ${t.message}")
+                    Toast.makeText(context, "네트워크 오류: ${t.message}", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+
+//        // 1. 비트맵을 압축하여 바이트 배열로 변환
+//        val byteArray = bitmap.toByteByteArray()
+//
+//        // 2. RequestBody 생성
+//        val requestBody = byteArray.toRequestBody("image/png".toMediaTypeOrNull())
+//
+//        // 3. 이미지 업로드 API 호출
+//
+//        CoroutineScope(Dispatchers.IO).launch {
+//            val response = apiService2.uploadImage(requestBody)
+//            with(Dispatchers.Main) {
+//                if (response.isSuccessful) {
+//                    Toast.makeText(context, "이미지 업로드 성공!", Toast.LENGTH_SHORT).show()
+//                } else {
+//                    Toast.makeText(context, "이미지 업로드 실패: ${response.message()}", Toast.LENGTH_SHORT).show()
+//                }
+//            }
+//        }
     }
+
+    private fun convertBitmapToMultipartBodyPart(bitmap: Bitmap, paramName: String, fileName: String): MultipartBody.Part {
+        val byteArrayOutputStream = ByteArrayOutputStream()
+        bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream)
+        val byteArray = byteArrayOutputStream.toByteArray()
+        byteArrayOutputStream.close()
+
+        val requestBody = byteArray.toRequestBody("image/png".toMediaTypeOrNull())
+        return MultipartBody.Part.createFormData(paramName, fileName, requestBody)
+    }
+
+    private fun Bitmap.toByteByteArray(): ByteArray {
+        val byteArrayOutputStream = ByteArrayOutputStream()
+        this.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream)
+        return byteArrayOutputStream.toByteArray()
+    }
+
 
     // 뷰를 다시 그려야 할 때 호출됨.
     // ex) View가 처음 로딩, 뷰의 크기 변경, 뷰 내의 데이터 변경 -> 그래픽 업데이트 필요한 상황
     override fun onDraw(canvas: Canvas?) {
-        super.onDraw(canvas)
+        if (canvas != null) {
+            super.onDraw(canvas)
+        }
         // 0,0 경로에 비트맵 그리기
         canvas?.drawBitmap(mCanvasBitmap!!,0f,0f,mCanvasPaint)
 
@@ -338,7 +423,6 @@ class drawingView(context: Context, attrs: AttributeSet) : View(context,attrs){
         mPaths.clear()
         // 다시 그리기
         invalidate()
-
     }
 
     fun getDrawing(): ArrayList<CustomPath> {

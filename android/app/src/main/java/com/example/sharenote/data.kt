@@ -1,5 +1,7 @@
 package com.example.sharenote
 
+import okhttp3.MultipartBody
+
 
 // 기존 노트 데이터
 data class Note(
@@ -129,3 +131,12 @@ data class CheckPage(
 data class LikesInfo(
     val userLikes: Map<String, Boolean>
 )*/
+
+data class ImageData(
+    val multipartFile: MultipartBody.Part
+)
+
+data class ImageResponse(
+    val image_url: String
+
+)

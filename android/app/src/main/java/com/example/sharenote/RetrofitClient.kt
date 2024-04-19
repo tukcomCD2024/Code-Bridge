@@ -1,5 +1,6 @@
 package com.example.sharenote
 
+import com.jakewharton.retrofit2.adapter.kotlin.coroutines.CoroutineCallAdapterFactory
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
@@ -9,7 +10,7 @@ object RetrofitClient {
 
     private val retrofit: Retrofit by lazy {
         Retrofit.Builder()
-            .baseUrl(BASE_URL) // baseUrl 수정
+            .baseUrl(BASE_URL)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
     }
@@ -18,4 +19,15 @@ object RetrofitClient {
         retrofit.create(ApiService::class.java)
     }
 
+    private val retrofit2: Retrofit by lazy {
+        Retrofit.Builder()
+            .addConverterFactory(GsonConverterFactory.create())
+            .addCallAdapterFactory(CoroutineCallAdapterFactory())
+            .build()
+    }
+
+    val apiService2: ApiService2 by lazy {
+        retrofit2.create(ApiService2::class.java)
+    }
+            .baseUrl(BASE_URL2)
 }
