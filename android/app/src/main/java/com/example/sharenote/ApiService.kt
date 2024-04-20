@@ -11,16 +11,16 @@ import retrofit2.http.POST
 interface ApiService {
 
     // 회원가입을 처리하는 POST 요청을 정의
-    @POST("signUp")
+    @POST("user/signUp")
     fun signUpUser(@Body userData: UserData): Call<Void>
 
-    @POST("login")
+    @POST("user/login")
     suspend fun login(@Body userData: UserData): Response<UserResponse>
 
-    @POST("organization")
+    @POST("user/organization")
     suspend fun sendWorkSpaceData(@Body organization: Organization): Response<OrganizationResponse>
 
-    @POST("note")
+    @POST("user/note")
     suspend fun sendNoteData(@Body note: UserNote): Response<NoteResponse>
 
     @POST("page")
