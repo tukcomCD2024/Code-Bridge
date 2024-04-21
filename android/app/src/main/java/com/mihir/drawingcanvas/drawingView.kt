@@ -31,8 +31,7 @@ import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileOutputStream
 import java.io.OutputStream
-
-
+import java.util.UUID
 
 
 // 배경 지식 코너(그리기 작업 핵심 삼총사)
@@ -141,17 +140,11 @@ class drawingView(context: Context, attrs: AttributeSet) : View(context,attrs){
             canvas.drawPath(path, paint)
         }
 
-        // 파일로 저장하기 위해 OutputStream 생성
-        val file = File(context.getExternalFilesDir(null), "image.png")
 
-        val outputStream: OutputStream = FileOutputStream(file)
-        // 비트맵을 PNG 형식으로 압축
-        bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream)
-        outputStream.close()
-        //Toast.makeText(context, "이미지 저장 완료", Toast.LENGTH_SHORT).show()
-
+        // 랜덤한 파일 이름을 생성
+        val fileName = UUID.randomUUID().toString() + ".png"
         // 비트맵을 멀티파트 바디 파트로 변환
-        val imagePart = convertBitmapToMultipartBodyPart(bitmap, "multipartFile", "drawing.png")
+        val imagePart = convertBitmapToMultipartBodyPart(bitmap, "multipartFile", fileName)
 
         // 3. 이미지 업로드 API 호출
         CoroutineScope(Dispatchers.IO).launch {
