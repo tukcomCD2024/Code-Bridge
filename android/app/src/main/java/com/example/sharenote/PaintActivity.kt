@@ -105,6 +105,16 @@ class PaintActivity : AppCompatActivity() {
 
         }
 
+        // override 없어도 되나??
+        // 다른 액티비티에서 돌아올 때 requestCode가 100 인 경우에 대해서 처리
+        fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+            super.onActivityResult(requestCode, resultCode, data)
+            if (requestCode == 100 && resultCode == Activity.RESULT_OK) {
+                val selectedUrl = data?.getStringExtra("selectedUrl")
+                Toast.makeText(this, "Selected Image URL: $selectedUrl", Toast.LENGTH_LONG).show()
+                // 여기서 선택된 이미지 URL로 필요한 작업을 수행합니다.
+            }
+        }
 
         autoDrawButton.setOnClickListener {
             if (drawingView.getDrawingMode() == 0) {
