@@ -107,7 +107,7 @@ class drawingView(context: Context, attrs: AttributeSet) : View(context,attrs){
     }
 
     // 설명 : 캔버스는 그림을 그리기 위한 도구이고 그 결과가 비트맵에 저장됩니다.
-    fun autoDraw() {
+    fun autoDraw() : String {
 //autoDraw로 그린 선만 전부 노란색으로 바꾸기 성공 코드
 //        for(path in autoDrawPath){
 //            path.color = Color.YELLOW
@@ -156,38 +156,24 @@ class drawingView(context: Context, attrs: AttributeSet) : View(context,attrs){
 
                         Log.e("imageUpload", "이미지 업로드 성공! ${response.body()!!.image_url})")
 
+                        return@withContext fileName.toString()
 
                     } else {
                         Log.e("DrawingView", "이미지 업로드 실패: ${response.message()}")
                         Toast.makeText(context, "이미지 업로드 실패: ${response.message()}", Toast.LENGTH_SHORT).show()
+                        return@withContext "error"
                     }
                 }
             } catch (t: Throwable) {
                 withContext(Dispatchers.Main) {
                     Log.e("DrawingView", "네트워크 오류: ${t.message}")
                     Toast.makeText(context, "네트워크 오류: ${t.message}", Toast.LENGTH_SHORT).show()
+                    return@withContext "error"
                 }
             }
         }
 
-//        // 1. 비트맵을 압축하여 바이트 배열로 변환
-//        val byteArray = bitmap.toByteByteArray()
-//
-//        // 2. RequestBody 생성
-//        val requestBody = byteArray.toRequestBody("image/png".toMediaTypeOrNull())
-//
-//        // 3. 이미지 업로드 API 호출
-//
-//        CoroutineScope(Dispatchers.IO).launch {
-//            val response = apiService2.uploadImage(requestBody)
-//            with(Dispatchers.Main) {
-//                if (response.isSuccessful) {
-//                    Toast.makeText(context, "이미지 업로드 성공!", Toast.LENGTH_SHORT).show()
-//                } else {
-//                    Toast.makeText(context, "이미지 업로드 실패: ${response.message()}", Toast.LENGTH_SHORT).show()
-//                }
-//            }
-//        }
+        return "error"
     }
 
     private fun convertBitmapToMultipartBodyPart(bitmap: Bitmap, paramName: String, fileName: String): MultipartBody.Part {
