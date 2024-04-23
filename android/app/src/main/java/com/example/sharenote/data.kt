@@ -66,3 +66,25 @@ data class PageData(
 data class PageResponse(
     val pageId: String
 )
+
+
+data class CheckOrganization(
+    val id: String,
+    val name: String,
+    val description: String,
+    val owner: String,
+    val emoji: String,
+    val members: List<String>,
+    val notes: List<CheckNote>
+)
+
+data class CheckNote(
+    val id: String,
+    val title: String,
+    val noteImageUrl: String,
+    val pages: List<CheckPage>
+)
+
+data class CheckPage(
+    val id: String
+)

@@ -6,7 +6,9 @@ import retrofit2.Call
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.Field
+import retrofit2.http.GET
 import retrofit2.http.POST
+import retrofit2.http.Path
 
 interface ApiService {
 
@@ -25,5 +27,9 @@ interface ApiService {
 
     @POST("page")
     suspend fun sendPageData(@Body page: PageData): Response<PageResponse>
+
+    @GET("user/organization/{organizationId}")
+    suspend fun getOrganization(@Path("organizationId") organizationId: String): List<CheckOrganization>
+
 
 }

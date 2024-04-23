@@ -19,6 +19,8 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.sharenote.ApiService
+import com.example.sharenote.CheckOrganization
 import com.example.sharenote.CreateNoteActivity
 import com.example.sharenote.LoginActivity
 import com.example.sharenote.MainActivity
@@ -29,11 +31,19 @@ import com.example.sharenote.OrganizationActivity
 import com.example.sharenote.Page
 import com.example.sharenote.PaintActivity
 import com.example.sharenote.R
+import com.example.sharenote.RetrofitClient
 import com.example.sharenote.SharedPreferencesUtil
 import com.example.sharenote.WorkSpace
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import retrofit2.Callback
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 
 class HomeFragment : Fragment() {
 
@@ -227,6 +237,7 @@ class HomeFragment : Fragment() {
         }
     }
 
+    /*
     // 파이어스토어에서 워크스페이스 데이터를 가져와서 어댑터에 설정하는 함수
     private fun loadWorkSpacesForPopup(adapter: WorkSpaceListAdapter) {
         val db = FirebaseFirestore.getInstance()
@@ -249,7 +260,35 @@ class HomeFragment : Fragment() {
                 // 쿼리 실패 시 에러 처리
                 // 예를 들어, 로그 출력 등
             }
+    }*/
+
+    private fun loadWorkSpacesForPopup(adapter: WorkSpaceListAdapter) {
+        val currentUserEmail = getUserId()
+
+        currentUserEmail?.let { email ->
+            GlobalScope.launch(Dispatchers.IO) {
+                try {
+                    // Retrofit을 사용하여 HTTP 요청을 보냅니다.
+                    val organizationList = RetrofitClient.apiService.getOrganization(email)
+
+                    // 받아온 organization 데이터를 WorkSpace 객체로 변환하여 어댑터에 추가합니다.
+                    val workSpaceList = organizationList.map { organization ->
+                        WorkSpace(organization.name, organization.owner, organization.id)
+                    }
+
+                    // 어댑터에 워크스페이스 데이터 설정
+                    withContext(Dispatchers.Main) {
+                        adapter.setWorkSpaces(workSpaceList)
+                    }
+                } catch (e: Exception) {
+                    // 실패한 경우 처리
+                    Log.e(TAG, "Error getting organizations", e)
+                }
+            }
+        }
     }
+
+
 
 
 
@@ -377,6 +416,10 @@ class HomeFragment : Fragment() {
 
     private fun getRecentWorkspaceId(): String? {
         return SharedPreferencesUtil.getRecentWorkspaceId(requireContext())
+    }
+
+    private fun getUserId(): String? {
+        return SharedPreferencesUtil.getUserId(requireContext())
     }
 
     private fun saveRecentNoteId(noteId: String) {
