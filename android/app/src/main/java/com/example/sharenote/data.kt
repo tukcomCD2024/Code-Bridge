@@ -1,5 +1,7 @@
 package com.example.sharenote
 
+
+// 기존 노트 데이터
 data class Note(
     val organizationId: String,
     val title: String,
@@ -9,6 +11,7 @@ data class Note(
     // 필요한 다른 필드 추가
 )
 
+// http 통신을 위한 노트 데이터
 data class UserNote(
     val organizationId: String,
     val title: String,
@@ -20,6 +23,7 @@ data class NoteResponse(
     val noteId: String
 )
 
+
 data class Page(
     val id: String, // 문서의 고유 ID
     val title: String,
@@ -27,6 +31,7 @@ data class Page(
     val imageUri: String?
 )
 
+// http 통신을 위한 유저 데이터
 data class UserData(
     val nickname: String,
     val userId: String,
@@ -46,6 +51,7 @@ data class WorkSpace(
     val id : String
 )
 
+// http 통신을 위한 Organization 데이터
 data class Organization(
     val name: String,
     val owner: String,
@@ -57,6 +63,7 @@ data class OrganizationResponse(
     val organizationId: String
 )
 
+// http 통신을 위한 페이지 데이터
 data class PageData(
     val organizationId: String,
     val noteId: String,
@@ -68,6 +75,7 @@ data class PageResponse(
 )
 
 
+// http 통신을 통한 Org 조회
 data class CheckOrganization(
     val id: String,
     val name: String,
@@ -75,16 +83,40 @@ data class CheckOrganization(
     val owner: String,
     val emoji: String,
     val members: List<String>,
-    val notes: List<CheckNote>
+    val notes: List<NoteCheck>
 )
 
-data class CheckNote(
+data class NoteCheck(
     val id: String,
     val title: String,
     val noteImageUrl: String,
-    val pages: List<CheckPage>
+    val pages: List<PageCheck>
 )
 
-data class CheckPage(
+data class PageCheck(
     val id: String
+)
+
+
+// http 통신을 통한 Note 조회
+data class CheckNote(
+    val id: String,
+    val createUser: String,
+    val title: String,
+    val noteImageUrl: String,
+    val pages: List<CheckPage>,
+    val likesInfo: LikesInfo,
+    val createdAt: String
+)
+
+// 페이지 데이터 모델 클래스
+data class CheckPage(
+    val id: String,
+    val createUser: String,
+    val createdAt: String
+)
+
+// 좋아요 정보 데이터 모델 클래스
+data class LikesInfo(
+    val userLikes: Map<String, Boolean>
 )

@@ -146,7 +146,7 @@ class HomeFragment : Fragment() {
 
         // 최근 워크스페이스 ID를 loadNotesFromFirestore() 함수로 전달하여 해당 워크스페이스에 속한 노트들을 가져옵니다.
         recentWorkspaceId?.let {
-            loadNotesFromFirestore(it)
+            loadNotesFromMongoDB(it)
         }
 
         return view
@@ -180,7 +180,7 @@ class HomeFragment : Fragment() {
         recyclerViewWorkSpace.adapter = workSpaceListAdapter
         recyclerViewWorkSpace.layoutManager = LinearLayoutManager(requireContext())
 
-        // 파이어스토어에서 워크스페이스 데이터를 가져와서 어댑터에 설정
+        // MongoDB에서 워크스페이스 데이터를 가져와서 어댑터에 설정
         loadWorkSpacesForPopup(workSpaceListAdapter)
 
         // PopupWindow를 화면 아래쪽에 표시합니다.
@@ -354,6 +354,7 @@ class HomeFragment : Fragment() {
     }
 
 
+    /*
     private fun loadNotesFromFirestore(recentWorkspaceId: String) {
         val db = FirebaseFirestore.getInstance()
         db.collection("notes")
@@ -376,6 +377,38 @@ class HomeFragment : Fragment() {
             .addOnFailureListener { exception ->
                 Log.e(TAG, "Error getting notes:", exception)
             }
+    }*/
+
+    private fun loadNotesFromMongoDB(recentWorkspaceId: String) {
+        GlobalScope.launch(Dispatchers.IO) {
+            try {
+                val notes = mutableListOf<Note>()
+
+                // Retrofit을 사용하여 HTTP 요청을 보냅니다.
+                val response = RetrofitClient.apiService.getNotesForOrganization(recentWorkspaceId)
+
+                // 받아온 데이터에서 필요한 정보만 추출하여 리스트에 추가합니다.
+                for (noteData in response) {
+                    val note = Note(
+                        organizationId = recentWorkspaceId,
+                        title = noteData.title,
+                        userId = noteData.createUser,
+                        noteImageUrl = noteData.noteImageUrl,
+                        noteId = noteData.id
+                    )
+                    notes.add(note)
+                }
+
+                // 어댑터에 데이터 설정
+                withContext(Dispatchers.Main) {
+                    noteListAdapter.setNotes(notes)
+                }
+            } catch (e: Exception) {
+                // 기타 오류 처리
+                // e.printStackTrace()
+                // 예상치 못한 오류가 발생했을 때
+            }
+        }
     }
 
 
@@ -383,19 +416,34 @@ class HomeFragment : Fragment() {
 
 
     private fun displayWorkspaceName(workspaceId: String) {
-        val db = FirebaseFirestore.getInstance()
-        db.collection("workSpaces")
-            .document(workspaceId)
-            .get()
-            .addOnSuccessListener { document ->
-                val workspaceName = document.getString("workSpaceName")
-                // 가져온 워크스페이스 이름을 TextView에 설정합니다.
-                workSpaceText.text = workspaceName
+        val currentUserEmail = getUserId()
+
+        currentUserEmail?.let { email ->
+            GlobalScope.launch(Dispatchers.IO) {
+                try {
+                    // Retrofit을 사용하여 HTTP 요청을 보냅니다.
+                    val organizationList = RetrofitClient.apiService.getOrganization(email)
+
+                    // 받아온 organization 데이터 중에서 workspaceId와 일치하는 Organization을 찾습니다.
+                    val organization = organizationList.find { it.id == workspaceId }
+
+                    // 찾은 Organization의 이름을 가져옵니다.
+                    val workspaceName = organization?.name
+
+                    // 가져온 워크스페이스 이름을 TextView에 설정합니다.
+                    withContext(Dispatchers.Main) {
+                        workSpaceText.text = workspaceName
+                    }
+                } catch (e: Exception) {
+                    // 실패한 경우 처리
+                    Log.e(TAG, "Error getting workspace name", e)
+                }
             }
-            .addOnFailureListener { exception ->
-                // 워크스페이스 이름을 가져오지 못한 경우 처리할 내용을 여기에 작성합니다.
-            }
+        }
     }
+
+
+
 
     private fun displayUserEmail() {
         // FirebaseAuth 인스턴스를 사용하여 현재 사용자를 가져옵니다.

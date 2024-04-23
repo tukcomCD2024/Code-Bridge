@@ -31,5 +31,6 @@ interface ApiService {
     @GET("user/organization/{organizationId}")
     suspend fun getOrganization(@Path("organizationId") organizationId: String): List<CheckOrganization>
 
-
+    @GET("user/note/{organizationId}")
+    suspend fun getNotesForOrganization(@Path("organizationId") organizationId: String): List<CheckNote>
 }
