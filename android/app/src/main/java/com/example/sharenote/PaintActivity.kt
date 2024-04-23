@@ -1,6 +1,7 @@
 package com.example.sharenote
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.Intent
 import android.graphics.Color
 import androidx.appcompat.app.AppCompatActivity
@@ -67,12 +68,42 @@ class PaintActivity : AppCompatActivity() {
         }
         aiSendButton.setOnClickListener {
             // 테스트 로직(autoDraw로 그린 선만 노란색으로 바꾸기)
-            drawingView.autoDraw()
+            // 이미지 업로드하고 해당 이미지 url 받아오기
+            val imageUrl = drawingView.autoDraw()
+
+            // 이미지 url을 서버로 전송하고 서버에서 받아온 이미지 url로 이미지 띄우기
+            // 3 초간 정지 AI 서버에 요청한 척
+            Thread.sleep(3000)
+
+            // 서버에서 받아온 JSON 객체에서 6개의 url 꺼내서 다음 액티비티로 전달
+            // list 만들어줘
+            val urlList = ArrayList<String>()
+            urlList.add("https://sharenotebucket.s3.ap-northeast-2.amazonaws.com/apple-line.png")
+            urlList.add("https://sharenotebucket.s3.ap-northeast-2.amazonaws.com/airplane-outline.png")
+            urlList.add("https://sharenotebucket.s3.ap-northeast-2.amazonaws.com/bag-line.png")
+            urlList.add("https://sharenotebucket.s3.ap-northeast-2.amazonaws.com/bath-outline.png")
+            urlList.add("https://sharenotebucket.s3.ap-northeast-2.amazonaws.com/bed-outline.png")
+            urlList.add("https://sharenotebucket.s3.ap-northeast-2.amazonaws.com/calendar-line.png")
 
 
-            // 이미지를 압축하는 로직
 
-            // AI 서버에 전송하는 로직
+            val intent = Intent(this, ImageSelect::class.java)
+            intent.putStringArrayListExtra("urlList", urlList)
+            // 100은 고유한 코드
+            startActivityForResult(intent, 100)  // IMAGE_SELECT_REQUEST_CODE는 상수
+
+
+        }
+
+        // override 없어도 되나??
+        // 다른 액티비티에서 돌아올 때 requestCode가 100 인 경우에 대해서 처리
+        fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+            super.onActivityResult(requestCode, resultCode, data)
+            if (requestCode == 100 && resultCode == Activity.RESULT_OK) {
+                val selectedUrl = data?.getStringExtra("selectedUrl")
+                Toast.makeText(this, "Selected Image URL: $selectedUrl", Toast.LENGTH_LONG).show()
+                // 여기서 선택된 이미지 URL로 필요한 작업을 수행합니다.
+            }
         }
 
         autoDrawButton.setOnClickListener {
