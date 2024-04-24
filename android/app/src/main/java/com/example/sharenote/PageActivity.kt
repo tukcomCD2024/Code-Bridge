@@ -55,6 +55,22 @@ class PageActivity : AppCompatActivity() {
             settings.databaseEnabled = true //Database Storage API 사용 여부 설정
         }
 
+        val nickname = getUserName()
+        val userId = getUserId()
+        val email = getUserEmail()
+
+        webView.webViewClient = object : WebViewClient() {
+            override fun onPageFinished(view: WebView?, url: String?) {
+                super.onPageFinished(view, url)
+                val script = """
+                    localStorage.setItem('nickname', '$nickname');
+                    localStorage.setItem('userId', '$userId');
+                    localStorage.setItem('email', '$email');
+                """.trimIndent()
+                webView.evaluateJavascript(script, null)
+            }
+        }
+
 
         // SharedPreferencesUtil을 사용하여 WorkSpaceId와 NoteId를 불러옵니다.
         val workspaceId = SharedPreferencesUtil.getRecentWorkspaceId(this)
@@ -103,4 +119,14 @@ class PageActivity : AppCompatActivity() {
 
     }
 
+    private fun getUserId(): String? {
+        return SharedPreferencesUtil.getUserId(this)
+    }
+
+    private fun getUserName(): String? {
+        return SharedPreferencesUtil.getUserName(this)
+    }
+    private fun getUserEmail(): String? {
+        return SharedPreferencesUtil.getUserEmail(this)
+    }
 }

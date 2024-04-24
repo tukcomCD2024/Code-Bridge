@@ -53,11 +53,11 @@ class NoteActivity : AppCompatActivity(), PageListAdapter.OnPageClickListener {
         }
 
         // 최근에 사용한 노트의 ID 가져오기
-        val recentNoteId = SharedPreferencesUtil.getRecentNoteId(this)
+        val recentWorkspaceId = SharedPreferencesUtil.getRecentWorkspaceId(this)
 
         // 페이지 데이터를 불러오는 함수 호출
-        recentNoteId?.let {
-            loadPagesFromFirestore(it)
+        recentWorkspaceId?.let {
+            loadPagesFromMongoDB(it)
         }
     }
 
@@ -70,6 +70,7 @@ class NoteActivity : AppCompatActivity(), PageListAdapter.OnPageClickListener {
         startActivity(intent)
     }
 
+    /*
     private fun loadPagesFromFirestore(recentNoteId: String) {
         val db = FirebaseFirestore.getInstance()
         db.collection("pages")
@@ -91,7 +92,43 @@ class NoteActivity : AppCompatActivity(), PageListAdapter.OnPageClickListener {
                 // Handle any errors
                 // Log.e(TAG, "Error getting documents: ", exception)
             }
+    }*/
+
+
+    private fun loadPagesFromMongoDB(recentWorkspaceId: String) {
+        GlobalScope.launch(Dispatchers.IO) {
+            try {
+                // Retrofit을 사용하여 HTTP 요청을 보냅니다.
+                val response = RetrofitClient.apiService.getNotesForOrganization(recentWorkspaceId)
+
+                // 받아온 데이터에서 해당 노트의 페이지 정보를 추출합니다.
+                val recentNoteId = getRecentNoteId()
+                val notes = response.filter { it.id == recentNoteId }
+
+                val pages = mutableListOf<CheckPage>()
+                for (note in notes) {
+                    for (page in note.pages) {
+                        // CheckPage에서 필요한 정보 추출
+                        val pageId = page.id
+                        val pageCreateUser = page.createUser
+                        val pageCreatedAt = page.createdAt
+                        // 이 정보를 사용하여 원하는 작업을 수행하거나 저장합니다.
+                        // 여기서는 간단히 페이지의 ID만 저장하도록 하였습니다.
+                        pages.add(CheckPage(pageId, pageCreateUser, pageCreatedAt))
+                    }
+                }
+
+                // 추출한 페이지 정보를 사용하여 원하는 작업을 수행하세요.
+
+            } catch (e: Exception) {
+                // 기타 오류 처리
+                // e.printStackTrace()
+                // 예상치 못한 오류가 발생했을 때
+            }
+        }
     }
+
+
 
     private fun sendPageDataToMongoDB(page: PageData) {
         GlobalScope.launch(Dispatchers.IO) {

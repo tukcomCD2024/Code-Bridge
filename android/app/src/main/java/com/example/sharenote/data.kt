@@ -25,7 +25,7 @@ data class NoteResponse(
 
 
 data class Page(
-    val id: String, // 문서의 고유 ID
+    val id: String,
     val title: String,
     val text: String,
     val imageUri: String?
