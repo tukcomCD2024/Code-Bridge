@@ -4,7 +4,7 @@ import os
 import numpy as np
 
 tagsTemp = ['rabbit', 'bear', 'dog', 'cat', 'tiger', 'horse']
-defaultRoute = "../asset/image/svg"
+defaultRoute = "../asset/image/png"
 
 
 def getSubdirectoryList(defaultRoute=defaultRoute, directoryName='svg'):
@@ -84,7 +84,6 @@ def imageReformByAlpha(img):
 
 
 def imageReform():
-    directoryName = 'png'
 
     for dir, subdir, files in os.walk(defaultRoute):
         for imageFile in files:
@@ -116,9 +115,9 @@ def svgImageResize():
             img.close()
 
 
-svgImageResize()
+# svgImageResize()
 convertSVGtoPNG()
-imageReform()
+# imageReform()
 
 # convertColor2Mono()
 # boldLine()

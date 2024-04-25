@@ -1,6 +1,8 @@
+import os
+
 import numpy as np
 
-models = ['cnn3Depth32.h5', 'cnn4Depth32.h5', 'cnn4-2Depth32.h5', 'cnn5Depth32.h5', 'cnn6Depth32.h5']
+models = ['30cnn4Depth32.h5', 'cnn4-2Depth32.h5', '30cnn5Depth32.h5', '30cnn6Depth32.h5','512cnn4Depth32.h5', '512cnn5Depth32.h5', '512cnn6Depth32.h5']
 
 
 def resultByDesc(result):
@@ -18,7 +20,7 @@ from PIL import Image
 
 # imgsrc = r"C:\Users\Ka\Desktop\Ka\programming\AI\AI2\asset\size64Image01\bank\bank.png"
 # imgsrc = r"C:\Users\Ka\Desktop\Ka\programming\AI\AI2\asset\size64Image01\security\security.png"
-imgsrc = r"C:\Users\Ka\Desktop\Ka\programming\AI\sample\heart.png"
+imgsrc = r" "
 
 img = Image.open(imgsrc)
 img = img.resize((128, 128))
@@ -27,12 +29,13 @@ img = np.asarray(img)
 img = np.expand_dims(img, axis=0)
 from keras.models import load_model
 
-# saved_model = load_model("vgg16_softmax.h5")
-for i in models:
+for i in os.listdir('./'):
+    print(i)
+    if not '.h5' in i:
+        continue
+
     saved_model = load_model(i)
     output = saved_model.predict(img)
-
-    print(output)
 
     print(resultByDesc(output[0]))
     print()

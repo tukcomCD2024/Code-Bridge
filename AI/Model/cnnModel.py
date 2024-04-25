@@ -7,98 +7,94 @@ from keras.callbacks import ModelCheckpoint, EarlyStopping
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 imageSize = 128
 
-trdata = ImageDataGenerator(zoom_range=[0.9, 1.3], height_shift_range=0.3, width_shift_range=0.2, horizontal_flip=True, rotation_range=0.3, validation_split=0.1)
-traindata = trdata.flow_from_directory(directory=r"C:\Users\Ka\Desktop\Ka\대학교\졸업작품\project\Code-Bridge\AI\asset\image\icon1",
-                                       target_size=(imageSize, imageSize),
-                                       class_mode='categorical', batch_size=20)
+trdata = ImageDataGenerator(zoom_range=[0.9, 1.3], height_shift_range=0.3, width_shift_range=0.2, horizontal_flip=True, rotation_range=0.3,
+                            validation_split=0.1)
+traindata = trdata.flow_from_directory(directory=r"C:\Users\Ka\Desktop\Ka\대학교\졸업작품\project\Code-Bridge\AI\asset\image\svg",
+                                       target_size=(imageSize, imageSize), class_mode='categorical', batch_size=20)
 tsdata = ImageDataGenerator()
-testdata = tsdata.flow_from_directory(directory=r"C:\Users\Ka\Desktop\Ka\대학교\졸업작품\project\Code-Bridge\AI\asset\image\icon1", target_size=(imageSize, imageSize),
+testdata = tsdata.flow_from_directory(directory=r"C:\Users\Ka\Desktop\Ka\대학교\졸업작품\project\Code-Bridge\AI\asset\image\svg", target_size=(imageSize, imageSize),
                                       class_mode='categorical')
 
 
-def cnnDepth3():
+def cnnDepth4_2():
     model = Sequential()
-    model.add(Conv2D(32, (3, 3), activation='relu', input_shape=(imageSize, imageSize, 3)))
+    model.add(Conv2D(16, (3, 3), activation='relu', input_shape=(imageSize, imageSize, 3)))
     model.add(MaxPool2D((2, 2)))
 
     model.add(Flatten())
-    model.add(Dense(units=1024, activation="relu"))
-    model.add(Dense(units=116, activation="sigmoid"))
-
-    return model
-
-
-def cnnDepth4():
-    model = Sequential()
-    model.add(Conv2D(32, (3, 3), activation='relu', input_shape=(imageSize, imageSize, 3)))
-    model.add(MaxPool2D((2, 2)))
-
-    model.add(Flatten())
-    model.add(Dense(units=1024, activation="relu"))
-    model.add(Dense(units=1024, activation="relu"))
-    model.add(Dense(units=116, activation="sigmoid"))
+    model.add(Dense(units=512, activation="relu"))
+    model.add(Dense(units=512, activation="relu"))
+    model.add(Dense(units=103, activation="sigmoid"))
 
     return model
 
 
 def cnnDepth5():
     model = Sequential()
-    model.add(Conv2D(32, (3, 3), activation='relu', input_shape=(imageSize, imageSize, 3)))
+    model.add(Conv2D(16, (3, 3), activation='relu', input_shape=(imageSize, imageSize, 3)))
     model.add(MaxPool2D((2, 2)))
-    model.add(Conv2D(64, (3, 3), activation='relu'))
+    model.add(Conv2D(32, (3, 3), activation='relu'))
     model.add(MaxPool2D((2, 2)))
 
     model.add(Flatten())
-    model.add(Dense(units=1024, activation="relu"))
-    model.add(Dense(units=1024, activation="relu"))
-    model.add(Dense(units=116, activation="sigmoid"))
+    model.add(Dense(units=512, activation="relu"))
+    model.add(Dense(units=512, activation="relu"))
+    model.add(Dense(units=103, activation="sigmoid"))
 
     return model
 
 
 def cnnDepth6():
     model = Sequential()
-    model.add(Conv2D(32, (3, 3), activation='relu', input_shape=(imageSize, imageSize, 3)))
+    model.add(Conv2D(16, (3, 3), activation='relu', input_shape=(imageSize, imageSize, 3)))
+    model.add(MaxPool2D((2, 2)))
+    model.add(Conv2D(32, (3, 3), activation='relu'))
     model.add(MaxPool2D((2, 2)))
     model.add(Conv2D(64, (3, 3), activation='relu'))
     model.add(MaxPool2D((2, 2)))
-    model.add(Conv2D(128, (3, 3), activation='relu'))
-    model.add(MaxPool2D((2, 2)))
 
     model.add(Flatten())
-    model.add(Dense(units=1024, activation="relu"))
-    model.add(Dense(units=1024, activation="relu"))
-    model.add(Dense(units=116, activation="sigmoid"))
+    model.add(Dense(units=512, activation="relu"))
+    model.add(Dense(units=512, activation="relu"))
+    model.add(Dense(units=103, activation="sigmoid"))
 
     return model
 
 
-model = cnnDepth3()
+def createModel():
+    modelNames = ['512cnn4Depth16.h5', '512cnn5Depth16.h5', '512cnn6Depth16.h5']
+    modelFuncs = [cnnDepth4_2(), cnnDepth5(), cnnDepth6()]
 
-from keras.optimizers import RMSprop
+    for i in range(3):
+        model = modelFuncs[i]
 
-opt = RMSprop(lr=0.001)
-model.compile(optimizer=opt, loss='categorical_crossentropy', metrics=['accuracy'])
+        from keras.optimizers import RMSprop
 
-model.summary()
+        opt = RMSprop(lr=0.0001)
+        model.compile(optimizer=opt, loss='categorical_crossentropy', metrics=['accuracy'])
 
-checkpoint = ModelCheckpoint("cnn3Depth32.h5", monitor='val_accuracy', verbose=1, save_best_only=True,
-                             save_weights_only=False, mode='auto', period=1)
-early = EarlyStopping(monitor='val_accuracy', min_delta=0, patience=20, verbose=1, mode='auto')
-# hist = model.fit_generator(steps_per_epoch=len(traindata), generator=traindata, validation_data=testdata,
-#                            validation_steps=len(testdata), epochs=4, callbacks=[checkpoint, early])
+        model.summary()
 
-hist = model.fit(traindata, steps_per_epoch=len(traindata), validation_data=testdata, validation_steps=len(testdata),
-                 epochs=30, callbacks=[checkpoint, early], batch_size=5)
+        checkpoint = ModelCheckpoint(modelNames[i], monitor='val_accuracy', verbose=1, save_best_only=True,
+                                     save_weights_only=False, mode='auto', period=1)
+        early = EarlyStopping(monitor='val_accuracy', min_delta=0, patience=20, verbose=1, mode='auto')
+        # hist = model.fit_generator(steps_per_epoch=len(traindata), generator=traindata, validation_data=testdata,
+        #                            validation_steps=len(testdata), epochs=4, callbacks=[checkpoint, early])
 
-import matplotlib.pyplot as plt
+        hist = model.fit(traindata, steps_per_epoch=len(traindata), validation_data=testdata, validation_steps=len(testdata),
+                         epochs=300, callbacks=[checkpoint, early], batch_size=5)
 
-plt.plot(hist.history["accuracy"])
-plt.plot(hist.history['val_accuracy'])
-plt.plot(hist.history['val_loss'])
-plt.title("model accuracy")
-plt.ylabel("Accuracy")
-plt.xlabel("Epoch")
-plt.ylim(0, 5)
-plt.legend(["Accuracy", "Validation Accuracy", "Validation Loss"])
-plt.show()
+        import matplotlib.pyplot as plt
+
+        plt.plot(hist.history["accuracy"])
+        plt.plot(hist.history['val_accuracy'])
+        plt.plot(hist.history['val_loss'])
+        plt.title("model accuracy")
+        plt.ylabel("Accuracy")
+        plt.xlabel("Epoch")
+        plt.ylim(0, 5)
+        plt.legend(["Accuracy", "Validation Accuracy", "Validation Loss"])
+        plt.show()
+
+
+createModel()
