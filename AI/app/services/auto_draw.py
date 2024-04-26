@@ -1,8 +1,10 @@
+import json
+
 from keras.models import load_model
 import numpy as np
 from PIL import Image
-import operator
-import json, io, os, base64
+import operator, os
+from app.services.LoadImage import readFromJsonToImage, downloadFromS3
 
 # imgsrc = r"C:\Users\Ka\Desktop\Ka\programming\AI\AI2\asset\size64Image01\bank\bank.png"
 # imgsrc = r"C:\Users\Ka\Desktop\Ka\programming\AI\AI2\asset\size64Image01\security\security.png"
@@ -43,22 +45,17 @@ def getPredict(img):
     return pre
 
 
-# def imageMatching():
-#     image = getImage()
-#     predict = getPredict(image)
-#     result = resultByDesc(predict[0])
-#     print(result)
-
-
-def readFromJsonToImage(json_data):
-    dict_data = json.loads(json_data)
-
-    img = dict_data['img']
-    img = base64.b64decode(img)
-    return Image.open(io.BytesIO(img))
-
 
 def AI(json_data):
-    image = readFromJsonToImage(json_data)
+    dict_data = json.loads(json_data)
+    type = dict_data['type']
+    if type == "S3":
+        image = downloadFromS3(dict_data['bucket'], dict_data['key'])
+        pass
+    elif type == "base64":
+        image = readFromJsonToImage(json_data)
+        pass
     preResult = getPredict(resize(image))
-    return preResult
+    return resultByDesc(preResult)
+
+

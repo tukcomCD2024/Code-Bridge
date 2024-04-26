@@ -15,6 +15,6 @@ files = {
             "img": b64_string,
         }
 print(files)
-r = requests.post('http://127.0.0.1:5000/draw', json=json.dumps(files))
+r = requests.post('http://127.0.0.1:5000/ai/base64', json=json.dumps(files))
 
 print(r)
