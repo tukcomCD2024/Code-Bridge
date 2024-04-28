@@ -404,6 +404,11 @@ class drawingView(context: Context, attrs: AttributeSet) : View(context,attrs){
         invalidate()
     }
 
+    fun autoDrawClear() {
+        autoDrawPath.clear()
+        invalidate()
+    }
+
     fun getDrawing(): ArrayList<CustomPath> {
         return mPaths
     }

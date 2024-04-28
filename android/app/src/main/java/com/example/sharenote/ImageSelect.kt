@@ -1,5 +1,7 @@
 package com.example.sharenote
 
+import android.app.Activity
+import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
@@ -48,7 +50,14 @@ class ImageSelect : AppCompatActivity() {
 
         completeButton.setOnClickListener {
             val imageUrl = getSelectedImageUrl()
-            Log.d("ImageSelect", "Selected Image URL: $imageUrl")
+            val resultIntent = Intent()
+            if (imageUrl != null) {
+                resultIntent.putExtra("selectedImageUrl", imageUrl)
+                setResult(Activity.RESULT_OK, resultIntent)
+            } else {
+                setResult(Activity.RESULT_CANCELED)
+            }
+            finish() // 액티비티를 종료하고 결과를 호출한 액티비티로 반환
         }
     }
 
