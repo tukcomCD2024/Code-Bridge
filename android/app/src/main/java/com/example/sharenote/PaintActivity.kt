@@ -6,10 +6,16 @@ import android.content.Intent
 import android.graphics.Color
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.view.View
+import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageButton
+import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.Toast
+import androidx.constraintlayout.widget.ConstraintLayout
+import com.bumptech.glide.Glide
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.mihir.drawingcanvas.drawingView
 
@@ -95,16 +101,6 @@ class PaintActivity : AppCompatActivity() {
 
         }
 
-        // override 없어도 되나??
-        // 다른 액티비티에서 돌아올 때 requestCode가 100 인 경우에 대해서 처리
-        fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-            super.onActivityResult(requestCode, resultCode, data)
-            if (requestCode == 100 && resultCode == Activity.RESULT_OK) {
-                val selectedUrl = data?.getStringExtra("selectedUrl")
-                Toast.makeText(this, "Selected Image URL: $selectedUrl", Toast.LENGTH_LONG).show()
-                // 여기서 선택된 이미지 URL로 필요한 작업을 수행합니다.
-            }
-        }
 
         autoDrawButton.setOnClickListener {
             if (drawingView.getDrawingMode() == 0) {
@@ -128,6 +124,47 @@ class PaintActivity : AppCompatActivity() {
         val brushColor = drawingView.getBrushColor()
 
         val drawing = drawingView.getDrawing()
+    }
+
+    // override 없어도 되나??
+    // 다른 액티비티에서 돌아올 때 requestCode가 100 인 경우에 대해서 처리
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == 100 && resultCode == Activity.RESULT_OK) {
+            val selectedUrl = data?.getStringExtra("selectedImageUrl")
+            Log.e("PaintActivity", "???")
+            Log.e("PaintActivity", "Selected Image URL: $selectedUrl")
+            // 여기서 선택된 이미지 URL로 필요한 작업을 수행합니다.
+            if (selectedUrl != null) {
+                // autoDraw 선들 삭제하기
+                drawingView.autoDrawClear()
+
+                // 동적으로 ImageView 생성
+                // 위치 가운데로 좀 와라
+                val imageView = ImageView(this).apply {
+                    layoutParams = ViewGroup.LayoutParams(
+                        300,
+                        200
+                    )
+                    // 위치 가운데로
+                    x = 600f
+                    y = 700f
+                    scaleType = ImageView.ScaleType.CENTER_CROP
+                }
+
+                // 레이아웃에 ImageView 추가
+                val layout = findViewById<ConstraintLayout>(R.id.paintLayout) // 미리 XML에 LinearLayout 등의 레이아웃을 정의해 두어야 합니다.
+                layout.addView(imageView)
+
+                // Glide를 사용하여 이미지 로드
+                Glide.with(this)
+                    .load(selectedUrl)
+                    .into(imageView)
+            }
+        }
+
+
     }
 
 //        backButton = findViewById(R.id.backButton)
