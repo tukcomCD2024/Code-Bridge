@@ -23,7 +23,7 @@ class NoteActivity : AppCompatActivity(), PageListAdapter.OnPageClickListener {
     private lateinit var recyclerView: RecyclerView
     private lateinit var pageListAdapter: PageListAdapter
 
-    private var pages: MutableList<Page> = mutableListOf()
+    private var pages: MutableList<CheckPage> = mutableListOf()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -116,6 +116,7 @@ class NoteActivity : AppCompatActivity(), PageListAdapter.OnPageClickListener {
                         // 여기서는 간단히 페이지의 ID만 저장하도록 하였습니다.
                         pages.add(CheckPage(pageId, pageCreateUser, pageCreatedAt))
                     }
+                    pageListAdapter.notifyDataSetChanged()
                 }
 
                 // 추출한 페이지 정보를 사용하여 원하는 작업을 수행하세요.

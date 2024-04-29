@@ -16,7 +16,7 @@
 
         <!-- 텍스트 제목 표시를 위한 TextView -->
         <TextView
-            android:id="@+id/titleViewText"
+            android:id="@+id/idViewText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="8dp"
@@ -27,10 +27,10 @@
 
 
         <TextView
-            android:id="@+id/textViewText"
+            android:id="@+id/userViewText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@id/titleViewText"
+            android:layout_below="@id/idViewText"
             android:layout_marginEnd="8dp"
             android:layout_marginBottom="8dp"
             android:maxLines="3"
@@ -39,11 +39,10 @@
             android:textSize="16sp" />
 
         <ImageView
-            android:id="@+id/imageViewImage"
-            android:layout_width="100dp"
+            android:id="@+id/atViewText"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@id/textViewText"
-            android:layout_alignParentEnd="true"
+            android:layout_below="@id/userViewText"
             android:layout_marginStart="8dp"
             android:layout_marginBottom="8dp"
             android:adjustViewBounds="true"
