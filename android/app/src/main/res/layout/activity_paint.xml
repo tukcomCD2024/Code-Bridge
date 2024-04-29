@@ -103,4 +103,12 @@
         app:layout_constraintTop_toTopOf="parent"
         tools:ignore="MissingConstraints" />
 
+    <Button
+        android:id="@+id/imageViewFixButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="View fix"
+        app:layout_constraintStart_toEndOf="@+id/btn_clearscreen"
+        app:layout_constraintTop_toTopOf="parent" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>
