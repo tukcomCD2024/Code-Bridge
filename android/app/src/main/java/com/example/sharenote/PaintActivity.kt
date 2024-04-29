@@ -7,6 +7,7 @@ import android.graphics.Color
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
@@ -32,6 +33,7 @@ class PaintActivity : AppCompatActivity() {
 
     private lateinit var autoDrawButton : FloatingActionButton
     private lateinit var aiSendButton : Button
+    private lateinit var imageViewFixButton: Button
 
     @SuppressLint("MissingInflatedId")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -48,6 +50,8 @@ class PaintActivity : AppCompatActivity() {
 
         autoDrawButton = findViewById(R.id.autoDrawButton)
         aiSendButton = findViewById(R.id.aiButton)
+        imageViewFixButton = findViewById(R.id.imageViewFixButton)
+
 
         backButton.setOnClickListener {
             val intent = Intent(this, MainActivity::class.java)
@@ -130,11 +134,12 @@ class PaintActivity : AppCompatActivity() {
     // override 없어도 되나??
     // 다른 액티비티에서 돌아올 때 requestCode가 100 인 경우에 대해서 처리
 
+    @SuppressLint("ClickableViewAccessibility")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == 100 && resultCode == Activity.RESULT_OK) {
             val selectedUrl = data?.getStringExtra("selectedImageUrl")
-            Log.e("PaintActivity", "???")
+
             Log.e("PaintActivity", "Selected Image URL: $selectedUrl")
             // 여기서 선택된 이미지 URL로 필요한 작업을 수행합니다.
             if (selectedUrl != null) {
@@ -153,6 +158,37 @@ class PaintActivity : AppCompatActivity() {
                     y = 700f
                     scaleType = ImageView.ScaleType.CENTER_CROP
                 }
+
+                // 찐 동적으로 수행하기 위한 코드
+                imageView.setOnTouchListener { view, event ->
+                    val action = event.action
+                    when (action) {
+                        MotionEvent.ACTION_DOWN -> {
+                            // 드래그 시작할 때 초기 위치 기억
+                            val offsetX = event.rawX - view.x
+                            val offsetY = event.rawY - view.y
+                            view.tag = floatArrayOf(offsetX, offsetY)
+                        }
+                        MotionEvent.ACTION_MOVE -> {
+                            // 초기 오프셋과 현재 터치 위치를 기반으로 뷰 이동
+                            val offsets = view.tag as FloatArray
+                            view.x = event.rawX - offsets[0]
+                            view.y = event.rawY - offsets[1]
+                        }
+                        MotionEvent.ACTION_UP -> {
+                            // 필요하다면 여기서 드래그 종료 처리
+                        }
+                    }
+                    true // 터치 이벤트가 처리되었음을 나타냄
+                }
+
+                imageViewFixButton.setOnClickListener {
+                    // 버튼 클릭 시 ImageView 위치 고정
+                    // 위치 고정 로직은 특별히 필요하지 않습니다. 사용자가 원하는 위치에 ImageView가 있고,
+                    // 더 이상 이동하지 않도록 하려면 이벤트 핸들러를 비활성화하면 됩니다.
+                    imageView.setOnTouchListener(null) // 드래그 비활성화
+                }
+
 
                 // 레이아웃에 ImageView 추가
                 val layout = findViewById<ConstraintLayout>(R.id.paintLayout) // 미리 XML에 LinearLayout 등의 레이아웃을 정의해 두어야 합니다.
