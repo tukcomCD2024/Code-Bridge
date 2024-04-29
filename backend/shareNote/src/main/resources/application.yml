@@ -18,6 +18,11 @@ spring:
     username: guest # 'docker-compose.yml'에서 정의한 사용자 이름
     password: guest # 'docker-compose.yml'에서 정의한 비밀번호
 
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+
 
 cloud:
   aws:
@@ -31,3 +36,5 @@ cloud:
       auto: false
     stack:
       auto: false
+
+
