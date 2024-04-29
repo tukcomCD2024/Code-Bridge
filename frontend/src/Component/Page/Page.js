@@ -59,6 +59,8 @@ function Page() {
   
   const [noteinfo, setNoteInfo] = useState(null);
   const [isloaded, setisloaded] = useState(false); // 로딩 상태 관리
+  const [pages, setPages] = useState([]); // 페이지 상태 관리
+  const [pageIndex, setPageIndex] = useState(-1);
   const [usersAndColors, setUsersAndColors] = useState([]); // 연결된 사용자와 색상 상태
   const [noteSettingModalOpen, setNoteSettingModalOpen] = useState(false);
   const [myimage, setMyImage] = useState(null);
@@ -97,6 +99,80 @@ function Page() {
     setNoteSettingModalOpen(false);
   };
 
+  const handleCreate = async (e) => {
+    const createUserId = userId;
+    const createPage = (pageId) => {
+      const newPage = {
+        id: pageId,
+      };
+      const updatedPages = [...pages, newPage];
+      setPages(updatedPages);
+    };
+    
+    try {
+      const response = await fetch("/api/page", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ organizationId, noteId, createUserId }),
+      });
+      if (response.ok) {
+        const responseData = await response.json();
+        const pageId = responseData.pageId;
+        createPage(pageId);
+        window.location.href = `http://localhost:3000/organization/${organizationId}/${noteId}/${pageId}`;
+      } else {
+        const errorData = await response.json();
+        alert(`생성 실패: ${errorData.message}`);
+      }
+    } catch (error) {
+      console.error("Error: ", error);
+      alert("처리 중 오류가 발생했습니다.");
+    }
+  };
+
+  useEffect(() => {
+    let isCancelled = false;
+  
+    const fetchPageInfo = async () => {
+      try {
+        const createUserId = userId;
+        const response = await fetch(`/api/page/search`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ organizationId, noteId, createUserId }),
+        });
+        if (response.ok && !isCancelled) {
+          const data = await response.json();
+          const fetchedPageData = data.map(page => ({
+            id: page.pageId
+          }));
+          setPages(fetchedPageData);
+          console.log(fetchedPageData);
+          const index = fetchedPageData.findIndex(page => page.id === pageId);
+          setPageIndex(index);
+          console.log(index);
+        } else {
+          console.error(`Failed to fetch: HTTP status ${response.status}`);
+        }
+      } catch (error) {
+        if (!isCancelled) {
+          console.error('Error fetching', error);
+        }
+      }
+    };
+  
+    fetchPageInfo();
+  
+    return () => {
+      isCancelled = true;
+    };
+  }, [location, pageId]); // `userId`, `organizationId`, `noteId`도 포함해야 할 수 있습니다.
+  
+  
   useEffect(() => {
     let isCancelled = false;
 
@@ -605,16 +681,16 @@ function Page() {
               <PageCheck>
                 <ArrowBox>
                   <FontAwesomeIcon icon={faLeftLong} /*onClick={prevPage}*/ />
-                </ArrowBox>
-                  메인 페이지
-                <ArrowBox>
+                  </ArrowBox>
+                  {pageIndex !== -1 ? pageIndex + 2 : "메인"} 페이지
+                  <ArrowBox>
                   <FontAwesomeIcon icon={faRightLong} /*onClick={nextPage}*/ />
                 </ArrowBox>
               </PageCheck>
               <PageRemote>
                  <LeftPageRemote>
                   <CreateRemoveBtn>                  
-                    <FontAwesomeIcon icon={faSquarePlus} /*onClick={createPage}*/ style={{ color: '#007bff' }} title="페이지 추가"/>
+                    <FontAwesomeIcon icon={faSquarePlus} onClick={handleCreate} style={{ color: '#007bff' }} title="페이지 추가"/>
                     <FontAwesomeIcon icon={faTrashCan} /*onClick={removePage}*/ style={{ color: '#707070'}} title="현재 페이지 삭제"/>
                   </CreateRemoveBtn>
                  </LeftPageRemote>
@@ -623,10 +699,10 @@ function Page() {
                     <InputPageNumber 
                       type="number" 
                       maxLength="2" 
-                      min="0"
+                      min="1"
                       onInput={(e) => e.target.value = e.target.value.slice(0, 2)} // 최대 2자리 숫자 입력 제한
                     />
-                      <PageDisplay>/ 0 페이지</PageDisplay>
+                      <PageDisplay>/ {pages ? pages.length + 1 : "Loading"} 페이지</PageDisplay>
                   </InputContainer>
                   <GoButton>이동하기</GoButton>
                  </RightPageRemote>
