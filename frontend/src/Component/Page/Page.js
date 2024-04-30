@@ -50,12 +50,7 @@ function Page() {
   const pathSegments = location.pathname.split('/').filter(Boolean); 
   const organizationId = pathSegments[1];
   const noteId = pathSegments[2];
-  let pageId;
-
-  // 페이지 ID가 URL에 포함되어 있는 경우
-  if(pathSegments.length > 3) {
-    pageId = pathSegments[3];
-  }
+  const pageId = pathSegments[3];
   
   const [noteinfo, setNoteInfo] = useState(null);
   const [isloaded, setisloaded] = useState(false); // 로딩 상태 관리
@@ -123,7 +118,7 @@ function Page() {
       if (response.ok) {
         const responseData = await response.json();
         const pageId = responseData.pageId;
-        window.location.href = `http://localhost:3000/organization/${organizationId}/${noteId}/${pageId}`;
+        navigate(`/organization/${organizationId}/${noteId}/${pageId}`);
         createPage(pageId);
       } else {
         const errorData = await response.json();
@@ -167,10 +162,8 @@ function Page() {
             id: page.pageId
           }));
           setPages(fetchedPageData);
-          console.log(fetchedPageData);
           const index = fetchedPageData.findIndex(page => page.id === pageId);
           setPageIndex(index);
-          console.log(index);
         } else {
           console.error(`Failed to fetch: HTTP status ${response.status}`);
         }
@@ -186,7 +179,7 @@ function Page() {
     return () => {
       isCancelled = true;
     };
-  }, [location, pageId]); // `userId`, `organizationId`, `noteId`도 포함해야 할 수 있습니다.
+  }, [location, pageId]);
   
   
   useEffect(() => {
@@ -337,7 +330,6 @@ function Page() {
         provider.awareness.setLocalStateField('user', { name: nicknameWithSuffix, color: userColor });
       }
       updateUsersAndColors(); // UI 업데이트
-      setisloaded(true);
     }
 
     provider.on("sync", (isSynced) => {
@@ -357,6 +349,7 @@ function Page() {
             handleUserConnection();   
         }
       }
+      setisloaded(true);
     });
     provider.on('status', event => {
       if (event.status === 'disconnected') {
@@ -639,6 +632,7 @@ function Page() {
     editorRef.current.view = view;
 
     return () => {
+      setisloaded(false);
       connectedUsersYMap.unobserve(updateUsersAndColors);
       connectedUsersYMap.unobserve(onlineUpdate);
       window.removeEventListener("pagehide", yjsDisconnect);

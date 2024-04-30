@@ -14,7 +14,7 @@ toastr.options.positionClass = "toast-top-right";
 function NoteCard({ note, index }) {
   return (
     <Link 
-      to={`/organization/${note.organizationId}/${note.id}`}
+      to={`/organization/${note.organizationId}/${note.id}/${note.id}`}
     >
       {/* {"📖"} */}
       <NoteContainer>
