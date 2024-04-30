@@ -61,6 +61,8 @@ function Page() {
   const [isloaded, setisloaded] = useState(false); // 로딩 상태 관리
   const [pages, setPages] = useState([]); // 페이지 상태 관리
   const [pageIndex, setPageIndex] = useState(-1);
+  const [pageInputValue, setPageInputValue] = useState(pageIndex !== -1 ? pageIndex + 2 : 1);
+  const [isPageHandleButtonDisabled, setIsPageHandleButtonDisabled] = useState(false);
   const [usersAndColors, setUsersAndColors] = useState([]); // 연결된 사용자와 색상 상태
   const [noteSettingModalOpen, setNoteSettingModalOpen] = useState(false);
   const [myimage, setMyImage] = useState(null);
@@ -110,6 +112,7 @@ function Page() {
     };
     
     try {
+      setIsPageHandleButtonDisabled(true);
       const response = await fetch("/api/page", {
         method: "POST",
         headers: {
@@ -126,11 +129,24 @@ function Page() {
         const errorData = await response.json();
         alert(`생성 실패: ${errorData.message}`);
       }
-    } catch (error) {
+    }
+    catch (error) {
       console.error("Error: ", error);
       alert("처리 중 오류가 발생했습니다.");
     }
+    setIsPageHandleButtonDisabled(false);
   };
+  
+  const handlePageInputChange  = (event) => {
+    const newValue = parseInt(event.target.value, 10);
+    if (!isNaN(newValue) && newValue >= 1) {
+      setPageInputValue(newValue);
+    }
+  };
+
+  useEffect(() => {
+    setPageInputValue(pageIndex !== -1 ? pageIndex + 2 : 1);
+  }, [pageIndex]);
 
   useEffect(() => {
     let isCancelled = false;
@@ -691,8 +707,10 @@ function Page() {
               <PageRemote>
                  <LeftPageRemote>
                   <CreateRemoveBtn>                  
-                    <FontAwesomeIcon icon={faSquarePlus} onClick={handleCreate} style={{ color: '#007bff' }} title="페이지 추가"/>
-                    <FontAwesomeIcon icon={faTrashCan} /*onClick={removePage}*/ style={{ color: '#707070'}} title="현재 페이지 삭제"/>
+                    <FontAwesomeIcon icon={faSquarePlus} onClick={handleCreate} style={{ color: '#007bff', cursor: isPageHandleButtonDisabled ? 'not-allowed' : 'pointer' }}             
+                    disabled={isPageHandleButtonDisabled} title="페이지 추가"/>
+                    <FontAwesomeIcon icon={faTrashCan} /*onClick={removePage}*/ style={{ color: '#707070', cursor: isPageHandleButtonDisabled ? 'not-allowed' : 'pointer' }}             
+                    disabled={isPageHandleButtonDisabled} title="현재 페이지 삭제"/>
                   </CreateRemoveBtn>
                  </LeftPageRemote>
                  <RightPageRemote>
@@ -701,8 +719,9 @@ function Page() {
                       type="number" 
                       maxLength="2" 
                       min="1"
-                      value={pageIndex !== -1 ? pageIndex + 2: "1"}
-                      onInput={(e) => e.target.value = e.target.value.slice(0, 2)} // 최대 2자리 숫자 입력 제한
+                      value={pageInputValue}
+                      onInput={(e) => e.target.value = e.target.value.slice(0, 2)}
+                      onChange={handlePageInputChange}
                     />
                       <PageDisplay>/ {pages ? pages.length + 1 : "Loading"} 페이지</PageDisplay>
                   </InputContainer>
