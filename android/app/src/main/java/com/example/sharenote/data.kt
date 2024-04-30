@@ -3,12 +3,10 @@ package com.example.sharenote
 
 // 기존 노트 데이터
 data class Note(
-    val organizationId: String,
+    val Id: String,
+    val createUser: String,
     val title: String,
-    val userId: String,
     val noteImageUrl: String,
-    val noteId: String
-    // 필요한 다른 필드 추가
 )
 
 // http 통신을 위한 노트 데이터
@@ -26,9 +24,8 @@ data class NoteResponse(
 
 data class Page(
     val id: String,
-    val title: String,
-    val text: String,
-    val imageUri: String?
+    val createUser: String,
+    val createdAt: String
 )
 
 // http 통신을 위한 유저 데이터

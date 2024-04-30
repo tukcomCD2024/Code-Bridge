@@ -11,11 +11,11 @@ import com.example.sharenote.PageCheck
 import com.example.sharenote.R
 import com.google.firebase.firestore.FirebaseFirestore
 
-class PageListAdapter(private val pages: MutableList<PageCheck>, private val onPageClickListener: OnPageClickListener) :
+class PageListAdapter(private val pages: MutableList<Page>, private val onPageClickListener: OnPageClickListener) :
     RecyclerView.Adapter<PageListAdapter.PageViewHolder>() {
 
     interface OnPageClickListener {
-        fun onPageClick(page: PageCheck)
+        fun onPageClick(page: Page)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PageViewHolder {
@@ -23,6 +23,8 @@ class PageListAdapter(private val pages: MutableList<PageCheck>, private val onP
             .inflate(R.layout.item_page, parent, false)
         return PageViewHolder(itemView)
     }
+
+
 
     override fun onBindViewHolder(holder: PageViewHolder, position: Int) {
         val currentPage = pages[position]
@@ -43,6 +45,13 @@ class PageListAdapter(private val pages: MutableList<PageCheck>, private val onP
 
     override fun getItemCount() = pages.size
 
+
+    fun setPages(pages: List<Page>) {
+        this.pages.clear()
+        this.pages.addAll(pages)
+        notifyDataSetChanged()
+    }
+
     private fun deletePage(position: Int) {
         val db = FirebaseFirestore.getInstance()
         val pageId = pages[position].id
@@ -62,7 +71,7 @@ class PageListAdapter(private val pages: MutableList<PageCheck>, private val onP
     inner class PageViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val idViewText: TextView = itemView.findViewById(R.id.idViewText)
         val userViewText: TextView = itemView.findViewById(R.id.userViewText)
-        val atViewImage: TextView = itemView.findViewById(R.id.atViewText)
+        val atViewText: TextView = itemView.findViewById(R.id.atViewText)
         val buttonDeletePage: Button = itemView.findViewById(R.id.buttonDeletePage)
     }
 }
