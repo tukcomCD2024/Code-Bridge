@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
+import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.firestore.FirebaseFirestore
@@ -23,7 +24,7 @@ class NoteActivity : AppCompatActivity(), PageListAdapter.OnPageClickListener {
     private lateinit var recyclerView: RecyclerView
     private lateinit var pageListAdapter: PageListAdapter
 
-    private var pages: MutableList<CheckPage> = mutableListOf()
+    private var pages: MutableList<Page> = mutableListOf()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -98,36 +99,38 @@ class NoteActivity : AppCompatActivity(), PageListAdapter.OnPageClickListener {
     private fun loadPagesFromMongoDB(recentWorkspaceId: String) {
         GlobalScope.launch(Dispatchers.IO) {
             try {
+                // 현재 NoteId를 가져옵니다.
+                val recentNoteId = SharedPreferencesUtil.getRecentNoteId(requireContext())
+
                 // Retrofit을 사용하여 HTTP 요청을 보냅니다.
-                val response = RetrofitClient.apiService.getNotesForOrganization(recentWorkspaceId)
+                val response = RetrofitClient.apiService.getOrganization(recentWorkspaceId)
 
-                // 받아온 데이터에서 해당 노트의 페이지 정보를 추출합니다.
-                val recentNoteId = getRecentNoteId()
-                val notes = response.filter { it.id == recentNoteId }
+                // 받아온 데이터에서 현재 NoteId와 일치하는 Note를 찾습니다.
+                val notes = response.flatMap { it.notes }
+                val matchingNote = notes.find { it.id == recentNoteId }
 
-                val pages = mutableListOf<CheckPage>()
-                for (note in notes) {
-                    for (page in note.pages) {
-                        // CheckPage에서 필요한 정보 추출
-                        val pageId = page.id
-                        val pageCreateUser = page.createUser
-                        val pageCreatedAt = page.createdAt
-                        // 이 정보를 사용하여 원하는 작업을 수행하거나 저장합니다.
-                        // 여기서는 간단히 페이지의 ID만 저장하도록 하였습니다.
-                        pages.add(CheckPage(pageId, pageCreateUser, pageCreatedAt))
-                    }
-                    pageListAdapter.notifyDataSetChanged()
+                // 찾은 Note가 없을 경우 처리합니다.
+                if (matchingNote == null) {
+                    // 처리할 내용을 추가하세요
+                    return@launch
                 }
 
-                // 추출한 페이지 정보를 사용하여 원하는 작업을 수행하세요.
+                // 페이지 정보를 추출합니다.
+                val pages = matchingNote.pages
+
+                // 추출한 페이지 정보를 사용하여 원하는 작업을 수행합니다.
+                withContext(Dispatchers.Main) {
+                    // 페이지 정보를 어댑터에 설정합니다.
+                    pageListAdapter.setPages(pages)
+                }
 
             } catch (e: Exception) {
-                // 기타 오류 처리
-                // e.printStackTrace()
-                // 예상치 못한 오류가 발생했을 때
+                // 오류 처리
+                Log.e(TAG, "Error loading pages from MongoDB", e)
             }
         }
     }
+
 
 
 

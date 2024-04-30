@@ -94,10 +94,13 @@ data class NoteCheck(
 )
 
 data class PageCheck(
-    val id: String
+    val id: String,
+    val createUser: String,
+    val createdAt: String
 )
 
 
+/*
 // http 통신을 통한 Note 조회
 data class CheckNote(
     val id: String,
@@ -119,4 +122,4 @@ data class CheckPage(
 // 좋아요 정보 데이터 모델 클래스
 data class LikesInfo(
     val userLikes: Map<String, Boolean>
-)
+)*/
