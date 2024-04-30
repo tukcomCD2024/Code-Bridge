@@ -120,8 +120,8 @@ function Page() {
       if (response.ok) {
         const responseData = await response.json();
         const pageId = responseData.pageId;
-        createPage(pageId);
         window.location.href = `http://localhost:3000/organization/${organizationId}/${noteId}/${pageId}`;
+        createPage(pageId);
       } else {
         const errorData = await response.json();
         alert(`생성 실패: ${errorData.message}`);
@@ -289,7 +289,7 @@ function Page() {
               resolve();
             } else {
               alert("계정 정보를 찾지 못했습니다.");
-              Android.closeWebView();
+              // Android.closeWebView();
               reject(new Error("계정 정보가 로컬 스토리지에 없습니다."));
             }
           }, 3000);
@@ -326,12 +326,13 @@ function Page() {
 
     provider.on("sync", (isSynced) => {
       if (isMobileWebView()) {
+        if (isSynced) {
+          handleUserConnection();
+        }
         checkLocalStorage().then(() => {
-          if (isSynced) {
-            toastr.info("모바일 환경");
-            handleUserConnection();
-          }
+          toastr.success("(웹뷰) 계정 정보 확인");
         }).catch(error => {
+          toastr.error("(웹뷰) 계정 정보 확인 불가");
           console.error(error);
         });
       } else {
@@ -700,6 +701,7 @@ function Page() {
                       type="number" 
                       maxLength="2" 
                       min="1"
+                      value={pageIndex !== -1 ? pageIndex + 2: "1"}
                       onInput={(e) => e.target.value = e.target.value.slice(0, 2)} // 최대 2자리 숫자 입력 제한
                     />
                       <PageDisplay>/ {pages ? pages.length + 1 : "Loading"} 페이지</PageDisplay>
