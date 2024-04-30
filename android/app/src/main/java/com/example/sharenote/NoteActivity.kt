@@ -1,9 +1,11 @@
 package com.example.sharenote
 
 import PageListAdapter
+import android.content.ContentValues.TAG
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
@@ -58,16 +60,13 @@ class NoteActivity : AppCompatActivity(), PageListAdapter.OnPageClickListener {
 
         // 페이지 데이터를 불러오는 함수 호출
         recentWorkspaceId?.let {
-            loadPagesFromMongoDB(it)
+            val userId = SharedPreferencesUtil.getUserId(this) ?: ""
+            loadPagesFromMongoDB(it, userId)
         }
     }
 
     override fun onPageClick(page: Page) {
         val intent = Intent(this, PageActivity::class.java)
-        intent.putExtra("page_id", page.id)
-        intent.putExtra("page_title", page.title)
-        intent.putExtra("page_text", page.text)
-        intent.putExtra("page_image_uri", page.imageUri)
         startActivity(intent)
     }
 
@@ -96,17 +95,27 @@ class NoteActivity : AppCompatActivity(), PageListAdapter.OnPageClickListener {
     }*/
 
 
-    private fun loadPagesFromMongoDB(recentWorkspaceId: String) {
+    private fun loadPagesFromMongoDB(recentWorkspaceId: String, userId: String) {
         GlobalScope.launch(Dispatchers.IO) {
             try {
                 // 현재 NoteId를 가져옵니다.
-                val recentNoteId = SharedPreferencesUtil.getRecentNoteId(requireContext())
+                val recentNoteId = SharedPreferencesUtil.getRecentNoteId(this@NoteActivity)
 
                 // Retrofit을 사용하여 HTTP 요청을 보냅니다.
-                val response = RetrofitClient.apiService.getOrganization(recentWorkspaceId)
+                val response = RetrofitClient.apiService.getOrganization(userId)
 
-                // 받아온 데이터에서 현재 NoteId와 일치하는 Note를 찾습니다.
-                val notes = response.flatMap { it.notes }
+                // 받아온 데이터에서 현재 워크스페이스의 노트들만 필터링합니다.
+                val matchingOrganization = response.find { it.id == recentWorkspaceId }
+
+                // 현재 워크스페이스를 찾지 못한 경우 처리합니다.
+                if (matchingOrganization == null) {
+                    // 처리할 내용을 추가하세요
+                    return@launch
+                }
+
+                // 현재 워크스페이스에 속한 노트들을 추출합니다.
+                val notes = matchingOrganization.notes
+
                 val matchingNote = notes.find { it.id == recentNoteId }
 
                 // 찾은 Note가 없을 경우 처리합니다.
@@ -116,7 +125,18 @@ class NoteActivity : AppCompatActivity(), PageListAdapter.OnPageClickListener {
                 }
 
                 // 페이지 정보를 추출합니다.
-                val pages = matchingNote.pages
+                val pageChecks = matchingNote.pages
+
+                // PageCheck를 Page로 변환하여 리스트에 추가합니다.
+                val pages = mutableListOf<Page>()
+                for (pageCheck in pageChecks) {
+                    val page = Page(
+                        id = pageCheck.id,
+                        createUser = pageCheck.createUser,
+                        createdAt = pageCheck.createdAt
+                    )
+                    pages.add(page)
+                }
 
                 // 추출한 페이지 정보를 사용하여 원하는 작업을 수행합니다.
                 withContext(Dispatchers.Main) {
@@ -130,6 +150,7 @@ class NoteActivity : AppCompatActivity(), PageListAdapter.OnPageClickListener {
             }
         }
     }
+
 
 
 

@@ -21,7 +21,7 @@ class NoteListAdapter(private val onItemClick: (String) -> Unit) :
         override fun onClick(v: View?) {
             val position = adapterPosition
             if (position != RecyclerView.NO_POSITION) {
-                val clickedNoteId = noteList[position].noteId
+                val clickedNoteId = noteList[position].Id
                 onItemClick(clickedNoteId)
             }
         }
