@@ -6,7 +6,11 @@ import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.view.Gravity
+import android.view.LayoutInflater
 import android.widget.ImageButton
+import android.widget.LinearLayout
+import android.widget.PopupWindow
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.content.ContentProviderCompat.requireContext
@@ -25,6 +29,8 @@ class NoteActivity : AppCompatActivity(), PageListAdapter.OnPageClickListener {
 
     private lateinit var recyclerView: RecyclerView
     private lateinit var pageListAdapter: PageListAdapter
+
+    private lateinit var orgPopupWindow: PopupWindow
 
     private var pages: MutableList<Page> = mutableListOf()
 
@@ -53,6 +59,10 @@ class NoteActivity : AppCompatActivity(), PageListAdapter.OnPageClickListener {
 
             val pageData = PageData(organizationId, noteId, userId)
             sendPageDataToMongoDB(pageData)
+        }
+
+        findViewById<LinearLayout>(R.id.Organization).setOnClickListener {
+            showOrgInfoPopup()
         }
 
         // 최근에 사용한 노트의 ID 가져오기
@@ -207,6 +217,26 @@ class NoteActivity : AppCompatActivity(), PageListAdapter.OnPageClickListener {
             }
         }
     }
+
+
+    private fun showOrgInfoPopup() {
+        // 팝업 창의 레이아웃을 inflate하여 가져옴
+        val popupView = LayoutInflater.from(this).inflate(R.layout.org_info_layout, null)
+
+        // 팝업 창을 생성
+        orgPopupWindow = PopupWindow(
+            popupView,
+            LinearLayout.LayoutParams.MATCH_PARENT,
+            LinearLayout.LayoutParams.WRAP_CONTENT,
+            true
+        )
+
+        // 팝업 창을 화면에 표시
+        orgPopupWindow.showAtLocation(popupView, Gravity.CENTER, 0, 0)
+    }
+
+
+
     private fun saveRecentPageId(pageId: String) {
         SharedPreferencesUtil.saveRecentPageId(this, pageId)
     }
