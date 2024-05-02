@@ -119,7 +119,11 @@ function Page() {
   };
   const pagetarget = () => {
     const pagetargetID = pages[pageInputValue-2]?.id;
-    navigate(`/organization/${organizationId}/${noteId}/${pagetargetID}`);
+    if(!pagetargetID) {
+      navigate(`/organization/${organizationId}/${noteId}/${noteId}`);
+    } else {
+      navigate(`/organization/${organizationId}/${noteId}/${pagetargetID}`);
+    }
   };
 
   const handleCreate = async (e) => {
@@ -160,8 +164,15 @@ function Page() {
   
   const handlePageInputChange  = (event) => {
     const newValue = parseInt(event.target.value, 10);
+    if(isNaN(newValue)){
+      setPageInputValue(0);
+      return;
+    }
+
     if (!isNaN(newValue) && newValue >= 1 && newValue <= pages.length + 1) {
       setPageInputValue(newValue);
+    } else {
+      setPageInputValue(pages.length + 1);
     }
   };
 
@@ -739,11 +750,10 @@ function Page() {
                  <RightPageRemote>
                   <InputContainer>
                     <InputPageNumber 
-                      type="number" 
-                      maxLength="2" 
-                      min="1"
+                      type="text"
+                      pattern="[0-9]+" 
                       value={pageInputValue}
-                      onInput={(e) => e.target.value = e.target.value.slice(0, 2)}
+                      onInput={(e) => e.target.value = e.target.value.slice(0, 3)}
                       onChange={handlePageInputChange}
                     />
                       <PageDisplay>/ {pages ? pages.length + 1 : "Loading"} 페이지</PageDisplay>
