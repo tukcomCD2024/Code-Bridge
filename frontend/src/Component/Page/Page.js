@@ -117,6 +117,10 @@ function Page() {
       navigate(`/organization/${organizationId}/${noteId}/${nextPageID}`);
     }
   };
+  const pagetarget = () => {
+    const pagetargetID = pages[pageInputValue-2]?.id;
+    navigate(`/organization/${organizationId}/${noteId}/${pagetargetID}`);
+  };
 
   const handleCreate = async (e) => {
     const createUserId = userId;
@@ -156,7 +160,7 @@ function Page() {
   
   const handlePageInputChange  = (event) => {
     const newValue = parseInt(event.target.value, 10);
-    if (!isNaN(newValue) && newValue >= 1) {
+    if (!isNaN(newValue) && newValue >= 1 && newValue <= pages.length + 1) {
       setPageInputValue(newValue);
     }
   };
@@ -744,7 +748,7 @@ function Page() {
                     />
                       <PageDisplay>/ {pages ? pages.length + 1 : "Loading"} 페이지</PageDisplay>
                   </InputContainer>
-                  <GoButton>이동하기</GoButton>
+                  <GoButton onClick={pagetarget}>이동하기</GoButton>
                  </RightPageRemote>
               </PageRemote>
             </PageRemoteContainer>
