@@ -96,6 +96,28 @@ function Page() {
     setNoteSettingModalOpen(false);
   };
 
+  const prevPage = () => {
+    const prevPageID = pages[pageIndex-1]?.id;
+    if(pageIndex == -1){
+      alert("메인 페이지입니다.");
+      return;
+    }
+    if(!prevPageID) {
+      navigate(`/organization/${organizationId}/${noteId}/${noteId}`);
+    } else {
+      navigate(`/organization/${organizationId}/${noteId}/${prevPageID}`);
+    }
+  };
+  const nextPage = () => {
+    const nextPageID = pages[pageIndex+1]?.id;
+    if(!nextPageID) {
+      alert("마지막 페이지입니다.");
+      return;
+    } else {
+      navigate(`/organization/${organizationId}/${noteId}/${nextPageID}`);
+    }
+  };
+
   const handleCreate = async (e) => {
     const createUserId = userId;
     const createPage = (pageId) => {
@@ -349,7 +371,10 @@ function Page() {
             handleUserConnection();   
         }
       }
-      setisloaded(true);
+      // setisloaded(true); // 딜레이 없음
+      setTimeout(() => {
+        setisloaded(true);
+      }, 200); // 1초 딜레이
     });
     provider.on('status', event => {
       if (event.status === 'disconnected') {
@@ -691,11 +716,11 @@ function Page() {
             <PageRemoteContainer>
               <PageCheck>
                 <ArrowBox>
-                  <FontAwesomeIcon icon={faLeftLong} /*onClick={prevPage}*/ />
+                  <FontAwesomeIcon icon={faLeftLong} onClick={prevPage} />
                   </ArrowBox>
                   {pageIndex !== -1 ? pageIndex + 2 : "메인"} 페이지
                   <ArrowBox>
-                  <FontAwesomeIcon icon={faRightLong} /*onClick={nextPage}*/ />
+                  <FontAwesomeIcon icon={faRightLong} onClick={nextPage} />
                 </ArrowBox>
               </PageCheck>
               <PageRemote>
