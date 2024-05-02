@@ -96,6 +96,7 @@ function Page() {
     setNoteSettingModalOpen(false);
   };
 
+  // 네비게이션바에 페이지 컨트롤 코드
   const prevPage = () => {
     const prevPageID = pages[pageIndex-1]?.id;
     if(pageIndex == -1){
@@ -108,6 +109,7 @@ function Page() {
       navigate(`/organization/${organizationId}/${noteId}/${prevPageID}`);
     }
   };
+
   const nextPage = () => {
     const nextPageID = pages[pageIndex+1]?.id;
     if(!nextPageID) {
@@ -117,7 +119,7 @@ function Page() {
       navigate(`/organization/${organizationId}/${noteId}/${nextPageID}`);
     }
   };
-  const pagetarget = () => {
+  const pageTarget = () => {
     const pagetargetID = pages[pageInputValue-2]?.id;
     if(!pagetargetID) {
       navigate(`/organization/${organizationId}/${noteId}/${noteId}`);
@@ -160,6 +162,34 @@ function Page() {
       alert("처리 중 오류가 발생했습니다.");
     }
     setIsPageHandleButtonDisabled(false);
+  };
+
+  const handleRemove = async (e) => {
+    if(pageIndex == -1){
+      alert("메인 페이지는 삭제하실 수 없습니다.");
+      return;
+    }
+    const isConfirmed = window.confirm(`현재 위치한 [${pageIndex + 2}] 페이지를 삭제합니다.`);
+    if(isConfirmed){
+      try {
+        setIsPageHandleButtonDisabled(true);
+        const response = await fetch("/api/page", {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ organizationId, noteId, pageId }),
+        });
+        if (response.ok) {
+          const prevPageID = pages[pageIndex - 1]?.id;
+          navigate(`/organization/${organizationId}/${noteId}/${prevPageID}`);
+        }
+      } catch (error) {
+        console.error("Error: ", error);
+        alert("처리 중 오류가 발생했습니다.");
+      }
+      setIsPageHandleButtonDisabled(false);
+    }
   };
   
   const handlePageInputChange  = (event) => {
@@ -251,6 +281,7 @@ function Page() {
       isCancelled = true;
     };
   }, [location, organizationId, noteId]);
+  // 네비게이션바에 페이지 컨트롤 코드_마지막
 
   const { nodes, marks } = basicSchema.spec;
   const extendedNodes = addListNodes(
@@ -743,7 +774,7 @@ function Page() {
                   <CreateRemoveBtn>                  
                     <FontAwesomeIcon icon={faSquarePlus} onClick={handleCreate} style={{ color: '#007bff', cursor: isPageHandleButtonDisabled ? 'not-allowed' : 'pointer' }}             
                     disabled={isPageHandleButtonDisabled} title="페이지 추가"/>
-                    <FontAwesomeIcon icon={faTrashCan} /*onClick={removePage}*/ style={{ color: '#707070', cursor: isPageHandleButtonDisabled ? 'not-allowed' : 'pointer' }}             
+                    <FontAwesomeIcon icon={faTrashCan} onClick={handleRemove} style={{ color: '#707070', cursor: isPageHandleButtonDisabled ? 'not-allowed' : 'pointer' }}             
                     disabled={isPageHandleButtonDisabled} title="현재 페이지 삭제"/>
                   </CreateRemoveBtn>
                  </LeftPageRemote>
@@ -758,7 +789,7 @@ function Page() {
                     />
                       <PageDisplay>/ {pages ? pages.length + 1 : "Loading"} 페이지</PageDisplay>
                   </InputContainer>
-                  <GoButton onClick={pagetarget}>이동하기</GoButton>
+                  <GoButton onClick={pageTarget}>이동하기</GoButton>
                  </RightPageRemote>
               </PageRemote>
             </PageRemoteContainer>
