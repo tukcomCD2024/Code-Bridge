@@ -21,9 +21,12 @@ import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.constraintlayout.widget.ConstraintLayout
 import com.bumptech.glide.Glide
+import com.github.dhaval2404.colorpicker.ColorPickerDialog
+import com.github.dhaval2404.colorpicker.model.ColorShape
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.slider.Slider
 import com.mihir.drawingcanvas.drawingView
+
 
 
 class PaintActivity : AppCompatActivity() {
@@ -72,7 +75,18 @@ class PaintActivity : AppCompatActivity() {
         }
 
         btnColor.setOnClickListener {
-            drawingView.setBrushColor(Color.RED)
+            val initialColor = drawingView.getBrushColor()
+
+            ColorPickerDialog
+                .Builder(this)            			// 현재 Activity를 Context로 사용
+                .setTitle("Choose Color")         	// 다이얼로그 제목
+                .setColorShape(ColorShape.CIRCLE) 	// 색상 모양 설정 (CIRCLE 또는 SQUARE)
+                .setDefaultColor(initialColor)    	// 초기 색상 설정
+                .setColorListener { color, _ ->
+                    // 선택된 색상으로 브러시 색상 설정
+                    drawingView.setBrushColor(color)
+                }
+                .show()                           	// 다이얼로그 표시
         }
 
         btnBrush.setOnClickListener {
