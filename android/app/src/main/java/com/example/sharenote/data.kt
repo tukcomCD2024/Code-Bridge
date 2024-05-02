@@ -48,9 +48,7 @@ data class WorkSpace(
     val id : String
 )
 
-data class Member(
-    val id: String
-)
+
 
 // http 통신을 위한 Organization 데이터
 data class Organization(
@@ -100,9 +98,7 @@ data class PageCheck(
     val createdAt: String
 )
 
-data class MemberList(
-    val id: String
-)
+
 
 
 

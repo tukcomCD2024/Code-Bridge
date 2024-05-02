@@ -244,6 +244,15 @@ class NoteActivity : AppCompatActivity(), PageListAdapter.OnPageClickListener {
 
         fetchOrganizationMembers(recentWorkspaceId, userId, memberAdapter)
 
+        // 팝업 창 내의 멤버 수 텍스트뷰 설정
+        val membersTextView = popupView.findViewById<TextView>(R.id.members)
+        memberAdapter.registerAdapterDataObserver(object : RecyclerView.AdapterDataObserver() {
+            override fun onChanged() {
+                super.onChanged()
+                membersTextView.text = "멤버 목록 (${memberAdapter.itemCount}명)"
+            }
+        })
+
         // 팝업 창을 화면에 표시
         orgPopupWindow.showAtLocation(popupView, Gravity.CENTER, 0, 0)
     }
@@ -265,10 +274,7 @@ class NoteActivity : AppCompatActivity(), PageListAdapter.OnPageClickListener {
                 }
 
                 // 현재 워크스페이스에 속한 멤버 데이터를 가져옴
-                val memberLists = matchingOrganization.members
-
-                // MemberList를 Member로 변환
-                val members = memberLists.map { Member(it.id) }
+                val members = matchingOrganization.members
 
                 // 어댑터에 멤버 데이터 설정
                 withContext(Dispatchers.Main) {
@@ -280,9 +286,6 @@ class NoteActivity : AppCompatActivity(), PageListAdapter.OnPageClickListener {
             }
         }
     }
-
-
-
 
 
 
