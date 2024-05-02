@@ -1,5 +1,6 @@
 package com.example.sharenote
 
+import MemberListAdapter
 import PageListAdapter
 import android.content.ContentValues.TAG
 import android.content.Intent
@@ -220,6 +221,8 @@ class NoteActivity : AppCompatActivity(), PageListAdapter.OnPageClickListener {
 
 
     private fun showOrgInfoPopup() {
+        val recentWorkspaceId = getRecentWorkSpaceId() ?: ""
+        val userId = getUserId() ?: ""
         // 팝업 창의 레이아웃을 inflate하여 가져옴
         val popupView = LayoutInflater.from(this).inflate(R.layout.org_info_layout, null)
 
@@ -231,9 +234,57 @@ class NoteActivity : AppCompatActivity(), PageListAdapter.OnPageClickListener {
             true
         )
 
+
+        // 팝업 창 내의 RecyclerView 설정
+        val memberRecyclerView = popupView.findViewById<RecyclerView>(R.id.recyclerViewMembers)
+        val layoutManager = LinearLayoutManager(this)
+        memberRecyclerView.layoutManager = layoutManager
+        val memberAdapter = MemberListAdapter(mutableListOf()) // 초기에는 빈 리스트를 넣어 초기화
+        memberRecyclerView.adapter = memberAdapter
+
+        fetchOrganizationMembers(recentWorkspaceId, userId, memberAdapter)
+
         // 팝업 창을 화면에 표시
         orgPopupWindow.showAtLocation(popupView, Gravity.CENTER, 0, 0)
     }
+
+
+    private fun fetchOrganizationMembers(recentWorkspaceId: String, userId: String, memberAdapter: MemberListAdapter) {
+        GlobalScope.launch(Dispatchers.IO) {
+            try {
+                // Retrofit을 사용하여 HTTP 요청을 보냄
+                val response = RetrofitClient.apiService.getOrganization(userId)
+
+                // 받아온 데이터에서 현재 워크스페이스의 데이터를 찾음
+                val matchingOrganization = response.find { it.id == recentWorkspaceId }
+
+                // 현재 워크스페이스를 찾지 못한 경우 처리
+                if (matchingOrganization == null) {
+                    // 처리할 내용을 추가하세요
+                    return@launch
+                }
+
+                // 현재 워크스페이스에 속한 멤버 데이터를 가져옴
+                val memberLists = matchingOrganization.members
+
+                // MemberList를 Member로 변환
+                val members = memberLists.map { Member(it.id) }
+
+                // 어댑터에 멤버 데이터 설정
+                withContext(Dispatchers.Main) {
+                    memberAdapter.setMembers(members)
+                }
+            } catch (e: Exception) {
+                // 오류 처리
+                e.printStackTrace()
+            }
+        }
+    }
+
+
+
+
+
 
 
 
