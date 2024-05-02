@@ -59,7 +59,7 @@ class drawingView(context: Context, attrs: AttributeSet) : View(context,attrs){
     // 실제 그리기 작업이 이루어지는 캔버스 객체
     private var canvas: Canvas?=null
     // 브러쉬 투명도
-    private var mAlpha:Int=255
+    private var mAlpha:Int = 50
     // 그려진 모든 경로를 저장하는 배열
     private var mPaths = ArrayList<CustomPath>()
     // 실행 취소된 경로를 임시로 저장하는 배열
@@ -97,7 +97,7 @@ class drawingView(context: Context, attrs: AttributeSet) : View(context,attrs){
         // DITHER_FLAG를 사용해 캔버스 페인트에 디더링을 활성화합니다.(???)
         // 디더링이 뭐냐? -> 색상 전환을 부드럽게 표현하여 시각적 품질 향상 시키는 기술
         mCanvasPaint = Paint(Paint.DITHER_FLAG)
-        mBrushSize =20
+        mBrushSize = 20
     }
     // 뷰의 크기가 변경될 때 호출됩니다.
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
@@ -296,10 +296,12 @@ class drawingView(context: Context, attrs: AttributeSet) : View(context,attrs){
      * @param newSize Int 0-200
      */
     @SuppressLint("SupportAnnotationUsage")
-    @IntRange(from = 0, to = 200)
+    @IntRange(from = 0, to = 50)
     fun setSizeForBrush(newSize: Int){
-        mBrushSize = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
-            newSize.toFloat(),resources.displayMetrics).toInt()
+//        mBrushSize = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
+//            newSize.toFloat(),resources.displayMetrics).toInt()
+//        mDrawPaint!!.strokeWidth = mBrushSize.toFloat()
+        mBrushSize = newSize
         mDrawPaint!!.strokeWidth = mBrushSize.toFloat()
     }
 
@@ -343,8 +345,8 @@ class drawingView(context: Context, attrs: AttributeSet) : View(context,attrs){
      * @param color Int default white
      */
     fun erase(colorBackground: Int= Color.WHITE){
-        mAlpha = 255
-        mDrawPaint!!.alpha = 255
+        mAlpha = 50
+        mDrawPaint!!.alpha = 50
         currentColor = colorBackground
         mDrawPaint!!.color = colorBackground
     }
