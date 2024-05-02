@@ -2,15 +2,19 @@ package com.example.sharenote
 
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.app.AlertDialog
+import android.content.DialogInterface
 import android.content.Intent
 import android.graphics.Color
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.LinearLayout
@@ -18,6 +22,7 @@ import android.widget.Toast
 import androidx.constraintlayout.widget.ConstraintLayout
 import com.bumptech.glide.Glide
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.android.material.slider.Slider
 import com.mihir.drawingcanvas.drawingView
 
 
@@ -71,8 +76,46 @@ class PaintActivity : AppCompatActivity() {
         }
 
         btnBrush.setOnClickListener {
-            drawingView.setSizeForBrush(25)//0-35
-            drawingView.setBrushAlpha(100) //0-255
+
+            val dialogView = LayoutInflater.from(this).inflate(R.layout.brush_settings_dialog, null)
+
+            val brushSizeSlider = dialogView.findViewById<Slider>(R.id.brushSizeSlider)
+            val brushAlphaSlider = dialogView.findViewById<Slider>(R.id.brushAlphaSlider)
+
+            // 현재 브러시 사이즈와 투명도 값을 슬라이더에 설정
+            brushSizeSlider.value = drawingView.getBrushSize().toFloat()
+            // 둘이 같아야 하는거지
+            Log.e("GetbrushSize", drawingView.getBrushSize().toString())
+
+            brushAlphaSlider.value = drawingView.getBrushAlpha().toFloat()
+
+            // 다이얼로그 생성
+            val dialog = AlertDialog.Builder(this)
+                .setTitle("Brush 설정")
+                .setView(dialogView)
+                .setNegativeButton("Cancel", null)
+                .setPositiveButton("Apply", null)
+                .create()
+
+
+            dialog.setOnShowListener {
+                dialog.getButton(DialogInterface.BUTTON_POSITIVE).setOnClickListener {
+                    val brushSize = brushSizeSlider.value.toInt()
+                    val brushAlpha = brushAlphaSlider.value.toInt()
+                    Log.e("brushSize" , brushSize.toString())
+
+                    // 입력된 값으로 브러시 설정을 업데이트
+                    drawingView.setSizeForBrush(brushSize)
+                    Log.e("GetBrushSizeFromDrawingView", drawingView.getBrushSize().toString())
+                    drawingView.setBrushAlpha(brushAlpha)
+
+                    // 모든 설정 후 다이얼로그 닫기
+                    dialog.dismiss()
+                }
+            }
+
+            // 다이얼로그 화면에 표시
+            dialog.show()
         }
         btnClearscreen.setOnClickListener {
             drawingView.clearDrawingBoard()
@@ -160,6 +203,7 @@ class PaintActivity : AppCompatActivity() {
                 }
 
                 // 찐 동적으로 수행하기 위한 코드
+                // 밑의 로직은 잘 모르겠음, 잘 동작 하니까 그냥 쓰려고
                 imageView.setOnTouchListener { view, event ->
                     val action = event.action
                     when (action) {
