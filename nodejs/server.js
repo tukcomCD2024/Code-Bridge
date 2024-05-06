@@ -12,11 +12,15 @@ const logger = winston.createLogger({
   format: winston.format.combine(
     winston.format.timestamp(),
     winston.format.json()
-  )
+  ),
+  transports: [
+    new winston.transports.Console(),
+    new winston.transports.File({ filename: 'server.log' })
+  ],
 });
 
 const port = 4000;
-const databaseName = 'pageDB';
+const databaseName = 'shareDB';
 
 function createConnectionString(databaseName) {
   logger.info(`@@@@@@@@@@@mongodb://root:1234@localhost:27017/${databaseName}?authSource=admin`);
@@ -54,7 +58,7 @@ wss.on('connection', (ws, req) => {
 });
 
 const mdb = new MongodbPersistence(createConnectionString(databaseName), {
-  collectionName: 'PagesData',
+  collectionName: 'Pages',
   flushSize: 100,
   multipleCollections: true,
 });
@@ -64,7 +68,16 @@ yUtils.setPersistence({
     try {
       const persistedYdoc = await mdb.getYDoc(docName);
       const newUpdates = Y.encodeStateAsUpdate(ydoc);
-      await mdb.storeUpdate(docName, newUpdates);
+
+      //작성자의 nickname 추가
+      const authorNickname = 'nickname';
+      //추가 부분
+      const updateWithAuthor =  Y.encodeStateAsUpdate({
+        ...Y.applyUpdate(Y.emptyUpdate, newUpdates),
+        author: authorNickname,
+      });
+
+      await mdb.storeUpdate(docName, updateWithAuthor);
       Y.applyUpdate(ydoc, Y.encodeStateAsUpdate(persistedYdoc));
       ydoc.on('update', async (update) => {
         await mdb.storeUpdate(docName, update);
