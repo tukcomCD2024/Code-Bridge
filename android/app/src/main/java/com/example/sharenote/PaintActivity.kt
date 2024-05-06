@@ -43,8 +43,7 @@ class PaintActivity : AppCompatActivity() {
         aiSendButton = findViewById(R.id.aiButton)
 
         backButton.setOnClickListener {
-            val intent = Intent(this, MainActivity::class.java)
-            startActivity(intent)
+            onBackPressed()
         }
 
         btnUndo.setOnClickListener {
