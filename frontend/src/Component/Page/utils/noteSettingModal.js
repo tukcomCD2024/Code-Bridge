@@ -13,6 +13,8 @@ const NoteSettingModal = ({
     myimage,
     uploadImage,
     note,
+    noteinfo,
+    setNoteInfo,
   }) => {
     const modalRef = useRef();
     const navigate = useNavigate();
@@ -46,6 +48,11 @@ const NoteSettingModal = ({
         });
         if (response.ok) {
             toastr.info("노트 수정 완료!");
+            setNoteInfo({
+              ...noteinfo,
+              name: title,
+              image: noteImageUrl
+            });
             setNoteNameInput("");
             handleCloseModal();
         } 
@@ -218,8 +225,9 @@ const LeftInsideContainer = styled(HalfContainer)`
   background-color: rgba(250, 190, 88, 0.2); 
 
   img{
-    width: 100%;
+    width: auto;
     height: auto;
+    max-width: 100%;
     max-height: 180px;
   }
 `;
