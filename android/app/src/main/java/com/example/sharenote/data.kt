@@ -98,7 +98,11 @@ data class PageCheck(
     val createdAt: String
 )
 
-
+data class InvitationData(
+    val nickname: String,
+    val organizationId: String,
+    val email: String
+)
 
 
 
