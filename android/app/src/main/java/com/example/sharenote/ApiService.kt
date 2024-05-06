@@ -32,5 +32,6 @@ interface ApiService {
     suspend fun getOrganization(@Path("organizationId") organizationId: String): List<CheckOrganization>
 
     @POST("user/organization/invitation")
-    
+    fun sendInvitationEmail(@Body data: InvitationData): Call<Void>
+
 }

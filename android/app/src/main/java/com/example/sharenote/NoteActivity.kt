@@ -9,6 +9,8 @@ import android.os.Bundle
 import android.util.Log
 import android.view.Gravity
 import android.view.LayoutInflater
+import android.widget.Button
+import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.LinearLayout
 import android.widget.PopupWindow
@@ -17,11 +19,15 @@ import android.widget.Toast
 import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.sharenote.RetrofitClient.apiService
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 class NoteActivity : AppCompatActivity(), PageListAdapter.OnPageClickListener {
 
@@ -223,8 +229,11 @@ class NoteActivity : AppCompatActivity(), PageListAdapter.OnPageClickListener {
     private fun showOrgInfoPopup() {
         val recentWorkspaceId = getRecentWorkSpaceId() ?: ""
         val userId = getUserId() ?: ""
+        val userName = getUserName() ?: ""
         // 팝업 창의 레이아웃을 inflate하여 가져옴
         val popupView = LayoutInflater.from(this).inflate(R.layout.org_info_layout, null)
+
+
 
         // 팝업 창을 생성
         orgPopupWindow = PopupWindow(
@@ -253,9 +262,53 @@ class NoteActivity : AppCompatActivity(), PageListAdapter.OnPageClickListener {
             }
         })
 
+
+        // Send Invitation 버튼 클릭 시 이메일 전송
+        val sendInvitationButton = popupView.findViewById<Button>(R.id.send)
+        sendInvitationButton.setOnClickListener {
+            val emailEditText = popupView.findViewById<EditText>(R.id.inviteEditText)
+            val email = emailEditText.text.toString()
+
+            // 이메일을 보낼 때 사용할 데이터
+            val inviteData = InvitationData(
+                nickname = userName,
+                organizationId = recentWorkspaceId,
+                email = email
+            )
+
+            // 이메일 전송 함수 호출
+            sendInvitationEmail(inviteData)
+        }
+
         // 팝업 창을 화면에 표시
         orgPopupWindow.showAtLocation(popupView, Gravity.CENTER, 0, 0)
     }
+
+
+    fun sendInvitationEmail(data: InvitationData) {
+        apiService.sendInvitationEmail(data).enqueue(object : Callback<Void> {
+            override fun onResponse(call: Call<Void>, response: Response<Void>) {
+                if (response.isSuccessful) {
+                    // 요청이 성공적으로 처리되었을 때의 작업 수행
+                    showToast("이메일이 성공적으로 전송되었습니다.")
+                } else {
+                    // 요청이 실패했을 때의 작업 수행
+                    showToast("이메일 전송에 실패했습니다: ${response.message()}")
+                }
+            }
+
+            override fun onFailure(call: Call<Void>, t: Throwable) {
+                // 네트워크 오류 또는 요청 실패시의 작업 수행
+                showToast("오류가 발생했습니다: ${t.message}")
+            }
+        })
+    }
+
+    fun showToast(message: String) {
+        Toast.makeText(applicationContext, message, Toast.LENGTH_SHORT).show()
+    }
+
+
 
 
     private fun fetchOrganizationMembers(recentWorkspaceId: String, userId: String, memberAdapter: MemberListAdapter) {
@@ -295,14 +348,21 @@ class NoteActivity : AppCompatActivity(), PageListAdapter.OnPageClickListener {
         SharedPreferencesUtil.saveRecentPageId(this, pageId)
     }
 
+    private fun getUserName(): String? {
+        return SharedPreferencesUtil.getUserName(this)
+    }
+
     private fun getUserId(): String? {
         return SharedPreferencesUtil.getUserId(this)
     }
+
     private fun getRecentWorkSpaceId(): String? {
         return SharedPreferencesUtil.getRecentWorkspaceId(this)
     }
+
     private fun getRecentNoteId(): String? {
         return SharedPreferencesUtil.getRecentNoteId(this)
     }
+
 }
 
