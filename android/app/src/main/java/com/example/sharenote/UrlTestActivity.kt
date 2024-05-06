@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.widget.Button
 import android.widget.ImageView
 
+
 class UrlTestActivity : Activity() {
 
     private lateinit var imageView: ImageView
@@ -22,6 +23,7 @@ class UrlTestActivity : Activity() {
         setContentView(R.layout.activity_url_test)
 
         imageView = findViewById(R.id.imageView)
+
         val buttonChooseImage: Button = findViewById(R.id.buttonChooseImage)
         val buttonCheck: Button = findViewById(R.id.check)
 
@@ -34,9 +36,10 @@ class UrlTestActivity : Activity() {
 
         buttonCheck.setOnClickListener {
             // 선택한 이미지 URI를 PageActivity로 전달
-            val intent = Intent(this, PageActivity::class.java)
+            val intent = Intent()
             intent.putExtra(EXTRA_IMAGE_URI, selectedImageUri?.toString())
-            onBackPressed()
+            setResult(Activity.RESULT_OK, intent)
+            finish()
         }
     }
 
