@@ -36,7 +36,7 @@ class UrlTestActivity : Activity() {
             // 선택한 이미지 URI를 PageActivity로 전달
             val intent = Intent(this, PageActivity::class.java)
             intent.putExtra(EXTRA_IMAGE_URI, selectedImageUri?.toString())
-            startActivity(intent)
+            onBackPressed()
         }
     }
 
