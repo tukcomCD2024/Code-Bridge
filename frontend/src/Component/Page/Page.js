@@ -50,12 +50,7 @@ function Page() {
   const pathSegments = location.pathname.split('/').filter(Boolean); 
   const organizationId = pathSegments[1];
   const noteId = pathSegments[2];
-  let pageId;
-
-  // 페이지 ID가 URL에 포함되어 있는 경우
-  if(pathSegments.length > 3) {
-    pageId = pathSegments[3];
-  }
+  const pageId = pathSegments[3];
   
   const [noteinfo, setNoteInfo] = useState(null);
   const [isloaded, setisloaded] = useState(false); // 로딩 상태 관리
@@ -66,7 +61,8 @@ function Page() {
   const [usersAndColors, setUsersAndColors] = useState([]); // 연결된 사용자와 색상 상태
   const [noteSettingModalOpen, setNoteSettingModalOpen] = useState(false);
   const [myimage, setMyImage] = useState(null);
-
+  const [currentLineNumber, setCurrentLineNumber] = useState(null);
+  
   const uploadImage = (e) => {
     const selectedFile = e.target.files[0];
 
@@ -101,6 +97,38 @@ function Page() {
     setNoteSettingModalOpen(false);
   };
 
+  // 네비게이션바에 페이지 컨트롤 코드
+  const prevPage = () => {
+    const prevPageID = pages[pageIndex-1]?.id;
+    if(pageIndex == -1){
+      alert("메인 페이지입니다.");
+      return;
+    }
+    if(!prevPageID) {
+      navigate(`/organization/${organizationId}/${noteId}/${noteId}`);
+    } else {
+      navigate(`/organization/${organizationId}/${noteId}/${prevPageID}`);
+    }
+  };
+
+  const nextPage = () => {
+    const nextPageID = pages[pageIndex+1]?.id;
+    if(!nextPageID) {
+      alert("마지막 페이지입니다.");
+      return;
+    } else {
+      navigate(`/organization/${organizationId}/${noteId}/${nextPageID}`);
+    }
+  };
+  const pageTarget = () => {
+    const pagetargetID = pages[pageInputValue-2]?.id;
+    if(!pagetargetID) {
+      navigate(`/organization/${organizationId}/${noteId}/${noteId}`);
+    } else {
+      navigate(`/organization/${organizationId}/${noteId}/${pagetargetID}`);
+    }
+  };
+
   const handleCreate = async (e) => {
     const createUserId = userId;
     const createPage = (pageId) => {
@@ -123,7 +151,7 @@ function Page() {
       if (response.ok) {
         const responseData = await response.json();
         const pageId = responseData.pageId;
-        window.location.href = `http://localhost:3000/organization/${organizationId}/${noteId}/${pageId}`;
+        navigate(`/organization/${organizationId}/${noteId}/${pageId}`);
         createPage(pageId);
       } else {
         const errorData = await response.json();
@@ -136,11 +164,46 @@ function Page() {
     }
     setIsPageHandleButtonDisabled(false);
   };
+
+  const handleRemove = async (e) => {
+    if(pageIndex == -1){
+      alert("메인 페이지는 삭제하실 수 없습니다.");
+      return;
+    }
+    const isConfirmed = window.confirm(`현재 위치한 [${pageIndex + 2}] 페이지를 삭제합니다.`);
+    if(isConfirmed){
+      try {
+        setIsPageHandleButtonDisabled(true);
+        const response = await fetch("/api/page", {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ organizationId, noteId, pageId }),
+        });
+        if (response.ok) {
+          const prevPageID = pages[pageIndex - 1]?.id;
+          navigate(`/organization/${organizationId}/${noteId}/${prevPageID}`);
+        }
+      } catch (error) {
+        console.error("Error: ", error);
+        alert("처리 중 오류가 발생했습니다.");
+      }
+      setIsPageHandleButtonDisabled(false);
+    }
+  };
   
   const handlePageInputChange  = (event) => {
     const newValue = parseInt(event.target.value, 10);
-    if (!isNaN(newValue) && newValue >= 1) {
+    if(isNaN(newValue)){
+      setPageInputValue(0);
+      return;
+    }
+
+    if (!isNaN(newValue) && newValue >= 1 && newValue <= pages.length + 1) {
       setPageInputValue(newValue);
+    } else {
+      setPageInputValue(pages.length + 1);
     }
   };
 
@@ -167,10 +230,8 @@ function Page() {
             id: page.pageId
           }));
           setPages(fetchedPageData);
-          console.log(fetchedPageData);
           const index = fetchedPageData.findIndex(page => page.id === pageId);
           setPageIndex(index);
-          console.log(index);
         } else {
           console.error(`Failed to fetch: HTTP status ${response.status}`);
         }
@@ -186,7 +247,7 @@ function Page() {
     return () => {
       isCancelled = true;
     };
-  }, [location, pageId]); // `userId`, `organizationId`, `noteId`도 포함해야 할 수 있습니다.
+  }, [location, pageId]);
   
   
   useEffect(() => {
@@ -221,6 +282,7 @@ function Page() {
       isCancelled = true;
     };
   }, [location, organizationId, noteId]);
+  // 네비게이션바에 페이지 컨트롤 코드_마지막
 
   const { nodes, marks } = basicSchema.spec;
   const extendedNodes = addListNodes(
@@ -337,7 +399,6 @@ function Page() {
         provider.awareness.setLocalStateField('user', { name: nicknameWithSuffix, color: userColor });
       }
       updateUsersAndColors(); // UI 업데이트
-      setisloaded(true);
     }
 
     provider.on("sync", (isSynced) => {
@@ -357,6 +418,10 @@ function Page() {
             handleUserConnection();   
         }
       }
+      // setisloaded(true); // 딜레이 없음
+      setTimeout(() => {
+        setisloaded(true);
+      }, 200); // 1초 딜레이
     });
     provider.on('status', event => {
       if (event.status === 'disconnected') {
@@ -626,6 +691,7 @@ function Page() {
             },
           }),
           // checkBlockType(),
+          
           keymap({
             "Mod-z": undo,
             "Mod-y": redo,
@@ -639,6 +705,7 @@ function Page() {
     editorRef.current.view = view;
 
     return () => {
+      setisloaded(false);
       connectedUsersYMap.unobserve(updateUsersAndColors);
       connectedUsersYMap.unobserve(onlineUpdate);
       window.removeEventListener("pagehide", yjsDisconnect);
@@ -647,6 +714,61 @@ function Page() {
       yjsDisconnect();
     };
   }, [pageId]);
+
+  const getCurrentLineNumber = () => {
+    const { $from } = editorRef.current.view.state.selection; // 현재 커서 위치 가져오기
+    const pos = $from.pos; // 커서 위치
+    const resolvedPos = editorRef.current.view.state.doc.resolve(pos);
+    let node = resolvedPos.nodeAfter || resolvedPos.nodeBefore;
+
+    if (node) {
+      if(node.type.name == "image") {
+        return;
+      }
+    }
+
+    let clickedLineNumber = 0;
+  
+    // 커서 위치가 어느 줄에 속하는지 파악하기
+    editorRef.current.view.state.doc.nodesBetween(0, pos, (node, start) => {
+      if (node.isBlock && start < pos) {
+        clickedLineNumber++;
+      }
+    });
+    
+    toastr.info(`현재 커서 위치: ${clickedLineNumber} 번째 줄`); // 줄 번호를 alert로 출력
+    setCurrentLineNumber(clickedLineNumber);
+  };
+
+  const uploadImageToEditor = (view) => {
+    if (!currentLineNumber) {
+      alert("에디터를 클릭하여 이미지를 업로드할 위치를 지정하세요.");
+      return;
+    }
+
+    const imageUrl = "https://sharenotebucket.s3.ap-northeast-2.amazonaws.com/NoneImage2.png";
+
+    // ProseMirror Transaction 생성
+    const transaction = editorRef.current.view.state.tr;
+    const transactionWithImage = transactionImageAtLine(currentLineNumber, imageUrl, view)(transaction);
+
+    // Transaction 적용하여 에디터에 이미지 삽입
+    editorRef.current.view.dispatch(transactionWithImage);
+  };
+
+  const transactionImageAtLine = (lineNumber, imageUrl, view) => tr => {
+    // 이미지 노드 생성
+    const imageNode = editorRef.current.view.state.schema.nodes.image.create({ src: imageUrl });
+  
+    // 해당 줄에 이미지 노드 삽입
+    const insertTr = tr.insert(currentLineNumber, imageNode);
+  
+    // 이미지 삽입 후 커서 위치 설정
+    const resolvedPos = insertTr.doc.resolve(currentLineNumber + imageNode.nodeSize);
+    const selection = editorRef.current.view.state.selection.constructor.near(resolvedPos);
+  
+    return insertTr.setSelection(selection);
+  };
 
   return (
     <div>
@@ -678,7 +800,7 @@ function Page() {
         <LayoutContainer>
           <NavigationBar $isloaded={isloaded.toString()}>
           <NoteHeaderContainer>
-            <Notename>
+            <Notename onMouseEnter={getCurrentLineNumber} onClick={uploadImageToEditor} style={{ cursor: "pointer" }}>
               <span>📖&nbsp;</span>
               <span>{noteinfo ? noteinfo.name : "Loading..."}</span>
             </Notename>
@@ -697,11 +819,11 @@ function Page() {
             <PageRemoteContainer>
               <PageCheck>
                 <ArrowBox>
-                  <FontAwesomeIcon icon={faLeftLong} /*onClick={prevPage}*/ />
+                  <FontAwesomeIcon icon={faLeftLong} onClick={prevPage} />
                   </ArrowBox>
                   {pageIndex !== -1 ? pageIndex + 2 : "메인"} 페이지
                   <ArrowBox>
-                  <FontAwesomeIcon icon={faRightLong} /*onClick={nextPage}*/ />
+                  <FontAwesomeIcon icon={faRightLong} onClick={nextPage} />
                 </ArrowBox>
               </PageCheck>
               <PageRemote>
@@ -709,23 +831,22 @@ function Page() {
                   <CreateRemoveBtn>                  
                     <FontAwesomeIcon icon={faSquarePlus} onClick={handleCreate} style={{ color: '#007bff', cursor: isPageHandleButtonDisabled ? 'not-allowed' : 'pointer' }}             
                     disabled={isPageHandleButtonDisabled} title="페이지 추가"/>
-                    <FontAwesomeIcon icon={faTrashCan} /*onClick={removePage}*/ style={{ color: '#707070', cursor: isPageHandleButtonDisabled ? 'not-allowed' : 'pointer' }}             
+                    <FontAwesomeIcon icon={faTrashCan} onClick={handleRemove} style={{ color: '#707070', cursor: isPageHandleButtonDisabled ? 'not-allowed' : 'pointer' }}             
                     disabled={isPageHandleButtonDisabled} title="현재 페이지 삭제"/>
                   </CreateRemoveBtn>
                  </LeftPageRemote>
                  <RightPageRemote>
                   <InputContainer>
                     <InputPageNumber 
-                      type="number" 
-                      maxLength="2" 
-                      min="1"
+                      type="text"
+                      pattern="[0-9]+" 
                       value={pageInputValue}
-                      onInput={(e) => e.target.value = e.target.value.slice(0, 2)}
+                      onInput={(e) => e.target.value = e.target.value.slice(0, 3)}
                       onChange={handlePageInputChange}
                     />
                       <PageDisplay>/ {pages ? pages.length + 1 : "Loading"} 페이지</PageDisplay>
                   </InputContainer>
-                  <GoButton>이동하기</GoButton>
+                  <GoButton onClick={pageTarget}>이동하기</GoButton>
                  </RightPageRemote>
               </PageRemote>
             </PageRemoteContainer>
@@ -910,6 +1031,10 @@ const PageCheck = styled.div`
   justify-content: center;
   font-size: 19px;
   gap: 25px;
+  border-radius: 5px;
+  padding: 2px 0px;
+  background-color: white;
+  border: 2px outset rgba(255, 192, 203, 0.5);
 
   @media (max-width: 1600px) {
     font-size: 17px;
