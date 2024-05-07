@@ -719,7 +719,6 @@ function Page() {
     const { $from } = editorRef.current.view.state.selection; // 현재 커서 위치 가져오기
     const pos = $from.pos; // 커서 위치
     const resolvedPos = editorRef.current.view.state.doc.resolve(pos);
-    // 현재 클릭된 노드의 정보와 부모 노드의 정보를 가져옵니다.
     let node = resolvedPos.nodeAfter || resolvedPos.nodeBefore;
 
     if (node) {

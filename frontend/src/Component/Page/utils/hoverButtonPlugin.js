@@ -263,7 +263,6 @@ export function hoverButtonPlugin() {
       const oldDocBlocks = countDocBlocks(oldState.doc);
       const newDocBlocks = countDocBlocks(newState.doc);
     
-      // 블록 수가 줄어든 경우 alert 표시
       if (newDocBlocks < oldDocBlocks) {
         hoverDiv.style.visibility = "hidden";
       }
