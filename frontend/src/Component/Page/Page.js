@@ -61,7 +61,8 @@ function Page() {
   const [usersAndColors, setUsersAndColors] = useState([]); // 연결된 사용자와 색상 상태
   const [noteSettingModalOpen, setNoteSettingModalOpen] = useState(false);
   const [myimage, setMyImage] = useState(null);
-
+  const [currentLineNumber, setCurrentLineNumber] = useState(null);
+  
   const uploadImage = (e) => {
     const selectedFile = e.target.files[0];
 
@@ -690,6 +691,7 @@ function Page() {
             },
           }),
           // checkBlockType(),
+          
           keymap({
             "Mod-z": undo,
             "Mod-y": redo,
@@ -712,6 +714,62 @@ function Page() {
       yjsDisconnect();
     };
   }, [pageId]);
+
+  const getCurrentLineNumber = () => {
+    const { $from } = editorRef.current.view.state.selection; // 현재 커서 위치 가져오기
+    const pos = $from.pos; // 커서 위치
+    const resolvedPos = editorRef.current.view.state.doc.resolve(pos);
+    // 현재 클릭된 노드의 정보와 부모 노드의 정보를 가져옵니다.
+    let node = resolvedPos.nodeAfter || resolvedPos.nodeBefore;
+
+    if (node) {
+      if(node.type.name == "image") {
+        return;
+      }
+    }
+
+    let clickedLineNumber = 0;
+  
+    // 커서 위치가 어느 줄에 속하는지 파악하기
+    editorRef.current.view.state.doc.nodesBetween(0, pos, (node, start) => {
+      if (node.isBlock && start < pos) {
+        clickedLineNumber++;
+      }
+    });
+    
+    toastr.info(`현재 커서 위치: ${clickedLineNumber} 번째 줄`); // 줄 번호를 alert로 출력
+    setCurrentLineNumber(clickedLineNumber);
+  };
+
+  const uploadImageToEditor = (view) => {
+    if (!currentLineNumber) {
+      alert("에디터를 클릭하여 이미지를 업로드할 위치를 지정하세요.");
+      return;
+    }
+
+    const imageUrl = "https://sharenotebucket.s3.ap-northeast-2.amazonaws.com/NoneImage2.png";
+
+    // ProseMirror Transaction 생성
+    const transaction = editorRef.current.view.state.tr;
+    const transactionWithImage = transactionImageAtLine(currentLineNumber, imageUrl, view)(transaction);
+
+    // Transaction 적용하여 에디터에 이미지 삽입
+    editorRef.current.view.dispatch(transactionWithImage);
+  };
+
+  const transactionImageAtLine = (lineNumber, imageUrl, view) => tr => {
+    // 이미지 노드 생성
+    const imageNode = editorRef.current.view.state.schema.nodes.image.create({ src: imageUrl });
+  
+    // 해당 줄에 이미지 노드 삽입
+    const insertTr = tr.insert(currentLineNumber, imageNode);
+  
+    // 이미지 삽입 후 커서 위치 설정
+    const resolvedPos = insertTr.doc.resolve(currentLineNumber + imageNode.nodeSize);
+    const selection = editorRef.current.view.state.selection.constructor.near(resolvedPos);
+  
+    return insertTr.setSelection(selection);
+  };
 
   return (
     <div>
@@ -743,7 +801,7 @@ function Page() {
         <LayoutContainer>
           <NavigationBar $isloaded={isloaded.toString()}>
           <NoteHeaderContainer>
-            <Notename>
+            <Notename onMouseEnter={getCurrentLineNumber} onClick={uploadImageToEditor} style={{ cursor: "pointer" }}>
               <span>📖&nbsp;</span>
               <span>{noteinfo ? noteinfo.name : "Loading..."}</span>
             </Notename>
@@ -974,6 +1032,10 @@ const PageCheck = styled.div`
   justify-content: center;
   font-size: 19px;
   gap: 25px;
+  border-radius: 5px;
+  padding: 2px 0px;
+  background-color: white;
+  border: 2px outset rgba(255, 192, 203, 0.5);
 
   @media (max-width: 1600px) {
     font-size: 17px;
