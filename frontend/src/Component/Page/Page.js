@@ -98,40 +98,38 @@ function Page() {
     setNoteSettingModalOpen(false);
   };
 
-  // 네비게이션바에 페이지 컨트롤 코드
+  // 네비게이션바에 페이지 이동 함수
+  const navigateToPage = (pageID) => {
+    navigate(`/organization/${organizationId}/${noteId}/${pageID}`);
+  };
+
+  // 이전 페이지
   const prevPage = () => {
-    const prevPageID = pages[pageIndex-1]?.id;
-    if(pageIndex == -1){
+    if (pageIndex === -1) {
       alert("메인 페이지입니다.");
       return;
     }
-    if(!prevPageID) {
-      navigate(`/organization/${organizationId}/${noteId}/${noteId}`);
-    } else {
-      navigate(`/organization/${organizationId}/${noteId}/${prevPageID}`);
-    }
+    const prevPageID = pages[pageIndex - 1]?.id || noteId;
+    navigateToPage(prevPageID);
   };
 
+  // 다음 페이지
   const nextPage = () => {
-    const nextPageID = pages[pageIndex+1]?.id;
-    if(!nextPageID) {
+    const nextPageID = pages[pageIndex + 1]?.id;
+    if (!nextPageID) {
       alert("마지막 페이지입니다.");
       return;
-    } else {
-      navigate(`/organization/${organizationId}/${noteId}/${nextPageID}`);
     }
+    navigateToPage(nextPageID);
   };
+
+  // 특정 페이지
   const pageTarget = () => {
-    const pagetargetID = pages[pageInputValue-2]?.id;
-    if(pageIndex + 2 == pageInputValue) {
+    if (pageIndex + 2 === pageInputValue) {
       return;
     }
-
-    if(!pagetargetID) {
-      navigate(`/organization/${organizationId}/${noteId}/${noteId}`);
-    } else {
-      navigate(`/organization/${organizationId}/${noteId}/${pagetargetID}`);
-    }
+    const pageTargetID = pages[pageInputValue - 2]?.id || noteId;
+    navigateToPage(pageTargetID);
   };
 
   const handleCreate = async (e) => {
@@ -171,7 +169,7 @@ function Page() {
   };
 
   const handleRemove = async (e) => {
-    if(pageIndex == -1){
+    if(pageIndex === -1){
       alert("메인 페이지는 삭제하실 수 없습니다.");
       return;
     }
@@ -425,7 +423,7 @@ function Page() {
       // setisloaded(true); // 딜레이 없음
       setTimeout(() => {
         setisloaded(true);
-      }, 200); // 1초 딜레이
+      }, 300); // 딜레이 있음
     });
 
     provider.on('status', event => {
@@ -735,7 +733,7 @@ function Page() {
     let node = resolvedPos.nodeAfter || resolvedPos.nodeBefore;
 
     if (node) {
-      if(node.type.name == "image") {
+      if(node.type.name === "image") {
         return;
       }
     }
