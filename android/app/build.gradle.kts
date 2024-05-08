@@ -3,11 +3,12 @@ plugins {
     id("com.android.application")
     id("com.google.gms.google-services")
     id("org.jetbrains.kotlin.android")
+    id("org.jetbrains.kotlin.plugin.parcelize")
 }
 
 android {
     namespace = "com.example.sharenote"
-    compileSdk = 33
+    compileSdk = 34
 
 
 
@@ -74,6 +75,7 @@ dependencies {
     implementation ("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
     implementation ("com.github.bumptech.glide:glide:4.12.0")
     implementation("androidx.preference:preference:1.2.1")
+    implementation("androidx.activity:activity:1.8.0")
     annotationProcessor ("com.github.bumptech.glide:compiler:4.12.0")
 
     testImplementation("junit:junit:4.13.2")

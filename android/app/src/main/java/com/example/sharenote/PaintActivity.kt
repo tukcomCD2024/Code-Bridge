@@ -19,14 +19,16 @@ import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.lifecycle.ReportFragment.Companion.reportFragment
 import com.bumptech.glide.Glide
 import com.github.dhaval2404.colorpicker.ColorPickerDialog
 import com.github.dhaval2404.colorpicker.model.ColorShape
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.slider.Slider
 import com.mihir.drawingcanvas.drawingView
-
+import com.rajat.pdfviewer.util.saveTo
 
 
 class PaintActivity : AppCompatActivity() {
@@ -42,6 +44,29 @@ class PaintActivity : AppCompatActivity() {
     private lateinit var autoDrawButton : FloatingActionButton
     private lateinit var aiSendButton : Button
     private lateinit var imageViewFixButton: Button
+
+    private lateinit var pdfButton: Button
+
+    private val filePickerLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            val uri = result.data?.data // 선택된 PDF 파일의 URI
+            uri?.let {
+                openPdfViewer(uri.toString())
+            }
+        }
+    }
+
+    private fun openPdfViewer(pdfUri: String) {
+        val intent = PdfViewerActivity.launchPdfFromPath(
+            context = this,
+            path = pdfUri,
+            pdfTitle = "View PDF",
+            saveTo = saveTo.ASK_EVERYTIME,
+            fromAssets = false
+        )
+        startActivity(intent)
+    }
+
 
     @SuppressLint("MissingInflatedId")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -59,6 +84,8 @@ class PaintActivity : AppCompatActivity() {
         autoDrawButton = findViewById(R.id.autoDrawButton)
         aiSendButton = findViewById(R.id.aiButton)
         imageViewFixButton = findViewById(R.id.imageViewFixButton)
+
+        pdfButton = findViewById(R.id.pdfButton)
 
 
         backButton.setOnClickListener {
@@ -178,6 +205,14 @@ class PaintActivity : AppCompatActivity() {
                 autoDrawButton.backgroundTintList = resources.getColorStateList(R.color.white)
                 drawingView.setBrushColor(Color.RED)
             }
+        }
+
+        pdfButton.setOnClickListener {
+            val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+                addCategory(Intent.CATEGORY_OPENABLE)
+                type = "application/pdf"
+            }
+            filePickerLauncher.launch(intent)
         }
 
         val alpha = drawingView.getBrushAlpha()
