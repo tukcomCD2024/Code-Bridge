@@ -3,12 +3,10 @@ package com.example.sharenote
 
 // 기존 노트 데이터
 data class Note(
-    val organizationId: String,
+    val Id: String,
+    val createUser: String,
     val title: String,
-    val userId: String,
     val noteImageUrl: String,
-    val noteId: String
-    // 필요한 다른 필드 추가
 )
 
 // http 통신을 위한 노트 데이터
@@ -26,9 +24,8 @@ data class NoteResponse(
 
 data class Page(
     val id: String,
-    val title: String,
-    val text: String,
-    val imageUri: String?
+    val createUser: String,
+    val createdAt: String
 )
 
 // http 통신을 위한 유저 데이터
@@ -50,6 +47,8 @@ data class WorkSpace(
     val owner: String,
     val id : String
 )
+
+
 
 // http 통신을 위한 Organization 데이터
 data class Organization(
@@ -94,10 +93,20 @@ data class NoteCheck(
 )
 
 data class PageCheck(
-    val id: String
+    val id: String,
+    val createUser: String,
+    val createdAt: String
+)
+
+data class InvitationData(
+    val nickname: String,
+    val organizationId: String,
+    val email: String
 )
 
 
+
+/*
 // http 통신을 통한 Note 조회
 data class CheckNote(
     val id: String,
@@ -119,4 +128,4 @@ data class CheckPage(
 // 좋아요 정보 데이터 모델 클래스
 data class LikesInfo(
     val userLikes: Map<String, Boolean>
-)
+)*/

@@ -1,8 +1,11 @@
 package com.example.sharenote
 
 import android.animation.ObjectAnimator
+import android.app.Activity
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.webkit.WebChromeClient
 import android.webkit.WebSettings
@@ -20,6 +23,8 @@ class PageActivity : AppCompatActivity() {
     private lateinit var floating: FloatingActionButton
     private lateinit var fabDraw: FloatingActionButton
     private var isFabOpen = false
+    private var selectedImageUri: Uri? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_page)
@@ -83,14 +88,37 @@ class PageActivity : AppCompatActivity() {
             toggleFab()
         }
 
+        
 
         fabDraw.setOnClickListener {
-            val intent = Intent(this, PaintActivity::class.java)
-            startActivity(intent)
+            val intent = Intent(this, UrlTestActivity::class.java)
+            startActivityForResult(intent, REQUEST_IMAGE_SELECTION)
         }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == REQUEST_IMAGE_SELECTION && resultCode == Activity.RESULT_OK) {
+            val imageUriString = data?.getStringExtra(UrlTestActivity.EXTRA_IMAGE_URI)
+            Log.d("PageActivity", "Received image URI: $imageUriString")
+            // 로그 확인
+            Log.d("PageActivity", "Selected image URI: $imageUriString")
+            // 작업 중인 텍스트 줄에 이미지 URL 삽입
+            if (!imageUriString.isNullOrEmpty()) {
+                Toast.makeText(this, "Selected image URL: $imageUriString", Toast.LENGTH_SHORT).show()
+                val script = """
+                    var img = document.createElement('img');
+                    img.src = '$imageUriString';
+                    document.body.appendChild(img);
+                """.trimIndent()
+                webView.evaluateJavascript(script, null)
+            }
+        }
+    }
 
 
-
+    companion object {
+        private const val REQUEST_IMAGE_SELECTION = 100
     }
 
     override fun onBackPressed() {
