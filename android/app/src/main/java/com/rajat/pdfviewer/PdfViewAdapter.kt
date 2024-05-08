@@ -2,6 +2,7 @@ package com.rajat.pdfviewer
 
 import android.content.Context
 import android.graphics.Rect
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -18,8 +19,9 @@ internal class PdfViewAdapter(
     private val context: Context,
     private val renderer: PdfRendererCore,
     private val pageSpacing: Rect,
-    private val enableLoadingForPages: Boolean
-    //private val selectPdf: (PdfRendererView) -> Unit  // selectPdf 함수를 추가합니다.
+    private val enableLoadingForPages: Boolean,
+    private val selectPdf: (Int) -> Unit,  // selectPdf 함수를 추가합니다.
+    private val recyclerView: RecyclerView
 ) : RecyclerView.Adapter<PdfViewAdapter.PdfPageViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PdfPageViewHolder =
@@ -27,12 +29,29 @@ internal class PdfViewAdapter(
 
     override fun getItemCount(): Int = renderer.getPageCount()
 
+
+
     override fun onBindViewHolder(holder: PdfPageViewHolder, position: Int) {
         holder.bind(position)
-//        holder.itemView.setOnClickListener {
-//            selectPdf(holder.itemView as PdfRendererView)
-//        }
+        holder.itemView.setOnClickListener {
+            selectPdf(position)
+            // 클릭 이벤트는 동작하네
+            Log.e("Clicked" , "Clicked")
+        }
     }
+
+
+
+    // PdfViewAdapter에 getPdfViewByPage 메서드를 추가합니다.
+    fun getPdfViewByPage(pageNumber: Int): PdfRendererView? {
+        // 페이지 번호에 해당하는 ViewHolder를 찾습니다.
+        val viewHolder = recyclerView.findViewHolderForAdapterPosition(pageNumber)
+        // ViewHolder의 itemView를 PdfRendererView로 캐스팅하여 반환합니다.
+        return viewHolder?.itemView as? PdfRendererView
+
+    }
+
+
 
     inner class PdfPageViewHolder(private val itemBinding: ListItemPdfPageBinding) : RecyclerView.ViewHolder(itemBinding.root) {
 //        fun bind(position: Int) {

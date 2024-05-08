@@ -16,6 +16,7 @@ import android.os.Looper
 import android.os.ParcelFileDescriptor
 import android.os.Parcelable
 import android.util.AttributeSet
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.WindowManager
@@ -55,17 +56,33 @@ class PdfRendererView @JvmOverloads constructor(
 
     private var isSelected: Boolean = false  // 선택된 상태를 나타내는 프로퍼티를 추가합니다.
 
-    private val selectPdf: (PdfRendererView) -> Unit = { pdfView ->
-        // selectPdf 함수의 구현
-        pdfView.isSelected = !pdfView.isSelected  // 선택된 상태를 토글합니다.
-        pdfView.updateBorder()  // 테두리 색상을 업데이트합니다.
+    // selectPdf 함수를 수정합니다. 이제 페이지 번호를 인자로 받습니다.
+    private val selectPdf: (Int) -> Unit = { pageNumber ->
+        Log.e("pageNumber", "$pageNumber")
+        // 페이지 번호를 사용하여 PdfRendererView를 찾습니다.
+        val pdfView = pdfViewAdapter.getPdfViewByPage(pageNumber)
+        // 선택된 상태를 토글합니다.
+        if (pdfView != null) {
+            pdfView?.isSelected = !pdfView.isSelected
+        }
+        if (pdfView != null) {
+            Log.e("isSelected", "${pdfView.isSelected}")
+        }
+        else
+        {
+            Log.e("isSelected", "pdfView is null")
+        }
+        // 테두리 색상을 업데이트합니다.
+        pdfView?.updateBorder()
     }
+
+
 
     @SuppressLint("ResourceType")
     private fun updateBorder() {
         // 테두리 색상을 업데이트하는 메서드를 추가합니다.
         val color = if (isSelected) Color.BLUE else Color.TRANSPARENT  // 선택된 상태에 따라 테두리 색상을 결정합니다.
-        setBackgroundResource(color)  // 테두리 색상을 설정합니다.
+        setBackgroundColor(color)  // 테두리 색상을 설정합니다.
     }
 
     val totalPageCount: Int
@@ -159,11 +176,13 @@ class PdfRendererView @JvmOverloads constructor(
         // Proceed with safeFile
         pdfRendererCore = PdfRendererCore(context, fileDescriptor)
         pdfRendererCoreInitialised = true
-        pdfViewAdapter = PdfViewAdapter(context,pdfRendererCore, pageMargin, enableLoadingForPages)
+
         val v = LayoutInflater.from(context).inflate(R.layout.pdf_rendererview, this, false)
         addView(v)
         recyclerView = findViewById(R.id.recyclerView)
         pageNo = findViewById(R.id.pageNumber)
+
+        pdfViewAdapter = PdfViewAdapter(context,pdfRendererCore, pageMargin, enableLoadingForPages, selectPdf, recyclerView)
         recyclerView.apply {
             adapter = pdfViewAdapter
             layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
@@ -190,6 +209,9 @@ class PdfRendererView @JvmOverloads constructor(
         recyclerView.post {
             postInitializationAction?.invoke()
             postInitializationAction = null
+        }
+        setOnClickListener {
+            selectPdf(positionToUseForState)
         }
 
     }
