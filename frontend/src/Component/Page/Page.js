@@ -56,8 +56,8 @@ function Page() {
   const [noteinfo, setNoteInfo] = useState(null);
   const [isloaded, setisloaded] = useState(false); // 로딩 상태 관리
   const [pages, setPages] = useState([]); // 페이지 상태 관리
-  const [pageIndex, setPageIndex] = useState(-1);
-  const [pageInputValue, setPageInputValue] = useState(pageIndex !== -1 ? pageIndex + 2 : 1);
+  const [pageIndex, setPageIndex] = useState(0);
+  const [pageInputValue, setPageInputValue] = useState(pageIndex !== 0 ? pageIndex + 1 : 1);
   const [isPageHandleButtonDisabled, setIsPageHandleButtonDisabled] = useState(false);
   const [usersAndColors, setUsersAndColors] = useState([]); // 연결된 사용자와 색상 상태
   const [noteSettingModalOpen, setNoteSettingModalOpen] = useState(false);
@@ -105,7 +105,7 @@ function Page() {
 
   // 이전 페이지
   const prevPage = () => {
-    if (pageIndex === -1) {
+    if (pageIndex === 0) {
       alert("메인 페이지입니다.");
       return;
     }
@@ -125,10 +125,10 @@ function Page() {
 
   // 특정 페이지
   const pageTarget = () => {
-    if (pageIndex + 2 === pageInputValue) {
+    if (pageIndex + 1 === pageInputValue) {
       return;
     }
-    const pageTargetID = pages[pageInputValue - 2]?.id || noteId;
+    const pageTargetID = pages[pageInputValue - 1]?.id;
     navigateToPage(pageTargetID);
   };
 
@@ -169,11 +169,11 @@ function Page() {
   };
 
   const handleRemove = async (e) => {
-    if(pageIndex === -1){
+    if(pageIndex === 0){
       alert("메인 페이지는 삭제하실 수 없습니다.");
       return;
     }
-    const isConfirmed = window.confirm(`현재 위치한 [${pageIndex + 2}] 페이지를 삭제합니다.`);
+    const isConfirmed = window.confirm(`현재 위치한 [${pageIndex + 1}] 페이지를 삭제합니다.`);
     if(isConfirmed){
       try {
         setIsPageHandleButtonDisabled(true);
@@ -203,15 +203,15 @@ function Page() {
       return;
     }
 
-    if (!isNaN(newValue) && newValue >= 1 && newValue <= pages.length + 1) {
+    if (!isNaN(newValue) && newValue >= 1 && newValue <= pages.length) {
       setPageInputValue(newValue);
     } else {
-      setPageInputValue(pages.length + 1);
+      setPageInputValue(pages.length);
     }
   };
 
   useEffect(() => {
-    setPageInputValue(pageIndex !== -1 ? pageIndex + 2 : 1);
+    setPageInputValue(pageIndex !== 0 ? pageIndex + 1 : 1);
   }, [pageIndex]);
 
   useEffect(() => {
@@ -832,7 +832,7 @@ function Page() {
                 <ArrowBox>
                   <FontAwesomeIcon icon={faLeftLong} onClick={prevPage} />
                   </ArrowBox>
-                  {pageIndex !== -1 ? pageIndex + 2 : "메인"} 페이지
+                  {pageIndex !== 0 ? pageIndex + 1 : "메인"} 페이지
                   <ArrowBox>
                   <FontAwesomeIcon icon={faRightLong} onClick={nextPage} />
                 </ArrowBox>
@@ -855,7 +855,7 @@ function Page() {
                       onInput={(e) => e.target.value = e.target.value.slice(0, 3)}
                       onChange={handlePageInputChange}
                     />
-                      <PageDisplay>/ {pages ? pages.length + 1 : "Loading"} 페이지</PageDisplay>
+                      <PageDisplay>/ {pages ? pages.length : "Loading"} 페이지</PageDisplay>
                   </InputContainer>
                   <GoButton onClick={pageTarget}>이동하기</GoButton>
                  </RightPageRemote>

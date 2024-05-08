@@ -14,7 +14,7 @@ toastr.options.positionClass = "toast-top-right";
 function NoteCard({ note, index }) {
   return (
     <Link 
-      to={`/organization/${note.organizationId}/${note.id}/${note.id}`}
+      to={`/organization/${note.organizationId}/${note.id}/${note.pageId}`}
     >
       {/* {"📖"} */}
       <NoteContainer>
@@ -137,30 +137,54 @@ function NotePage() {
     };
 
     useEffect(() => {
-    const fetchNotes = async () => {
-      try {
-        const response = await fetch(`/api/user/note/${organizationId}`);
+      const fetchNotes = async () => {
+        const createUserId = localStorage.getItem("userId");
+        try {
+          const response = await fetch(`/api/user/note/${organizationId}`);
           if (response.ok) {
             const data = await response.json();
-            const fetchedNoteData = data.map(note => ({
-              id: note.id,
-              name: note.title,
-              image: note.noteImageUrl,
-              organizationId: id
+            const fetchedNoteData = await Promise.all(data.map(async (note) => {
+              // Fetch pageId for each note
+              try {
+                const pageResponse = await fetch(`/api/page/search`, {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify({ organizationId, noteId: note.id, createUserId }),
+                });
+                if (pageResponse.ok) {
+                  const pageData = await pageResponse.json();
+                  if (pageData && pageData.length > 0) {
+                    return {
+                      id: note.id,
+                      name: note.title,
+                      image: note.noteImageUrl,
+                      organizationId: id,
+                      pageId: pageData[0].pageId, // Add pageId to the note data
+                    };
+                  }
+                } else {
+                  console.error(`Failed to fetch: HTTP status ${pageResponse.status}`);
+                }
+              } catch (error) {
+                console.error('Error fetching page', error);
+              }
+              return null; // Return null if pageId fetching fails
             }));
-            setNotes(fetchedNoteData);
-            // localStorage.setItem("notes", JSON.stringify(fetchedNoteData));
+            setNotes(fetchedNoteData.filter(note => note !== null)); // Filter out null values
           } else {
             console.error("Failed to fetch");
           }
         } catch (error) {
-          console.error('Error fetching', error);
+          console.error('Error fetching notes', error);
         }
       };
-
-    fetchOrganizationInfo();
-    fetchNotes();
-  }, [id, location]);
+    
+      fetchOrganizationInfo();
+      fetchNotes();
+    }, [id, location]);
+    
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -217,16 +241,18 @@ function NotePage() {
     const organizationId = id;
     const title = noteName;
     const createUser = localStorage.getItem("userId");
+    const createUserId = localStorage.getItem("userId");
     const noteImageUrl = localStorage.getItem('recentImageUrl') || 'https://sharenotebucket.s3.ap-northeast-2.amazonaws.com/NoneImage2.png';
     
-    const createNote = (noteId) => {
+    const createNote = (noteId, pageId) => {
       const newNote = {
         id: noteId,
+        pageId: pageId,
         name: noteName,
         image: myimage || defaultImage,
         organizationId: organizationId
       };
-
+      console.log(newNote);
       const updatedNotes = [...notes, newNote];
       setNotes(updatedNotes);
       fetchOrganizationInfo();
@@ -241,15 +267,31 @@ function NotePage() {
         },
         body: JSON.stringify({ organizationId, title, createUser, noteImageUrl }),
       });
-      if (response.ok) {
-        const responseData = await response.json();
-        const noteId = responseData.noteId;
-        createNote(noteId);
-        console.log("생성 성공:", responseData);
-      } else {
+      if (!response.ok) {
         const errorData = await response.json();
-        alert(`생성 실패: ${errorData.message}`);
+        alert(`노트 생성 실패: ${errorData.message}`);
+        return;
       }
+      const responseData = await response.json(); // 한 번만 호출
+      const noteId = responseData.noteId;
+      console.log("노트 생성 성공:", responseData);
+
+      const responsePage = await fetch("/api/page", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ organizationId, noteId, createUserId }),
+      });
+      if (!responsePage.ok) {
+        const errorData = await responsePage.json();
+        alert(`페이지 생성 실패: ${errorData.message}`);
+        return;
+      }
+      const responseDataPage = await responsePage.json(); // 한 번만 호출
+      const pageId = responseDataPage.pageId;
+      console.log("페이지 생성 성공:", responseDataPage);
+      createNote(noteId, pageId);
     } catch (error) {
       console.error("Error: ", error);
       alert("처리 중 오류가 발생했습니다.");
@@ -339,7 +381,7 @@ function NotePage() {
       <Routes>
         {notes.map((note) => (
           <Route
-            path={`/organization/${organizationId}/${note.id}`}
+            path={`/organization/${organizationId}/${note.id}/${note.pageId}`}
             element={<NoteDetail note={note} notes={notes} />}
             key={note.id}
           />
