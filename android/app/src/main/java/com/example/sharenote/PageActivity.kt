@@ -100,10 +100,11 @@ class PageActivity : AppCompatActivity() {
         if (requestCode == REQUEST_IMAGE_SELECTION && resultCode == Activity.RESULT_OK) {
             val imageUriString = data?.getStringExtra(UrlTestActivity.EXTRA_IMAGE_URI)
             Log.d("PageActivity", "Received image URI: $imageUriString")
-            // 이미지 URI를 정상적으로 받아왔는지 확인하기 위해 Log를 추가합니다.
+            // 로그 확인
             Log.d("PageActivity", "Selected image URI: $imageUriString")
             // 작업 중인 텍스트 줄에 이미지 URL 삽입
             if (!imageUriString.isNullOrEmpty()) {
+                Toast.makeText(this, "Selected image URL: $imageUriString", Toast.LENGTH_SHORT).show()
                 val script = """
                     var img = document.createElement('img');
                     img.src = '$imageUriString';
