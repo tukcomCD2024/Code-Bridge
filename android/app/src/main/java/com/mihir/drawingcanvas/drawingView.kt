@@ -4,14 +4,35 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.*
 import android.util.AttributeSet
+import android.util.Log
 import android.util.TypedValue
 import android.view.MotionEvent
 import android.view.View
 import android.widget.Toast
 import androidx.annotation.IntRange
+import com.example.sharenote.ImageResponse
+
+
+import com.example.sharenote.RetrofitClient.apiService2
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+
+import okhttp3.Call
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+
+import okhttp3.RequestBody.Companion.toRequestBody
+
+import retrofit2.Callback
+import retrofit2.Response
+import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileOutputStream
 import java.io.OutputStream
+import java.util.UUID
+
 
 // 배경 지식 코너(그리기 작업 핵심 삼총사)
 // Paint 객체 : 스타일과 색상 관리 (색상, 굵기, 투명도 등)
@@ -38,7 +59,7 @@ class drawingView(context: Context, attrs: AttributeSet) : View(context,attrs){
     // 실제 그리기 작업이 이루어지는 캔버스 객체
     private var canvas: Canvas?=null
     // 브러쉬 투명도
-    private var mAlpha:Int=255
+    private var mAlpha:Int = 50
     // 그려진 모든 경로를 저장하는 배열
     private var mPaths = ArrayList<CustomPath>()
     // 실행 취소된 경로를 임시로 저장하는 배열
@@ -76,7 +97,7 @@ class drawingView(context: Context, attrs: AttributeSet) : View(context,attrs){
         // DITHER_FLAG를 사용해 캔버스 페인트에 디더링을 활성화합니다.(???)
         // 디더링이 뭐냐? -> 색상 전환을 부드럽게 표현하여 시각적 품질 향상 시키는 기술
         mCanvasPaint = Paint(Paint.DITHER_FLAG)
-        mBrushSize =20
+        mBrushSize = 20
     }
     // 뷰의 크기가 변경될 때 호출됩니다.
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
@@ -85,8 +106,9 @@ class drawingView(context: Context, attrs: AttributeSet) : View(context,attrs){
         canvas =  Canvas(mCanvasBitmap!!)
     }
 
-    // 실험용 autoDraw
-    fun autoDraw() {
+    // 설명 : 캔버스는 그림을 그리기 위한 도구이고 그 결과가 비트맵에 저장됩니다.
+    @SuppressLint("SuspiciousIndentation")
+    fun autoDraw() : String {
 //autoDraw로 그린 선만 전부 노란색으로 바꾸기 성공 코드
 //        for(path in autoDrawPath){
 //            path.color = Color.YELLOW
@@ -119,22 +141,74 @@ class drawingView(context: Context, attrs: AttributeSet) : View(context,attrs){
             canvas.drawPath(path, paint)
         }
 
-        // 파일로 저장하기 위해 OutputStream 생성
-        val file = File(context.getExternalFilesDir(null), "image.png")
 
+        // 랜덤한 파일 이름을 생성
+        val fileName = UUID.randomUUID().toString() + ".png"
+        // 비트맵을 멀티파트 바디 파트로 변환
+        val imagePart = convertBitmapToMultipartBodyPart(bitmap, "multipartFile", fileName)
+        val file = File(context.filesDir, fileName)
         val outputStream: OutputStream = FileOutputStream(file)
         // 비트맵을 PNG 형식으로 압축
         bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream)
         outputStream.close()
-        Toast.makeText(context, "이미지 저장 완료", Toast.LENGTH_SHORT).show()
+        //Toast.makeText(context, "이미지 저장 완료", Toast.LENGTH_SHORT).show()
+        Log.e("DrawingView", "이미지 저장 완료: $fileName")
 
+        // 3. 이미지 업로드 API 호출
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val response = apiService2.uploadImage(imagePart)
+                withContext(Dispatchers.Main) {
+                    if (response.isSuccessful && response.body() != null) {
+                        //Toast.makeText(context, "이미지 업로드 성공!", Toast.LENGTH_SHORT).show()
+                        Log.e("DrawingView", "이미지 업로드 성공! ${response.body()!!.image_url})")
+                        // 비트맵을 멀티파트 바디 파트로 변환
+                        val imagePart = convertBitmapToMultipartBodyPart(bitmap, "multipartFile", "drawing.png")
+                        Log.e("imageUpload", "이미지 업로드 성공! ${response.body()!!.image_url})")
+                        return@withContext fileName.toString()
 
+                    } else {
+                        Log.e("DrawingView", "이미지 업로드 실패: ${response.message()}")
+                        //Toast.makeText(context, "이미지 업로드 실패: ${response.message()}", Toast.LENGTH_SHORT).show()
+                        return@withContext "error"
+                    }
+                }
+            } catch (t: Throwable) {
+                withContext(Dispatchers.Main) {
+                    Log.e("DrawingView", "네트워크 오류: ${t.message}")
+                    //Toast.makeText(context, "네트워크 오류: ${t.message}", Toast.LENGTH_SHORT).show()
+                    Log.e("imageUpload", "네트워크 오류: ${t.message}")
+                    return@withContext "error"
+                }
+            }
+        }
+
+        return "error"
     }
+
+    private fun convertBitmapToMultipartBodyPart(bitmap: Bitmap, paramName: String, fileName: String): MultipartBody.Part {
+        val byteArrayOutputStream = ByteArrayOutputStream()
+        bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream)
+        val byteArray = byteArrayOutputStream.toByteArray()
+        byteArrayOutputStream.close()
+
+        val requestBody = byteArray.toRequestBody("image/png".toMediaTypeOrNull())
+        return MultipartBody.Part.createFormData(paramName, fileName, requestBody)
+    }
+
+    private fun Bitmap.toByteByteArray(): ByteArray {
+        val byteArrayOutputStream = ByteArrayOutputStream()
+        this.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream)
+        return byteArrayOutputStream.toByteArray()
+    }
+
 
     // 뷰를 다시 그려야 할 때 호출됨.
     // ex) View가 처음 로딩, 뷰의 크기 변경, 뷰 내의 데이터 변경 -> 그래픽 업데이트 필요한 상황
-    override fun onDraw(canvas: Canvas?) {
-        super.onDraw(canvas)
+    override fun onDraw(canvas: Canvas) {
+        if (canvas != null) {
+            super.onDraw(canvas)
+        }
         // 0,0 경로에 비트맵 그리기
         canvas?.drawBitmap(mCanvasBitmap!!,0f,0f,mCanvasPaint)
 
@@ -225,10 +299,12 @@ class drawingView(context: Context, attrs: AttributeSet) : View(context,attrs){
      * @param newSize Int 0-200
      */
     @SuppressLint("SupportAnnotationUsage")
-    @IntRange(from = 0, to = 200)
+    @IntRange(from = 0, to = 50)
     fun setSizeForBrush(newSize: Int){
-        mBrushSize = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
-            newSize.toFloat(),resources.displayMetrics).toInt()
+//        mBrushSize = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
+//            newSize.toFloat(),resources.displayMetrics).toInt()
+//        mDrawPaint!!.strokeWidth = mBrushSize.toFloat()
+        mBrushSize = newSize
         mDrawPaint!!.strokeWidth = mBrushSize.toFloat()
     }
 
@@ -272,8 +348,8 @@ class drawingView(context: Context, attrs: AttributeSet) : View(context,attrs){
      * @param color Int default white
      */
     fun erase(colorBackground: Int= Color.WHITE){
-        mAlpha = 255
-        mDrawPaint!!.alpha = 255
+        mAlpha = 50
+        mDrawPaint!!.alpha = 50
         currentColor = colorBackground
         mDrawPaint!!.color = colorBackground
     }
@@ -338,7 +414,11 @@ class drawingView(context: Context, attrs: AttributeSet) : View(context,attrs){
         mPaths.clear()
         // 다시 그리기
         invalidate()
+    }
 
+    fun autoDrawClear() {
+        autoDrawPath.clear()
+        invalidate()
     }
 
     fun getDrawing(): ArrayList<CustomPath> {
