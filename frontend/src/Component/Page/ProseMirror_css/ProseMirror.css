@@ -398,7 +398,6 @@ img.ProseMirror-separator {
 .hoverDiv {
   position: absolute;
   width: auto; /* 요소들을 포함할 수 있도록 너비를 auto로 조정 */
-  min-width: 70px;
   height: 25px; /* 높이는 필요에 따라 조정 */
   display: flex; /* flexbox 레이아웃을 사용 */
   justify-content: center;
@@ -431,7 +430,8 @@ animation: spin 2s ease-in-out infinite;
 .hoverButton_like,
 .hoverButton_like_fullRedHeart {
   cursor: pointer;
-  height: auto;
+  display: flex;
+  align-items: center;
   font-size: 22px;
   margin: 0px 4px;
 }
