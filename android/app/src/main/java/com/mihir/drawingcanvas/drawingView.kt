@@ -107,6 +107,7 @@ class drawingView(context: Context, attrs: AttributeSet) : View(context,attrs){
     }
 
     // 설명 : 캔버스는 그림을 그리기 위한 도구이고 그 결과가 비트맵에 저장됩니다.
+    @SuppressLint("SuspiciousIndentation")
     fun autoDraw() : String {
 //autoDraw로 그린 선만 전부 노란색으로 바꾸기 성공 코드
 //        for(path in autoDrawPath){
@@ -145,11 +146,13 @@ class drawingView(context: Context, attrs: AttributeSet) : View(context,attrs){
         val fileName = UUID.randomUUID().toString() + ".png"
         // 비트맵을 멀티파트 바디 파트로 변환
         val imagePart = convertBitmapToMultipartBodyPart(bitmap, "multipartFile", fileName)
+        val file = File(context.filesDir, fileName)
         val outputStream: OutputStream = FileOutputStream(file)
         // 비트맵을 PNG 형식으로 압축
         bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream)
         outputStream.close()
         //Toast.makeText(context, "이미지 저장 완료", Toast.LENGTH_SHORT).show()
+        Log.e("DrawingView", "이미지 저장 완료: $fileName")
 
         // 3. 이미지 업로드 API 호출
         CoroutineScope(Dispatchers.IO).launch {
@@ -157,24 +160,24 @@ class drawingView(context: Context, attrs: AttributeSet) : View(context,attrs){
                 val response = apiService2.uploadImage(imagePart)
                 withContext(Dispatchers.Main) {
                     if (response.isSuccessful && response.body() != null) {
-                        Toast.makeText(context, "이미지 업로드 성공!", Toast.LENGTH_SHORT).show()
-        // 비트맵을 멀티파트 바디 파트로 변환
-        val imagePart = convertBitmapToMultipartBodyPart(bitmap, "multipartFile", "drawing.png")
-
+                        //Toast.makeText(context, "이미지 업로드 성공!", Toast.LENGTH_SHORT).show()
+                        Log.e("DrawingView", "이미지 업로드 성공! ${response.body()!!.image_url})")
+                        // 비트맵을 멀티파트 바디 파트로 변환
+                        val imagePart = convertBitmapToMultipartBodyPart(bitmap, "multipartFile", "drawing.png")
                         Log.e("imageUpload", "이미지 업로드 성공! ${response.body()!!.image_url})")
-
                         return@withContext fileName.toString()
 
                     } else {
                         Log.e("DrawingView", "이미지 업로드 실패: ${response.message()}")
-                        Toast.makeText(context, "이미지 업로드 실패: ${response.message()}", Toast.LENGTH_SHORT).show()
+                        //Toast.makeText(context, "이미지 업로드 실패: ${response.message()}", Toast.LENGTH_SHORT).show()
                         return@withContext "error"
                     }
                 }
             } catch (t: Throwable) {
                 withContext(Dispatchers.Main) {
                     Log.e("DrawingView", "네트워크 오류: ${t.message}")
-                    Toast.makeText(context, "네트워크 오류: ${t.message}", Toast.LENGTH_SHORT).show()
+                    //Toast.makeText(context, "네트워크 오류: ${t.message}", Toast.LENGTH_SHORT).show()
+                    Log.e("imageUpload", "네트워크 오류: ${t.message}")
                     return@withContext "error"
                 }
             }

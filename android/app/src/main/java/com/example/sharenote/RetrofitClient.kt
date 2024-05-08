@@ -21,7 +21,7 @@ object RetrofitClient {
 
     private val retrofit2: Retrofit by lazy {
         Retrofit.Builder()
-            .baseUrl(BASE_URL2)
+            .baseUrl(BASE_URL)
             .addConverterFactory(GsonConverterFactory.create())
             .addCallAdapterFactory(CoroutineCallAdapterFactory())
             .build()

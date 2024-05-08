@@ -91,7 +91,7 @@ class PageActivity : AppCompatActivity() {
         
 
         fabDraw.setOnClickListener {
-            val intent = Intent(this, UrlTestActivity::class.java)
+            val intent = Intent(this, PaintActivity::class.java)
             startActivityForResult(intent, REQUEST_IMAGE_SELECTION)
         }
     }
