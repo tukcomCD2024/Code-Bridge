@@ -88,6 +88,7 @@ class PageActivity : AppCompatActivity() {
             toggleFab()
         }
 
+        
 
         fabDraw.setOnClickListener {
             val intent = Intent(this, UrlTestActivity::class.java)
