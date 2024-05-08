@@ -731,13 +731,7 @@ function Page() {
     const pos = $from.pos; // 커서 위치
     const resolvedPos = editorRef.current.view.state.doc.resolve(pos);
     let node = resolvedPos.nodeAfter || resolvedPos.nodeBefore;
-
-    if (node) {
-      if(node.type.name === "image") {
-        return;
-      }
-    }
-
+    
     let clickedLineNumber = 0;
   
     // 커서 위치가 어느 줄에 속하는지 파악하기
@@ -747,7 +741,13 @@ function Page() {
       }
     });
     
-    toastr.info(`현재 커서 위치: ${clickedLineNumber} 번째 줄`); // 줄 번호를 alert로 출력
+    if (node) {
+      if(node.type.name === "image") {
+        toastr.info(`현재 커서 위치: ${clickedLineNumber + 1} 번째 줄`);
+      }
+    } else {
+      toastr.info(`현재 커서 위치: ${clickedLineNumber} 번째 줄`);
+    }
     setCurrentLineNumber(clickedLineNumber);
   };
 
