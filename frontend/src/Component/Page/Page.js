@@ -52,6 +52,7 @@ function Page() {
   const noteId = pathSegments[2];
   const pageId = pathSegments[3];
   
+  const [reconnect, setReconnect] = useState(false);
   const [noteinfo, setNoteInfo] = useState(null);
   const [isloaded, setisloaded] = useState(false); // 로딩 상태 관리
   const [pages, setPages] = useState([]); // 페이지 상태 관리
@@ -122,6 +123,10 @@ function Page() {
   };
   const pageTarget = () => {
     const pagetargetID = pages[pageInputValue-2]?.id;
+    if(pageIndex + 2 == pageInputValue) {
+      return;
+    }
+
     if(!pagetargetID) {
       navigate(`/organization/${organizationId}/${noteId}/${noteId}`);
     } else {
@@ -343,8 +348,8 @@ function Page() {
     const userLocks = ydoc.getMap('userLocks');
 
     function isMobileWebView() {
-      const userAgent = navigator.userAgent || navigator.vendor || window.opera;
-      const isAndroidWebView = userAgent.indexOf('wv') > -1 && userAgent.indexOf('Mobile') > -1;
+      const userAgent = navigator.userAgent.toLowerCase();
+      const isAndroidWebView = userAgent.indexOf('android') > -1 && userAgent.indexOf('mobile') > -1;
       return isAndroidWebView
     }
     function checkLocalStorage() {
@@ -407,14 +412,13 @@ function Page() {
           handleUserConnection();
         }
         checkLocalStorage().then(() => {
-          toastr.success("(웹뷰) 계정 정보 확인");
+          toastr.success("계정 정보 확인");
         }).catch(error => {
-          toastr.error("(웹뷰) 계정 정보 확인 불가");
+          toastr.error("계정 확인 불가");
           console.error(error);
         });
       } else {
           if (isSynced) {
-            console.log("컴퓨터 환경");
             handleUserConnection();   
         }
       }
@@ -423,11 +427,20 @@ function Page() {
         setisloaded(true);
       }, 200); // 1초 딜레이
     });
+
     provider.on('status', event => {
       if (event.status === 'disconnected') {
         const userState = provider.awareness.getLocalState();
         if (userState && userState.user) {
           connectedUsersYMap.delete(userState.user.name);
+          setReconnect(true);
+        }
+      }
+      if (event.status === 'connected') {
+        const nicknameWithSuffix = `${nickname}_다중 접속`;
+        if (reconnect && (!connectedUsersYMap.get(nickname) || !connectedUsersYMap.get(nicknameWithSuffix))) {
+          setReconnect(false);
+          handleUserConnection();
         }
       }
     });
