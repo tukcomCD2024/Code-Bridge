@@ -202,7 +202,7 @@ class drawingView(context: Context, attrs: AttributeSet) : View(context,attrs){
 
     // 뷰를 다시 그려야 할 때 호출됨.
     // ex) View가 처음 로딩, 뷰의 크기 변경, 뷰 내의 데이터 변경 -> 그래픽 업데이트 필요한 상황
-    override fun onDraw(canvas: Canvas?) {
+    override fun onDraw(canvas: Canvas) {
         if (canvas != null) {
             super.onDraw(canvas)
         }

@@ -1,5 +1,4 @@
 import android.content.ContentValues.TAG
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -7,15 +6,12 @@ import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.inputmethod.InputMethodManager
 import android.widget.Button
-import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.PopupWindow
 import android.widget.RelativeLayout
 import android.widget.TextView
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -26,9 +22,7 @@ import com.example.sharenote.LoginActivity
 import com.example.sharenote.MainActivity
 import com.example.sharenote.Note
 import com.example.sharenote.NoteActivity
-import com.example.sharenote.PageActivity
 import com.example.sharenote.OrganizationActivity
-import com.example.sharenote.Page
 import com.example.sharenote.PaintActivity
 import com.example.sharenote.R
 import com.example.sharenote.RetrofitClient
