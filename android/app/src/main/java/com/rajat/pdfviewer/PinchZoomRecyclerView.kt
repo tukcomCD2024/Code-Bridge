@@ -75,22 +75,24 @@ class PinchZoomRecyclerView : RecyclerView {
             }
             MotionEvent.ACTION_MOVE -> {
                 val pointerIndex = ev.findPointerIndex(mActivePointerId)
-                val x = ev.getX(pointerIndex)
-                val y = ev.getY(pointerIndex)
+                if (pointerIndex != -1) {
+                    val x = ev.getX(pointerIndex)
+                    val y = ev.getY(pointerIndex)
 
-                if (mScaleFactor > 1f) {
-                    val dx = x - mLastTouchX
-                    val dy = y - mLastTouchY
+                    if (mScaleFactor > 1f) {
+                        val dx = x - mLastTouchX
+                        val dy = y - mLastTouchY
 
-                    mPosX += dx
-                    mPosY += dy
-                    mPosX = (maxWidth - width * mScaleFactor).coerceAtLeast(mPosX.coerceAtMost(0f))
-                    mPosY = (maxHeight - height * mScaleFactor).coerceAtLeast(mPosY.coerceAtMost(0f))
+                        mPosX += dx
+                        mPosY += dy
+                        mPosX = (maxWidth - width * mScaleFactor).coerceAtLeast(mPosX.coerceAtMost(0f))
+                        mPosY = (maxHeight - height * mScaleFactor).coerceAtLeast(mPosY.coerceAtMost(0f))
+                    }
+
+                    mLastTouchX = x
+                    mLastTouchY = y
+                    invalidate()
                 }
-
-                mLastTouchX = x
-                mLastTouchY = y
-                invalidate()
             }
             MotionEvent.ACTION_POINTER_UP -> {
                 // Extract the index of the pointer that left the touch sensor
@@ -98,12 +100,12 @@ class PinchZoomRecyclerView : RecyclerView {
                 val pointerId = ev.getPointerId(pointerIndex)
 
                 if (pointerId == mActivePointerId) {
-                    // This was our active pointer going up. Choose a new active pointer and adjust accordingly.
                     val newPointerIndex = if (pointerIndex == 0) 1 else 0
-
-                    mLastTouchX = ev.getX(newPointerIndex)
-                    mLastTouchY = ev.getY(newPointerIndex)
-                    mActivePointerId = ev.getPointerId(newPointerIndex)
+                    if (newPointerIndex != -1) {
+                        mLastTouchX = ev.getX(newPointerIndex)
+                        mLastTouchY = ev.getY(newPointerIndex)
+                        mActivePointerId = ev.getPointerId(newPointerIndex)
+                    }
                 }
             }
             MotionEvent.ACTION_CANCEL -> mActivePointerId = INVALID_POINTER_ID
@@ -112,9 +114,11 @@ class PinchZoomRecyclerView : RecyclerView {
                 val pointerId = ev.getPointerId(pointerIndex)
                 if (pointerId == mActivePointerId) {
                     val newPointerIndex = if (pointerIndex == 0) 1 else 0
-                    mLastTouchX = ev.getX(newPointerIndex)
-                    mLastTouchY = ev.getY(newPointerIndex)
-                    mActivePointerId = ev.getPointerId(newPointerIndex)
+                    if (newPointerIndex != -1) {
+                        mLastTouchX = ev.getX(newPointerIndex)
+                        mLastTouchY = ev.getY(newPointerIndex)
+                        mActivePointerId = ev.getPointerId(newPointerIndex)
+                    }
                 }
             }
             MotionEvent.ACTION_SCROLL -> {
