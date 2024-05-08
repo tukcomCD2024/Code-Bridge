@@ -80,15 +80,16 @@ class PageActivity : AppCompatActivity() {
         // SharedPreferencesUtil을 사용하여 WorkSpaceId와 NoteId를 불러옵니다.
         val workspaceId = SharedPreferencesUtil.getRecentWorkspaceId(this)
         val noteId = SharedPreferencesUtil.getRecentNoteId(this)
+        val pageId = SharedPreferencesUtil.getRecentPageId(this)
 
-        webView.loadUrl("https://sharenote.shop/organization/$workspaceId/$noteId")
+        webView.loadUrl("https://sharenote.shop/organization/$workspaceId/$noteId/$pageId")
 
         // 플로팅 버튼 클릭시 에니메이션 동작 기능
         floating.setOnClickListener {
             toggleFab()
         }
 
-        
+
 
         fabDraw.setOnClickListener {
             val intent = Intent(this, PaintActivity::class.java)
@@ -96,6 +97,7 @@ class PageActivity : AppCompatActivity() {
         }
     }
 
+    /*
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == REQUEST_IMAGE_SELECTION && resultCode == Activity.RESULT_OK) {
@@ -114,7 +116,7 @@ class PageActivity : AppCompatActivity() {
                 webView.evaluateJavascript(script, null)
             }
         }
-    }
+    }*/
 
 
     companion object {

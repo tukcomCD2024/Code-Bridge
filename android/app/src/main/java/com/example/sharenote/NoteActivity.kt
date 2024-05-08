@@ -83,6 +83,7 @@ class NoteActivity : AppCompatActivity(), PageListAdapter.OnPageClickListener {
     }
 
     override fun onPageClick(page: Page) {
+        saveRecentPageId(page.id)
         val intent = Intent(this, PageActivity::class.java)
         startActivity(intent)
     }
