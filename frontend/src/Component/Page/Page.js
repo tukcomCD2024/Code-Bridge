@@ -1,3 +1,4 @@
+/* global Android */
 import React, { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from 'react-router-dom';
 import styled from "styled-components";
@@ -26,11 +27,9 @@ import "./ProseMirror_css/ProseMirror.css";
 import { imageSettings, imageNodeSpec } from "./utils/pageSettings";
 import { inlinePlaceholderPlugin } from "./utils/inlinePlaceholderPlugin";
 import { hoverButtonPlugin } from "./utils/hoverButtonPlugin";
-import { checkBlockType } from "./utils/checkBlockType";
 import { cursorColors } from "../Utils/cursorColor"
 import NoteSettingModal from "./utils/noteSettingModal";
 import loadingImage from "../../image/loading.gif";
-
 
 import toastr from 'toastr';
 import 'toastr/build/toastr.css';
@@ -42,8 +41,8 @@ import { faLeftLong, faRightLong, faSquarePlus, faTrashCan, faList, faGear } fro
 
 function Page() {
   const editorRef = useRef(null);
-  const nickname = localStorage.getItem('nickname');
-  const userId = localStorage.getItem('userId');
+  let nickname = localStorage.getItem('nickname');
+  let userId = localStorage.getItem('userId');
 
   const location = useLocation();
   const navigate = useNavigate();
@@ -55,6 +54,10 @@ function Page() {
   
   const [noteinfo, setNoteInfo] = useState(null);
   const [isloaded, setisloaded] = useState(false); // 로딩 상태 관리
+  const [pages, setPages] = useState([]); // 페이지 상태 관리
+  const [pageIndex, setPageIndex] = useState(-1);
+  const [pageInputValue, setPageInputValue] = useState(pageIndex !== -1 ? pageIndex + 2 : 1);
+  const [isPageHandleButtonDisabled, setIsPageHandleButtonDisabled] = useState(false);
   const [usersAndColors, setUsersAndColors] = useState([]); // 연결된 사용자와 색상 상태
   const [noteSettingModalOpen, setNoteSettingModalOpen] = useState(false);
   const [myimage, setMyImage] = useState(null);
@@ -251,12 +254,12 @@ function Page() {
     let isCancelled = false;
 
     const fetchNoteInfo = async () => {
-    try {
-      const response = await fetch(`/api/user/note/${organizationId}`);
-        if (response.ok) {
+      try {
+        const response = await fetch(`/api/user/note/${organizationId}`);
+        if (response.ok && !isCancelled) {
           const data = await response.json();
-          const noteData = data.find(note => note.id === noteId); 
-          if (noteData) { 
+          const noteData = data.find(note => note.id === noteId);
+          if (noteData && !isCancelled) {
             setNoteInfo({
               id: noteData.id,
               name: noteData.title,
@@ -264,15 +267,16 @@ function Page() {
             });
           }
         } else {
-          console.error(response.status);
-          console.error("Failed to fetch");
+          console.error(`Failed to fetch: HTTP status ${response.status}`);
         }
       } catch (error) {
-        console.error('Error fetching', error);
+        if (!isCancelled) {
+          console.error('Error fetching', error);
+        }
       }
     };
+
     fetchNoteInfo();
-  }, [location, noteId, noteinfo]);
 
     return () => {
       isCancelled = true;
@@ -338,33 +342,51 @@ function Page() {
     const lineLocks = ydoc.getMap('nodeInfo');
     const userLocks = ydoc.getMap('userLocks');
 
-    provider.on("sync", (isSynced) => {
-      const nicknameWithSuffix = `${nickname}_다중 접속`;
-      if (isSynced) {
-        const isSingleConnected = connectedUsersYMap.has(nickname);
-        const isMultiConnected = connectedUsersYMap.has(nicknameWithSuffix);
-    
-        if (isSingleConnected && isMultiConnected) {
-          const isConfirmed = window.confirm("동시 접속 가능한 횟수를 초과하셨습니다.\n기존 접속을 종료하고 새로 접속하시겠습니까?");
-          if (isConfirmed) {
-            connectedUsersYMap.set(nicknameWithSuffix, 'kicked');
-          } else {
-            navigate(`/organization/${pathSegments[1]}`);
-            return;
-          }
+    function isMobileWebView() {
+      const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+      const isAndroidWebView = userAgent.indexOf('wv') > -1 && userAgent.indexOf('Mobile') > -1;
+      return isAndroidWebView
+    }
+    function checkLocalStorage() {
+      return new Promise((resolve, reject) => {
+        function getDataFromStorage() {
+          return {
+            nickname: localStorage.getItem('nickname'),
+            userId: localStorage.getItem('userId')
+          };
         }
     
-        let userColor = connectedUsersYMap.get(nickname) || connectedUsersYMap.get(nicknameWithSuffix) || getRandomColor();
-        
-        if (!isSingleConnected) {
-          connectedUsersYMap.set(nickname, userColor);
-          provider.awareness.setLocalStateField('user', { name: nickname, color: userColor });
+        let { nickname, userId } = getDataFromStorage();
+    
+        if (nickname && userId) {
+          resolve();  
         } else {
-          connectedUsersYMap.set(nicknameWithSuffix, userColor);
-          provider.awareness.setLocalStateField('user', { name: nicknameWithSuffix, color: userColor });
+          setTimeout(() => {
+            let { nickname, userId } = getDataFromStorage();
+            if (nickname && userId) {
+              resolve();
+            } else {
+              alert("계정 정보를 찾지 못했습니다.");
+              // Android.closeWebView();
+              reject(new Error("계정 정보가 로컬 스토리지에 없습니다."));
+            }
+          }, 3000);
         }
-        updateUsersAndColors(); // UI 업데이트
-        setisloaded(true);
+      });
+    }
+    function handleUserConnection() {
+      const nicknameWithSuffix = `${nickname}_다중 접속`;
+      const isSingleConnected = connectedUsersYMap.has(nickname);
+      const isMultiConnected = connectedUsersYMap.has(nicknameWithSuffix);
+  
+      if (isSingleConnected && isMultiConnected) {
+        const isConfirmed = window.confirm("동시 접속 가능한 횟수를 초과하셨습니다.\n기존 접속을 종료하고 새로 접속하시겠습니까?");
+        if (isConfirmed) {
+          connectedUsersYMap.set(nicknameWithSuffix, 'kicked');
+        } else {
+          navigate(`/organization/${pathSegments[1]}`);
+          return;
+        }
       }
   
       let userColor = connectedUsersYMap.get(nickname) || connectedUsersYMap.get(nicknameWithSuffix) || getRandomColor();
@@ -400,6 +422,14 @@ function Page() {
       setTimeout(() => {
         setisloaded(true);
       }, 200); // 1초 딜레이
+    });
+    provider.on('status', event => {
+      if (event.status === 'disconnected') {
+        const userState = provider.awareness.getLocalState();
+        if (userState && userState.user) {
+          connectedUsersYMap.delete(userState.user.name);
+        }
+      }
     });
     
     function onlineUpdate() {
@@ -503,9 +533,8 @@ function Page() {
         navigate("/login");
         return;
       }
-
     const currentLock = lineLocks.get(guid.toString());
-
+    
     // 현재 사용자가 이미 다른 노드를 잠근 경우, 알림창 표시
     const currentLockedNodeByUser = userLocks.get(nickname);
     if (!currentLock && currentLockedNodeByUser && currentLockedNodeByUser !== guid.toString()) {
@@ -683,7 +712,6 @@ function Page() {
       window.removeEventListener("unload", yjsDisconnect);
       window.removeEventListener("popstate", yjsDisconnect);
       yjsDisconnect();
-
     };
   }, [pageId]);
 
@@ -816,7 +844,7 @@ function Page() {
                       onInput={(e) => e.target.value = e.target.value.slice(0, 3)}
                       onChange={handlePageInputChange}
                     />
-                      <PageDisplay>/ 0 페이지</PageDisplay>
+                      <PageDisplay>/ {pages ? pages.length + 1 : "Loading"} 페이지</PageDisplay>
                   </InputContainer>
                   <GoButton onClick={pageTarget}>이동하기</GoButton>
                  </RightPageRemote>
@@ -856,6 +884,7 @@ function Page() {
           myimage={myimage}
           uploadImage={uploadImage}
           note={noteinfo}
+          setNoteInfo={setNoteInfo}
         />
       )}
     </div>
