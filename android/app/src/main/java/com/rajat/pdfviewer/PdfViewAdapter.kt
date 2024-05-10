@@ -1,8 +1,8 @@
 package com.rajat.pdfviewer
 
 import android.content.Context
+import android.graphics.Color
 import android.graphics.Rect
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -14,15 +14,17 @@ import com.rajat.pdfviewer.util.CommonUtils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.security.PrivateKey
+import kotlin.math.log
 
 internal class PdfViewAdapter(
     private val context: Context,
     private val renderer: PdfRendererCore,
     private val pageSpacing: Rect,
     private val enableLoadingForPages: Boolean,
-    private val selectPdf: (Int) -> Unit,  // selectPdf 함수를 추가합니다.
-    private val recyclerView: RecyclerView
+    private val listener: PdfRendererView.OnPdfSelectedListener  // 리스너 추가
 ) : RecyclerView.Adapter<PdfViewAdapter.PdfPageViewHolder>() {
+    private var selectedPosition = RecyclerView.NO_POSITION
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PdfPageViewHolder =
         PdfPageViewHolder(ListItemPdfPageBinding.inflate(LayoutInflater.from(parent.context), parent, false))
@@ -33,27 +35,28 @@ internal class PdfViewAdapter(
 
     override fun onBindViewHolder(holder: PdfPageViewHolder, position: Int) {
         holder.bind(position)
+        holder.itemView.setBackgroundColor(if (position == selectedPosition) Color.BLUE else Color.TRANSPARENT)
         holder.itemView.setOnClickListener {
-            selectPdf(position)
-            // 클릭 이벤트는 동작하네
-            Log.e("Clicked" , "Clicked")
+            listener.onPdfSelected(position) // 페이지 선택 이벤트 전달
         }
     }
 
 
 
-    // PdfViewAdapter에 getPdfViewByPage 메서드를 추가합니다.
-    fun getPdfViewByPage(pageNumber: Int): PdfRendererView? {
-        // 페이지 번호에 해당하는 ViewHolder를 찾습니다.
-        val viewHolder = recyclerView.findViewHolderForAdapterPosition(pageNumber)
-        // ViewHolder의 itemView를 PdfRendererView로 캐스팅하여 반환합니다.
-        return viewHolder?.itemView as? PdfRendererView
-
-    }
 
 
 
     inner class PdfPageViewHolder(private val itemBinding: ListItemPdfPageBinding) : RecyclerView.ViewHolder(itemBinding.root) {
+        init {
+            itemView.setOnClickListener {
+                val position = adapterPosition
+                if (position != RecyclerView.NO_POSITION) {
+                    notifyItemChanged(selectedPosition)  // 이전 선택 해제
+                    selectedPosition = position
+                    notifyItemChanged(selectedPosition)  // 새로운 선택 적용
+                }
+            }
+        }
 //        fun bind(position: Int) {
 ////            with(itemBinding) {
 ////                handleLoadingForPage(position)
@@ -121,8 +124,10 @@ internal class PdfViewAdapter(
 //        }
 
 
+
         fun bind(position: Int) {
             with(itemBinding) {
+
                 pageLoadingLayout.pdfViewPageLoadingProgress.visibility = if (enableLoadingForPages) View.VISIBLE else View.GONE
 
                 renderer.getPageDimensionsAsync(position) { size ->

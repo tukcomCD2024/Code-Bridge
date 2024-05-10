@@ -54,26 +54,14 @@ class PdfRendererView @JvmOverloads constructor(
     private var disableScreenshots: Boolean = false
     private var postInitializationAction: (() -> Unit)? = null
 
-    private var isSelected: Boolean = false  // 선택된 상태를 나타내는 프로퍼티를 추가합니다.
+    interface OnPdfSelectedListener {
+        fun onPdfSelected(page: Int)
+    }
 
-    // selectPdf 함수를 수정합니다. 이제 페이지 번호를 인자로 받습니다.
-    private val selectPdf: (Int) -> Unit = { pageNumber ->
-        Log.e("pageNumber", "$pageNumber")
-        // 페이지 번호를 사용하여 PdfRendererView를 찾습니다.
-        val pdfView = pdfViewAdapter.getPdfViewByPage(pageNumber)
-        // 선택된 상태를 토글합니다.
-        if (pdfView != null) {
-            pdfView?.isSelected = !pdfView.isSelected
-        }
-        if (pdfView != null) {
-            Log.e("isSelected", "${pdfView.isSelected}")
-        }
-        else
-        {
-            Log.e("isSelected", "pdfView is null")
-        }
-        // 테두리 색상을 업데이트합니다.
-        pdfView?.updateBorder()
+    private var pdfSelectedListener: OnPdfSelectedListener? = null
+
+    fun setPdfSelectedListener(listener: OnPdfSelectedListener) {
+        this.pdfSelectedListener = listener
     }
 
 
@@ -92,6 +80,7 @@ class PdfRendererView @JvmOverloads constructor(
 
     init {
         getAttrs(attrs, defStyleAttr)
+
     }
 
 
@@ -182,7 +171,9 @@ class PdfRendererView @JvmOverloads constructor(
         recyclerView = findViewById(R.id.recyclerView)
         pageNo = findViewById(R.id.pageNumber)
 
-        pdfViewAdapter = PdfViewAdapter(context,pdfRendererCore, pageMargin, enableLoadingForPages, selectPdf, recyclerView)
+        pdfViewAdapter = PdfViewAdapter(context,pdfRendererCore, pageMargin,
+            enableLoadingForPages, pdfSelectedListener!!)
+
         recyclerView.apply {
             adapter = pdfViewAdapter
             layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
@@ -210,10 +201,6 @@ class PdfRendererView @JvmOverloads constructor(
             postInitializationAction?.invoke()
             postInitializationAction = null
         }
-        setOnClickListener {
-            selectPdf(positionToUseForState)
-        }
-
     }
 
 
