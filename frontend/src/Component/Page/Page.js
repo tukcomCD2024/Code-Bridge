@@ -106,10 +106,9 @@ function Page() {
   // 이전 페이지
   const prevPage = () => {
     if (pageIndex === 0) {
-      alert("메인 페이지입니다.");
       return;
     }
-    const prevPageID = pages[pageIndex - 1]?.id || noteId;
+    const prevPageID = pages[pageIndex - 1]?.id;
     navigateToPage(prevPageID);
   };
 
@@ -117,7 +116,6 @@ function Page() {
   const nextPage = () => {
     const nextPageID = pages[pageIndex + 1]?.id;
     if (!nextPageID) {
-      alert("마지막 페이지입니다.");
       return;
     }
     navigateToPage(nextPageID);
@@ -164,8 +162,9 @@ function Page() {
     catch (error) {
       console.error("Error: ", error);
       alert("처리 중 오류가 발생했습니다.");
-    }
+    } finally {
     setIsPageHandleButtonDisabled(false);
+    }
   };
 
   const handleRemove = async (e) => {
@@ -191,8 +190,9 @@ function Page() {
       } catch (error) {
         console.error("Error: ", error);
         alert("처리 중 오류가 발생했습니다.");
+      } finally {
+        setIsPageHandleButtonDisabled(false);
       }
-      setIsPageHandleButtonDisabled(false);
     }
   };
   
