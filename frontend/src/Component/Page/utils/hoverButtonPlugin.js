@@ -17,6 +17,7 @@ function countDocBlocks(doc) {
 
 // 노트 페이지에서 블록(노드)마다 작은 메뉴창이 뜨게 한다.
 export function hoverButtonPlugin() {
+  const userId = localStorage.getItem("userId");
   const hoverDiv = document.createElement("div");
 
   return new Plugin({
@@ -49,13 +50,11 @@ export function hoverButtonPlugin() {
       hoverButton_like.title = "좋아요";
       hoverDiv.appendChild(hoverButton_like);
 
-
       // hoverButton_like 요소에 클릭 이벤트 리스너 추가
       hoverButton_like.addEventListener("click", function() {
         this.classList.toggle("hoverButton_like");
         this.classList.toggle("hoverButton_like_fullRedHeart");
       });
-
 
       hoverButton_lock.addEventListener("click", (event) => {
         event.stopPropagation(); // 이벤트 버블링 방지

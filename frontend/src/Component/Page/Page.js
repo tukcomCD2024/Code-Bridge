@@ -330,20 +330,22 @@ function Page() {
   useEffect(() => {
     if (!editorRef.current) return;
 
-    const roomId = pageId || noteId;
+    const roomId = pageId;
     const ydoc = getYDocInstance(roomId);
     const provider = new WebsocketProvider(
       // "wss://demos.yjs.dev/ws", // 웹소켓 서버 주소(데모용)
-      //"ws://localhost:4000", //배포용
-      //"ws://nodejs:4000", 
+      // "ws://localhost:4000", //배포용
+      // "ws://nodejs:4000", 
       "wss://sharenote.shop/ws",
       roomId, // 방 이름
       ydoc
     );
+    hoverButtonPlugin(ydoc);
     const yXmlFragment = ydoc.getXmlFragment("prosemirror");
-    const connectedUsersYMap = ydoc.getMap('connectedUsers');
-    const lineLocks = ydoc.getMap('nodeInfo');
-    const userLocks = ydoc.getMap('userLocks');
+    const yConnectedUserList = ydoc.getMap('connectedUsers');
+    const yLineLocks = ydoc.getMap('nodeInfo');
+    const yUserLocks = ydoc.getMap('yUserLocks');
+    const yLikeList = ydoc.getMap(`yLikeList_${userId}`);
 
     function isMobileWebView() {
       const userAgent = navigator.userAgent.toLowerCase();
@@ -379,26 +381,26 @@ function Page() {
     }
     function handleUserConnection() {
       const nicknameWithSuffix = `${nickname}_다중 접속`;
-      const isSingleConnected = connectedUsersYMap.has(nickname);
-      const isMultiConnected = connectedUsersYMap.has(nicknameWithSuffix);
+      const isSingleConnected = yConnectedUserList.has(nickname);
+      const isMultiConnected = yConnectedUserList.has(nicknameWithSuffix);
   
       if (isSingleConnected && isMultiConnected) {
         const isConfirmed = window.confirm("동시 접속 가능한 횟수를 초과하셨습니다.\n기존 접속을 종료하고 새로 접속하시겠습니까?");
         if (isConfirmed) {
-          connectedUsersYMap.set(nicknameWithSuffix, 'kicked');
+          yConnectedUserList.set(nicknameWithSuffix, 'kicked');
         } else {
           navigate(`/organization/${pathSegments[1]}`);
           return;
         }
       }
   
-      let userColor = connectedUsersYMap.get(nickname) || connectedUsersYMap.get(nicknameWithSuffix) || getRandomColor();
+      let userColor = yConnectedUserList.get(nickname) || yConnectedUserList.get(nicknameWithSuffix) || getRandomColor();
       
       if (!isSingleConnected) {
-        connectedUsersYMap.set(nickname, userColor);
+        yConnectedUserList.set(nickname, userColor);
         provider.awareness.setLocalStateField('user', { name: nickname, color: userColor });
       } else {
-        connectedUsersYMap.set(nicknameWithSuffix, userColor);
+        yConnectedUserList.set(nicknameWithSuffix, userColor);
         provider.awareness.setLocalStateField('user', { name: nicknameWithSuffix, color: userColor });
       }
       updateUsersAndColors(); // UI 업데이트
@@ -430,13 +432,13 @@ function Page() {
       if (event.status === 'disconnected') {
         const userState = provider.awareness.getLocalState();
         if (userState && userState.user) {
-          connectedUsersYMap.delete(userState.user.name);
+          yConnectedUserList.delete(userState.user.name);
           setReconnect(true);
         }
       }
       if (event.status === 'connected') {
         const nicknameWithSuffix = `${nickname}_다중 접속`;
-        if (reconnect && (!connectedUsersYMap.get(nickname) || !connectedUsersYMap.get(nicknameWithSuffix))) {
+        if (reconnect && (!yConnectedUserList.get(nickname) || !yConnectedUserList.get(nicknameWithSuffix))) {
           setReconnect(false);
           handleUserConnection();
         }
@@ -448,30 +450,30 @@ function Page() {
       const userState = provider.awareness.getLocalState();
       if (userState && userState.user && userState.user.name) {
         const nickname = userState.user.name;
-        if (connectedUsersYMap.get(nickname) === 'kicked') {
+        if (yConnectedUserList.get(nickname) === 'kicked') {
           toastr.warning("연결 정보가 없습니다!");
           navigate(`/organization/${pathSegments[1]}`);
           return;
         }
       }
     }
-   connectedUsersYMap.observe(onlineUpdate);
+   yConnectedUserList.observe(onlineUpdate);
 
     function yjsDisconnect() {
       const keysToDelete = [];
 
-      lineLocks.forEach((value, key) => {
+      yLineLocks.forEach((value, key) => {
         if (value === nickname) {
           keysToDelete.push(key);
         }
       });
-      keysToDelete.forEach(key => lineLocks.delete(key));
-      userLocks.delete(nickname);
+      keysToDelete.forEach(key => yLineLocks.delete(key));
+      yUserLocks.delete(nickname);
     
       // Yjs 연결 해제 및 리소스 정리
       const userState = provider.awareness.getLocalState();
       if (userState && userState.user) {
-        connectedUsersYMap.delete(userState.user.name);
+        yConnectedUserList.delete(userState.user.name);
       }
     
       // 연결 해제 및 리소스 정리
@@ -544,16 +546,16 @@ function Page() {
         navigate("/login");
         return;
       }
-    const currentLock = lineLocks.get(guid.toString());
+    const currentLock = yLineLocks.get(guid.toString());
     
     // 현재 사용자가 이미 다른 노드를 잠근 경우, 알림창 표시
-    const currentLockedNodeByUser = userLocks.get(nickname);
+    const currentLockedNodeByUser = yUserLocks.get(nickname);
     if (!currentLock && currentLockedNodeByUser && currentLockedNodeByUser !== guid.toString()) {
       // 사용자에게 확인을 요청하는 대화 상자 표시
       const isConfirmed = window.confirm("최대 1개까지 잠금이 가능합니다.\n이전에 설정한 잠금을 해제하시겠습니까?");
       if (isConfirmed) {
-        lineLocks.delete(currentLockedNodeByUser);
-        userLocks.delete(nickname); 
+        yLineLocks.delete(currentLockedNodeByUser);
+        yUserLocks.delete(nickname); 
       } else {
         return;
       }
@@ -562,15 +564,15 @@ function Page() {
       if (currentLock) {
         // 해당 줄이 이미 잠겨 있고, 현재 사용자가 잠근 경우 잠금 해제
         if (currentLock === nickname) {
-            lineLocks.delete(guid.toString());
-            userLocks.delete(nickname);
+            yLineLocks.delete(guid.toString());
+            yUserLocks.delete(nickname);
             toastr.info(`편집 잠금이 해제되었습니다.`);
         } else {
           toastr.error(`[오류] ${currentLock} 에 의해 잠금 불가합니다.`);
         }
     } else {
-      lineLocks.set(guid.toString(), nickname);
-      userLocks.set(nickname, guid.toString());
+      yLineLocks.set(guid.toString(), nickname);
+      yUserLocks.set(nickname, guid.toString());
       toastr.success(`블록 편집 잠금이 설정되었습니다.`);
     }
   };
@@ -583,7 +585,7 @@ function Page() {
 
       if (target.tagName === 'P' && target.hasAttribute('data-guid')) {
         const guid = target.getAttribute('data-guid');
-        const currentLock = lineLocks.get(guid.toString());
+        const currentLock = yLineLocks.get(guid.toString());
         if (currentLock) {
           if (currentLock !== nickname) {
             toastr.warning(`[알림] ${currentLock} 에 의해 편집 불가합니다.`);
@@ -611,7 +613,7 @@ function Page() {
       // 타겟 노드가 'P' 태그이고 'data-guid' 속성을 가지고 있는지 확인
       if (targetNode.tagName === 'P' && targetNode.hasAttribute('data-guid')) {
         const guid = targetNode.getAttribute('data-guid');
-        const currentLock = lineLocks.get(guid);
+        const currentLock = yLineLocks.get(guid);
         if (currentLock && currentLock !== nickname) {
           event.preventDefault(); // 편집 방지
           if (document.activeElement) { // 포커스(커서) 해제
@@ -623,7 +625,7 @@ function Page() {
 
     function getAvailableColors() {
       const usedColors = new Set();
-      connectedUsersYMap.forEach((color, name) => {
+      yConnectedUserList.forEach((color, name) => {
         usedColors.add(color);
       });
       const availableColors = cursorColors.filter(color => !usedColors.has(color));
@@ -638,7 +640,7 @@ function Page() {
 
     function updateUsersAndColors() {
       const updatedUsersAndColors = [];
-      connectedUsersYMap.forEach((color, name) => {
+      yConnectedUserList.forEach((color, name) => {
         updatedUsersAndColors.push({ name, color });
       });
       setUsersAndColors(updatedUsersAndColors);
@@ -654,16 +656,16 @@ function Page() {
       cursor.appendChild(userDiv);
       
       // 커서 색상 확인
-      const usersAndColors = [];
-      connectedUsersYMap.forEach((color, name) => {
-        usersAndColors.push({ name, color });
-      });
-      console.log('연결된 사용자와 커서 색상:', usersAndColors);
+      // const usersAndColors = [];
+      // yConnectedUserList.forEach((color, name) => {
+      //   usersAndColors.push({ name, color });
+      // });
+      // console.log('연결된 사용자와 커서 색상:', usersAndColors);
 
       return cursor;
     };
 
-    connectedUsersYMap.observe(updateUsersAndColors);
+    yConnectedUserList.observe(updateUsersAndColors);
     window.addEventListener("pagehide", yjsDisconnect);
     window.addEventListener("unload", yjsDisconnect);
     window.addEventListener("popstate", yjsDisconnect);
@@ -717,8 +719,8 @@ function Page() {
 
     return () => {
       setisloaded(false);
-      connectedUsersYMap.unobserve(updateUsersAndColors);
-      connectedUsersYMap.unobserve(onlineUpdate);
+      yConnectedUserList.unobserve(updateUsersAndColors);
+      yConnectedUserList.unobserve(onlineUpdate);
       window.removeEventListener("pagehide", yjsDisconnect);
       window.removeEventListener("unload", yjsDisconnect);
       window.removeEventListener("popstate", yjsDisconnect);

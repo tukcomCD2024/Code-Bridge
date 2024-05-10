@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useParams, Link, Route, Routes, useNavigate, useLocation } from "react-router-dom";
 import styled, { keyframes, css } from "styled-components";
-import { formatCreationTime } from "../Utils/formatCreationTime";
 import OrganizationInfoModal from "./organizationInfo/organizationInfo";
 import ImagetoBackend from "../imageToBackend";
 import NoteDetail from "./NoteDetail";
