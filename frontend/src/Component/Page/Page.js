@@ -772,16 +772,24 @@ function Page() {
   const transactionImageAtLine = (lineNumber, imageUrl, view) => tr => {
     // 이미지 노드 생성
     const imageNode = editorRef.current.view.state.schema.nodes.image.create({ src: imageUrl });
-  
-    // 해당 줄에 이미지 노드 삽입
-    const insertTr = tr.insert(currentLineNumber, imageNode);
-  
+
+    // 특정 줄의 시작 노드 위치 찾기
+    let pos = 0;
+    editorRef.current.view.state.doc.nodesBetween(0, editorRef.current.view.state.doc.content.size, (node, nodePos) => {
+        if (node.isBlock && nodePos > pos) {
+            pos = nodePos;
+        }
+    });
+
+    // 이미지 노드 삽입
+    const insertTr = tr.insert(pos, imageNode);
+
     // 이미지 삽입 후 커서 위치 설정
-    const resolvedPos = insertTr.doc.resolve(currentLineNumber + imageNode.nodeSize);
+    const resolvedPos = insertTr.doc.resolve(pos + imageNode.nodeSize);
     const selection = editorRef.current.view.state.selection.constructor.near(resolvedPos);
-  
+
     return insertTr.setSelection(selection);
-  };
+};
 
   return (
     <div>
