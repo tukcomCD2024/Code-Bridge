@@ -300,7 +300,8 @@ class PaintActivity : AppCompatActivity() {
                     // 위치 가운데로
                     x = 600f
                     y = 700f
-                    scaleType = ImageView.ScaleType.CENTER_CROP
+                    scaleType = ImageView.ScaleType.CENTER_INSIDE
+                    adjustViewBounds = true
                 }
 
                 // 찐 동적으로 수행하기 위한 코드
