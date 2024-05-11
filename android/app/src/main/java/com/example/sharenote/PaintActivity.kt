@@ -47,7 +47,8 @@ class PaintActivity : AppCompatActivity() {
     private lateinit var aiSendButton : Button
     private lateinit var imageViewFixButton: Button
 
-    private lateinit var pdfButton: Button
+    private lateinit var pdfButton: FloatingActionButton
+    private lateinit var plusButton: FloatingActionButton
 
     private val filePickerLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
@@ -105,6 +106,7 @@ class PaintActivity : AppCompatActivity() {
         imageViewFixButton = findViewById(R.id.imageViewFixButton)
 
         pdfButton = findViewById(R.id.pdfButton)
+        plusButton = findViewById(R.id.plusButton)
 
 
         backButton.setOnClickListener {
@@ -180,6 +182,8 @@ class PaintActivity : AppCompatActivity() {
             drawingView.clearDrawingBoard()
         }
         aiSendButton.setOnClickListener {
+            aiSendButton.visibility = View.GONE
+            imageViewFixButton.visibility = View.VISIBLE
             // 테스트 로직(autoDraw로 그린 선만 노란색으로 바꾸기)
             // 이미지 업로드하고 해당 이미지 url 받아오기
             val imageUrl = drawingView.autoDraw()
@@ -223,7 +227,17 @@ class PaintActivity : AppCompatActivity() {
                 autoDrawButton.backgroundTintList = resources.getColorStateList(R.color.white)
                 drawingView.setBrushColor(Color.RED)
             }
+
+
         }
+
+        plusButton.setOnClickListener{
+            val isVisible = findViewById<FloatingActionButton>(R.id.autoDrawButton).visibility == View.VISIBLE
+            toggleButton(findViewById(R.id.autoDrawButton), !isVisible, 150)
+            toggleButton(findViewById(R.id.pdfButton), !isVisible, 300) // 딜레이를 다르게 주어 순차적으로 나타나게 함
+        }
+
+
 
         pdfButton.setOnClickListener {
             val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
@@ -239,6 +253,26 @@ class PaintActivity : AppCompatActivity() {
         val brushColor = drawingView.getBrushColor()
 
         val drawing = drawingView.getDrawing()
+    }
+    fun toggleButton(button: FloatingActionButton, show: Boolean, delay: Long) {
+        if (show) {
+            button.visibility = View.VISIBLE
+            button.translationY = 100f // 시작 위치
+            button.alpha = 0.0f
+            button.animate()
+                .translationY(0f)
+                .alpha(1.0f)
+                .setDuration(300)
+                .setStartDelay(delay)
+                .start()
+        } else {
+            button.animate()
+                .translationY(100f)
+                .alpha(0.0f)
+                .setDuration(300)
+                .withEndAction { button.visibility = View.GONE }
+                .start()
+        }
     }
 
     // override 없어도 되나??
@@ -298,6 +332,7 @@ class PaintActivity : AppCompatActivity() {
                     // 위치 고정 로직은 특별히 필요하지 않습니다. 사용자가 원하는 위치에 ImageView가 있고,
                     // 더 이상 이동하지 않도록 하려면 이벤트 핸들러를 비활성화하면 됩니다.
                     imageView.setOnTouchListener(null) // 드래그 비활성화
+                    imageViewFixButton.visibility = View.GONE // 버튼 비활성화
                 }
 
 
