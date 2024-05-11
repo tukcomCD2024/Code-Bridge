@@ -6,6 +6,8 @@ import android.app.AlertDialog
 import android.content.DialogInterface
 import android.content.Intent
 import android.graphics.Color
+import android.graphics.drawable.Drawable
+import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
@@ -53,6 +55,23 @@ class PaintActivity : AppCompatActivity() {
             uri?.let {
                 openPdfViewer(uri.toString())
             }
+
+        }
+    }
+
+    private val startPdfViewerForResult = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            // 성공적으로 PDF를 선택했을 때 처리
+            val pdfUri = result.data?.getStringExtra("selected_pdf_uri")
+            pdfUri?.let {
+                // PDF 파일의 URI 사용
+                val imageUri = Uri.parse(pdfUri)
+                drawingView.background = Drawable.createFromStream(
+                    contentResolver.openInputStream(imageUri), imageUri.toString()
+                )
+            }
         }
     }
 
@@ -64,7 +83,7 @@ class PaintActivity : AppCompatActivity() {
             saveTo = saveTo.ASK_EVERYTIME,
             fromAssets = false
         )
-        startActivity(intent)
+        startPdfViewerForResult.launch(intent)
     }
 
 

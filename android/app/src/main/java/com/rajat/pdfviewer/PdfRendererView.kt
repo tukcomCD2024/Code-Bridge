@@ -66,6 +66,7 @@ class PdfRendererView @JvmOverloads constructor(
 
 
 
+
     @SuppressLint("ResourceType")
     private fun updateBorder() {
         // 테두리 색상을 업데이트하는 메서드를 추가합니다.
