@@ -5,11 +5,14 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="e154c9bb-b9ef-41b8-8757-68a477a765ac" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/app/services/image.png" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/image.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/__init__.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/controllers/example_controllers.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/controllers/example_controllers.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/services/LoadImage.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/services/LoadImage.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/services/auto_draw.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/services/auto_draw.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test.py" beforeDir="false" afterPath="$PROJECT_DIR$/test.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -40,30 +43,30 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;AIflask&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Users/Ka/Desktop/Ka/대학교/졸업작품/project/Code-Bridge/AI/Flasktest&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.sourceCode&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ASKED_ADD_EXTERNAL_FILES": "true",
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "WebServerToolWindowFactoryState": "false",
+    "git-widget-placeholder": "AIflask",
+    "last_opened_file_path": "C:/Users/Ka/Desktop/Ka/대학교/졸업작품/project/Code-Bridge/AI/app/services",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "preferences.sourceCode",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\Ka\Desktop\Ka\대학교\졸업작품\project\Code-Bridge\AI\app\services" />
       <recent name="C:\Users\Ka\Desktop\Ka\대학교\졸업작품\project\Code-Bridge\AI\Flasktest" />
       <recent name="C:\Users\Ka\Desktop\Ka\대학교\졸업작품\project\Code-Bridge\AI\Flasktest\services" />
       <recent name="C:\Users\Ka\Desktop\Ka\대학교\졸업작품\project\Code-Bridge\AI\Flasktest\models" />
       <recent name="C:\Users\Ka\Desktop\Ka\대학교\졸업작품\project\Code-Bridge\AI\Flasktest\daos" />
-      <recent name="C:\Users\Ka\Desktop\Ka\대학교\졸업작품\project\Code-Bridge\AI\Flasktest\controllers" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="C:\Users\Ka\Desktop\Ka\대학교\졸업작품\project\Code-Bridge\AI\Flasktest\services" />
@@ -120,6 +123,7 @@
       <workItem from="1712613935771" duration="4797000" />
       <workItem from="1714037451016" duration="7089000" />
       <workItem from="1715488180156" duration="5729000" />
+      <workItem from="1715497716129" duration="16486000" />
     </task>
     <servers />
   </component>
@@ -142,10 +146,11 @@
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/AI$main.coverage" NAME="main Coverage Results" MODIFIED="1708113056958" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/AI$example_controllers.coverage" NAME="example_controllers Coverage Results" MODIFIED="1711896923958" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Flasktest/controllers" />
+    <SUITE FILE_PATH="coverage/AI$example_controllers.coverage" NAME="example_controllers Coverage Results" MODIFIED="1715505063765" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/app/controllers" />
     <SUITE FILE_PATH="coverage/ImageDataArrange_py$TagSetting.coverage" NAME="TagSetting Coverage Results" MODIFIED="1711503999382" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Preprocessing" />
-    <SUITE FILE_PATH="coverage/AI$test.coverage" NAME="test Coverage Results" MODIFIED="1715493323887" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/AI$auto_draw.coverage" NAME="auto_draw Coverage Results" MODIFIED="1712627842243" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/app/services" />
+    <SUITE FILE_PATH="coverage/AI$test.coverage" NAME="test Coverage Results" MODIFIED="1715515823032" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/AI$LoadImage.coverage" NAME="LoadImage Coverage Results" MODIFIED="1715513227346" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/app/services" />
+    <SUITE FILE_PATH="coverage/AI$auto_draw.coverage" NAME="auto_draw Coverage Results" MODIFIED="1715515495931" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/app/services" />
     <SUITE FILE_PATH="coverage/AI$ImageDataGenerator.coverage" NAME="ImageDataGenerator Coverage Results" MODIFIED="1709366323438" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Model" />
     <SUITE FILE_PATH="coverage/AI$__init__.coverage" NAME="__init__ Coverage Results" MODIFIED="1711903646916" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Flasktest" />
     <SUITE FILE_PATH="coverage/AI$vgg16Sample.coverage" NAME="vgg16Sample Coverage Results" MODIFIED="1711593393240" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Model" />

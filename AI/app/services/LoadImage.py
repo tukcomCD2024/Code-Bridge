@@ -1,4 +1,5 @@
 import io, base64
+import os
 from PIL import Image
 import boto3
 import requests
@@ -29,8 +30,8 @@ def downloadFromS3(bucket, key):
 
 
 def downloadFromURL(url):
-    response = requests.get(url)
-    image = response.content
+    # request.get 요청
+    res = requests.get(url)
 
-    f = open("image.png", 'wb')
-    f.write(image)
+    # Img open
+    return Image.open(io.BytesIO(res.content))

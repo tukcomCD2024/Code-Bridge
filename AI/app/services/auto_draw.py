@@ -1,6 +1,5 @@
 from keras.models import load_model
 import numpy as np
-from PIL import Image
 import operator, os
 from app.services.LoadImage import decodeFromJsonToImage, downloadFromS3, downloadFromURL
 
@@ -12,25 +11,14 @@ imgsrc = r"C:\Users\Ka\Desktop\Ka\programming\AI\sample\heart.png"
 def resultByDesc(result):
     x = {}
     for i in range(len(result)):
-        if result[i] > 0.001:
-            x[i] = result[i]
-
-    listByDesc = sorted(x.items(), key=operator.itemgetter(1), reverse=True)[:6]
-    return listByDesc
+        x[i] = result[i]
+    return sorted(x.items(), key=operator.itemgetter(1), reverse=True)[:6]
 
 
-def getImage():
-    img = Image.open(imgsrc)
-    img = img.resize((224, 224))
-    img = img.convert("RGB")
-    img = np.asarray(img)
-    img = np.expand_dims(img, axis=0)
 
-    return img
-
-
-def resize(image):
+def resizing(image):
     image = image.resize((128, 128))
+    image = image.convert('RGB')
     image = np.array(image)
     image = np.expand_dims(image, axis=0)
     return image
@@ -43,18 +31,19 @@ def getPredict(img):
 
 
 def AI_process(image):
-    resized = resize(image)
+    resized = resizing(image)
+    print(resized.shape)
     pre_result = getPredict(resized)
-    return resultByDesc(pre_result)
+    return resultByDesc(pre_result[0])
 
-def AI_by_Base64(json_data):
+def AIbyBase64(json_data):
     image = decodeFromJsonToImage(json_data)
     return AI_process(image)
 
-def AI_by_S3(json_data):
+def AIbyS3(json_data):
     image = downloadFromS3(json_data['bucket'], json_data['key'])
     return AI_process(image)
 
-def AI_by_URL(json_data):
+def AIbyURL(json_data):
     image = downloadFromURL(json_data['url'])
     return AI_process(image)
