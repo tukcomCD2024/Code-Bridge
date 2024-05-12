@@ -753,13 +753,13 @@ function Page() {
     setCurrentLineNumber(clickedLineNumber);
   };
 
-  const uploadImageToEditor = (view) => {
+  const uploadImageToEditor = (view, imageUrl) => {
     if (!currentLineNumber) {
       alert("에디터를 클릭하여 이미지를 업로드할 위치를 지정하세요.");
       return;
     }
 
-    const imageUrl = "https://sharenotebucket.s3.ap-northeast-2.amazonaws.com/NoneImage2.png";
+    // const imageUrl = "https://sharenotebucket.s3.ap-northeast-2.amazonaws.com/NoneImage2.png"; // 하드 코딩
 
     // ProseMirror Transaction 생성
     const transaction = editorRef.current.view.state.tr;
