@@ -1,14 +1,14 @@
-import json, io, base64
+import io, base64
 from PIL import Image
 import boto3
+import requests
 
 
-def readFromJsonToImage(json_data):
-    dict_data = json.loads(json_data)
-
-    img = dict_data['img']
+def decodeFromJsonToImage(json_data):
+    img = json_data['img']
     img = base64.b64decode(img)
     return Image.open(io.BytesIO(img))
+
 
 def downloadFromS3(bucket, key):
     AWS_ACCESS_KEY_ID = "ACCESS_KEY"
@@ -27,3 +27,10 @@ def downloadFromS3(bucket, key):
     client.download_file(bucket, key, file_name)
     return Image.open(file_name)
 
+
+def downloadFromURL(url):
+    response = requests.get(url)
+    image = response.content
+
+    f = open("image.png", 'wb')
+    f.write(image)

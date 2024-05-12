@@ -1,10 +1,8 @@
-import json
-
 from keras.models import load_model
 import numpy as np
 from PIL import Image
 import operator, os
-from app.services.LoadImage import readFromJsonToImage, downloadFromS3
+from app.services.LoadImage import decodeFromJsonToImage, downloadFromS3, downloadFromURL
 
 # imgsrc = r"C:\Users\Ka\Desktop\Ka\programming\AI\AI2\asset\size64Image01\bank\bank.png"
 # imgsrc = r"C:\Users\Ka\Desktop\Ka\programming\AI\AI2\asset\size64Image01\security\security.png"
@@ -17,7 +15,7 @@ def resultByDesc(result):
         if result[i] > 0.001:
             x[i] = result[i]
 
-    listByDesc = sorted(x.items(), key=operator.itemgetter(1), reverse=True)[:40]
+    listByDesc = sorted(x.items(), key=operator.itemgetter(1), reverse=True)[:6]
     return listByDesc
 
 
@@ -32,30 +30,31 @@ def getImage():
 
 
 def resize(image):
-    image = image.resize((224, 224))
+    image = image.resize((128, 128))
     image = np.array(image)
     image = np.expand_dims(image, axis=0)
     return image
 
 
 def getPredict(img):
-    saved_model = load_model(os.getcwd() + "/app/services/vgg16_sigmoid_RMS.h5")
+    saved_model = load_model(os.getcwd() + "/app/services/cnn1.h5")
     pre = saved_model.predict(img)
-
     return pre
 
 
+def AI_process(image):
+    resized = resize(image)
+    pre_result = getPredict(resized)
+    return resultByDesc(pre_result)
 
-def AI(json_data):
-    dict_data = json.loads(json_data)
-    type = dict_data['type']
-    if type == "S3":
-        image = downloadFromS3(dict_data['bucket'], dict_data['key'])
-        pass
-    elif type == "base64":
-        image = readFromJsonToImage(json_data)
-        pass
-    preResult = getPredict(resize(image))
-    return resultByDesc(preResult)
+def AI_by_Base64(json_data):
+    image = decodeFromJsonToImage(json_data)
+    return AI_process(image)
 
+def AI_by_S3(json_data):
+    image = downloadFromS3(json_data['bucket'], json_data['key'])
+    return AI_process(image)
 
+def AI_by_URL(json_data):
+    image = downloadFromURL(json_data['url'])
+    return AI_process(image)
