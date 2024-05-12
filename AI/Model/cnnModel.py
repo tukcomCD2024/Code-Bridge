@@ -1,8 +1,9 @@
 from keras.models import Sequential
 from keras.layers import Dense, Conv2D, MaxPool2D, Flatten
 from keras.preprocessing.image import ImageDataGenerator
-import os
 from keras.callbacks import ModelCheckpoint, EarlyStopping
+from keras.optimizers import RMSprop
+import os
 
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 imageSize = 128
@@ -16,9 +17,9 @@ testdata = tsdata.flow_from_directory(directory=r"C:\Users\Ka\Desktop\Ka\대학�
                                       class_mode='categorical')
 
 
-def cnnDepth4_2():
+def cnnDepth4():
     model = Sequential()
-    model.add(Conv2D(16, (3, 3), activation='relu', input_shape=(imageSize, imageSize, 3)))
+    model.add(Conv2D(128  , (3, 3), activation='relu', input_shape=(imageSize, imageSize, 3)))
     model.add(MaxPool2D((2, 2)))
 
     model.add(Flatten())
@@ -31,9 +32,9 @@ def cnnDepth4_2():
 
 def cnnDepth5():
     model = Sequential()
-    model.add(Conv2D(16, (3, 3), activation='relu', input_shape=(imageSize, imageSize, 3)))
+    model.add(Conv2D(64, (3, 3), activation='relu', input_shape=(imageSize, imageSize, 3)))
     model.add(MaxPool2D((2, 2)))
-    model.add(Conv2D(32, (3, 3), activation='relu'))
+    model.add(Conv2D(128, (3, 3), activation='relu'))
     model.add(MaxPool2D((2, 2)))
 
     model.add(Flatten())
@@ -46,11 +47,11 @@ def cnnDepth5():
 
 def cnnDepth6():
     model = Sequential()
-    model.add(Conv2D(16, (3, 3), activation='relu', input_shape=(imageSize, imageSize, 3)))
-    model.add(MaxPool2D((2, 2)))
-    model.add(Conv2D(32, (3, 3), activation='relu'))
+    model.add(Conv2D(32, (3, 3), activation='relu', input_shape=(imageSize, imageSize, 3)))
     model.add(MaxPool2D((2, 2)))
     model.add(Conv2D(64, (3, 3), activation='relu'))
+    model.add(MaxPool2D((2, 2)))
+    model.add(Conv2D(128, (3, 3), activation='relu'))
     model.add(MaxPool2D((2, 2)))
 
     model.add(Flatten())
@@ -62,27 +63,25 @@ def cnnDepth6():
 
 
 def createModel():
-    modelNames = ['512cnn4Depth16.h5', '512cnn5Depth16.h5', '512cnn6Depth16.h5']
-    modelFuncs = [cnnDepth4_2(), cnnDepth5(), cnnDepth6()]
+    modelNames = ['cnn4Depth.h5', 'cnn5Depth.h5', 'cnn6Depth.h5']
+    modelFuncs = [cnnDepth4(), cnnDepth5(), cnnDepth6()]
 
-    for i in range(3):
+    for i in range(len(modelFuncs)):
         model = modelFuncs[i]
-
-        from keras.optimizers import RMSprop
 
         opt = RMSprop(lr=0.0001)
         model.compile(optimizer=opt, loss='categorical_crossentropy', metrics=['accuracy'])
 
         model.summary()
 
-        checkpoint = ModelCheckpoint(modelNames[i], monitor='val_accuracy', verbose=1, save_best_only=True,
+        checkpoint = ModelCheckpoint(f"f32lr0001e60" + modelNames[i], monitor='val_accuracy', verbose=1, save_best_only=True,
                                      save_weights_only=False, mode='auto', period=1)
-        early = EarlyStopping(monitor='val_accuracy', min_delta=0, patience=20, verbose=1, mode='auto')
+        early = EarlyStopping(monitor='val_accuracy', min_delta=0, patience=30, verbose=1, mode='auto')
         # hist = model.fit_generator(steps_per_epoch=len(traindata), generator=traindata, validation_data=testdata,
         #                            validation_steps=len(testdata), epochs=4, callbacks=[checkpoint, early])
 
         hist = model.fit(traindata, steps_per_epoch=len(traindata), validation_data=testdata, validation_steps=len(testdata),
-                         epochs=300, callbacks=[checkpoint, early], batch_size=5)
+                         epochs=60, callbacks=[checkpoint, early], batch_size=5)
 
         import matplotlib.pyplot as plt
 
