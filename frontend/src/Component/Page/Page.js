@@ -412,7 +412,6 @@ function Page() {
           handleUserConnection();
         }
         checkLocalStorage().then(() => {
-          toastr.success("계정 정보 확인");
         }).catch(error => {
           toastr.error("계정 확인 불가");
           console.error(error);
@@ -822,7 +821,7 @@ function Page() {
         <LayoutContainer>
           <NavigationBar $isloaded={isloaded.toString()}>
           <NoteHeaderContainer>
-            <Notename onMouseEnter={getCurrentLineNumber} onClick={uploadImageToEditor} style={{ cursor: "pointer" }}>
+            <Notename /*onMouseEnter={getCurrentLineNumber} onClick={uploadImageToEditor}*/ style={{ cursor: "pointer" }}>
               <span>📖&nbsp;</span>
               <span>{noteinfo ? noteinfo.name : "Loading..."}</span>
             </Notename>
