@@ -1,3 +1,4 @@
+import android.app.Activity
 import android.content.ContentValues.TAG
 import android.content.Intent
 import android.os.Bundle
@@ -106,9 +107,8 @@ class HomeFragment : Fragment() {
         }
 
         MoveDraw.setOnClickListener {
-            val Drawintent = Intent(requireContext(), PaintActivity::class.java)
-            startActivity(Drawintent)
-            requireActivity().finish()
+            val intent2 = Intent(requireContext(), PaintActivity::class.java)
+            startActivityForResult(intent2, 1)
         }
 
 
@@ -145,6 +145,16 @@ class HomeFragment : Fragment() {
         }
 
         return view
+    }
+
+    // 이게 없어서 지금까지 계속 튕김
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == 1) {
+            val imageUri = data?.getStringExtra("imageUrl")
+            Log.e("imageUrl", imageUri ?: "")
+        }
     }
 
 
