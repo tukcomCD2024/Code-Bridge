@@ -289,7 +289,8 @@
                     android:layout_alignParentEnd="true"
                     android:layout_centerInParent="true"
                     android:background="@android:color/transparent"
-                    android:text="시스템 설정" />
+                    android:text="시스템 설정"
+                    android:textColor="@color/black"/>
             </RelativeLayout>
 
             <View
@@ -325,7 +326,8 @@
                     android:layout_alignParentEnd="true"
                     android:layout_centerInParent="true"
                     android:background="@android:color/transparent"
-                    android:text="개인정보 수정" />
+                    android:text="개인정보 수정"
+                    android:textColor="@color/black" />
             </RelativeLayout>
 
 
