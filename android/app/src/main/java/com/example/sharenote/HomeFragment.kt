@@ -177,6 +177,7 @@ class HomeFragment : Fragment() {
             override fun onWorkSpaceClick(workSpace: WorkSpace) {
                 // 워크스페이스를 클릭했을 때 처리할 내용을 여기에 작성합니다.
                 saveRecentWorkspaceId(workSpace.id)
+                saveRecentWorkspaceName(workSpace.name)
                 val MainIntent = Intent(requireContext(), MainActivity::class.java)
                 startActivity(MainIntent)
                 requireActivity().finish()
@@ -480,6 +481,10 @@ class HomeFragment : Fragment() {
     // 최근 워크스페이스 ID를 저장하고 불러오기
     private fun saveRecentWorkspaceId(workspaceId: String) {
         SharedPreferencesUtil.saveRecentWorkspaceId(requireContext(), workspaceId)
+    }
+
+    private fun saveRecentWorkspaceName(workspaceName: String) {
+        SharedPreferencesUtil.saveRecentWorkspaceName(requireContext(), workspaceName)
     }
 
     private fun getRecentWorkspaceId(): String? {

@@ -235,6 +235,12 @@ class NoteActivity : AppCompatActivity(), PageListAdapter.OnPageClickListener {
         val popupView = LayoutInflater.from(this).inflate(R.layout.org_info_layout, null)
 
 
+        // 워크스페이스 이름을 표시할 텍스트뷰 선언
+        val organizationTextView = popupView.findViewById<TextView>(R.id.Organization)
+
+        val workspaceName = SharedPreferencesUtil.getRecentWorkspaceName(this)
+        organizationTextView.text = workspaceName
+
 
         // 팝업 창을 생성
         orgPopupWindow = PopupWindow(

@@ -28,14 +28,11 @@ class PageListAdapter(private val pages: MutableList<Page>, private val onPageCl
 
     override fun onBindViewHolder(holder: PageViewHolder, position: Int) {
         val currentPage = pages[position]
-        holder.idViewText.text = currentPage.id
-        holder.userViewText.text = currentPage.createUser
+        holder.idViewText.text = "PageId\n${currentPage.id}"
+        holder.userViewText.text = "UserId\n${currentPage.createUser}"
         holder.atViewText.text = currentPage.createdAt
 
 
-        holder.buttonDeletePage.setOnClickListener {
-            deletePage(holder.adapterPosition)
-        }
 
         // 페이지를 클릭하면 해당 페이지의 정보를 전달합니다.
         holder.itemView.setOnClickListener {
@@ -72,6 +69,5 @@ class PageListAdapter(private val pages: MutableList<Page>, private val onPageCl
         val idViewText: TextView = itemView.findViewById(R.id.idViewText)
         val userViewText: TextView = itemView.findViewById(R.id.userViewText)
         val atViewText: TextView = itemView.findViewById(R.id.atViewText)
-        val buttonDeletePage: Button = itemView.findViewById(R.id.buttonDeletePage)
     }
 }

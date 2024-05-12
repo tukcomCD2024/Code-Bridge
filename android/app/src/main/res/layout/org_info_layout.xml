@@ -23,6 +23,14 @@
             android:textColor="@color/black"
             android:textSize="20dp"/>
 
+        <TextView
+            android:id="@+id/Organization"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_below="@+id/textView1"
+            android:text="Organization"/>
+
         <ImageView
             android:id="@+id/profileImage"
             android:layout_width="150dp"
@@ -72,7 +80,7 @@
 
         <EditText
             android:id="@+id/inviteEditText"
-            android:layout_width="300dp"
+            android:layout_width="280dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:layout_marginLeft="12dp"
@@ -83,9 +91,10 @@
 
         <Button
             android:id="@+id/send"
-            android:layout_width="wrap_content"
+            android:layout_width="90dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="5dp"
+            android:layout_marginLeft="10dp"
             android:layout_toRightOf="@id/inviteEditText"
             android:layout_below="@+id/post"
             android:text="보내기"
