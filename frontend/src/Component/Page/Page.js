@@ -52,11 +52,12 @@ function Page() {
   const noteId = pathSegments[2];
   const pageId = pathSegments[3];
   
+  const [reconnect, setReconnect] = useState(false);
   const [noteinfo, setNoteInfo] = useState(null);
   const [isloaded, setisloaded] = useState(false); // 로딩 상태 관리
   const [pages, setPages] = useState([]); // 페이지 상태 관리
-  const [pageIndex, setPageIndex] = useState(-1);
-  const [pageInputValue, setPageInputValue] = useState(pageIndex !== -1 ? pageIndex + 2 : 1);
+  const [pageIndex, setPageIndex] = useState(0);
+  const [pageInputValue, setPageInputValue] = useState(pageIndex !== 0 ? pageIndex + 1 : 1);
   const [isPageHandleButtonDisabled, setIsPageHandleButtonDisabled] = useState(false);
   const [usersAndColors, setUsersAndColors] = useState([]); // 연결된 사용자와 색상 상태
   const [noteSettingModalOpen, setNoteSettingModalOpen] = useState(false);
@@ -97,36 +98,36 @@ function Page() {
     setNoteSettingModalOpen(false);
   };
 
-  // 네비게이션바에 페이지 컨트롤 코드
-  const prevPage = () => {
-    const prevPageID = pages[pageIndex-1]?.id;
-    if(pageIndex == -1){
-      alert("메인 페이지입니다.");
-      return;
-    }
-    if(!prevPageID) {
-      navigate(`/organization/${organizationId}/${noteId}/${noteId}`);
-    } else {
-      navigate(`/organization/${organizationId}/${noteId}/${prevPageID}`);
-    }
+  // 네비게이션바에 페이지 이동 함수
+  const navigateToPage = (pageID) => {
+    navigate(`/organization/${organizationId}/${noteId}/${pageID}`);
   };
 
-  const nextPage = () => {
-    const nextPageID = pages[pageIndex+1]?.id;
-    if(!nextPageID) {
-      alert("마지막 페이지입니다.");
+  // 이전 페이지
+  const prevPage = () => {
+    if (pageIndex === 0) {
       return;
-    } else {
-      navigate(`/organization/${organizationId}/${noteId}/${nextPageID}`);
     }
+    const prevPageID = pages[pageIndex - 1]?.id;
+    navigateToPage(prevPageID);
   };
-  const pageTarget = () => {
-    const pagetargetID = pages[pageInputValue-2]?.id;
-    if(!pagetargetID) {
-      navigate(`/organization/${organizationId}/${noteId}/${noteId}`);
-    } else {
-      navigate(`/organization/${organizationId}/${noteId}/${pagetargetID}`);
+
+  // 다음 페이지
+  const nextPage = () => {
+    const nextPageID = pages[pageIndex + 1]?.id;
+    if (!nextPageID) {
+      return;
     }
+    navigateToPage(nextPageID);
+  };
+
+  // 특정 페이지
+  const pageTarget = () => {
+    if (pageIndex + 1 === pageInputValue) {
+      return;
+    }
+    const pageTargetID = pages[pageInputValue - 1]?.id;
+    navigateToPage(pageTargetID);
   };
 
   const handleCreate = async (e) => {
@@ -161,16 +162,17 @@ function Page() {
     catch (error) {
       console.error("Error: ", error);
       alert("처리 중 오류가 발생했습니다.");
-    }
+    } finally {
     setIsPageHandleButtonDisabled(false);
+    }
   };
 
   const handleRemove = async (e) => {
-    if(pageIndex == -1){
+    if(pageIndex === 0){
       alert("메인 페이지는 삭제하실 수 없습니다.");
       return;
     }
-    const isConfirmed = window.confirm(`현재 위치한 [${pageIndex + 2}] 페이지를 삭제합니다.`);
+    const isConfirmed = window.confirm(`현재 위치한 [${pageIndex + 1}] 페이지를 삭제합니다.`);
     if(isConfirmed){
       try {
         setIsPageHandleButtonDisabled(true);
@@ -188,8 +190,9 @@ function Page() {
       } catch (error) {
         console.error("Error: ", error);
         alert("처리 중 오류가 발생했습니다.");
+      } finally {
+        setIsPageHandleButtonDisabled(false);
       }
-      setIsPageHandleButtonDisabled(false);
     }
   };
   
@@ -200,15 +203,15 @@ function Page() {
       return;
     }
 
-    if (!isNaN(newValue) && newValue >= 1 && newValue <= pages.length + 1) {
+    if (!isNaN(newValue) && newValue >= 1 && newValue <= pages.length) {
       setPageInputValue(newValue);
     } else {
-      setPageInputValue(pages.length + 1);
+      setPageInputValue(pages.length);
     }
   };
 
   useEffect(() => {
-    setPageInputValue(pageIndex !== -1 ? pageIndex + 2 : 1);
+    setPageInputValue(pageIndex !== 0 ? pageIndex + 1 : 1);
   }, [pageIndex]);
 
   useEffect(() => {
@@ -327,24 +330,26 @@ function Page() {
   useEffect(() => {
     if (!editorRef.current) return;
 
-    const roomId = pageId || noteId;
+    const roomId = pageId;
     const ydoc = getYDocInstance(roomId);
     const provider = new WebsocketProvider(
       // "wss://demos.yjs.dev/ws", // 웹소켓 서버 주소(데모용)
-      //"ws://localhost:4000", //배포용
-      //"ws://nodejs:4000", 
+      // "ws://localhost:4000", //배포용
+      // "ws://nodejs:4000", 
       "wss://sharenote.shop/ws",
       roomId, // 방 이름
       ydoc
     );
+    hoverButtonPlugin(ydoc);
     const yXmlFragment = ydoc.getXmlFragment("prosemirror");
-    const connectedUsersYMap = ydoc.getMap('connectedUsers');
-    const lineLocks = ydoc.getMap('nodeInfo');
-    const userLocks = ydoc.getMap('userLocks');
+    const yConnectedUserList = ydoc.getMap('connectedUsers');
+    const yLineLocks = ydoc.getMap('nodeInfo');
+    const yUserLocks = ydoc.getMap('yUserLocks');
+    const yLikeList = ydoc.getMap(`yLikeList_${userId}`);
 
     function isMobileWebView() {
-      const userAgent = navigator.userAgent || navigator.vendor || window.opera;
-      const isAndroidWebView = userAgent.indexOf('wv') > -1 && userAgent.indexOf('Mobile') > -1;
+      const userAgent = navigator.userAgent.toLowerCase();
+      const isAndroidWebView = userAgent.indexOf('android') > -1 && userAgent.indexOf('mobile') > -1;
       return isAndroidWebView
     }
     function checkLocalStorage() {
@@ -376,26 +381,26 @@ function Page() {
     }
     function handleUserConnection() {
       const nicknameWithSuffix = `${nickname}_다중 접속`;
-      const isSingleConnected = connectedUsersYMap.has(nickname);
-      const isMultiConnected = connectedUsersYMap.has(nicknameWithSuffix);
+      const isSingleConnected = yConnectedUserList.has(nickname);
+      const isMultiConnected = yConnectedUserList.has(nicknameWithSuffix);
   
       if (isSingleConnected && isMultiConnected) {
         const isConfirmed = window.confirm("동시 접속 가능한 횟수를 초과하셨습니다.\n기존 접속을 종료하고 새로 접속하시겠습니까?");
         if (isConfirmed) {
-          connectedUsersYMap.set(nicknameWithSuffix, 'kicked');
+          yConnectedUserList.set(nicknameWithSuffix, 'kicked');
         } else {
           navigate(`/organization/${pathSegments[1]}`);
           return;
         }
       }
   
-      let userColor = connectedUsersYMap.get(nickname) || connectedUsersYMap.get(nicknameWithSuffix) || getRandomColor();
+      let userColor = yConnectedUserList.get(nickname) || yConnectedUserList.get(nicknameWithSuffix) || getRandomColor();
       
       if (!isSingleConnected) {
-        connectedUsersYMap.set(nickname, userColor);
+        yConnectedUserList.set(nickname, userColor);
         provider.awareness.setLocalStateField('user', { name: nickname, color: userColor });
       } else {
-        connectedUsersYMap.set(nicknameWithSuffix, userColor);
+        yConnectedUserList.set(nicknameWithSuffix, userColor);
         provider.awareness.setLocalStateField('user', { name: nicknameWithSuffix, color: userColor });
       }
       updateUsersAndColors(); // UI 업데이트
@@ -407,27 +412,35 @@ function Page() {
           handleUserConnection();
         }
         checkLocalStorage().then(() => {
-          toastr.success("(웹뷰) 계정 정보 확인");
+          toastr.success("계정 정보 확인");
         }).catch(error => {
-          toastr.error("(웹뷰) 계정 정보 확인 불가");
+          toastr.error("계정 확인 불가");
           console.error(error);
         });
       } else {
           if (isSynced) {
-            console.log("컴퓨터 환경");
             handleUserConnection();   
         }
       }
       // setisloaded(true); // 딜레이 없음
       setTimeout(() => {
         setisloaded(true);
-      }, 200); // 1초 딜레이
+      }, 300); // 딜레이 있음
     });
+
     provider.on('status', event => {
       if (event.status === 'disconnected') {
         const userState = provider.awareness.getLocalState();
         if (userState && userState.user) {
-          connectedUsersYMap.delete(userState.user.name);
+          yConnectedUserList.delete(userState.user.name);
+          setReconnect(true);
+        }
+      }
+      if (event.status === 'connected') {
+        const nicknameWithSuffix = `${nickname}_다중 접속`;
+        if (reconnect && (!yConnectedUserList.get(nickname) || !yConnectedUserList.get(nicknameWithSuffix))) {
+          setReconnect(false);
+          handleUserConnection();
         }
       }
     });
@@ -437,30 +450,30 @@ function Page() {
       const userState = provider.awareness.getLocalState();
       if (userState && userState.user && userState.user.name) {
         const nickname = userState.user.name;
-        if (connectedUsersYMap.get(nickname) === 'kicked') {
+        if (yConnectedUserList.get(nickname) === 'kicked') {
           toastr.warning("연결 정보가 없습니다!");
           navigate(`/organization/${pathSegments[1]}`);
           return;
         }
       }
     }
-   connectedUsersYMap.observe(onlineUpdate);
+   yConnectedUserList.observe(onlineUpdate);
 
     function yjsDisconnect() {
       const keysToDelete = [];
 
-      lineLocks.forEach((value, key) => {
+      yLineLocks.forEach((value, key) => {
         if (value === nickname) {
           keysToDelete.push(key);
         }
       });
-      keysToDelete.forEach(key => lineLocks.delete(key));
-      userLocks.delete(nickname);
+      keysToDelete.forEach(key => yLineLocks.delete(key));
+      yUserLocks.delete(nickname);
     
       // Yjs 연결 해제 및 리소스 정리
       const userState = provider.awareness.getLocalState();
       if (userState && userState.user) {
-        connectedUsersYMap.delete(userState.user.name);
+        yConnectedUserList.delete(userState.user.name);
       }
     
       // 연결 해제 및 리소스 정리
@@ -533,16 +546,16 @@ function Page() {
         navigate("/login");
         return;
       }
-    const currentLock = lineLocks.get(guid.toString());
+    const currentLock = yLineLocks.get(guid.toString());
     
     // 현재 사용자가 이미 다른 노드를 잠근 경우, 알림창 표시
-    const currentLockedNodeByUser = userLocks.get(nickname);
+    const currentLockedNodeByUser = yUserLocks.get(nickname);
     if (!currentLock && currentLockedNodeByUser && currentLockedNodeByUser !== guid.toString()) {
       // 사용자에게 확인을 요청하는 대화 상자 표시
       const isConfirmed = window.confirm("최대 1개까지 잠금이 가능합니다.\n이전에 설정한 잠금을 해제하시겠습니까?");
       if (isConfirmed) {
-        lineLocks.delete(currentLockedNodeByUser);
-        userLocks.delete(nickname); 
+        yLineLocks.delete(currentLockedNodeByUser);
+        yUserLocks.delete(nickname); 
       } else {
         return;
       }
@@ -551,15 +564,15 @@ function Page() {
       if (currentLock) {
         // 해당 줄이 이미 잠겨 있고, 현재 사용자가 잠근 경우 잠금 해제
         if (currentLock === nickname) {
-            lineLocks.delete(guid.toString());
-            userLocks.delete(nickname);
+            yLineLocks.delete(guid.toString());
+            yUserLocks.delete(nickname);
             toastr.info(`편집 잠금이 해제되었습니다.`);
         } else {
           toastr.error(`[오류] ${currentLock} 에 의해 잠금 불가합니다.`);
         }
     } else {
-      lineLocks.set(guid.toString(), nickname);
-      userLocks.set(nickname, guid.toString());
+      yLineLocks.set(guid.toString(), nickname);
+      yUserLocks.set(nickname, guid.toString());
       toastr.success(`블록 편집 잠금이 설정되었습니다.`);
     }
   };
@@ -572,7 +585,7 @@ function Page() {
 
       if (target.tagName === 'P' && target.hasAttribute('data-guid')) {
         const guid = target.getAttribute('data-guid');
-        const currentLock = lineLocks.get(guid.toString());
+        const currentLock = yLineLocks.get(guid.toString());
         if (currentLock) {
           if (currentLock !== nickname) {
             toastr.warning(`[알림] ${currentLock} 에 의해 편집 불가합니다.`);
@@ -600,7 +613,7 @@ function Page() {
       // 타겟 노드가 'P' 태그이고 'data-guid' 속성을 가지고 있는지 확인
       if (targetNode.tagName === 'P' && targetNode.hasAttribute('data-guid')) {
         const guid = targetNode.getAttribute('data-guid');
-        const currentLock = lineLocks.get(guid);
+        const currentLock = yLineLocks.get(guid);
         if (currentLock && currentLock !== nickname) {
           event.preventDefault(); // 편집 방지
           if (document.activeElement) { // 포커스(커서) 해제
@@ -612,7 +625,7 @@ function Page() {
 
     function getAvailableColors() {
       const usedColors = new Set();
-      connectedUsersYMap.forEach((color, name) => {
+      yConnectedUserList.forEach((color, name) => {
         usedColors.add(color);
       });
       const availableColors = cursorColors.filter(color => !usedColors.has(color));
@@ -627,7 +640,7 @@ function Page() {
 
     function updateUsersAndColors() {
       const updatedUsersAndColors = [];
-      connectedUsersYMap.forEach((color, name) => {
+      yConnectedUserList.forEach((color, name) => {
         updatedUsersAndColors.push({ name, color });
       });
       setUsersAndColors(updatedUsersAndColors);
@@ -643,16 +656,16 @@ function Page() {
       cursor.appendChild(userDiv);
       
       // 커서 색상 확인
-      const usersAndColors = [];
-      connectedUsersYMap.forEach((color, name) => {
-        usersAndColors.push({ name, color });
-      });
-      console.log('연결된 사용자와 커서 색상:', usersAndColors);
+      // const usersAndColors = [];
+      // yConnectedUserList.forEach((color, name) => {
+      //   usersAndColors.push({ name, color });
+      // });
+      // console.log('연결된 사용자와 커서 색상:', usersAndColors);
 
       return cursor;
     };
 
-    connectedUsersYMap.observe(updateUsersAndColors);
+    yConnectedUserList.observe(updateUsersAndColors);
     window.addEventListener("pagehide", yjsDisconnect);
     window.addEventListener("unload", yjsDisconnect);
     window.addEventListener("popstate", yjsDisconnect);
@@ -706,8 +719,8 @@ function Page() {
 
     return () => {
       setisloaded(false);
-      connectedUsersYMap.unobserve(updateUsersAndColors);
-      connectedUsersYMap.unobserve(onlineUpdate);
+      yConnectedUserList.unobserve(updateUsersAndColors);
+      yConnectedUserList.unobserve(onlineUpdate);
       window.removeEventListener("pagehide", yjsDisconnect);
       window.removeEventListener("unload", yjsDisconnect);
       window.removeEventListener("popstate", yjsDisconnect);
@@ -720,13 +733,7 @@ function Page() {
     const pos = $from.pos; // 커서 위치
     const resolvedPos = editorRef.current.view.state.doc.resolve(pos);
     let node = resolvedPos.nodeAfter || resolvedPos.nodeBefore;
-
-    if (node) {
-      if(node.type.name == "image") {
-        return;
-      }
-    }
-
+    
     let clickedLineNumber = 0;
   
     // 커서 위치가 어느 줄에 속하는지 파악하기
@@ -736,7 +743,13 @@ function Page() {
       }
     });
     
-    toastr.info(`현재 커서 위치: ${clickedLineNumber} 번째 줄`); // 줄 번호를 alert로 출력
+    if (node) {
+      if(node.type.name === "image") {
+        toastr.info(`현재 커서 위치: ${clickedLineNumber + 1} 번째 줄`);
+      }
+    } else {
+      toastr.info(`현재 커서 위치: ${clickedLineNumber} 번째 줄`);
+    }
     setCurrentLineNumber(clickedLineNumber);
   };
 
@@ -759,16 +772,25 @@ function Page() {
   const transactionImageAtLine = (lineNumber, imageUrl, view) => tr => {
     // 이미지 노드 생성
     const imageNode = editorRef.current.view.state.schema.nodes.image.create({ src: imageUrl });
-  
-    // 해당 줄에 이미지 노드 삽입
-    const insertTr = tr.insert(currentLineNumber, imageNode);
-  
+
+    // 특정 줄의 시작 노드 위치 찾기
+    let pos = 0;
+    editorRef.current.view.state.doc.nodesBetween(0, editorRef.current.view.state.doc.content.size, (node, nodePos) => {
+        if (node.isBlock && nodePos > pos) {
+            pos = nodePos;
+        }
+        pos = pos === 0 ? 1 : pos; 
+    });
+
+    // 이미지 노드 삽입
+    const insertTr = tr.insert(pos, imageNode);
+
     // 이미지 삽입 후 커서 위치 설정
-    const resolvedPos = insertTr.doc.resolve(currentLineNumber + imageNode.nodeSize);
+    const resolvedPos = insertTr.doc.resolve(pos + imageNode.nodeSize);
     const selection = editorRef.current.view.state.selection.constructor.near(resolvedPos);
-  
+
     return insertTr.setSelection(selection);
-  };
+};
 
   return (
     <div>
@@ -821,7 +843,7 @@ function Page() {
                 <ArrowBox>
                   <FontAwesomeIcon icon={faLeftLong} onClick={prevPage} />
                   </ArrowBox>
-                  {pageIndex !== -1 ? pageIndex + 2 : "메인"} 페이지
+                  {pageIndex !== 0 ? pageIndex + 1 : "메인"} 페이지
                   <ArrowBox>
                   <FontAwesomeIcon icon={faRightLong} onClick={nextPage} />
                 </ArrowBox>
@@ -844,7 +866,7 @@ function Page() {
                       onInput={(e) => e.target.value = e.target.value.slice(0, 3)}
                       onChange={handlePageInputChange}
                     />
-                      <PageDisplay>/ {pages ? pages.length + 1 : "Loading"} 페이지</PageDisplay>
+                      <PageDisplay>/ {pages ? pages.length : "Loading"} 페이지</PageDisplay>
                   </InputContainer>
                   <GoButton onClick={pageTarget}>이동하기</GoButton>
                  </RightPageRemote>

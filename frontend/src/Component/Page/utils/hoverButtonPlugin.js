@@ -1,4 +1,4 @@
-import { Plugin, Selection } from "prosemirror-state";
+import { Plugin, Selection, NodeSelection } from "prosemirror-state";
 import down_arrow from "../../../image/down_arrow.svg";
 import lock from "../../../image/lock2.gif";
 import { library, icon } from '@fortawesome/fontawesome-svg-core';
@@ -17,6 +17,7 @@ function countDocBlocks(doc) {
 
 // 노트 페이지에서 블록(노드)마다 작은 메뉴창이 뜨게 한다.
 export function hoverButtonPlugin() {
+  const userId = localStorage.getItem("userId");
   const hoverDiv = document.createElement("div");
 
   return new Plugin({
@@ -41,7 +42,7 @@ export function hoverButtonPlugin() {
       hoverDiv.appendChild(hoverButton_lock);
       
       // hoverButton 생성(좋아요)
-      const hoverButton_like = document.createElement("span");
+      const hoverButton_like = document.createElement("div");
       library.add(faHeart);
       const heartIcon = icon(faHeart).node[0];
       hoverButton_like.appendChild(heartIcon);
@@ -49,13 +50,11 @@ export function hoverButtonPlugin() {
       hoverButton_like.title = "좋아요";
       hoverDiv.appendChild(hoverButton_like);
 
-
       // hoverButton_like 요소에 클릭 이벤트 리스너 추가
       hoverButton_like.addEventListener("click", function() {
         this.classList.toggle("hoverButton_like");
         this.classList.toggle("hoverButton_like_fullRedHeart");
       });
-
 
       hoverButton_lock.addEventListener("click", (event) => {
         event.stopPropagation(); // 이벤트 버블링 방지
@@ -79,16 +78,19 @@ export function hoverButtonPlugin() {
 
       hoverButton_plus.addEventListener("click", (event) => {
         const { state, dispatch } = editorView;
+        const { selection } = state;
         let tr = state.tr; // 현재 문서의 트랜잭션
-        const $clickPos = state.doc.resolve(lastPos);
         let insertPos;
+        let $clickPos = state.doc.resolve(lastPos);
+        const isImageNode = selection instanceof NodeSelection && selection.node.type.name === "image";
 
-        if ($clickPos.nodeBefore == null && $clickPos.nodeAfter && $clickPos.nodeAfter.type.name === "image") {
+        if ($clickPos.nodeBefore == null && isImageNode) {
           // 문서 시작 부분에 이미지가 있는 경우
           insertPos = 1;
-        } else if ($clickPos.nodeAfter && $clickPos.nodeAfter.type.name === "image") {
-          // 이미지 노드 바로 뒤의 위치를 삽입 위치로 설정
-          insertPos = $clickPos.pos + $clickPos.nodeAfter.nodeSize;
+        } else if (isImageNode) {
+          // 문서 중간 부분에 위치한 이미지 노드 바로 직후를 삽입 위치로 설정
+          $clickPos = selection.$anchor;
+          insertPos = $clickPos.pos + 1;
         } else {
           // 클릭한 위치(lastPos)를 기준으로 해당 노드의 끝 위치를 찾음
           const endOfNodePos = $clickPos.end($clickPos.depth);
@@ -115,32 +117,28 @@ export function hoverButtonPlugin() {
       
       function updateButton(view, pos, show) {
         try {
-          const { doc } = view.state;
-          const resolvedPos = doc.resolve(pos);
-      
-          // 버튼을 숨기는 경우 또는 depth가 0이고 이전 노드가 paragraph가 아닌 경우
-          if ((resolvedPos.depth === 0 && resolvedPos.nodeBefore && resolvedPos.nodeBefore.type.name !== "paragraph") || 
-              (resolvedPos.depth === 0 && !show)) {
+          const { doc, selection } = view.state;
+          let resolvedPos = doc.resolve(pos);
+          const isImageNode = selection instanceof NodeSelection && selection.node.type.name === "image";
+
+          // 버튼을 숨기는 경우는 바로 이전 노드가 없거나 작성 불가능한 노드(doc)를 클릭할 때
+          if ((resolvedPos.depth === 0 && !resolvedPos.nodeBefore && !isImageNode) || (resolvedPos.depth === 0 && !show)) {
             hoverDiv.style.visibility = "hidden";
             return;
           }
-      
+
           // 마지막 위치 업데이트
           lastPos = pos;
       
           let coords;
-      
+
           // 이미지 노드가 문서의 시작에 있을 때
-          if (pos === 1 && resolvedPos.nodeAfter && resolvedPos.nodeAfter.type.name === "image") {
-            // 문서 시작에 있는 이미지의 좌표
-            coords = view.coordsAtPos(1);
-            // 이 경우에는 lock 버튼을 숨깁니다.
+          if (pos === 0 && isImageNode) {
+            coords = view.coordsAtPos(0);
             hoverButton_lock.style.display = "none";
-          } else if (
-            resolvedPos.nodeAfter &&
-            resolvedPos.nodeAfter.type.name === "image"
-          ) {
-            // 문서 중간에 있는 이미지 노드 다음의 좌표
+          } else if (isImageNode) {
+            // 이미지 노드가 문서의 중간에 있을 때
+            resolvedPos = selection.$anchor;
             coords = view.coordsAtPos(resolvedPos.pos);
             hoverButton_lock.style.display = "none";
           } else {
@@ -187,10 +185,10 @@ export function hoverButtonPlugin() {
         });
         if (pos === null || pos === undefined) return;
 
-        const resolvedPos = editorView.state.doc.resolve(pos);
-        let node = resolvedPos.nodeAfter || resolvedPos.nodeBefore;
+        const isImageNode = editorView.state.selection.node;
 
-        if (node && node.type.name !== "image") {
+        // 이미지 노드가 아닌 경우(텍스트 노드 또는 doc 일 때)
+        if (!isImageNode) {
           updateButton(editorView, pos, false);
           return;
         }
