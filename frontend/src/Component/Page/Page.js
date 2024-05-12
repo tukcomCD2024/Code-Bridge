@@ -727,48 +727,85 @@ function Page() {
     };
   }, [pageId]);
 
-  const getCurrentLineNumber = () => {
-    const { $from } = editorRef.current.view.state.selection; // 현재 커서 위치 가져오기
-    const pos = $from.pos; // 커서 위치
-    const resolvedPos = editorRef.current.view.state.doc.resolve(pos);
-    let node = resolvedPos.nodeAfter || resolvedPos.nodeBefore;
+  // 줄 번호로 커서 위치 출력
+  // const getCurrentLineNumber = () => {
+  //   const { $from } = editorRef.current.view.state.selection; // 현재 커서 위치 가져오기
+  //   const pos = $from.pos; // 커서 위치
+  //   const resolvedPos = editorRef.current.view.state.doc.resolve(pos);
+  //   let node = resolvedPos.nodeAfter || resolvedPos.nodeBefore;
     
-    let clickedLineNumber = 0;
+  //   let clickedLineNumber = 0;
   
-    // 커서 위치가 어느 줄에 속하는지 파악하기
-    editorRef.current.view.state.doc.nodesBetween(0, pos, (node, start) => {
-      if (node.isBlock && start < pos) {
-        clickedLineNumber++;
-      }
-    });
+  //   // 커서 위치가 어느 줄에 속하는지 파악하기
+  //   editorRef.current.view.state.doc.nodesBetween(0, pos, (node, start) => {
+  //     if (node.isBlock && start < pos) {
+  //       clickedLineNumber++;
+  //     }
+  //   });
     
-    if (node) {
-      if(node.type.name === "image") {
-        toastr.info(`현재 커서 위치: ${clickedLineNumber + 1} 번째 줄`);
-      }
-    } else {
-      toastr.info(`현재 커서 위치: ${clickedLineNumber} 번째 줄`);
-    }
-    setCurrentLineNumber(clickedLineNumber);
-  };
+  //   if (node) {
+  //     if(node.type.name === "image") {
+  //       toastr.info(`현재 커서 위치: ${clickedLineNumber + 1} 번째 줄`);
+  //     }
+  //   } else {
+  //     toastr.info(`현재 커서 위치: ${clickedLineNumber} 번째 줄`);
+  //   }
+  //   setCurrentLineNumber(clickedLineNumber);
+  // };
 
-  const uploadImageToEditor = (view, imageUrl) => {
-    if (!currentLineNumber) {
-      alert("에디터를 클릭하여 이미지를 업로드할 위치를 지정하세요.");
-      return;
-    }
+  // 기존 함수
+  //   const uploadImageToEditor = (view, imageUrl) => {
+  //     if (!currentLineNumber) {
+  //       alert("에디터를 클릭하여 이미지를 업로드할 위치를 지정하세요.");
+  //       return;
+  //     }
 
-    // const imageUrl = "https://sharenotebucket.s3.ap-northeast-2.amazonaws.com/NoneImage2.png"; // 하드 코딩
+  //     // const imageUrl = "https://sharenotebucket.s3.ap-northeast-2.amazonaws.com/NoneImage2.png"; // 하드 코딩
+
+  //     // ProseMirror Transaction 생성
+  //     const transaction = editorRef.current.view.state.tr;
+  //     const transactionWithImage = transactionImageAtLine(currentLineNumber, imageUrl, view)(transaction);
+
+  //     // Transaction 적용하여 에디터에 이미지 삽입
+  //     editorRef.current.view.dispatch(transactionWithImage);
+  //   };
+
+  //   const transactionImageAtLine = (lineNumber, imageUrl, view) => tr => {
+  //     // 이미지 노드 생성
+  //     const imageNode = editorRef.current.view.state.schema.nodes.image.create({ src: imageUrl });
+
+  //     // 특정 줄의 시작 노드 위치 찾기
+  //     let pos = 0;
+  //     editorRef.current.view.state.doc.nodesBetween(0, editorRef.current.view.state.doc.content.size, (node, nodePos) => {
+  //         if (node.isBlock && nodePos > pos) {
+  //             pos = nodePos;
+  //         }
+  //         pos = pos === 0 ? 1 : pos; 
+  //     });
+
+  //     // 이미지 노드 삽입
+  //     const insertTr = tr.insert(pos, imageNode);
+
+  //     // 이미지 삽입 후 커서 위치 설정
+  //     const resolvedPos = insertTr.doc.resolve(pos + imageNode.nodeSize);
+  //     const selection = editorRef.current.view.state.selection.constructor.near(resolvedPos);
+
+  //     return insertTr.setSelection(selection);
+  // };
+
+  window.uploadImageToEditor = (imageUrl) => {
+    const hoverDiv = document.querySelector(".hoverDiv");
 
     // ProseMirror Transaction 생성
     const transaction = editorRef.current.view.state.tr;
-    const transactionWithImage = transactionImageAtLine(currentLineNumber, imageUrl, view)(transaction);
+    const transactionWithImage = transactionImageAtLine(imageUrl)(transaction);
 
     // Transaction 적용하여 에디터에 이미지 삽입
     editorRef.current.view.dispatch(transactionWithImage);
+    hoverDiv.style.visibility = "hidden";
   };
 
-  const transactionImageAtLine = (lineNumber, imageUrl, view) => tr => {
+  const transactionImageAtLine = (imageUrl) => tr => {
     // 이미지 노드 생성
     const imageNode = editorRef.current.view.state.schema.nodes.image.create({ src: imageUrl });
 
@@ -789,7 +826,7 @@ function Page() {
     const selection = editorRef.current.view.state.selection.constructor.near(resolvedPos);
 
     return insertTr.setSelection(selection);
-};
+  };
 
   return (
     <div>
@@ -821,7 +858,7 @@ function Page() {
         <LayoutContainer>
           <NavigationBar $isloaded={isloaded.toString()}>
           <NoteHeaderContainer>
-            <Notename /*onMouseEnter={getCurrentLineNumber} onClick={uploadImageToEditor}*/ style={{ cursor: "pointer" }}>
+            <Notename>
               <span>📖&nbsp;</span>
               <span>{noteinfo ? noteinfo.name : "Loading..."}</span>
             </Notename>
