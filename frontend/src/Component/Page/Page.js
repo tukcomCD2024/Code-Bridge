@@ -779,6 +779,7 @@ function Page() {
         if (node.isBlock && nodePos > pos) {
             pos = nodePos;
         }
+        pos = pos === 0 ? 1 : pos; 
     });
 
     // 이미지 노드 삽입
