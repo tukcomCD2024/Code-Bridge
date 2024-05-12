@@ -6,22 +6,25 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import com.example.sharenote.CheckPage
 import com.example.sharenote.Page
+import com.example.sharenote.PageCheck
 import com.example.sharenote.R
 import com.google.firebase.firestore.FirebaseFirestore
 
-class PageListAdapter(private val pages: MutableList<CheckPage>, private val onNoteClickListener: OnPageClickListener) :
+class PageListAdapter(private val pages: MutableList<Page>, private val onPageClickListener: OnPageClickListener) :
     RecyclerView.Adapter<PageListAdapter.PageViewHolder>() {
 
     interface OnPageClickListener {
         fun onPageClick(page: Page)
     }
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PageViewHolder {
         val itemView = LayoutInflater.from(parent.context)
             .inflate(R.layout.item_page, parent, false)
         return PageViewHolder(itemView)
     }
+
+
 
     override fun onBindViewHolder(holder: PageViewHolder, position: Int) {
         val currentPage = pages[position]
@@ -30,19 +33,28 @@ class PageListAdapter(private val pages: MutableList<CheckPage>, private val onN
         holder.atViewText.text = currentPage.createdAt
 
 
-
         holder.buttonDeletePage.setOnClickListener {
             deletePage(holder.adapterPosition)
         }
 
-
+        // 페이지를 클릭하면 해당 페이지의 정보를 전달합니다.
+        holder.itemView.setOnClickListener {
+            onPageClickListener.onPageClick(currentPage)
+        }
     }
 
     override fun getItemCount() = pages.size
 
+
+    fun setPages(pages: List<Page>) {
+        this.pages.clear()
+        this.pages.addAll(pages)
+        notifyDataSetChanged()
+    }
+
     private fun deletePage(position: Int) {
         val db = FirebaseFirestore.getInstance()
-        val pageId = pages[position].id // Note 클래스에 ID 필드가 있다고 가정
+        val pageId = pages[position].id
         db.collection("pages").document(pageId)
             .delete()
             .addOnSuccessListener {

@@ -1,19 +1,33 @@
 package com.example.sharenote
 
+import MemberListAdapter
 import PageListAdapter
+import android.content.ContentValues.TAG
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
+import android.view.Gravity
+import android.view.LayoutInflater
+import android.widget.Button
+import android.widget.EditText
 import android.widget.ImageButton
+import android.widget.LinearLayout
+import android.widget.PopupWindow
 import android.widget.TextView
 import android.widget.Toast
+import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.sharenote.RetrofitClient.apiService
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 class NoteActivity : AppCompatActivity(), PageListAdapter.OnPageClickListener {
 
@@ -23,7 +37,9 @@ class NoteActivity : AppCompatActivity(), PageListAdapter.OnPageClickListener {
     private lateinit var recyclerView: RecyclerView
     private lateinit var pageListAdapter: PageListAdapter
 
-    private var pages: MutableList<CheckPage> = mutableListOf()
+    private lateinit var orgPopupWindow: PopupWindow
+
+    private var pages: MutableList<Page> = mutableListOf()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -52,21 +68,22 @@ class NoteActivity : AppCompatActivity(), PageListAdapter.OnPageClickListener {
             sendPageDataToMongoDB(pageData)
         }
 
+        findViewById<LinearLayout>(R.id.Organization).setOnClickListener {
+            showOrgInfoPopup()
+        }
+
         // 최근에 사용한 노트의 ID 가져오기
         val recentWorkspaceId = SharedPreferencesUtil.getRecentWorkspaceId(this)
 
         // 페이지 데이터를 불러오는 함수 호출
         recentWorkspaceId?.let {
-            loadPagesFromMongoDB(it)
+            val userId = SharedPreferencesUtil.getUserId(this) ?: ""
+            loadPagesFromMongoDB(it, userId)
         }
     }
 
     override fun onPageClick(page: Page) {
         val intent = Intent(this, PageActivity::class.java)
-        intent.putExtra("page_id", page.id)
-        intent.putExtra("page_title", page.title)
-        intent.putExtra("page_text", page.text)
-        intent.putExtra("page_image_uri", page.imageUri)
         startActivity(intent)
     }
 
@@ -95,39 +112,63 @@ class NoteActivity : AppCompatActivity(), PageListAdapter.OnPageClickListener {
     }*/
 
 
-    private fun loadPagesFromMongoDB(recentWorkspaceId: String) {
+    private fun loadPagesFromMongoDB(recentWorkspaceId: String, userId: String) {
         GlobalScope.launch(Dispatchers.IO) {
             try {
+                // 현재 NoteId를 가져옵니다.
+                val recentNoteId = SharedPreferencesUtil.getRecentNoteId(this@NoteActivity)
+
                 // Retrofit을 사용하여 HTTP 요청을 보냅니다.
-                val response = RetrofitClient.apiService.getNotesForOrganization(recentWorkspaceId)
+                val response = RetrofitClient.apiService.getOrganization(userId)
 
-                // 받아온 데이터에서 해당 노트의 페이지 정보를 추출합니다.
-                val recentNoteId = getRecentNoteId()
-                val notes = response.filter { it.id == recentNoteId }
+                // 받아온 데이터에서 현재 워크스페이스의 노트들만 필터링합니다.
+                val matchingOrganization = response.find { it.id == recentWorkspaceId }
 
-                val pages = mutableListOf<CheckPage>()
-                for (note in notes) {
-                    for (page in note.pages) {
-                        // CheckPage에서 필요한 정보 추출
-                        val pageId = page.id
-                        val pageCreateUser = page.createUser
-                        val pageCreatedAt = page.createdAt
-                        // 이 정보를 사용하여 원하는 작업을 수행하거나 저장합니다.
-                        // 여기서는 간단히 페이지의 ID만 저장하도록 하였습니다.
-                        pages.add(CheckPage(pageId, pageCreateUser, pageCreatedAt))
-                    }
-                    pageListAdapter.notifyDataSetChanged()
+                // 현재 워크스페이스를 찾지 못한 경우 처리합니다.
+                if (matchingOrganization == null) {
+                    // 처리할 내용을 추가하세요
+                    return@launch
                 }
 
-                // 추출한 페이지 정보를 사용하여 원하는 작업을 수행하세요.
+                // 현재 워크스페이스에 속한 노트들을 추출합니다.
+                val notes = matchingOrganization.notes
+
+                val matchingNote = notes.find { it.id == recentNoteId }
+
+                // 찾은 Note가 없을 경우 처리합니다.
+                if (matchingNote == null) {
+                    // 처리할 내용을 추가하세요
+                    return@launch
+                }
+
+                // 페이지 정보를 추출합니다.
+                val pageChecks = matchingNote.pages
+
+                // PageCheck를 Page로 변환하여 리스트에 추가합니다.
+                val pages = mutableListOf<Page>()
+                for (pageCheck in pageChecks) {
+                    val page = Page(
+                        id = pageCheck.id,
+                        createUser = pageCheck.createUser,
+                        createdAt = pageCheck.createdAt
+                    )
+                    pages.add(page)
+                }
+
+                // 추출한 페이지 정보를 사용하여 원하는 작업을 수행합니다.
+                withContext(Dispatchers.Main) {
+                    // 페이지 정보를 어댑터에 설정합니다.
+                    pageListAdapter.setPages(pages)
+                }
 
             } catch (e: Exception) {
-                // 기타 오류 처리
-                // e.printStackTrace()
-                // 예상치 못한 오류가 발생했을 때
+                // 오류 처리
+                Log.e(TAG, "Error loading pages from MongoDB", e)
             }
         }
     }
+
+
 
 
 
@@ -183,18 +224,145 @@ class NoteActivity : AppCompatActivity(), PageListAdapter.OnPageClickListener {
             }
         }
     }
+
+
+    private fun showOrgInfoPopup() {
+        val recentWorkspaceId = getRecentWorkSpaceId() ?: ""
+        val userId = getUserId() ?: ""
+        val userName = getUserName() ?: ""
+        // 팝업 창의 레이아웃을 inflate하여 가져옴
+        val popupView = LayoutInflater.from(this).inflate(R.layout.org_info_layout, null)
+
+
+
+        // 팝업 창을 생성
+        orgPopupWindow = PopupWindow(
+            popupView,
+            LinearLayout.LayoutParams.MATCH_PARENT,
+            LinearLayout.LayoutParams.WRAP_CONTENT,
+            true
+        )
+
+
+        // 팝업 창 내의 RecyclerView 설정
+        val memberRecyclerView = popupView.findViewById<RecyclerView>(R.id.recyclerViewMembers)
+        val layoutManager = LinearLayoutManager(this)
+        memberRecyclerView.layoutManager = layoutManager
+        val memberAdapter = MemberListAdapter(mutableListOf()) // 초기에는 빈 리스트를 넣어 초기화
+        memberRecyclerView.adapter = memberAdapter
+
+        fetchOrganizationMembers(recentWorkspaceId, userId, memberAdapter)
+
+        // 팝업 창 내의 멤버 수 텍스트뷰 설정
+        val membersTextView = popupView.findViewById<TextView>(R.id.members)
+        memberAdapter.registerAdapterDataObserver(object : RecyclerView.AdapterDataObserver() {
+            override fun onChanged() {
+                super.onChanged()
+                membersTextView.text = "멤버 목록 (${memberAdapter.itemCount}명)"
+            }
+        })
+
+
+        // Send Invitation 버튼 클릭 시 이메일 전송
+        val sendInvitationButton = popupView.findViewById<Button>(R.id.send)
+        sendInvitationButton.setOnClickListener {
+            val emailEditText = popupView.findViewById<EditText>(R.id.inviteEditText)
+            val email = emailEditText.text.toString()
+
+            // 이메일을 보낼 때 사용할 데이터
+            val inviteData = InvitationData(
+                nickname = userName,
+                organizationId = recentWorkspaceId,
+                email = email
+            )
+
+            // 이메일 전송 함수 호출
+            sendInvitationEmail(inviteData)
+        }
+
+        // 팝업 창을 화면에 표시
+        orgPopupWindow.showAtLocation(popupView, Gravity.CENTER, 0, 0)
+    }
+
+
+    fun sendInvitationEmail(data: InvitationData) {
+        apiService.sendInvitationEmail(data).enqueue(object : Callback<Void> {
+            override fun onResponse(call: Call<Void>, response: Response<Void>) {
+                if (response.isSuccessful) {
+                    // 요청이 성공적으로 처리되었을 때의 작업 수행
+                    showToast("이메일이 성공적으로 전송되었습니다.")
+                } else {
+                    // 요청이 실패했을 때의 작업 수행
+                    showToast("이메일 전송에 실패했습니다: ${response.message()}")
+                }
+            }
+
+            override fun onFailure(call: Call<Void>, t: Throwable) {
+                // 네트워크 오류 또는 요청 실패시의 작업 수행
+                showToast("오류가 발생했습니다: ${t.message}")
+            }
+        })
+    }
+
+    fun showToast(message: String) {
+        Toast.makeText(applicationContext, message, Toast.LENGTH_SHORT).show()
+    }
+
+
+
+
+    private fun fetchOrganizationMembers(recentWorkspaceId: String, userId: String, memberAdapter: MemberListAdapter) {
+        GlobalScope.launch(Dispatchers.IO) {
+            try {
+                // Retrofit을 사용하여 HTTP 요청을 보냄
+                val response = RetrofitClient.apiService.getOrganization(userId)
+
+                // 받아온 데이터에서 현재 워크스페이스의 데이터를 찾음
+                val matchingOrganization = response.find { it.id == recentWorkspaceId }
+
+                // 현재 워크스페이스를 찾지 못한 경우 처리
+                if (matchingOrganization == null) {
+                    // 처리할 내용을 추가하세요
+                    return@launch
+                }
+
+                // 현재 워크스페이스에 속한 멤버 데이터를 가져옴
+                val members = matchingOrganization.members
+
+                // 어댑터에 멤버 데이터 설정
+                withContext(Dispatchers.Main) {
+                    memberAdapter.setMembers(members)
+                }
+            } catch (e: Exception) {
+                // 오류 처리
+                e.printStackTrace()
+            }
+        }
+    }
+
+
+
+
+
     private fun saveRecentPageId(pageId: String) {
         SharedPreferencesUtil.saveRecentPageId(this, pageId)
+    }
+
+    private fun getUserName(): String? {
+        return SharedPreferencesUtil.getUserName(this)
     }
 
     private fun getUserId(): String? {
         return SharedPreferencesUtil.getUserId(this)
     }
+
     private fun getRecentWorkSpaceId(): String? {
         return SharedPreferencesUtil.getRecentWorkspaceId(this)
     }
+
     private fun getRecentNoteId(): String? {
         return SharedPreferencesUtil.getRecentNoteId(this)
     }
+
 }
 

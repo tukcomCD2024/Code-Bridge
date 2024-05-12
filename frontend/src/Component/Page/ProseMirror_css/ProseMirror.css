@@ -415,8 +415,7 @@ img.ProseMirror-separator {
   cursor: pointer;
   width: 18px;
   height: 20px;
-  margin: 0px 4px;
-  margin-top: 2px;
+  margin: 5px;
 }
 
 .hoverButton_plus:hover {

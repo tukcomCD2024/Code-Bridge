@@ -1,5 +1,4 @@
 import android.content.ContentValues.TAG
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -7,15 +6,12 @@ import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.inputmethod.InputMethodManager
 import android.widget.Button
-import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.PopupWindow
 import android.widget.RelativeLayout
 import android.widget.TextView
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -26,9 +22,7 @@ import com.example.sharenote.LoginActivity
 import com.example.sharenote.MainActivity
 import com.example.sharenote.Note
 import com.example.sharenote.NoteActivity
-import com.example.sharenote.PageActivity
 import com.example.sharenote.OrganizationActivity
-import com.example.sharenote.Page
 import com.example.sharenote.PaintActivity
 import com.example.sharenote.R
 import com.example.sharenote.RetrofitClient
@@ -146,7 +140,8 @@ class HomeFragment : Fragment() {
 
         // 최근 워크스페이스 ID를 loadNotesFromFirestore() 함수로 전달하여 해당 워크스페이스에 속한 노트들을 가져옵니다.
         recentWorkspaceId?.let {
-            loadNotesFromMongoDB(it)
+            val userId = SharedPreferencesUtil.getUserId(requireContext()) ?: ""
+            loadNotesFromMongoDB(it, userId)
         }
 
         return view
@@ -379,22 +374,33 @@ class HomeFragment : Fragment() {
             }
     }*/
 
-    private fun loadNotesFromMongoDB(recentWorkspaceId: String) {
+    private fun loadNotesFromMongoDB(recentWorkspaceId: String, userId: String) {
         GlobalScope.launch(Dispatchers.IO) {
             try {
                 val notes = mutableListOf<Note>()
 
                 // Retrofit을 사용하여 HTTP 요청을 보냅니다.
-                val response = RetrofitClient.apiService.getNotesForOrganization(recentWorkspaceId)
+                val response = RetrofitClient.apiService.getOrganization(userId)
 
-                // 받아온 데이터에서 필요한 정보만 추출하여 리스트에 추가합니다.
-                for (noteData in response) {
+                // 받아온 데이터에서 현재 organizationId와 일치하는 조직을 찾습니다.
+                val matchingOrganization = response.find { it.id == recentWorkspaceId }
+
+                // 현재 organizationId와 일치하는 조직이 없을 경우 처리합니다.
+                if (matchingOrganization == null) {
+                    // 처리할 내용을 추가하세요
+                    return@launch
+                }
+
+                // 일치하는 조직의 노트 정보를 추출합니다.
+                val organizationNotes = matchingOrganization.notes
+
+                // 추출된 노트 정보를 Note 객체로 변환하여 리스트에 추가합니다.
+                for (noteData in organizationNotes) {
                     val note = Note(
-                        organizationId = recentWorkspaceId,
+                        Id = noteData.id,
+                        createUser = matchingOrganization.owner,
                         title = noteData.title,
-                        userId = noteData.createUser,
                         noteImageUrl = noteData.noteImageUrl,
-                        noteId = noteData.id
                     )
                     notes.add(note)
                 }
@@ -404,12 +410,16 @@ class HomeFragment : Fragment() {
                     noteListAdapter.setNotes(notes)
                 }
             } catch (e: Exception) {
-                // 기타 오류 처리
+                // 오류 처리
                 // e.printStackTrace()
                 // 예상치 못한 오류가 발생했을 때
             }
         }
     }
+
+
+
+
 
 
 
