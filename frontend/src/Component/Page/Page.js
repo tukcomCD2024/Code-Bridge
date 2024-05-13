@@ -1,4 +1,3 @@
-/* global Android */
 import React, { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from 'react-router-dom';
 import styled from "styled-components";
@@ -62,7 +61,6 @@ function Page() {
   const [usersAndColors, setUsersAndColors] = useState([]); // 연결된 사용자와 색상 상태
   const [noteSettingModalOpen, setNoteSettingModalOpen] = useState(false);
   const [myimage, setMyImage] = useState(null);
-  const [currentLineNumber, setCurrentLineNumber] = useState(null);
   
   const uploadImage = (e) => {
     const selectedFile = e.target.files[0];
@@ -349,7 +347,7 @@ function Page() {
 
     function isMobileWebView() {
       const userAgent = navigator.userAgent.toLowerCase();
-      const isAndroidWebView = userAgent.indexOf('android') > -1 && userAgent.indexOf('mobile') > -1;
+      const isAndroidWebView = (userAgent.indexOf('android') > -1 && userAgent.indexOf('mobile') > -1) || userAgent.indexOf('app') > -1;
       return isAndroidWebView
     }
     function checkLocalStorage() {
@@ -371,8 +369,6 @@ function Page() {
             if (nickname && userId) {
               resolve();
             } else {
-              alert("계정 정보를 찾지 못했습니다.");
-              // Android.closeWebView();
               reject(new Error("계정 정보가 로컬 스토리지에 없습니다."));
             }
           }, 3000);
@@ -413,7 +409,7 @@ function Page() {
         }
         checkLocalStorage().then(() => {
         }).catch(error => {
-          toastr.error("계정 확인 불가");
+          toastr.error("계정 정보 확인 불가");
           console.error(error);
         });
       } else {
@@ -653,13 +649,6 @@ function Page() {
       userDiv.setAttribute("style", `background-color: ${user.color}`);
       userDiv.innerText = user.name;
       cursor.appendChild(userDiv);
-      
-      // 커서 색상 확인
-      // const usersAndColors = [];
-      // yConnectedUserList.forEach((color, name) => {
-      //   usersAndColors.push({ name, color });
-      // });
-      // console.log('연결된 사용자와 커서 색상:', usersAndColors);
 
       return cursor;
     };
@@ -701,9 +690,7 @@ function Page() {
               observer.observe(el);
               return () => observer.unobserve(el);
             },
-          }),
-          // checkBlockType(),
-          
+          }),          
           keymap({
             "Mod-z": undo,
             "Mod-y": redo,
@@ -726,72 +713,6 @@ function Page() {
       yjsDisconnect();
     };
   }, [pageId]);
-
-  // 줄 번호로 커서 위치 출력
-  // const getCurrentLineNumber = () => {
-  //   const { $from } = editorRef.current.view.state.selection; // 현재 커서 위치 가져오기
-  //   const pos = $from.pos; // 커서 위치
-  //   const resolvedPos = editorRef.current.view.state.doc.resolve(pos);
-  //   let node = resolvedPos.nodeAfter || resolvedPos.nodeBefore;
-    
-  //   let clickedLineNumber = 0;
-  
-  //   // 커서 위치가 어느 줄에 속하는지 파악하기
-  //   editorRef.current.view.state.doc.nodesBetween(0, pos, (node, start) => {
-  //     if (node.isBlock && start < pos) {
-  //       clickedLineNumber++;
-  //     }
-  //   });
-    
-  //   if (node) {
-  //     if(node.type.name === "image") {
-  //       toastr.info(`현재 커서 위치: ${clickedLineNumber + 1} 번째 줄`);
-  //     }
-  //   } else {
-  //     toastr.info(`현재 커서 위치: ${clickedLineNumber} 번째 줄`);
-  //   }
-  //   setCurrentLineNumber(clickedLineNumber);
-  // };
-
-  // 기존 함수
-  //   const uploadImageToEditor = (view, imageUrl) => {
-  //     if (!currentLineNumber) {
-  //       alert("에디터를 클릭하여 이미지를 업로드할 위치를 지정하세요.");
-  //       return;
-  //     }
-
-  //     // const imageUrl = "https://sharenotebucket.s3.ap-northeast-2.amazonaws.com/NoneImage2.png"; // 하드 코딩
-
-  //     // ProseMirror Transaction 생성
-  //     const transaction = editorRef.current.view.state.tr;
-  //     const transactionWithImage = transactionImageAtLine(currentLineNumber, imageUrl, view)(transaction);
-
-  //     // Transaction 적용하여 에디터에 이미지 삽입
-  //     editorRef.current.view.dispatch(transactionWithImage);
-  //   };
-
-  //   const transactionImageAtLine = (lineNumber, imageUrl, view) => tr => {
-  //     // 이미지 노드 생성
-  //     const imageNode = editorRef.current.view.state.schema.nodes.image.create({ src: imageUrl });
-
-  //     // 특정 줄의 시작 노드 위치 찾기
-  //     let pos = 0;
-  //     editorRef.current.view.state.doc.nodesBetween(0, editorRef.current.view.state.doc.content.size, (node, nodePos) => {
-  //         if (node.isBlock && nodePos > pos) {
-  //             pos = nodePos;
-  //         }
-  //         pos = pos === 0 ? 1 : pos; 
-  //     });
-
-  //     // 이미지 노드 삽입
-  //     const insertTr = tr.insert(pos, imageNode);
-
-  //     // 이미지 삽입 후 커서 위치 설정
-  //     const resolvedPos = insertTr.doc.resolve(pos + imageNode.nodeSize);
-  //     const selection = editorRef.current.view.state.selection.constructor.near(resolvedPos);
-
-  //     return insertTr.setSelection(selection);
-  // };
 
   window.uploadImageToEditor = (imageUrl) => {
     const hoverDiv = document.querySelector(".hoverDiv");
