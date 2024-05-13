@@ -61,7 +61,7 @@ function Page() {
   const [usersAndColors, setUsersAndColors] = useState([]); // 연결된 사용자와 색상 상태
   const [noteSettingModalOpen, setNoteSettingModalOpen] = useState(false);
   const [myimage, setMyImage] = useState(null);
-  
+
   const uploadImage = (e) => {
     const selectedFile = e.target.files[0];
 
@@ -298,16 +298,16 @@ function Page() {
       ...nodes.get("paragraph").attrs,
       class: { default: "custom-paragraph" },
       guid: { default: "" }, // Ensure guid attribute is included
-      nickname: { default: nickname },
+      writer: { default: userId },
     },
     parseDOM: [
       {
         tag: "p",
-        getAttrs: (dom) => ({guid: dom.getAttribute("data-guid"), nickname: dom.getAttribute("data-nickname"),}),
+        getAttrs: (dom) => ({guid: dom.getAttribute("data-guid"), writer: dom.getAttribute("data-writer"),}),
       },
     ],
     toDOM(node) {
-      return ["p", { class: node.attrs.class, "data-guid": node.attrs.guid, "data-nickname": node.attrs.nickname}, 0];
+      return ["p", { class: node.attrs.class, "data-guid": node.attrs.guid, "data-writer": node.attrs.writer}, 0];
     },
   };
 
@@ -338,7 +338,7 @@ function Page() {
       roomId, // 방 이름
       ydoc
     );
-    hoverButtonPlugin(ydoc);
+
     const yXmlFragment = ydoc.getXmlFragment("prosemirror");
     const yConnectedUserList = ydoc.getMap('connectedUsers');
     const yLineLocks = ydoc.getMap('nodeInfo');
@@ -485,12 +485,25 @@ function Page() {
           const generatedIds = new Set();
         
           if (transactions.some(transaction => transaction.docChanged)) {
-            const { paragraph } = nextState.schema.nodes;
+            const { paragraph, image } = nextState.schema.nodes;
             let prevNode = null; // 이전 노드를 추적하기 위한 변수
             let prevPos = null; // 이전 노드의 위치를 저장
         
             nextState.doc.descendants((node, pos) => {
-              if (node.type === paragraph) {
+              if (node.type === image) {
+                let currentGuid = node.attrs['data-guid'];
+                if (!currentGuid || generatedIds.has(currentGuid)) {
+                  let newGuid;
+                  do {
+                    newGuid = guidGenerator();
+                  } while (generatedIds.has(newGuid));
+                  generatedIds.add(newGuid);
+                  tr.setNodeMarkup(pos, undefined, {...node.attrs, ['data-guid']: newGuid});
+                  modified = true;
+                } else {
+                  generatedIds.add(currentGuid);
+                }
+              } else if (node.type === paragraph) {
                 const nodeTextContent = node.textContent;
                 const selection = nextState.selection;
                 const cursorPosition = selection.head || selection.from;
@@ -526,7 +539,7 @@ function Page() {
                 // 현재 노드와 위치를 이전 노드로 업데이트
                 prevNode = node;
                 prevPos = pos;
-              }
+              } 
             });
           }
           return modified ? tr : null;
@@ -616,6 +629,50 @@ function Page() {
           }
         }
       }
+    };
+
+    // 블록 좋아요     
+    window.toggleLike = function(blockId, lover, heartReceiver) {
+      if (lover !== heartReceiver) {
+        const currentLikeState = yLikeList.get(blockId);
+        const newLikeState = !currentLikeState;
+        yLikeList.set(blockId, newLikeState);
+      }
+
+      const handleLike = async () => {
+        try {
+            const response = await fetch("/api/user/note/block/likes", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ organizationId, noteId, lover, blockId, heartReceiver}),
+            });
+            if (response.ok) {
+                const responseData = await response.text();
+                toastr.remove();
+                if (responseData.includes("좋아요 성공!")) { 
+                  toastr.success(responseData);
+                } else {
+                  toastr.info(responseData);
+                }
+            } else {
+                const errorData = await response.text();
+                toastr.remove();
+                toastr.error(errorData);
+            }
+        } catch (error) {
+            console.error("Error: ", error);
+            alert("처리 중 오류가 발생했습니다.");
+        }
+      };
+
+      return handleLike();
+    };
+
+    window.getLikeList = function(guid) {
+      const isLiked = yLikeList.get(guid.toString());
+      return !!isLiked;
     };
 
     function getAvailableColors() {

@@ -17,7 +17,6 @@ function countDocBlocks(doc) {
 
 // 노트 페이지에서 블록(노드)마다 작은 메뉴창이 뜨게 한다.
 export function hoverButtonPlugin() {
-  const userId = localStorage.getItem("userId");
   const hoverDiv = document.createElement("div");
 
   return new Plugin({
@@ -52,8 +51,29 @@ export function hoverButtonPlugin() {
 
       // hoverButton_like 요소에 클릭 이벤트 리스너 추가
       hoverButton_like.addEventListener("click", function() {
-        this.classList.toggle("hoverButton_like");
-        this.classList.toggle("hoverButton_like_fullRedHeart");
+        const { state } = editorView;
+        const { selection } = state;
+
+        if (lastPos !== null) {
+          const resolvedPos = editorView.state.doc.resolve(lastPos);
+          const node = resolvedPos.node();
+          const liker = localStorage.getItem("userId");
+
+           // 노드가 uuid를 가지고 있는지 확인
+           if ((node && node.attrs.guid) || selection.node.attrs['data-guid'].toString()) {
+             const guid = node.attrs.guid || selection.node.attrs['data-guid'].toString();
+             const writer = node.attrs.writer || selection.node.attrs.writer.toString();
+             window.toggleLike(guid, liker ,writer);
+             if (liker !== writer) {
+              this.classList.toggle("hoverButton_like");
+              this.classList.toggle("hoverButton_like_fullRedHeart");
+            }
+           } else {
+             console.log('No UUID found for this node.');
+           }
+         } else {
+           console.error('No last position recorded.');
+         }
       });
 
       hoverButton_lock.addEventListener("click", (event) => {
@@ -129,6 +149,28 @@ export function hoverButtonPlugin() {
 
           // 마지막 위치 업데이트
           lastPos = pos;
+
+          if (lastPos !== null) {
+            const resolvedPos = editorView.state.doc.resolve(lastPos);
+             const node = resolvedPos.node();
+         
+             // 노드가 uuid를 가지고 있는지 확인
+             if ((node && node.attrs.guid) || selection.node.attrs['data-guid'].toString()) {
+               const guid = node.attrs.guid || selection.node.attrs['data-guid'].toString()
+               const isLiked = window.getLikeList(guid);
+               if (isLiked) {
+                hoverButton_like.classList.remove('hoverButton_like');
+                hoverButton_like.classList.add('hoverButton_like_fullRedHeart');
+              } else {
+                hoverButton_like.classList.remove('hoverButton_like_fullRedHeart');
+                hoverButton_like.classList.add('hoverButton_like');
+              }
+            } else {
+               console.log('No UUID found for this node.');
+             }
+           } else {
+             console.error('No last position recorded.');
+           }
       
           let coords;
 
