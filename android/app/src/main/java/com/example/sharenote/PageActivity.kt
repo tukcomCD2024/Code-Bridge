@@ -76,23 +76,37 @@ class PageActivity : AppCompatActivity() {
             }
         }
 
+        val imageUrl = intent.getStringExtra(UrlTestActivity.EXTRA_IMAGE_URL)
+
+
+        // WebView가 로드되면 이미지를 업로드하는 함수 호출
+        webView.webViewClient = object : WebViewClient() {
+            override fun onPageFinished(view: WebView?, url: String?) {
+                super.onPageFinished(view, url)
+                // 이미지를 업로드하는 함수 호출
+                uploadImageToEditor(imageUrl)
+            }
+        }
+
+
 
         // SharedPreferencesUtil을 사용하여 WorkSpaceId와 NoteId를 불러옵니다.
         val workspaceId = SharedPreferencesUtil.getRecentWorkspaceId(this)
         val noteId = SharedPreferencesUtil.getRecentNoteId(this)
         val pageId = SharedPreferencesUtil.getRecentPageId(this)
 
-        webView.loadUrl("http://localhost:3000/organization/$workspaceId/$noteId/$pageId")
+        webView.loadUrl("https://sharenote.shop/organization/$workspaceId/$noteId/$pageId")
 
         // 플로팅 버튼 클릭시 에니메이션 동작 기능
         floating.setOnClickListener {
             toggleFab()
+            Toast.makeText(this, "Image URL: $imageUrl", Toast.LENGTH_SHORT).show()
         }
 
 
 
         fabDraw.setOnClickListener {
-            val intent = Intent(this, PaintActivity::class.java)
+            val intent = Intent(this, UrlTestActivity::class.java)
             startActivityForResult(intent, REQUEST_IMAGE_SELECTION)
         }
     }
@@ -117,6 +131,17 @@ class PageActivity : AppCompatActivity() {
             }
         }
     }*/
+
+    private fun uploadImageToEditor(imageUrl: String?) {
+        if (imageUrl != null) {
+            // 이미지 URL을 JavaScript 함수에 전달
+            val jsFunction = "uploadImageToEditor('editorRef.current.view', '$imageUrl')"
+            webView.evaluateJavascript(jsFunction, null)
+        } else {
+            // 이미지 URL이 null인 경우 처리
+            Toast.makeText(this, "이미지 URL을 가져올 수 없습니다.", Toast.LENGTH_SHORT).show()
+        }
+    }
 
 
     companion object {

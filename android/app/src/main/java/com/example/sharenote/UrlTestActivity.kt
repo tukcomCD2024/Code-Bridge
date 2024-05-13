@@ -15,7 +15,7 @@ class UrlTestActivity : Activity() {
 
     companion object {
         private const val REQUEST_CODE_SELECT_IMAGE = 100
-        const val EXTRA_IMAGE_URI = "extra_image_uri"
+        const val EXTRA_IMAGE_URL = "extra_image_url"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -35,11 +35,10 @@ class UrlTestActivity : Activity() {
         }
 
         buttonCheck.setOnClickListener {
-            // 선택한 이미지 URI를 PageActivity로 전달
-            val intent = Intent()
-            intent.putExtra(EXTRA_IMAGE_URI, selectedImageUri?.toString())
-            setResult(Activity.RESULT_OK, intent)
-            finish()
+            val imageUrl = "https://sharenotebucket.s3.ap-northeast-2.amazonaws.com/1ba6e58b-1092-4e27-b552-c0cb1a1f4cb8.png"
+            val intent = Intent(this, PageActivity::class.java)
+            intent.putExtra(EXTRA_IMAGE_URL, imageUrl)
+            startActivity(intent)
         }
     }
 
