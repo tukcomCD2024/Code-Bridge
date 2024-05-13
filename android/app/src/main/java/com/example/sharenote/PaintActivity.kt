@@ -5,7 +5,12 @@ import android.app.Activity
 import android.app.AlertDialog
 import android.content.DialogInterface
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.Canvas
 import android.graphics.Color
+import android.graphics.Paint
+import android.graphics.drawable.Drawable
+import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
@@ -14,21 +19,38 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
-import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.graphics.drawable.toBitmap
+import androidx.core.view.drawToBitmap
 import androidx.lifecycle.ReportFragment.Companion.reportFragment
+import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
+import com.example.sharenote.RetrofitClient.apiService2
 import com.github.dhaval2404.colorpicker.ColorPickerDialog
 import com.github.dhaval2404.colorpicker.model.ColorShape
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.slider.Slider
 import com.mihir.drawingcanvas.drawingView
 import com.rajat.pdfviewer.util.saveTo
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.asRequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
+import java.io.ByteArrayOutputStream
+import java.io.File
+import java.io.FileOutputStream
+import java.util.UUID
+import kotlin.math.max
+import kotlin.math.min
 
 
 class PaintActivity : AppCompatActivity() {
@@ -45,7 +67,8 @@ class PaintActivity : AppCompatActivity() {
     private lateinit var aiSendButton : Button
     private lateinit var imageViewFixButton: Button
 
-    private lateinit var pdfButton: Button
+    private lateinit var pdfButton: FloatingActionButton
+    private lateinit var plusButton: FloatingActionButton
 
     private val filePickerLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
@@ -53,8 +76,31 @@ class PaintActivity : AppCompatActivity() {
             uri?.let {
                 openPdfViewer(uri.toString())
             }
+
         }
     }
+
+
+
+    private lateinit var imageView: ImageView
+
+    private val startPdfViewerForResult = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            // 성공적으로 PDF를 선택했을 때 처리
+            val pdfUri = result.data?.getStringExtra("selected_pdf_uri")
+            pdfUri?.let {
+                // PDF 파일의 URI 사용
+                val imageUri = Uri.parse(pdfUri)
+                drawingView.background = Drawable.createFromStream(
+                    contentResolver.openInputStream(imageUri), imageUri.toString()
+                )
+            }
+        }
+    }
+
+    private lateinit var imageViewList: ArrayList<ImageView>
 
     private fun openPdfViewer(pdfUri: String) {
         val intent = PdfViewerActivity.launchPdfFromPath(
@@ -64,7 +110,7 @@ class PaintActivity : AppCompatActivity() {
             saveTo = saveTo.ASK_EVERYTIME,
             fromAssets = false
         )
-        startActivity(intent)
+        startPdfViewerForResult.launch(intent)
     }
 
 
@@ -72,6 +118,7 @@ class PaintActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_paint)
+        imageViewList = ArrayList()
 
         backButton = findViewById(R.id.backButton)
         drawingView = findViewById(R.id.drawing_view)
@@ -86,10 +133,97 @@ class PaintActivity : AppCompatActivity() {
         imageViewFixButton = findViewById(R.id.imageViewFixButton)
 
         pdfButton = findViewById(R.id.pdfButton)
+        plusButton = findViewById(R.id.plusButton)
 
 
         backButton.setOnClickListener {
-            onBackPressed()
+            // AlertDialog를 생성하여 사용자에게 확인 요청
+            AlertDialog.Builder(this)
+                .setTitle("이미지 업로드") // 다이얼로그 제목
+                .setMessage("이미지 업로드 하시겠습니까?") // 다이얼로그 메시지
+                .setNegativeButton("네") { dialog, which ->
+                    // "Yes" 버튼 클릭 시, 원래 backButton의 로직 실행
+                    imageViewFixButton.performClick()
+
+                    val finalBitmap = Bitmap.createBitmap(drawingView.width, drawingView.height, Bitmap.Config.ARGB_8888)
+                    val finalCanvas = Canvas(finalBitmap)
+
+                    // 배경 그리기
+                    if (drawingView.background != null) {
+                        finalCanvas.drawBitmap(drawingView.background.toBitmap(drawingView.width, drawingView.height), 0f, 0f, null)
+                    } else {
+                        // 배경이 null인 경우, 흰색 비트맵 생성 및 그리기
+                        val whiteBitmap = Bitmap.createBitmap(drawingView.width, drawingView.height, Bitmap.Config.ARGB_8888)
+                        whiteBitmap.eraseColor(Color.WHITE)
+                        finalCanvas.drawBitmap(whiteBitmap, 0f, 0f, null)
+                        whiteBitmap.recycle() // 사용 후 메모리 해제
+                    }
+
+                    // path 그리기
+                    drawingView.getDrawing().forEach { path ->
+                        val paint = Paint().apply {
+                            color = path.color
+                            strokeWidth = path.brushThickness.toFloat()
+                            style = Paint.Style.STROKE
+                            strokeJoin = Paint.Join.ROUND
+                            strokeCap = Paint.Cap.ROUND
+                            alpha = path.alpha
+                        }
+                        finalCanvas.drawPath(path, paint)
+                    }
+
+                    // imageView 그리기
+                    imageViewList.forEach { imageView ->
+                        val bitmap = imageView.drawable.toBitmap()
+                        finalCanvas.drawBitmap(bitmap, imageView.x, imageView.y, null)
+                    }
+
+
+
+                    val fileName = UUID.randomUUID().toString() + ".png"
+                    // 비트맵을 멀티파트 바디 파트로 변환
+                    val imagePart = convertBitmapToMultipartBodyPart(finalBitmap, "multipartFile", fileName)
+
+                    val resultIntent = Intent()
+                    // 파일을 서버로 업로드하는 로직 (Retrofit 등 사용)
+                    lifecycleScope.launch {
+                        try {
+                            val response = apiService2.uploadImage(imagePart)
+
+                            withContext(Dispatchers.Main) {
+                                if (response.isSuccessful) {
+                                    val imageUrl = response.body()!!.image_url
+                                    resultIntent.putExtra("imageUrl", imageUrl)
+                                    setResult(Activity.RESULT_OK, resultIntent)
+                                    Log.d("PaintActivity", "{$imageUrl}")
+                                    finish()
+                                } else {
+                                    Log.e("PaintActivity", "Error: ${response.errorBody()}")
+                                    setResult(Activity.RESULT_OK, resultIntent)
+                                    finish()
+                                }
+                            }
+
+                        } catch (e: Exception) {
+                            Log.e("PaintActivity", "Exception: ${e.message}")
+                        }
+                    }
+                    finish() // 예를 들어 액티비티를 종료
+                }
+                .setPositiveButton("아니요") { dialog, which ->
+                    // "No" 버튼 클릭 시, 아무 일도 하지 않음
+                    dialog.dismiss()
+                }
+                .show() // 다이얼로그 표시
+            // 원래 이거 밑의 한줄코드였음
+            //onBackPressed()
+
+
+
+
+
+
+
         }
 
         btnUndo.setOnClickListener {
@@ -161,6 +295,11 @@ class PaintActivity : AppCompatActivity() {
             drawingView.clearDrawingBoard()
         }
         aiSendButton.setOnClickListener {
+            // autoDraw 모드 강제 해제
+            autoDrawButton.performClick()
+
+            aiSendButton.visibility = View.GONE
+            imageViewFixButton.visibility = View.VISIBLE
             // 테스트 로직(autoDraw로 그린 선만 노란색으로 바꾸기)
             // 이미지 업로드하고 해당 이미지 url 받아오기
             val imageUrl = drawingView.autoDraw()
@@ -191,6 +330,9 @@ class PaintActivity : AppCompatActivity() {
 
 
         autoDrawButton.setOnClickListener {
+            //View Fix Button 강제 클릭해서 Gone
+            imageViewFixButton.performClick()
+
             if (drawingView.getDrawingMode() == 0) {
                 drawingView.setDrawingMode(1)
                 Toast.makeText(this, "Auto Draw Mode : " + drawingView.getDrawingMode(), Toast.LENGTH_SHORT).show()
@@ -204,7 +346,17 @@ class PaintActivity : AppCompatActivity() {
                 autoDrawButton.backgroundTintList = resources.getColorStateList(R.color.white)
                 drawingView.setBrushColor(Color.RED)
             }
+
+
         }
+
+        plusButton.setOnClickListener{
+            val isVisible = findViewById<FloatingActionButton>(R.id.autoDrawButton).visibility == View.VISIBLE
+            toggleButton(findViewById(R.id.autoDrawButton), !isVisible, 150)
+            toggleButton(findViewById(R.id.pdfButton), !isVisible, 300) // 딜레이를 다르게 주어 순차적으로 나타나게 함
+        }
+
+
 
         pdfButton.setOnClickListener {
             val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
@@ -215,11 +367,57 @@ class PaintActivity : AppCompatActivity() {
         }
 
         val alpha = drawingView.getBrushAlpha()
-        drawingView.erase()
+        drawingView.setBrushColor(R.color.black)
+        drawingView.setBrushAlpha(180)
         val brushSize = drawingView.getBrushSize()
         val brushColor = drawingView.getBrushColor()
 
         val drawing = drawingView.getDrawing()
+    }
+    fun captureScreen(view: View): Bitmap {
+        val bitmap = Bitmap.createBitmap(view.width, view.height, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bitmap)
+        view.draw(canvas)
+        return bitmap
+    }
+
+
+
+    fun prepareFilePart(file: File): MultipartBody.Part {
+        val requestFile = file.asRequestBody("image/png".toMediaTypeOrNull())
+        return MultipartBody.Part.createFormData("image", file.name, requestFile)
+    }
+
+    private fun convertBitmapToMultipartBodyPart(bitmap: Bitmap, paramName: String, fileName: String): MultipartBody.Part {
+        val byteArrayOutputStream = ByteArrayOutputStream()
+        bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream)
+        val byteArray = byteArrayOutputStream.toByteArray()
+        byteArrayOutputStream.close()
+
+        val requestBody = byteArray.toRequestBody("image/png".toMediaTypeOrNull())
+        return MultipartBody.Part.createFormData(paramName, fileName, requestBody)
+    }
+
+    // 플로팅 버튼 2개 위로 짜라란 하면서 등장시켜주는 함수
+    fun toggleButton(button: FloatingActionButton, show: Boolean, delay: Long) {
+        if (show) {
+            button.visibility = View.VISIBLE
+            button.translationY = 100f // 시작 위치
+            button.alpha = 0.0f
+            button.animate()
+                .translationY(0f)
+                .alpha(1.0f)
+                .setDuration(300)
+                .setStartDelay(delay)
+                .start()
+        } else {
+            button.animate()
+                .translationY(100f)
+                .alpha(0.0f)
+                .setDuration(300)
+                .withEndAction { button.visibility = View.GONE }
+                .start()
+        }
     }
 
     // override 없어도 되나??
@@ -230,16 +428,16 @@ class PaintActivity : AppCompatActivity() {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == 100 && resultCode == Activity.RESULT_OK) {
             val selectedUrl = data?.getStringExtra("selectedImageUrl")
-
             Log.e("PaintActivity", "Selected Image URL: $selectedUrl")
             // 여기서 선택된 이미지 URL로 필요한 작업을 수행합니다.
             if (selectedUrl != null) {
                 // autoDraw 선들 삭제하기
                 drawingView.autoDrawClear()
 
+
                 // 동적으로 ImageView 생성
                 // 위치 가운데로 좀 와라
-                val imageView = ImageView(this).apply {
+                imageView = ImageView(this).apply {
                     layoutParams = ViewGroup.LayoutParams(
                         300,
                         200
@@ -247,13 +445,15 @@ class PaintActivity : AppCompatActivity() {
                     // 위치 가운데로
                     x = 600f
                     y = 700f
-                    scaleType = ImageView.ScaleType.CENTER_CROP
+                    scaleType = ImageView.ScaleType.CENTER_INSIDE
+                    adjustViewBounds = true
                 }
 
                 // 찐 동적으로 수행하기 위한 코드
                 // 밑의 로직은 잘 모르겠음, 잘 동작 하니까 그냥 쓰려고
                 imageView.setOnTouchListener { view, event ->
                     val action = event.action
+
                     when (action) {
                         MotionEvent.ACTION_DOWN -> {
                             // 드래그 시작할 때 초기 위치 기억
@@ -262,7 +462,7 @@ class PaintActivity : AppCompatActivity() {
                             view.tag = floatArrayOf(offsetX, offsetY)
                         }
                         MotionEvent.ACTION_MOVE -> {
-                            // 초기 오프셋과 현재 터치 위치를 기반으로 뷰 이동
+                            // 드래그 중일 때 현재 위치로 이동
                             val offsets = view.tag as FloatArray
                             view.x = event.rawX - offsets[0]
                             view.y = event.rawY - offsets[1]
@@ -279,6 +479,8 @@ class PaintActivity : AppCompatActivity() {
                     // 위치 고정 로직은 특별히 필요하지 않습니다. 사용자가 원하는 위치에 ImageView가 있고,
                     // 더 이상 이동하지 않도록 하려면 이벤트 핸들러를 비활성화하면 됩니다.
                     imageView.setOnTouchListener(null) // 드래그 비활성화
+                    imageViewFixButton.visibility = View.GONE // 버튼 비활성화
+                    imageViewList.add(imageView)
                 }
 
 
@@ -295,6 +497,7 @@ class PaintActivity : AppCompatActivity() {
 
 
     }
+
 
 //        backButton = findViewById(R.id.backButton)
 

@@ -69,7 +69,7 @@ class ImageSelect : AppCompatActivity() {
             imageView.setTag(url)
             Glide.with(this)
                 .load(url)
-                .apply(RequestOptions().centerCrop())
+                .apply(RequestOptions().fitCenter())
                 .into(imageView)
         }
     }

@@ -60,6 +60,9 @@ class PdfViewerActivity : AppCompatActivity() {
     private lateinit var binding: ActivityPdfViewerBinding
     private val viewModel: PdfViewerViewModel by viewModels()
     private var downloadedFilePath: String? = null
+    var currentPage: Int = 0
+    var pdfRendererView : PdfRendererView? = null
+
 
 
     companion object {
@@ -175,19 +178,22 @@ class PdfViewerActivity : AppCompatActivity() {
 
     // 버튼을 누르면 선택한 PDF의 비트맵을 PaintActivity로 전송하는 메서드
     private fun sendBitmapToPaintActivity() {
-        selectedPdfBitmap?.let { bitmap ->
-            // Bitmap을 일시적인 파일로 저장합니다.
-            val tempFile = File.createTempFile("pdf_bitmap", "png", cacheDir)
-            val out = FileOutputStream(tempFile)
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, out)
-            out.close()
+        selectedPdfBitmap = pdfRendererView?.getBitmapByPage(currentPage)
 
-            // PaintActivity로 Bitmap의 URI를 전송합니다.
-            val intent = Intent(this, PaintActivity::class.java)
-            intent.putExtra("bitmap_uri", Uri.fromFile(tempFile).toString())
-            startActivity(intent)
-        }
+        selectedPdfBitmap?.let { bitmap ->
+            val tempFile = File.createTempFile("pdf_bitmap", ".png", cacheDir)
+            FileOutputStream(tempFile).use { out ->
+                bitmap.compress(Bitmap.CompressFormat.PNG, 100, out)
+            }
+
+            val resultIntent = Intent().apply {
+                putExtra("selected_pdf_uri", Uri.fromFile(tempFile).toString())
+            }
+            setResult(Activity.RESULT_OK, resultIntent)
+            finish()
+        } ?: Toast.makeText(this, "No page selected", Toast.LENGTH_SHORT).show()
     }
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -202,8 +208,20 @@ class PdfViewerActivity : AppCompatActivity() {
         )
         // "선택 완료" 버튼에 대한 참조를 가져옵니다.
         val completeButton = findViewById<FloatingActionButton>(R.id.completeButton)
-        // PdfRendererView 인스턴스를 가져옵니다.
-        val pdfView = findViewById<PdfRendererView>(R.id.pdfView)
+        val PdfPageNumber = findViewById<TextView>(R.id.PdfPageNumber)
+        // PdfRendererView 인스턴스를 초기화하고 글로벌 변수에 할당
+        val pdfRendererView = findViewById<PdfRendererView>(R.id.pdfView)
+        this.pdfRendererView = pdfRendererView  // 전역 변수에 할당
+
+         // 리스너를 구현하고 세팅하기 (클릭 시 해당 페이지의 번호를 로그로 찍기)
+        pdfRendererView.setPdfSelectedListener(object : PdfRendererView.OnPdfSelectedListener {
+             override fun onPdfSelected(page: Int) {
+                 currentPage = page
+                 PdfPageNumber.text = (page + 1).toString()
+                 // 페이지가 선택되었을 때의 로직
+                 Log.d("PDF Selected", "Page number: $page")
+             }
+         })
 
         // 버튼을 클릭하면 선택한 PDF의 비트맵을 PaintActivity로 전송합니다.
         completeButton.setOnClickListener {
@@ -211,8 +229,8 @@ class PdfViewerActivity : AppCompatActivity() {
         }
 
         // 클릭 이벤트를 설정합니다.
-        pdfView.setOnClickListener {
-            selectPdf(pdfView)
+        pdfRendererView.setOnClickListener {
+            selectPdf(pdfRendererView)
         }
 
         // Configure progress bar and background
@@ -356,6 +374,7 @@ class PdfViewerActivity : AppCompatActivity() {
             setDisplayShowTitleEnabled(false)
         }
     }
+
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         val inflater: MenuInflater = menuInflater
