@@ -30,6 +30,7 @@ import androidx.core.view.drawToBitmap
 import androidx.lifecycle.ReportFragment.Companion.reportFragment
 import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
+import com.example.sharenote.RetrofitClient.apiService
 import com.example.sharenote.RetrofitClient.apiService2
 import com.github.dhaval2404.colorpicker.ColorPickerDialog
 import com.github.dhaval2404.colorpicker.model.ColorShape
@@ -193,7 +194,7 @@ class PaintActivity : AppCompatActivity() {
                     // 파일을 서버로 업로드하는 로직 (Retrofit 등 사용)
                     lifecycleScope.launch {
                         try {
-                            val response = apiService2.uploadImage(imagePart)
+                            val response = apiService.uploadImage(imagePart)
 
                             withContext(Dispatchers.Main) {
                                 if (response.isSuccessful) {
@@ -252,6 +253,7 @@ class PaintActivity : AppCompatActivity() {
 
         btnBrush.setOnClickListener {
 
+
             val dialogView = LayoutInflater.from(this).inflate(R.layout.brush_settings_dialog, null)
 
             val brushSizeSlider = dialogView.findViewById<Slider>(R.id.brushSizeSlider)
@@ -296,6 +298,11 @@ class PaintActivity : AppCompatActivity() {
             drawingView.clearDrawingBoard()
         }
         aiSendButton.setOnClickListener {
+            //
+
+
+
+
             // autoDraw 모드 강제 해제
             autoDrawButton.performClick()
 
@@ -303,7 +310,35 @@ class PaintActivity : AppCompatActivity() {
             imageViewFixButton.visibility = View.VISIBLE
             // 테스트 로직(autoDraw로 그린 선만 노란색으로 바꾸기)
             // 이미지 업로드하고 해당 이미지 url 받아오기
-            val imageUrl = drawingView.autoDraw()
+            val url = drawingView.autoDraw()
+
+
+            lifecycleScope.launch {
+                try {
+                    // API 호출
+                    val response = apiService2.aiPickImages(url)
+
+                    // 메인 스레드에서 UI 업데이트
+                    withContext(Dispatchers.Main) {
+                        if (response.isSuccessful && response.body() != null) {
+                            // 서버로부터 받은 이미지 URL 리스트 처리
+                            val urlList = response.body()!!.imageUrls // 이거 리스트야
+
+                            // Intent 생성 및 시작
+                            val intent = Intent(this@PaintActivity, ImageSelect::class.java)
+                            intent.putStringArrayListExtra("urlList", ArrayList(urlList))
+                            startActivityForResult(intent, 1520)
+                        } else {
+                            Log.e("PaintActivity", "Error: ${response.errorBody()}")
+                        }
+                    }
+                } catch (e: Exception) {
+                    withContext(Dispatchers.Main) {
+                        Log.e("PaintActivity", "Exception: ${e.message}")
+                    }
+
+                }
+            }
 
             // 이미지 url을 서버로 전송하고 서버에서 받아온 이미지 url로 이미지 띄우기
             // 3 초간 정지 AI 서버에 요청한 척

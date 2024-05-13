@@ -91,6 +91,9 @@ dependencies {
 
     implementation ("com.github.Dhaval2404:ColorPicker:2.3")
 
+    // 로딩 화면용 라이브러리
+    //implementation ("ru.github.igla:ferriswheel:1.2")
+
 
 
 

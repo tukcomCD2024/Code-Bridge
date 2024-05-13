@@ -140,3 +140,9 @@ data class ImageResponse(
     val image_url: String
 
 )
+
+
+
+data class AiImageUrls(
+    val imageUrls: List<String>
+)

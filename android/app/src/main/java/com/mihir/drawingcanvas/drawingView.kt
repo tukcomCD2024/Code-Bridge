@@ -11,6 +11,7 @@ import android.view.View
 import android.widget.Toast
 import androidx.annotation.IntRange
 import com.example.sharenote.ImageResponse
+import com.example.sharenote.RetrofitClient.apiService
 
 
 import com.example.sharenote.RetrofitClient.apiService2
@@ -157,7 +158,7 @@ class drawingView(context: Context, attrs: AttributeSet) : View(context,attrs){
         // 3. 이미지 업로드 API 호출
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val response = apiService2.uploadImage(imagePart)
+                val response = apiService.uploadImage(imagePart)
                 withContext(Dispatchers.Main) {
                     if (response.isSuccessful && response.body() != null) {
                         //Toast.makeText(context, "이미지 업로드 성공!", Toast.LENGTH_SHORT).show()
