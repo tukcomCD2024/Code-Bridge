@@ -137,75 +137,89 @@ class PaintActivity : AppCompatActivity() {
 
 
         backButton.setOnClickListener {
-            // 원래 이거 밑의 한줄코드였음e
+            // AlertDialog를 생성하여 사용자에게 확인 요청
+            AlertDialog.Builder(this)
+                .setTitle("이미지 업로드") // 다이얼로그 제목
+                .setMessage("이미지 업로드 하시겠습니까?") // 다이얼로그 메시지
+                .setNegativeButton("네") { dialog, which ->
+                    // "Yes" 버튼 클릭 시, 원래 backButton의 로직 실행
+                    imageViewFixButton.performClick()
+
+                    val finalBitmap = Bitmap.createBitmap(drawingView.width, drawingView.height, Bitmap.Config.ARGB_8888)
+                    val finalCanvas = Canvas(finalBitmap)
+
+                    // 배경 그리기
+                    if (drawingView.background != null) {
+                        finalCanvas.drawBitmap(drawingView.background.toBitmap(drawingView.width, drawingView.height), 0f, 0f, null)
+                    } else {
+                        // 배경이 null인 경우, 흰색 비트맵 생성 및 그리기
+                        val whiteBitmap = Bitmap.createBitmap(drawingView.width, drawingView.height, Bitmap.Config.ARGB_8888)
+                        whiteBitmap.eraseColor(Color.WHITE)
+                        finalCanvas.drawBitmap(whiteBitmap, 0f, 0f, null)
+                        whiteBitmap.recycle() // 사용 후 메모리 해제
+                    }
+
+                    // path 그리기
+                    drawingView.getDrawing().forEach { path ->
+                        val paint = Paint().apply {
+                            color = path.color
+                            strokeWidth = path.brushThickness.toFloat()
+                            style = Paint.Style.STROKE
+                            strokeJoin = Paint.Join.ROUND
+                            strokeCap = Paint.Cap.ROUND
+                            alpha = path.alpha
+                        }
+                        finalCanvas.drawPath(path, paint)
+                    }
+
+                    // imageView 그리기
+                    imageViewList.forEach { imageView ->
+                        val bitmap = imageView.drawable.toBitmap()
+                        finalCanvas.drawBitmap(bitmap, imageView.x, imageView.y, null)
+                    }
+
+
+
+                    val fileName = UUID.randomUUID().toString() + ".png"
+                    // 비트맵을 멀티파트 바디 파트로 변환
+                    val imagePart = convertBitmapToMultipartBodyPart(finalBitmap, "multipartFile", fileName)
+
+                    val resultIntent = Intent()
+                    // 파일을 서버로 업로드하는 로직 (Retrofit 등 사용)
+                    lifecycleScope.launch {
+                        try {
+                            val response = apiService2.uploadImage(imagePart)
+
+                            withContext(Dispatchers.Main) {
+                                if (response.isSuccessful) {
+                                    val imageUrl = response.body()!!.image_url
+                                    resultIntent.putExtra("imageUrl", imageUrl)
+                                    setResult(Activity.RESULT_OK, resultIntent)
+                                    Log.d("PaintActivity", "{$imageUrl}")
+                                    finish()
+                                } else {
+                                    Log.e("PaintActivity", "Error: ${response.errorBody()}")
+                                    setResult(Activity.RESULT_OK, resultIntent)
+                                    finish()
+                                }
+                            }
+
+                        } catch (e: Exception) {
+                            Log.e("PaintActivity", "Exception: ${e.message}")
+                        }
+                    }
+                    finish() // 예를 들어 액티비티를 종료
+                }
+                .setPositiveButton("아니요") { dialog, which ->
+                    // "No" 버튼 클릭 시, 아무 일도 하지 않음
+                    dialog.dismiss()
+                }
+                .show() // 다이얼로그 표시
+            // 원래 이거 밑의 한줄코드였음
             //onBackPressed()
 
 
-            imageViewFixButton.performClick()
 
-            val finalBitmap = Bitmap.createBitmap(drawingView.width, drawingView.height, Bitmap.Config.ARGB_8888)
-            val finalCanvas = Canvas(finalBitmap)
-
-            // 배경 그리기
-            if (drawingView.background != null) {
-                finalCanvas.drawBitmap(drawingView.background.toBitmap(drawingView.width, drawingView.height), 0f, 0f, null)
-            } else {
-                // 배경이 null인 경우, 흰색 비트맵 생성 및 그리기
-                val whiteBitmap = Bitmap.createBitmap(drawingView.width, drawingView.height, Bitmap.Config.ARGB_8888)
-                whiteBitmap.eraseColor(Color.WHITE)
-                finalCanvas.drawBitmap(whiteBitmap, 0f, 0f, null)
-                whiteBitmap.recycle() // 사용 후 메모리 해제
-            }
-
-            // path 그리기
-            drawingView.getDrawing().forEach { path ->
-                val paint = Paint().apply {
-                    color = path.color
-                    strokeWidth = path.brushThickness.toFloat()
-                    style = Paint.Style.STROKE
-                    strokeJoin = Paint.Join.ROUND
-                    strokeCap = Paint.Cap.ROUND
-                    alpha = path.alpha
-                }
-                finalCanvas.drawPath(path, paint)
-            }
-
-            // imageView 그리기
-            imageViewList.forEach { imageView ->
-                val bitmap = imageView.drawable.toBitmap()
-                finalCanvas.drawBitmap(bitmap, imageView.x, imageView.y, null)
-            }
-
-
-
-            val fileName = UUID.randomUUID().toString() + ".png"
-            // 비트맵을 멀티파트 바디 파트로 변환
-            val imagePart = convertBitmapToMultipartBodyPart(finalBitmap, "multipartFile", fileName)
-
-            val resultIntent = Intent()
-            // 파일을 서버로 업로드하는 로직 (Retrofit 등 사용)
-            lifecycleScope.launch {
-                try {
-                    val response = apiService2.uploadImage(imagePart)
-
-                    withContext(Dispatchers.Main) {
-                        if (response.isSuccessful) {
-                            val imageUrl = response.body()!!.image_url
-                            resultIntent.putExtra("imageUrl", imageUrl)
-                            setResult(Activity.RESULT_OK, resultIntent)
-                            Log.d("PaintActivity", "{$imageUrl}")
-                            finish()
-                        } else {
-                            Log.e("PaintActivity", "Error: ${response.errorBody()}")
-                            setResult(Activity.RESULT_OK, resultIntent)
-                            finish()
-                        }
-                    }
-
-                } catch (e: Exception) {
-                    Log.e("PaintActivity", "Exception: ${e.message}")
-                }
-            }
 
 
 
@@ -353,7 +367,8 @@ class PaintActivity : AppCompatActivity() {
         }
 
         val alpha = drawingView.getBrushAlpha()
-        drawingView.erase()
+        drawingView.setBrushColor(R.color.black)
+        drawingView.setBrushAlpha(180)
         val brushSize = drawingView.getBrushSize()
         val brushColor = drawingView.getBrushColor()
 
