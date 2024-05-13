@@ -16,7 +16,8 @@ files = {
             "img": b64_string,
         }
 file = {'url':'https://flaskbuckettest.s3.ap-northeast-2.amazonaws.com/free-icon-font-bolt-6853834.png'}
-# r = requests.post('http://127.0.0.1:5000/ai/url', json=json.dumps(file))
+r = requests.post('http://127.0.0.1:5000/ai/url', json=json.dumps(file))
+print((json.dumps({'url':''})))
 
-r = app.services.auto_draw.AIbyURL(json.loads(json.dumps(file)))
+# r = app.services.auto_draw.AIbyURL(json.loads(json.dumps(file)))
 print(r)
