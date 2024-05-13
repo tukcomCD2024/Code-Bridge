@@ -100,7 +100,6 @@ class PageActivity : AppCompatActivity() {
         // 플로팅 버튼 클릭시 에니메이션 동작 기능
         floating.setOnClickListener {
             toggleFab()
-            Toast.makeText(this, "Image URL: $imageUrl", Toast.LENGTH_SHORT).show()
         }
 
 
@@ -135,7 +134,7 @@ class PageActivity : AppCompatActivity() {
     private fun uploadImageToEditor(imageUrl: String?) {
         if (imageUrl != null) {
             // 이미지 URL을 JavaScript 함수에 전달
-            val jsFunction = "uploadImageToEditor('editorRef.current.view', '$imageUrl')"
+            val jsFunction = "uploadImageToEditor('$imageUrl')"
             webView.evaluateJavascript(jsFunction, null)
         } else {
             // 이미지 URL이 null인 경우 처리
