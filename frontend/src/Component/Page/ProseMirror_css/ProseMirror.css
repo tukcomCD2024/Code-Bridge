@@ -404,7 +404,6 @@ img.ProseMirror-separator {
   align-items: center; /* 내부 요소들을 세로 방향으로 가운데 정렬 */
   visibility: hidden; /* 초기에는 숨김 처리 */
   padding: 3px;
-  padding-top: 1px;
   border: 1px solid #ccc;
   background: #f9f9f9;
   box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
@@ -415,7 +414,8 @@ img.ProseMirror-separator {
   cursor: pointer;
   width: 18px;
   height: 20px;
-  margin: 5px;
+  margin: 4px;
+  padding-top: 1px;
 }
 
 .hoverButton_plus:hover {
