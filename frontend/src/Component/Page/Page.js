@@ -345,7 +345,7 @@ function Page() {
     const yUserLocks = ydoc.getMap('yUserLocks');
     const yLikeList = ydoc.getMap(`yLikeList_${userId}`);
 
-    function isMobileWebView() {
+    function isWeb() {
       const userAgent = navigator.userAgent.toLowerCase();
       const isAndroidWebView = (userAgent.indexOf('android') > -1 && userAgent.indexOf('mobile') > -1) || userAgent.indexOf('app') > -1;
       return isAndroidWebView
@@ -403,7 +403,7 @@ function Page() {
     }
 
     provider.on("sync", (isSynced) => {
-      if (isMobileWebView()) {
+      if (isWeb()) {
         if (isSynced) {
           handleUserConnection();
         }
@@ -441,16 +441,22 @@ function Page() {
     });
     
     function onlineUpdate() {
-      updateUsersAndColors(); 
       const userState = provider.awareness.getLocalState();
+    
       if (userState && userState.user && userState.user.name) {
         const nickname = userState.user.name;
+    
+        if (!editorRef) {
+          yConnectedUserList.delete(nickname);
+        }
+    
         if (yConnectedUserList.get(nickname) === 'kicked') {
           toastr.warning("연결 정보가 없습니다!");
           navigate(`/organization/${pathSegments[1]}`);
           return;
         }
       }
+      updateUsersAndColors();
     }
    yConnectedUserList.observe(onlineUpdate);
 
@@ -498,7 +504,7 @@ function Page() {
                     newGuid = guidGenerator();
                   } while (generatedIds.has(newGuid));
                   generatedIds.add(newGuid);
-                  tr.setNodeMarkup(pos, undefined, {...node.attrs, ['data-guid']: newGuid});
+                  tr.setNodeMarkup(pos, undefined, {...node.attrs, 'data-guid': newGuid});
                   modified = true;
                 } else {
                   generatedIds.add(currentGuid);
