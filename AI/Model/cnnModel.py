@@ -19,7 +19,7 @@ testdata = tsdata.flow_from_directory(directory=r"C:\Users\Ka\Desktop\Ka\대학�
 
 def cnnDepth4():
     model = Sequential()
-    model.add(Conv2D(128, (3, 3), activation='relu', input_shape=(imageSize, imageSize, 3)))
+    model.add(Conv2D(64, (3, 3), activation='relu', input_shape=(imageSize, imageSize, 3)))
     model.add(MaxPool2D((2, 2)))
 
     model.add(Flatten())
@@ -32,9 +32,9 @@ def cnnDepth4():
 
 def cnnDepth5():
     model = Sequential()
-    model.add(Conv2D(64, (3, 3), activation='relu', input_shape=(imageSize, imageSize, 3)))
+    model.add(Conv2D(32, (3, 3), activation='relu', input_shape=(imageSize, imageSize, 3)))
     model.add(MaxPool2D((2, 2)))
-    model.add(Conv2D(128, (3, 3), activation='relu'))
+    model.add(Conv2D(64, (3, 3), activation='relu'))
     model.add(MaxPool2D((2, 2)))
 
     model.add(Flatten())
@@ -49,9 +49,9 @@ def cnnDepth6():
     model = Sequential()
     model.add(Conv2D(32, (3, 3), activation='relu', input_shape=(imageSize, imageSize, 3)))
     model.add(MaxPool2D((2, 2)))
-    model.add(Conv2D(64, (3, 3), activation='relu'))
+    model.add(Conv2D(32, (3, 3), activation='relu'))
     model.add(MaxPool2D((2, 2)))
-    model.add(Conv2D(128, (3, 3), activation='relu'))
+    model.add(Conv2D(32, (3, 3), activation='relu'))
     model.add(MaxPool2D((2, 2)))
 
     model.add(Flatten())
@@ -67,34 +67,33 @@ def createModel():
     modelFuncs = [cnnDepth4(), cnnDepth5(), cnnDepth6()]
     for e in range(40, 100, 10):
         for lr in range(1, 5):
-            for i in range(len(modelFuncs)):
-                model = modelFuncs[i]
+            model = cnnDepth6()
 
-                opt = RMSprop(lr=0.002*lr)
-                model.compile(optimizer=opt, loss='categorical_crossentropy', metrics=['accuracy'])
+            opt = RMSprop(lr=0.002*lr)
+            model.compile(optimizer=opt, loss='categorical_crossentropy', metrics=['accuracy'])
 
-                model.summary()
+            model.summary()
 
-                checkpoint = ModelCheckpoint(f"f32lr001_{lr}e{e}" + modelNames[i], monitor='val_accuracy', verbose=1, save_best_only=True,
-                                             save_weights_only=False, mode='auto', period=1)
-                early = EarlyStopping(monitor='val_accuracy', min_delta=0, patience=30, verbose=1, mode='auto')
-                # hist = model.fit_generator(steps_per_epoch=len(traindata), generator=traindata, validation_data=testdata,
-                #                            validation_steps=len(testdata), epochs=4, callbacks=[checkpoint, early])
+            checkpoint = ModelCheckpoint(f"cnn6ff32lr001_{lr}e{e}.h5", monitor='val_accuracy', verbose=1, save_best_only=True,
+                                         save_weights_only=False, mode='auto', period=1)
+            early = EarlyStopping(monitor='val_accuracy', min_delta=0, patience=30, verbose=1, mode='auto')
+            # hist = model.fit_generator(steps_per_epoch=len(traindata), generator=traindata, validation_data=testdata,
+            #                            validation_steps=len(testdata), epochs=4, callbacks=[checkpoint, early])
 
-                hist = model.fit(traindata, steps_per_epoch=len(traindata), validation_data=testdata, validation_steps=len(testdata),
-                                 epochs=e, callbacks=[checkpoint, early], batch_size=5)
+            hist = model.fit(traindata, steps_per_epoch=len(traindata), validation_data=testdata, validation_steps=len(testdata),
+                             epochs=e, callbacks=[checkpoint, early], batch_size=5)
 
-                import matplotlib.pyplot as plt
+            import matplotlib.pyplot as plt
 
-                plt.plot(hist.history["accuracy"])
-                plt.plot(hist.history['val_accuracy'])
-                plt.plot(hist.history['val_loss'])
-                plt.title("model accuracy")
-                plt.ylabel("Accuracy")
-                plt.xlabel("Epoch")
-                plt.ylim(0, 5)
-                plt.legend(["Accuracy", "Validation Accuracy", "Validation Loss"])
-                plt.show()
+            plt.plot(hist.history["accuracy"])
+            plt.plot(hist.history['val_accuracy'])
+            plt.plot(hist.history['val_loss'])
+            plt.title("model accuracy")
+            plt.ylabel("Accuracy")
+            plt.xlabel("Epoch")
+            plt.ylim(0, 5)
+            plt.legend(["Accuracy", "Validation Accuracy", "Validation Loss"])
+            plt.show()
 
 
 createModel()
