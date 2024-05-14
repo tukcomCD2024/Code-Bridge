@@ -62,6 +62,28 @@ function Page() {
   const [noteSettingModalOpen, setNoteSettingModalOpen] = useState(false);
   const [myimage, setMyImage] = useState(null);
 
+  const touchHandler = (event) => {
+    var touches = event.changedTouches,
+        first = touches[0],
+        type = "";
+    switch(event.type) {
+        case "touchstart": type = "mousedown"; break;
+        case "touchmove": type = "mousemove"; break;        
+        case "touchend": type = "mouseup"; break;
+        default: return;
+    }
+
+    var simulatedEvent = document.createEvent("MouseEvent");
+    simulatedEvent.initMouseEvent(type, true, true, window, 1, 
+                                  first.screenX, first.screenY, 
+                                  first.clientX, first.clientY, false, 
+                                  false, false, false, 0, null);
+
+    first.target.dispatchEvent(simulatedEvent);
+    event.preventDefault();
+  };
+
+
   const uploadImage = (e) => {
     const selectedFile = e.target.files[0];
 
@@ -460,7 +482,11 @@ function Page() {
     }
    yConnectedUserList.observe(onlineUpdate);
 
-    function yjsDisconnect() {
+    window.yjsDisconnect = function() {
+      if(!editorRef) {
+        return;
+      }
+
       const keysToDelete = [];
 
       yLineLocks.forEach((value, key) => {
@@ -717,13 +743,17 @@ function Page() {
     };
 
     yConnectedUserList.observe(updateUsersAndColors);
-    window.addEventListener("pagehide", yjsDisconnect);
-    window.addEventListener("unload", yjsDisconnect);
-    window.addEventListener("popstate", yjsDisconnect);
+    window.addEventListener("pagehide", window.yjsDisconnect);
+    window.addEventListener("unload", window.yjsDisconnect);
+    window.addEventListener("popstate", window.yjsDisconnect);
 
     editorRef.current.addEventListener('mousedown', (event) => { handleNodeClick(nickname, event); });
     editorRef.current.addEventListener('keydown', (event) => { handleEditAttempt(nickname, event); });
     editorRef.current.addEventListener('mousedown', (event) => { handleEditAttempt(nickname, event); });
+
+    document.addEventListener("touchstart", touchHandler, true);
+    document.addEventListener("touchmove", touchHandler, true);
+    document.addEventListener("touchend", touchHandler, true);
 
     const myDoc = DOMParser.fromSchema(mySchema).parse(
       document.createElement("div")
@@ -770,10 +800,13 @@ function Page() {
       setisloaded(false);
       yConnectedUserList.unobserve(updateUsersAndColors);
       yConnectedUserList.unobserve(onlineUpdate);
-      window.removeEventListener("pagehide", yjsDisconnect);
-      window.removeEventListener("unload", yjsDisconnect);
-      window.removeEventListener("popstate", yjsDisconnect);
-      yjsDisconnect();
+      window.removeEventListener("pagehide", window.yjsDisconnect);
+      window.removeEventListener("unload", window.yjsDisconnect);
+      window.removeEventListener("popstate", window.yjsDisconnect);
+      document.removeEventListener("touchstart", touchHandler, true);
+      document.removeEventListener("touchmove", touchHandler, true);
+      document.removeEventListener("touchend", touchHandler, true);
+      window.yjsDisconnect();
     };
   }, [pageId]);
 
