@@ -72,18 +72,28 @@ function Page() {
         case "touchend": type = "mouseup"; break;
         default: return;
     }
-
-    var simulatedEvent = document.createEvent("MouseEvent");
-    simulatedEvent.initMouseEvent(type, true, true, window, 1, 
-                                  first.screenX, first.screenY, 
-                                  first.clientX, first.clientY, false, 
-                                  false, false, false, 0, null);
-
+  
+    var simulatedEvent = new MouseEvent(type, {
+      bubbles: true,
+      cancelable: true,
+      view: window,
+      detail: 1,
+      screenX: first.screenX,
+      screenY: first.screenY,
+      clientX: first.clientX,
+      clientY: first.clientY,
+      ctrlKey: false,
+      altKey: false,
+      shiftKey: false,
+      metaKey: false,
+      button: 0,
+      relatedTarget: null
+    });
+  
     first.target.dispatchEvent(simulatedEvent);
     event.preventDefault();
-  };
-
-
+  };  
+  
   const uploadImage = (e) => {
     const selectedFile = e.target.files[0];
 
@@ -751,9 +761,9 @@ function Page() {
     editorRef.current.addEventListener('keydown', (event) => { handleEditAttempt(nickname, event); });
     editorRef.current.addEventListener('mousedown', (event) => { handleEditAttempt(nickname, event); });
 
-    document.addEventListener("touchstart", touchHandler, true);
-    document.addEventListener("touchmove", touchHandler, true);
-    document.addEventListener("touchend", touchHandler, true);
+    document.addEventListener("touchstart", touchHandler, { passive: false });
+    document.addEventListener("touchmove", touchHandler, { passive: false });
+    document.addEventListener("touchend", touchHandler, { passive: false });
 
     const myDoc = DOMParser.fromSchema(mySchema).parse(
       document.createElement("div")
@@ -803,9 +813,9 @@ function Page() {
       window.removeEventListener("pagehide", window.yjsDisconnect);
       window.removeEventListener("unload", window.yjsDisconnect);
       window.removeEventListener("popstate", window.yjsDisconnect);
-      document.removeEventListener("touchstart", touchHandler, true);
-      document.removeEventListener("touchmove", touchHandler, true);
-      document.removeEventListener("touchend", touchHandler, true);
+      document.removeEventListener("touchstart", touchHandler, { passive: false });
+      document.removeEventListener("touchmove", touchHandler, { passive: false });
+      document.removeEventListener("touchend", touchHandler, { passive: false });
       window.yjsDisconnect();
     };
   }, [pageId]);
