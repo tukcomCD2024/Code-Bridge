@@ -23,6 +23,7 @@ import "./ProseMirror_css/prosemirror_image_plugin/sideResize.css";
 import "./ProseMirror_css/prosemirror_image_plugin/withoutResize.css";
 import "./ProseMirror_css/ProseMirror.css";
 
+import ModalImageComponent from "./utils/ModalImageComponent";
 import { imageSettings, imageNodeSpec } from "./utils/pageSettings";
 import { inlinePlaceholderPlugin } from "./utils/inlinePlaceholderPlugin";
 import { hoverButtonPlugin } from "./utils/hoverButtonPlugin";
@@ -61,7 +62,9 @@ function Page() {
   const [usersAndColors, setUsersAndColors] = useState([]); // 연결된 사용자와 색상 상태
   const [noteSettingModalOpen, setNoteSettingModalOpen] = useState(false);
   const [myimage, setMyImage] = useState(null);
-  
+  const [showModalImage, setShowModalImage] = useState(false);
+  const [clickedImageSrc, setClickedImageSrc] = useState('');
+
   const uploadImage = (e) => {
     const selectedFile = e.target.files[0];
 
@@ -94,6 +97,14 @@ function Page() {
     localStorage.setItem("recentImageUrl", '');
     setMyImage(null);
     setNoteSettingModalOpen(false);
+  };
+
+    const handleOpenImageZoomModal = () => {
+    setShowModalImage(true);
+  };
+
+  const handleCloseImageZoomModal = () => {
+    setShowModalImage(false);
   };
 
   // 네비게이션바에 페이지 이동 함수
@@ -595,7 +606,26 @@ function Page() {
     }
   };
 
+    // 더블클릭 감지를 위한 클릭 시간.
+    let lastClickTime = 0;
+
+    // 더블클릭 이벤트를 처리하는 함수
+    const handleDoubleClick = (event) => {
+      const currentTime = new Date().getTime();
+      if (currentTime - lastClickTime < 300) {
+          const { target } = event;
+          if (target.tagName.toLowerCase() === "img") {
+              const imageUrl = target.getAttribute("src");
+              setClickedImageSrc(imageUrl)
+              setShowModalImage(true);
+          }
+      }
+      lastClickTime = currentTime;
+  }
+
     const handleNodeClick = (nickname, event) => {
+      handleDoubleClick(event);
+
       const { target, clientX, clientY } = event;
       const coords = { left: clientX, top: clientY };
       const posAtCoords = view.posAtCoords(coords);
@@ -781,6 +811,10 @@ function Page() {
     };
   }, [pageId]);
 
+  useEffect(() => {
+    console.log(clickedImageSrc);
+  }, [clickedImageSrc]);
+
   window.uploadImageToEditor = (imageUrl) => {
     const hoverDiv = document.querySelector(".hoverDiv");
 
@@ -922,6 +956,14 @@ function Page() {
             />
         </EditorContainer>
         </LayoutContainer>
+
+        {showModalImage && (
+        <ModalImageComponent 
+          src={clickedImageSrc} 
+          modalOpen={handleOpenImageZoomModal}
+          closeModal={handleCloseImageZoomModal}
+         />
+      )}
 
         {noteSettingModalOpen && (
         <NoteSettingModal
