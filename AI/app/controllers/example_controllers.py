@@ -1,12 +1,12 @@
 from flask import Blueprint, request, jsonify, Response
 from app.services import auto_draw
-import json
+import json, tensorflow as tf
 
 bp = Blueprint(name='example',
                import_name=__name__,
                url_prefix='/example')
 
-ai = Blueprint(name='ai',
+ai: Blueprint = Blueprint(name='ai',
                import_name=__name__,
                url_prefix='/ai')
 
@@ -26,6 +26,3 @@ def drawByURL() -> str:
     s = request.get_data()
     l = json.loads(s)
     return jsonify(auto_draw.AIbyURL(l))
-
-
-String.format("https://ap-northeast-2.console.aws.amazon.com/s3/object/ai-icons?region=ap-northeast-2&bucketType=general&prefix=svg/{}/{}-outline.png", 이름, 이름)
