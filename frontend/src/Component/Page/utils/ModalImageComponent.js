@@ -1,19 +1,18 @@
 import React, { useState, useEffect, useRef } from "react";
 import styled from "styled-components";
 
-
 const ModalImageComponent = ({
   src, 
   modalOpen,
   closeModal
 }) => {
   const modalRef = useRef();
-  const [isOverflow, setIsOverflow] = useState(false);
+  const [isoverflow, setisoverflow] = useState(false);
 
   useEffect(() => {
     const handleResize = () => {
       if (modalRef.current) {
-        setIsOverflow(modalRef.current.scrollHeight > modalRef.current.clientHeight);
+        setisoverflow(modalRef.current.scrollHeight > modalRef.current.clientHeight);
       }
     };
 
@@ -26,14 +25,14 @@ const ModalImageComponent = ({
 
   useEffect(() => {
     if (modalRef.current) {
-      setIsOverflow(modalRef.current.scrollHeight > modalRef.current.clientHeight);
+      setisoverflow(modalRef.current.scrollHeight > modalRef.current.clientHeight ? "true" : "false");
     }
   }, [modalOpen]);
 
   if (!modalOpen) return null;
   return (
-      <ModalContainer ref={modalRef}>
-      <CloseButton isOverflow={isOverflow} onClick={closeModal}>&times;</CloseButton>
+    <ModalContainer ref={modalRef}>
+      <CloseButton isoverflow={isoverflow} onClick={closeModal}>&times;</CloseButton>
       <ModalContent>
         <ModalImage src={src} alt="modal" />
       </ModalContent>
@@ -46,7 +45,7 @@ export default ModalImageComponent;
 const ModalContainer = styled.div`
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: flex-start;
   z-index: 10;
   width: 100%;
   height: 100%;
@@ -72,7 +71,7 @@ const CloseButton = styled.span`
   cursor: pointer;
   position: fixed;
   top: 10px;
-  right: ${({ isOverflow }) => (isOverflow ? "30px" : "10px")};
+  right: ${({ isoverflow }) => (isoverflow ? "30px" : "10px")};
   z-index: 20; 
 `;
 

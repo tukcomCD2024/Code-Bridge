@@ -457,7 +457,7 @@ function Page() {
       if (userState && userState.user && userState.user.name) {
         const nickname = userState.user.name;
     
-        if (!editorRef) {
+        if (!editorRef.current) {
           yConnectedUserList.delete(nickname);
         }
     
@@ -810,10 +810,6 @@ function Page() {
       window.yjsDisconnect();
     };
   }, [pageId]);
-
-  useEffect(() => {
-    console.log(clickedImageSrc);
-  }, [clickedImageSrc]);
 
   window.uploadImageToEditor = (imageUrl) => {
     const hoverDiv = document.querySelector(".hoverDiv");
