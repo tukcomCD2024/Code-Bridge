@@ -61,38 +61,6 @@ function Page() {
   const [usersAndColors, setUsersAndColors] = useState([]); // 연결된 사용자와 색상 상태
   const [noteSettingModalOpen, setNoteSettingModalOpen] = useState(false);
   const [myimage, setMyImage] = useState(null);
-
-  const touchHandler = (event) => {
-    var touches = event.changedTouches,
-        first = touches[0],
-        type = "";
-    switch(event.type) {
-        case "touchstart": type = "mousedown"; break;
-        case "touchmove": type = "mousemove"; break;        
-        case "touchend": type = "mouseup"; break;
-        default: return;
-    }
-  
-    var simulatedEvent = new MouseEvent(type, {
-      bubbles: true,
-      cancelable: true,
-      view: window,
-      detail: 1,
-      screenX: first.screenX,
-      screenY: first.screenY,
-      clientX: first.clientX,
-      clientY: first.clientY,
-      ctrlKey: false,
-      altKey: false,
-      shiftKey: false,
-      metaKey: false,
-      button: 0,
-      relatedTarget: null
-    });
-  
-    first.target.dispatchEvent(simulatedEvent);
-    event.preventDefault();
-  };  
   
   const uploadImage = (e) => {
     const selectedFile = e.target.files[0];
@@ -761,10 +729,6 @@ function Page() {
     editorRef.current.addEventListener('keydown', (event) => { handleEditAttempt(nickname, event); });
     editorRef.current.addEventListener('mousedown', (event) => { handleEditAttempt(nickname, event); });
 
-    document.addEventListener("touchstart", touchHandler, { passive: false });
-    document.addEventListener("touchmove", touchHandler, { passive: false });
-    document.addEventListener("touchend", touchHandler, { passive: false });
-
     const myDoc = DOMParser.fromSchema(mySchema).parse(
       document.createElement("div")
     );
@@ -813,9 +777,6 @@ function Page() {
       window.removeEventListener("pagehide", window.yjsDisconnect);
       window.removeEventListener("unload", window.yjsDisconnect);
       window.removeEventListener("popstate", window.yjsDisconnect);
-      document.removeEventListener("touchstart", touchHandler, { passive: false });
-      document.removeEventListener("touchmove", touchHandler, { passive: false });
-      document.removeEventListener("touchend", touchHandler, { passive: false });
       window.yjsDisconnect();
     };
   }, [pageId]);
