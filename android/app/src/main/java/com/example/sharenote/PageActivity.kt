@@ -77,7 +77,7 @@ class PageActivity : AppCompatActivity() {
         }
 
         val imageUrl = intent.getStringExtra(UrlTestActivity.EXTRA_IMAGE_URL)
-
+       // val image = intent.getStringExtra(PaintActivity.)
 
         // WebView가 로드되면 이미지를 업로드하는 함수 호출
         webView.webViewClient = object : WebViewClient() {
@@ -105,7 +105,7 @@ class PageActivity : AppCompatActivity() {
 
 
         fabDraw.setOnClickListener {
-            val intent = Intent(this, UrlTestActivity::class.java)
+            val intent = Intent(this, PaintActivity::class.java)
             startActivityForResult(intent, REQUEST_IMAGE_SELECTION)
         }
     }

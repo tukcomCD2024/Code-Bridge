@@ -11,12 +11,18 @@ import com.example.sharenote.PageCheck
 import com.example.sharenote.R
 import com.google.firebase.firestore.FirebaseFirestore
 
-class PageListAdapter(private val pages: MutableList<Page>, private val onPageClickListener: OnPageClickListener) :
+class PageListAdapter(private val pages: MutableList<Page>, private val onPageClickListener: OnPageClickListener,private val onSettingClickListener: OnSettingClickListener) :
     RecyclerView.Adapter<PageListAdapter.PageViewHolder>() {
 
     interface OnPageClickListener {
         fun onPageClick(page: Page)
     }
+
+    interface OnSettingClickListener {
+        fun onSettingClick(page: Page)
+    }
+
+
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PageViewHolder {
         val itemView = LayoutInflater.from(parent.context)
@@ -32,10 +38,16 @@ class PageListAdapter(private val pages: MutableList<Page>, private val onPageCl
         holder.atViewText.text = currentPage.createdAt
 
         // 페이지를 클릭하면 해당 페이지의 정보를 전달합니다.
-        holder.itemView.setOnClickListener {
+        holder.pageLayout.setOnClickListener {
             onPageClickListener.onPageClick(currentPage)
         }
+
+        holder.settingLayout.setOnClickListener {
+            onSettingClickListener.onSettingClick(currentPage)
+        }
     }
+
+
 
     override fun getItemCount() = pages.size
 
@@ -65,5 +77,7 @@ class PageListAdapter(private val pages: MutableList<Page>, private val onPageCl
     inner class PageViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val pageNumberTextView: TextView = itemView.findViewById(R.id.pageNumberTextView) // 순번을 표시할 텍스트뷰
         val atViewText: TextView = itemView.findViewById(R.id.atViewText)
+        val pageLayout: ViewGroup = itemView.findViewById(R.id.PageLayout) // PageLayout 추가
+        val settingLayout: ViewGroup = itemView.findViewById(R.id.settingLayout) // SettingLayout 추가
     }
 }
