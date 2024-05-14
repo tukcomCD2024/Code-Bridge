@@ -1,4 +1,3 @@
-/* global Android */
 import React, { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from 'react-router-dom';
 import styled from "styled-components";
@@ -62,8 +61,29 @@ function Page() {
   const [usersAndColors, setUsersAndColors] = useState([]); // 연결된 사용자와 색상 상태
   const [noteSettingModalOpen, setNoteSettingModalOpen] = useState(false);
   const [myimage, setMyImage] = useState(null);
-  const [currentLineNumber, setCurrentLineNumber] = useState(null);
-  
+
+  const touchHandler = (event) => {
+    var touches = event.changedTouches,
+        first = touches[0],
+        type = "";
+    switch(event.type) {
+        case "touchstart": type = "mousedown"; break;
+        case "touchmove": type = "mousemove"; break;        
+        case "touchend": type = "mouseup"; break;
+        default: return;
+    }
+
+    var simulatedEvent = document.createEvent("MouseEvent");
+    simulatedEvent.initMouseEvent(type, true, true, window, 1, 
+                                  first.screenX, first.screenY, 
+                                  first.clientX, first.clientY, false, 
+                                  false, false, false, 0, null);
+
+    first.target.dispatchEvent(simulatedEvent);
+    event.preventDefault();
+  };
+
+
   const uploadImage = (e) => {
     const selectedFile = e.target.files[0];
 
@@ -300,16 +320,16 @@ function Page() {
       ...nodes.get("paragraph").attrs,
       class: { default: "custom-paragraph" },
       guid: { default: "" }, // Ensure guid attribute is included
-      nickname: { default: nickname },
+      writer: { default: userId },
     },
     parseDOM: [
       {
         tag: "p",
-        getAttrs: (dom) => ({guid: dom.getAttribute("data-guid"), nickname: dom.getAttribute("data-nickname"),}),
+        getAttrs: (dom) => ({guid: dom.getAttribute("data-guid"), writer: dom.getAttribute("data-writer"),}),
       },
     ],
     toDOM(node) {
-      return ["p", { class: node.attrs.class, "data-guid": node.attrs.guid, "data-nickname": node.attrs.nickname}, 0];
+      return ["p", { class: node.attrs.class, "data-guid": node.attrs.guid, "data-writer": node.attrs.writer}, 0];
     },
   };
 
@@ -340,16 +360,16 @@ function Page() {
       roomId, // 방 이름
       ydoc
     );
-    hoverButtonPlugin(ydoc);
+
     const yXmlFragment = ydoc.getXmlFragment("prosemirror");
     const yConnectedUserList = ydoc.getMap('connectedUsers');
     const yLineLocks = ydoc.getMap('nodeInfo');
     const yUserLocks = ydoc.getMap('yUserLocks');
     const yLikeList = ydoc.getMap(`yLikeList_${userId}`);
 
-    function isMobileWebView() {
+    function isWeb() {
       const userAgent = navigator.userAgent.toLowerCase();
-      const isAndroidWebView = userAgent.indexOf('android') > -1 && userAgent.indexOf('mobile') > -1;
+      const isAndroidWebView = (userAgent.indexOf('android') > -1 && userAgent.indexOf('mobile') > -1) || userAgent.indexOf('app') > -1;
       return isAndroidWebView
     }
     function checkLocalStorage() {
@@ -371,8 +391,6 @@ function Page() {
             if (nickname && userId) {
               resolve();
             } else {
-              alert("계정 정보를 찾지 못했습니다.");
-              // Android.closeWebView();
               reject(new Error("계정 정보가 로컬 스토리지에 없습니다."));
             }
           }, 3000);
@@ -407,13 +425,13 @@ function Page() {
     }
 
     provider.on("sync", (isSynced) => {
-      if (isMobileWebView()) {
+      if (isWeb()) {
         if (isSynced) {
           handleUserConnection();
         }
         checkLocalStorage().then(() => {
         }).catch(error => {
-          toastr.error("계정 확인 불가");
+          toastr.error("계정 정보 확인 불가");
           console.error(error);
         });
       } else {
@@ -445,20 +463,30 @@ function Page() {
     });
     
     function onlineUpdate() {
-      updateUsersAndColors(); 
       const userState = provider.awareness.getLocalState();
+    
       if (userState && userState.user && userState.user.name) {
         const nickname = userState.user.name;
+    
+        if (!editorRef) {
+          yConnectedUserList.delete(nickname);
+        }
+    
         if (yConnectedUserList.get(nickname) === 'kicked') {
           toastr.warning("연결 정보가 없습니다!");
           navigate(`/organization/${pathSegments[1]}`);
           return;
         }
       }
+      updateUsersAndColors();
     }
    yConnectedUserList.observe(onlineUpdate);
 
-    function yjsDisconnect() {
+    window.yjsDisconnect = function() {
+      if(!editorRef) {
+        return;
+      }
+
       const keysToDelete = [];
 
       yLineLocks.forEach((value, key) => {
@@ -489,12 +517,25 @@ function Page() {
           const generatedIds = new Set();
         
           if (transactions.some(transaction => transaction.docChanged)) {
-            const { paragraph } = nextState.schema.nodes;
+            const { paragraph, image } = nextState.schema.nodes;
             let prevNode = null; // 이전 노드를 추적하기 위한 변수
             let prevPos = null; // 이전 노드의 위치를 저장
         
             nextState.doc.descendants((node, pos) => {
-              if (node.type === paragraph) {
+              if (node.type === image) {
+                let currentGuid = node.attrs['data-guid'];
+                if (!currentGuid || generatedIds.has(currentGuid)) {
+                  let newGuid;
+                  do {
+                    newGuid = guidGenerator();
+                  } while (generatedIds.has(newGuid));
+                  generatedIds.add(newGuid);
+                  tr.setNodeMarkup(pos, undefined, {...node.attrs, 'data-guid': newGuid});
+                  modified = true;
+                } else {
+                  generatedIds.add(currentGuid);
+                }
+              } else if (node.type === paragraph) {
                 const nodeTextContent = node.textContent;
                 const selection = nextState.selection;
                 const cursorPosition = selection.head || selection.from;
@@ -530,7 +571,7 @@ function Page() {
                 // 현재 노드와 위치를 이전 노드로 업데이트
                 prevNode = node;
                 prevPos = pos;
-              }
+              } 
             });
           }
           return modified ? tr : null;
@@ -622,6 +663,50 @@ function Page() {
       }
     };
 
+    // 블록 좋아요     
+    window.toggleLike = function(blockId, lover, heartReceiver) {
+      if (lover !== heartReceiver) {
+        const currentLikeState = yLikeList.get(blockId);
+        const newLikeState = !currentLikeState;
+        yLikeList.set(blockId, newLikeState);
+      }
+
+      const handleLike = async () => {
+        try {
+            const response = await fetch("/api/user/note/block/likes", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ organizationId, noteId, lover, blockId, heartReceiver}),
+            });
+            if (response.ok) {
+                const responseData = await response.text();
+                toastr.remove();
+                if (responseData.includes("좋아요 성공!")) { 
+                  toastr.success(responseData);
+                } else {
+                  toastr.info(responseData);
+                }
+            } else {
+                const errorData = await response.text();
+                toastr.remove();
+                toastr.error(errorData);
+            }
+        } catch (error) {
+            console.error("Error: ", error);
+            alert("처리 중 오류가 발생했습니다.");
+        }
+      };
+
+      return handleLike();
+    };
+
+    window.getLikeList = function(guid) {
+      const isLiked = yLikeList.get(guid.toString());
+      return !!isLiked;
+    };
+
     function getAvailableColors() {
       const usedColors = new Set();
       yConnectedUserList.forEach((color, name) => {
@@ -653,25 +738,22 @@ function Page() {
       userDiv.setAttribute("style", `background-color: ${user.color}`);
       userDiv.innerText = user.name;
       cursor.appendChild(userDiv);
-      
-      // 커서 색상 확인
-      // const usersAndColors = [];
-      // yConnectedUserList.forEach((color, name) => {
-      //   usersAndColors.push({ name, color });
-      // });
-      // console.log('연결된 사용자와 커서 색상:', usersAndColors);
 
       return cursor;
     };
 
     yConnectedUserList.observe(updateUsersAndColors);
-    window.addEventListener("pagehide", yjsDisconnect);
-    window.addEventListener("unload", yjsDisconnect);
-    window.addEventListener("popstate", yjsDisconnect);
+    window.addEventListener("pagehide", window.yjsDisconnect);
+    window.addEventListener("unload", window.yjsDisconnect);
+    window.addEventListener("popstate", window.yjsDisconnect);
 
     editorRef.current.addEventListener('mousedown', (event) => { handleNodeClick(nickname, event); });
     editorRef.current.addEventListener('keydown', (event) => { handleEditAttempt(nickname, event); });
     editorRef.current.addEventListener('mousedown', (event) => { handleEditAttempt(nickname, event); });
+
+    document.addEventListener("touchstart", touchHandler, true);
+    document.addEventListener("touchmove", touchHandler, true);
+    document.addEventListener("touchend", touchHandler, true);
 
     const myDoc = DOMParser.fromSchema(mySchema).parse(
       document.createElement("div")
@@ -701,9 +783,7 @@ function Page() {
               observer.observe(el);
               return () => observer.unobserve(el);
             },
-          }),
-          // checkBlockType(),
-          
+          }),          
           keymap({
             "Mod-z": undo,
             "Mod-y": redo,
@@ -720,78 +800,15 @@ function Page() {
       setisloaded(false);
       yConnectedUserList.unobserve(updateUsersAndColors);
       yConnectedUserList.unobserve(onlineUpdate);
-      window.removeEventListener("pagehide", yjsDisconnect);
-      window.removeEventListener("unload", yjsDisconnect);
-      window.removeEventListener("popstate", yjsDisconnect);
-      yjsDisconnect();
+      window.removeEventListener("pagehide", window.yjsDisconnect);
+      window.removeEventListener("unload", window.yjsDisconnect);
+      window.removeEventListener("popstate", window.yjsDisconnect);
+      document.removeEventListener("touchstart", touchHandler, true);
+      document.removeEventListener("touchmove", touchHandler, true);
+      document.removeEventListener("touchend", touchHandler, true);
+      window.yjsDisconnect();
     };
   }, [pageId]);
-
-  // 줄 번호로 커서 위치 출력
-  // const getCurrentLineNumber = () => {
-  //   const { $from } = editorRef.current.view.state.selection; // 현재 커서 위치 가져오기
-  //   const pos = $from.pos; // 커서 위치
-  //   const resolvedPos = editorRef.current.view.state.doc.resolve(pos);
-  //   let node = resolvedPos.nodeAfter || resolvedPos.nodeBefore;
-    
-  //   let clickedLineNumber = 0;
-  
-  //   // 커서 위치가 어느 줄에 속하는지 파악하기
-  //   editorRef.current.view.state.doc.nodesBetween(0, pos, (node, start) => {
-  //     if (node.isBlock && start < pos) {
-  //       clickedLineNumber++;
-  //     }
-  //   });
-    
-  //   if (node) {
-  //     if(node.type.name === "image") {
-  //       toastr.info(`현재 커서 위치: ${clickedLineNumber + 1} 번째 줄`);
-  //     }
-  //   } else {
-  //     toastr.info(`현재 커서 위치: ${clickedLineNumber} 번째 줄`);
-  //   }
-  //   setCurrentLineNumber(clickedLineNumber);
-  // };
-
-  // 기존 함수
-  //   const uploadImageToEditor = (view, imageUrl) => {
-  //     if (!currentLineNumber) {
-  //       alert("에디터를 클릭하여 이미지를 업로드할 위치를 지정하세요.");
-  //       return;
-  //     }
-
-  //     // const imageUrl = "https://sharenotebucket.s3.ap-northeast-2.amazonaws.com/NoneImage2.png"; // 하드 코딩
-
-  //     // ProseMirror Transaction 생성
-  //     const transaction = editorRef.current.view.state.tr;
-  //     const transactionWithImage = transactionImageAtLine(currentLineNumber, imageUrl, view)(transaction);
-
-  //     // Transaction 적용하여 에디터에 이미지 삽입
-  //     editorRef.current.view.dispatch(transactionWithImage);
-  //   };
-
-  //   const transactionImageAtLine = (lineNumber, imageUrl, view) => tr => {
-  //     // 이미지 노드 생성
-  //     const imageNode = editorRef.current.view.state.schema.nodes.image.create({ src: imageUrl });
-
-  //     // 특정 줄의 시작 노드 위치 찾기
-  //     let pos = 0;
-  //     editorRef.current.view.state.doc.nodesBetween(0, editorRef.current.view.state.doc.content.size, (node, nodePos) => {
-  //         if (node.isBlock && nodePos > pos) {
-  //             pos = nodePos;
-  //         }
-  //         pos = pos === 0 ? 1 : pos; 
-  //     });
-
-  //     // 이미지 노드 삽입
-  //     const insertTr = tr.insert(pos, imageNode);
-
-  //     // 이미지 삽입 후 커서 위치 설정
-  //     const resolvedPos = insertTr.doc.resolve(pos + imageNode.nodeSize);
-  //     const selection = editorRef.current.view.state.selection.constructor.near(resolvedPos);
-
-  //     return insertTr.setSelection(selection);
-  // };
 
   window.uploadImageToEditor = (imageUrl) => {
     const hoverDiv = document.querySelector(".hoverDiv");
