@@ -12,12 +12,10 @@ class NoteListAdapter(private val onItemClick: (String) -> Unit) :
     private val noteList = mutableListOf<Note>()
 
     inner class NoteViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView), View.OnClickListener {
-        // 뷰홀더 초기화 및 클릭 리스너 설정
         init {
             itemView.setOnClickListener(this)
         }
 
-        // 아이템 클릭 시 호출되는 메서드
         override fun onClick(v: View?) {
             val position = adapterPosition
             if (position != RecyclerView.NO_POSITION) {
@@ -27,6 +25,7 @@ class NoteListAdapter(private val onItemClick: (String) -> Unit) :
         }
 
         val titleTextView: TextView = itemView.findViewById(R.id.titleTextView)
+        val noteNumberTextView: TextView = itemView.findViewById(R.id.noteNumberTextView) // 순번을 표시할 텍스트뷰
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): NoteViewHolder {
@@ -36,12 +35,17 @@ class NoteListAdapter(private val onItemClick: (String) -> Unit) :
 
     override fun onBindViewHolder(holder: NoteViewHolder, position: Int) {
         val currentItem = noteList[position]
+
+        // 아이템의 순번은 position을 기반으로 계산하여 1부터 시작하도록 설정
+        val noteNumber = position + 1
+        holder.noteNumberTextView.text = noteNumber.toString()
+
+        // 아이템의 제목 설정
         holder.titleTextView.text = currentItem.title
     }
 
     override fun getItemCount() = noteList.size
 
-    // 외부에서 노트 목록을 설정하는 메서드
     fun setNotes(notes: List<Note>) {
         noteList.clear()
         noteList.addAll(notes)

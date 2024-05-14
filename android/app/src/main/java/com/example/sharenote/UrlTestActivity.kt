@@ -38,7 +38,8 @@ class UrlTestActivity : Activity() {
             val imageUrl = "https://sharenotebucket.s3.ap-northeast-2.amazonaws.com/1ba6e58b-1092-4e27-b552-c0cb1a1f4cb8.png"
             val intent = Intent(this, PageActivity::class.java)
             intent.putExtra(EXTRA_IMAGE_URL, imageUrl)
-            startActivity(intent)
+            startActivityForResult(intent, 100)
+            finish()
         }
     }
 

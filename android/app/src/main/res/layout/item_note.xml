@@ -5,6 +5,15 @@
     android:orientation="vertical"
     android:padding="8dp">
 
+
+    <TextView
+        android:id="@+id/noteNumberTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="4dp"/>
+
     <TextView
         android:id="@+id/titleTextView"
         android:layout_width="wrap_content"

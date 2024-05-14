@@ -28,11 +28,8 @@ class PageListAdapter(private val pages: MutableList<Page>, private val onPageCl
 
     override fun onBindViewHolder(holder: PageViewHolder, position: Int) {
         val currentPage = pages[position]
-        holder.idViewText.text = "PageId\n${currentPage.id}"
-        holder.userViewText.text = "UserId\n${currentPage.createUser}"
+        holder.pageNumberTextView.text = "Page ${position + 1}" // 순번을 설정합니다.
         holder.atViewText.text = currentPage.createdAt
-
-
 
         // 페이지를 클릭하면 해당 페이지의 정보를 전달합니다.
         holder.itemView.setOnClickListener {
@@ -66,8 +63,7 @@ class PageListAdapter(private val pages: MutableList<Page>, private val onPageCl
 
 
     inner class PageViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val idViewText: TextView = itemView.findViewById(R.id.idViewText)
-        val userViewText: TextView = itemView.findViewById(R.id.userViewText)
+        val pageNumberTextView: TextView = itemView.findViewById(R.id.pageNumberTextView) // 순번을 표시할 텍스트뷰
         val atViewText: TextView = itemView.findViewById(R.id.atViewText)
     }
 }
