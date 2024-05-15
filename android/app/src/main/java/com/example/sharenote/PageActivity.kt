@@ -109,6 +109,7 @@ class PageActivity : AppCompatActivity() {
             val intent = Intent(this, PaintActivity::class.java)
             startActivity(intent)
             finish()
+            yjsDisconnect()
         }
     }
 
@@ -149,10 +150,17 @@ class PageActivity : AppCompatActivity() {
         if (webView.canGoBack()) {
             //웹사이트에서 뒤로갈 페이지가 존재 한다면 수행
             webView.goBack() // 웹사이트 뒤로가기
+            yjsDisconnect()
 
         } else {
             super.onBackPressed() // 본래의 백버튼 수행(안드로이드)
+            yjsDisconnect()
         }
+    }
+
+    private fun yjsDisconnect(){
+        val jsCode = "yjsDisconnect()"
+        webView.evaluateJavascript(jsCode, null)
     }
 
     private fun toggleFab() {
