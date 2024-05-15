@@ -14,6 +14,7 @@ import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.LinearLayout
 import android.widget.PopupWindow
+import android.widget.RelativeLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.content.ContentProviderCompat.requireContext
@@ -29,7 +30,7 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
-class NoteActivity : AppCompatActivity(), PageListAdapter.OnPageClickListener {
+class NoteActivity : AppCompatActivity(), PageListAdapter.OnPageClickListener, PageListAdapter.OnSettingClickListener {
 
     private lateinit var backTextView: TextView
     private lateinit var createPageButton: ImageButton
@@ -51,7 +52,7 @@ class NoteActivity : AppCompatActivity(), PageListAdapter.OnPageClickListener {
         recyclerView = findViewById(R.id.recyclerViewPages)
         val layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
         recyclerView.layoutManager = layoutManager
-        pageListAdapter = PageListAdapter(pages, this)
+        pageListAdapter = PageListAdapter(pages, this, this)
         recyclerView.adapter = pageListAdapter
 
         backTextView.setOnClickListener {
@@ -83,8 +84,13 @@ class NoteActivity : AppCompatActivity(), PageListAdapter.OnPageClickListener {
     }
 
     override fun onPageClick(page: Page) {
+        saveRecentPageId(page.id)
         val intent = Intent(this, PageActivity::class.java)
         startActivity(intent)
+    }
+
+    override fun onSettingClick(page: Page, position: Int) {
+        showSettingPopup(page, position)
     }
 
     /*
@@ -226,6 +232,47 @@ class NoteActivity : AppCompatActivity(), PageListAdapter.OnPageClickListener {
     }
 
 
+    fun showSettingPopup(page: Page, position: Int){
+        // 팝업 창의 레이아웃을 inflate하여 가져옴
+        val popupView = LayoutInflater.from(this).inflate(R.layout.setting_popup_layout, null)
+
+        // 팝업 창을 생성
+        val settingPopupWindow = PopupWindow(
+            popupView,
+            700,
+            LinearLayout.LayoutParams.WRAP_CONTENT,
+            true
+        )
+
+
+        val titleEditText = popupView.findViewById<TextView>(R.id.titleEditText)
+        titleEditText.text = "Page ${position + 1}"
+
+
+        // 팝업 창 내의 각 레이아웃에 클릭 이벤트 설정
+        val layout1 = popupView.findViewById<RelativeLayout>(R.id.layout1)
+        val layout2 = popupView.findViewById<RelativeLayout>(R.id.layout2)
+        val layout3 = popupView.findViewById<RelativeLayout>(R.id.layout3)
+
+        layout1.setOnClickListener {
+            // 클릭 이벤트 설정
+        }
+
+        layout2.setOnClickListener {
+            // 클릭 이벤트 설정
+        }
+
+        layout3.setOnClickListener {
+            // 클릭 이벤트 설정
+        }
+
+
+        // 팝업 창을 화면에 표시
+        settingPopupWindow.showAtLocation(popupView, Gravity.CENTER, 0, 0)
+    }
+
+
+
     private fun showOrgInfoPopup() {
         val recentWorkspaceId = getRecentWorkSpaceId() ?: ""
         val userId = getUserId() ?: ""
@@ -233,6 +280,12 @@ class NoteActivity : AppCompatActivity(), PageListAdapter.OnPageClickListener {
         // 팝업 창의 레이아웃을 inflate하여 가져옴
         val popupView = LayoutInflater.from(this).inflate(R.layout.org_info_layout, null)
 
+
+        // 워크스페이스 이름을 표시할 텍스트뷰 선언
+        val organizationTextView = popupView.findViewById<TextView>(R.id.Organization)
+
+        val workspaceName = SharedPreferencesUtil.getRecentWorkspaceName(this)
+        organizationTextView.text = workspaceName
 
 
         // 팝업 창을 생성

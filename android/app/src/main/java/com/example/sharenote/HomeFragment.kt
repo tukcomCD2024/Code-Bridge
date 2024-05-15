@@ -1,3 +1,4 @@
+import android.animation.ObjectAnimator
 import android.app.Activity
 import android.content.ContentValues.TAG
 import android.content.Intent
@@ -49,6 +50,9 @@ class HomeFragment : Fragment() {
     private lateinit var menuBtn: ImageButton
     private lateinit var profileForm: RelativeLayout
 
+    private lateinit var listLayout: RelativeLayout
+    private lateinit var listLayout_1: ImageView
+
     private lateinit var MoveDraw: Button
 
     private lateinit var emailTextView1: TextView
@@ -80,6 +84,9 @@ class HomeFragment : Fragment() {
         recyclerView.adapter = noteListAdapter
         menuBtn = view.findViewById(R.id.menuBtn)
         profileForm = view.findViewById(R.id.profileForm)
+
+        listLayout = view.findViewById(R.id.listLayout)
+        listLayout_1 = view.findViewById(R.id.listLayout_1)
 
         MoveDraw = view.findViewById(R.id.MoveDraw)
 
@@ -126,15 +133,19 @@ class HomeFragment : Fragment() {
             showAccountMenuPopup()
         }
 
-        // themesBtn 클릭 시 buttonCreateNote와 recyclerViewNotes의 가시성을 토글합니다.
-        val themesBtn = view.findViewById<ImageButton>(R.id.themesBtn)
-        themesBtn.setOnClickListener {
-            togglePagesVisibility(themesBtn)
+
+        listLayout_1.setOnClickListener {
+            // recyclerViewNotes의 가시성을 토글
+            if (recyclerView.visibility == View.VISIBLE) {
+                animateView(false)
+            } else {
+                animateView(true)
+            }
         }
 
         // Create Note 버튼 클릭 시 NoteActivity로 이동
-        val buttonCreatePage = view.findViewById<Button>(R.id.buttonCreateNote)
-        buttonCreatePage.setOnClickListener {
+        val buttonCreateNote = view.findViewById<ImageView>(R.id.listLayout_4)
+        buttonCreateNote.setOnClickListener {
             createNote()
         }
 
@@ -177,6 +188,7 @@ class HomeFragment : Fragment() {
             override fun onWorkSpaceClick(workSpace: WorkSpace) {
                 // 워크스페이스를 클릭했을 때 처리할 내용을 여기에 작성합니다.
                 saveRecentWorkspaceId(workSpace.id)
+                saveRecentWorkspaceName(workSpace.name)
                 val MainIntent = Intent(requireContext(), MainActivity::class.java)
                 startActivity(MainIntent)
                 requireActivity().finish()
@@ -333,23 +345,18 @@ class HomeFragment : Fragment() {
 
 
 
-    private fun togglePagesVisibility(themesBtn: ImageButton) {
-        // recyclerViewNotes의 가시성을 토글합니다.
-        recyclerView.visibility = if (recyclerView.visibility == View.VISIBLE) {
-            View.GONE
-        } else {
-            View.VISIBLE
-        }
+    private fun animateView(visible: Boolean) {
+        // 애니메이션 생성 및 설정
+        val rotationFrom = if (visible) -90f else 0f
+        val rotationTo = if (visible) 0f else -90f
+        val rotationAnimation = ObjectAnimator.ofFloat(listLayout_1, "rotation", rotationFrom, rotationTo)
+        rotationAnimation.duration = 200 // 애니메이션의 지속 시간을 설정합니다 (밀리초 단위)
 
-        // themesBtn 이미지를 변경합니다.
-        val newImageResource = if (recyclerView.visibility == View.VISIBLE) {
-            R.drawable.baseline_keyboard_arrow_right_24 // 토글 후 recyclerView가 보이는 경우
-        } else {
-            R.drawable.baseline_keyboard_arrow_down_24 // 토글 후 recyclerView가 숨겨진 경우
-        }
+        // 애니메이션 시작
+        rotationAnimation.start()
 
-        // 새로운 이미지로 설정합니다.
-        themesBtn.setImageResource(newImageResource)
+        // recyclerViewNotes의 가시성 변경
+        recyclerView.visibility = if (visible) View.VISIBLE else View.GONE
     }
 
 
@@ -480,6 +487,10 @@ class HomeFragment : Fragment() {
     // 최근 워크스페이스 ID를 저장하고 불러오기
     private fun saveRecentWorkspaceId(workspaceId: String) {
         SharedPreferencesUtil.saveRecentWorkspaceId(requireContext(), workspaceId)
+    }
+
+    private fun saveRecentWorkspaceName(workspaceName: String) {
+        SharedPreferencesUtil.saveRecentWorkspaceName(requireContext(), workspaceName)
     }
 
     private fun getRecentWorkspaceId(): String? {
