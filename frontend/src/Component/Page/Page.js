@@ -986,6 +986,7 @@ const EditorContainer = styled.div`
   margin-left: 15%; // 네비게이션 바 너비만큼 왼쪽 여백 추가
 
   @media (max-width: 768px) {
+    border: 2px solid rgba(0, 0, 0, 0.2);
     margin-left: 0%;
   }
 `;
