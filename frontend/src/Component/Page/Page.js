@@ -23,6 +23,7 @@ import "./ProseMirror_css/prosemirror_image_plugin/sideResize.css";
 import "./ProseMirror_css/prosemirror_image_plugin/withoutResize.css";
 import "./ProseMirror_css/ProseMirror.css";
 
+import ModalImageComponent from "./utils/ModalImageComponent";
 import { imageSettings, imageNodeSpec } from "./utils/pageSettings";
 import { inlinePlaceholderPlugin } from "./utils/inlinePlaceholderPlugin";
 import { hoverButtonPlugin } from "./utils/hoverButtonPlugin";
@@ -61,28 +62,8 @@ function Page() {
   const [usersAndColors, setUsersAndColors] = useState([]); // 연결된 사용자와 색상 상태
   const [noteSettingModalOpen, setNoteSettingModalOpen] = useState(false);
   const [myimage, setMyImage] = useState(null);
-
-  const touchHandler = (event) => {
-    var touches = event.changedTouches,
-        first = touches[0],
-        type = "";
-    switch(event.type) {
-        case "touchstart": type = "mousedown"; break;
-        case "touchmove": type = "mousemove"; break;        
-        case "touchend": type = "mouseup"; break;
-        default: return;
-    }
-
-    var simulatedEvent = document.createEvent("MouseEvent");
-    simulatedEvent.initMouseEvent(type, true, true, window, 1, 
-                                  first.screenX, first.screenY, 
-                                  first.clientX, first.clientY, false, 
-                                  false, false, false, 0, null);
-
-    first.target.dispatchEvent(simulatedEvent);
-    event.preventDefault();
-  };
-
+  const [showModalImage, setShowModalImage] = useState(false);
+  const [clickedImageSrc, setClickedImageSrc] = useState('');
 
   const uploadImage = (e) => {
     const selectedFile = e.target.files[0];
@@ -116,6 +97,14 @@ function Page() {
     localStorage.setItem("recentImageUrl", '');
     setMyImage(null);
     setNoteSettingModalOpen(false);
+  };
+
+    const handleOpenImageZoomModal = () => {
+    setShowModalImage(true);
+  };
+
+  const handleCloseImageZoomModal = () => {
+    setShowModalImage(false);
   };
 
   // 네비게이션바에 페이지 이동 함수
@@ -468,7 +457,7 @@ function Page() {
       if (userState && userState.user && userState.user.name) {
         const nickname = userState.user.name;
     
-        if (!editorRef) {
+        if (!editorRef.current) {
           yConnectedUserList.delete(nickname);
         }
     
@@ -617,7 +606,26 @@ function Page() {
     }
   };
 
+    // 더블클릭 감지를 위한 클릭 시간.
+    let lastClickTime = 0;
+
+    // 더블클릭 이벤트를 처리하는 함수
+    const handleDoubleClick = (event) => {
+      const currentTime = new Date().getTime();
+      if (currentTime - lastClickTime < 300) {
+          const { target } = event;
+          if (target.tagName.toLowerCase() === "img") {
+              const imageUrl = target.getAttribute("src");
+              setClickedImageSrc(imageUrl)
+              setShowModalImage(true);
+          }
+      }
+      lastClickTime = currentTime;
+  }
+
     const handleNodeClick = (nickname, event) => {
+      handleDoubleClick(event);
+
       const { target, clientX, clientY } = event;
       const coords = { left: clientX, top: clientY };
       const posAtCoords = view.posAtCoords(coords);
@@ -751,10 +759,6 @@ function Page() {
     editorRef.current.addEventListener('keydown', (event) => { handleEditAttempt(nickname, event); });
     editorRef.current.addEventListener('mousedown', (event) => { handleEditAttempt(nickname, event); });
 
-    document.addEventListener("touchstart", touchHandler, true);
-    document.addEventListener("touchmove", touchHandler, true);
-    document.addEventListener("touchend", touchHandler, true);
-
     const myDoc = DOMParser.fromSchema(mySchema).parse(
       document.createElement("div")
     );
@@ -803,9 +807,6 @@ function Page() {
       window.removeEventListener("pagehide", window.yjsDisconnect);
       window.removeEventListener("unload", window.yjsDisconnect);
       window.removeEventListener("popstate", window.yjsDisconnect);
-      document.removeEventListener("touchstart", touchHandler, true);
-      document.removeEventListener("touchmove", touchHandler, true);
-      document.removeEventListener("touchend", touchHandler, true);
       window.yjsDisconnect();
     };
   }, [pageId]);
@@ -951,6 +952,14 @@ function Page() {
             />
         </EditorContainer>
         </LayoutContainer>
+
+        {showModalImage && (
+        <ModalImageComponent 
+          src={clickedImageSrc} 
+          modalOpen={handleOpenImageZoomModal}
+          closeModal={handleCloseImageZoomModal}
+         />
+      )}
 
         {noteSettingModalOpen && (
         <NoteSettingModal

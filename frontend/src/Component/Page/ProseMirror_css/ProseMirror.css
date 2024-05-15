@@ -515,7 +515,6 @@ animation: spin 2s ease-in-out infinite;
   }
 }
 
-
 /* this is a rough fix for the first cursor position when the first paragraph is empty */
 .ProseMirror > .ProseMirror-yjs-cursor:first-child {
   margin-top: 16px;
