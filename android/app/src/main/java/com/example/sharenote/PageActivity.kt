@@ -76,8 +76,9 @@ class PageActivity : AppCompatActivity() {
             }
         }
 
-        val imageUrl = intent.getStringExtra(UrlTestActivity.EXTRA_IMAGE_URL)
-       // val image = intent.getStringExtra(PaintActivity.)
+
+        //val imageUrl = intent.getStringExtra(UrlTestActivity.EXTRA_IMAGE_URL)
+        val imageUrl = intent.getStringExtra(PaintActivity.IMAGE_URL)
 
         // WebView가 로드되면 이미지를 업로드하는 함수 호출
         webView.webViewClient = object : WebViewClient() {
@@ -99,37 +100,34 @@ class PageActivity : AppCompatActivity() {
 
         // 플로팅 버튼 클릭시 에니메이션 동작 기능
         floating.setOnClickListener {
-            toggleFab()
+           toggleFab()
         }
 
 
 
         fabDraw.setOnClickListener {
             val intent = Intent(this, PaintActivity::class.java)
-            startActivityForResult(intent, REQUEST_IMAGE_SELECTION)
+            startActivity(intent)
+            finish()
         }
     }
 
-    /*
+/*
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == REQUEST_IMAGE_SELECTION && resultCode == Activity.RESULT_OK) {
-            val imageUriString = data?.getStringExtra(UrlTestActivity.EXTRA_IMAGE_URI)
-            Log.d("PageActivity", "Received image URI: $imageUriString")
-            // 로그 확인
-            Log.d("PageActivity", "Selected image URI: $imageUriString")
-            // 작업 중인 텍스트 줄에 이미지 URL 삽입
-            if (!imageUriString.isNullOrEmpty()) {
-                Toast.makeText(this, "Selected image URL: $imageUriString", Toast.LENGTH_SHORT).show()
-                val script = """
-                    var img = document.createElement('img');
-                    img.src = '$imageUriString';
-                    document.body.appendChild(img);
-                """.trimIndent()
-                webView.evaluateJavascript(script, null)
+        if (requestCode == 100 && resultCode == Activity.RESULT_OK) {
+            val imageUrl = data?.getStringExtra("imageUrl")
+            if (imageUrl != null) {
+                Log.d("PageActivity", "Received Image URL: $imageUrl")
+                Toast.makeText(this@PageActivity, imageUrl, Toast.LENGTH_SHORT).show()
+            } else {
+                Log.d("PageActivity", "Received Image URL is null")
+                Toast.makeText(this@PageActivity, "No image URL received", Toast.LENGTH_SHORT).show()
             }
         }
     }*/
+
+
 
     private fun uploadImageToEditor(imageUrl: String?) {
         if (imageUrl != null) {

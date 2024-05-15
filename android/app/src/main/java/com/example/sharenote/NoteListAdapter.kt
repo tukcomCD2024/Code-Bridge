@@ -25,7 +25,6 @@ class NoteListAdapter(private val onItemClick: (String) -> Unit) :
         }
 
         val titleTextView: TextView = itemView.findViewById(R.id.titleTextView)
-        val noteNumberTextView: TextView = itemView.findViewById(R.id.noteNumberTextView) // 순번을 표시할 텍스트뷰
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): NoteViewHolder {
@@ -36,9 +35,6 @@ class NoteListAdapter(private val onItemClick: (String) -> Unit) :
     override fun onBindViewHolder(holder: NoteViewHolder, position: Int) {
         val currentItem = noteList[position]
 
-        // 아이템의 순번은 position을 기반으로 계산하여 1부터 시작하도록 설정
-        val noteNumber = position + 1
-        holder.noteNumberTextView.text = noteNumber.toString()
 
         // 아이템의 제목 설정
         holder.titleTextView.text = currentItem.title

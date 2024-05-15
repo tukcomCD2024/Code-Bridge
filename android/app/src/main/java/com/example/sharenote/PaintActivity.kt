@@ -113,6 +113,9 @@ class PaintActivity : AppCompatActivity() {
         startPdfViewerForResult.launch(intent)
     }
 
+    companion object {
+        const val IMAGE_URL = "image_url"
+    }
 
     @SuppressLint("MissingInflatedId")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -185,6 +188,8 @@ class PaintActivity : AppCompatActivity() {
                     val imagePart = convertBitmapToMultipartBodyPart(finalBitmap, "multipartFile", fileName)
 
                     val resultIntent = Intent()
+                    val intent = Intent(this, PageActivity::class.java)
+
                     // 파일을 서버로 업로드하는 로직 (Retrofit 등 사용)
                     lifecycleScope.launch {
                         try {
@@ -193,14 +198,17 @@ class PaintActivity : AppCompatActivity() {
                             withContext(Dispatchers.Main) {
                                 if (response.isSuccessful) {
                                     val imageUrl = response.body()!!.image_url
-                                    resultIntent.putExtra("imageUrl", imageUrl)
+                                    intent.putExtra(IMAGE_URL, imageUrl)
+                                    startActivity(intent)
+                                    finish()
+                                    /*resultIntent.putExtra("imageUrl", imageUrl)
                                     setResult(Activity.RESULT_OK, resultIntent)
                                     Log.d("PaintActivity", "{$imageUrl}")
-                                    finish()
+                                    super.finish()*/
                                 } else {
                                     Log.e("PaintActivity", "Error: ${response.errorBody()}")
                                     setResult(Activity.RESULT_OK, resultIntent)
-                                    finish()
+                                    super.finish()
                                 }
                             }
 
@@ -217,13 +225,6 @@ class PaintActivity : AppCompatActivity() {
                 .show() // 다이얼로그 표시
             // 원래 이거 밑의 한줄코드였음
             //onBackPressed()
-
-
-
-
-
-
-
         }
 
         btnUndo.setOnClickListener {

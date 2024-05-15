@@ -89,8 +89,8 @@ class NoteActivity : AppCompatActivity(), PageListAdapter.OnPageClickListener, P
         startActivity(intent)
     }
 
-    override fun onSettingClick(page: Page) {
-        showSettingPopup(page)
+    override fun onSettingClick(page: Page, position: Int) {
+        showSettingPopup(page, position)
     }
 
     /*
@@ -232,19 +232,21 @@ class NoteActivity : AppCompatActivity(), PageListAdapter.OnPageClickListener, P
     }
 
 
-    fun showSettingPopup(page: Page) {
+    fun showSettingPopup(page: Page, position: Int){
         // 팝업 창의 레이아웃을 inflate하여 가져옴
         val popupView = LayoutInflater.from(this).inflate(R.layout.setting_popup_layout, null)
 
         // 팝업 창을 생성
         val settingPopupWindow = PopupWindow(
             popupView,
-            LinearLayout.LayoutParams.WRAP_CONTENT,
+            700,
             LinearLayout.LayoutParams.WRAP_CONTENT,
             true
         )
 
+
         val titleEditText = popupView.findViewById<TextView>(R.id.titleEditText)
+        titleEditText.text = "Page ${position + 1}"
 
 
         // 팝업 창 내의 각 레이아웃에 클릭 이벤트 설정

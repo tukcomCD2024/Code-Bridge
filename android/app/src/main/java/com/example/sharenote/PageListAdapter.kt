@@ -19,7 +19,7 @@ class PageListAdapter(private val pages: MutableList<Page>, private val onPageCl
     }
 
     interface OnSettingClickListener {
-        fun onSettingClick(page: Page)
+        fun onSettingClick(page: Page, position: Int)
     }
 
 
@@ -43,7 +43,7 @@ class PageListAdapter(private val pages: MutableList<Page>, private val onPageCl
         }
 
         holder.settingLayout.setOnClickListener {
-            onSettingClickListener.onSettingClick(currentPage)
+            onSettingClickListener.onSettingClick(currentPage, position)
         }
     }
 
