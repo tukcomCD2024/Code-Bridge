@@ -1,6 +1,10 @@
 .ProseMirror {
   position: relative;
   text-align: left;
+
+  @media (max-width: 768px) {
+    margin-left: 40px;
+  }
 }
 
 .ProseMirror {
@@ -342,18 +346,18 @@ img.ProseMirror-separator {
 .editor {
   background-image: url('/src/image/note_paper\(8\).svg');
   background-size: 100% 135%;
-   background-repeat: no-repeat; 
+  background-repeat: no-repeat; 
   background-position: center -10px; 
   border-radius: 4px;
   padding: 5px 0;
   margin-bottom: 23px;
 
   @media (max-width: 768px) {
-      background: white;
-      color: black;
-      background-clip: padding-box;
-      background-position: 0px 0px;
-      border: 2px solid rgba(0, 0, 0, 0.2);
+    background: white;
+    color: black;
+    background-clip: padding-box;
+    background-position: 0px 0px;
+    border: 3px solid rgba(198, 241, 86, 0.315);
   }
 }
 
@@ -408,6 +412,10 @@ img.ProseMirror-separator {
   background: #f9f9f9;
   box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
   border-radius: 4px;
+
+  @media (max-width: 768px) {
+    padding: 1px;
+  }
 }
 
 .hoverButton_plus, .hoverButton_lock{
@@ -416,6 +424,11 @@ img.ProseMirror-separator {
   height: 20px;
   margin: 4px;
   padding-top: 1px;
+
+  @media (max-width: 768px) {
+    width: 14px;
+    height: 16px;
+  }
 }
 
 .hoverButton_plus:hover {
@@ -433,6 +446,10 @@ animation: spin 2s ease-in-out infinite;
   align-items: center;
   font-size: 22px;
   margin: 0px 4px;
+
+  @media (max-width: 768px) {
+    font-size: 18px;
+  }
 }
 
 .hoverButton_like {
