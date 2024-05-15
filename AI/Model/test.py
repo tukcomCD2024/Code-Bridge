@@ -17,7 +17,7 @@ def resultByDesc(result):
 # imgsrc = r"C:\Users\Ka\Desktop\Ka\programming\AI\AI2\asset\size64Image01\bank\bank.png"
 # imgsrc = r"C:\Users\Ka\Desktop\Ka\programming\AI\AI2\asset\size64Image01\security\security.png"
 imgsrc = r"C:\Users\Ka\Desktop\Ka\programming\AI\sample\{}.png"
-images = {'arrow': 4, 'heart': 51, 'heart2': 51, 'cloud': 28, 'sword': 91, 'skirt': 83, 'star': 87, 'star2': 87, 'bread':17}
+images = {'arrow': 4, 'heart': 51, 'heart2': 51, 'cloud': 28, 'sword': 91, 'skirt': 83, 'star': 87, 'star2': 87, 'bread':17, 'bread2':17, 'candy':26}
 
 from keras.models import load_model
 

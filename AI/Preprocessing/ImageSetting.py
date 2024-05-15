@@ -7,14 +7,6 @@ tagsTemp = ['rabbit', 'bear', 'dog', 'cat', 'tiger', 'horse']
 defaultRoute = "../asset/image/svg"
 
 
-def getSubdirectoryList(defaultRoute=defaultRoute, directoryName='svg'):
-    directoryPath = defaultRoute + directoryName
-    if not os.path.isdir(directoryPath):
-        os.mkdir(directoryPath)
-        return []
-    return [f'{directoryPath}/{x}' for x in os.listdir(directoryPath)]
-
-
 def getImageList(path):
     return os.listdir(path)
 
@@ -70,17 +62,44 @@ def boldLine():
             image.save(imgpath.replace('animalsMono', 'animalsFilter'))
 
 
-def imageReformByAlpha(img):
+def removeAlpha(img):
     size = 224
     img = img.convert("RGBA")
+    img = img.resize((224, 224))
 
     array = np.array(img)
     imageArray = []
     for i in array:
         for j in i:
-            imageArray.append(255 if j[3] == 0 else 0)
+            imageArray.append(255 if j[3] == 0 or j[0] == 255 else 0)
     imageArray = np.resize(imageArray, [size, size])
     return Image.fromarray(imageArray)
+
+def trim_white_borders(image, threshold=240):
+    # 이미지 불러오기
+    image_np = np.array(image)
+
+    # 흰색(또는 거의 흰색) 픽셀 마스크 생성
+    if image_np.ndim == 3:  # RGB 이미지
+        mask = np.all(image_np > threshold, axis=-1)
+    else:  # 흑백 이미지
+        mask = image_np > threshold
+
+    coords = np.argwhere(~mask)
+
+    # 흰색이 아닌 픽셀의 최소/최대 좌표 찾기
+    if coords.size == 0:
+        raise ValueError("The image is completely white!")
+
+    y_min, x_min = coords.min(axis=0)
+    y_max, x_max = coords.max(axis=0) + 1  # 슬라이싱을 위해 +1
+
+    # 이미지 자르기
+    trimmed_image = image_np[y_min:y_max, x_min:x_max]
+
+    # 잘라낸 이미지 저장
+    trimmed_pil_image = Image.fromarray(trimmed_image)
+    return trimmed_pil_image
 
 
 def imageReform():
@@ -90,8 +109,9 @@ def imageReform():
 
             img = Image.open(imgPath)
 
-            resized = imageReformByAlpha(img).convert('L')
-            resized.save(f'{dir}/{imageFile}')
+            resized = removeAlpha(img).convert('L')
+            trimImage = trim_white_borders(resized)
+            trimImage.save(f'{dir}/{imageFile}')
 
 
 def svgImageResize():
@@ -114,8 +134,7 @@ def svgImageResize():
             img.close()
 
 
-svgImageResize()
-convertSVGtoPNG()
+
 imageReform()
 
 # convertColor2Mono()
