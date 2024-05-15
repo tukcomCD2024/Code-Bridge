@@ -199,8 +199,8 @@ export function hoverButtonPlugin() {
           const topWithScroll = coords.top + window.scrollY;
       
           const editorRect = view.dom.getBoundingClientRect();
-          hoverDiv.style.left = `${editorRect.left - hoverDiv.offsetWidth - 5}px`;
-          hoverDiv.style.top = `${topWithScroll-4}px`;
+          hoverDiv.style.left = window.matchMedia("(max-width: 768px)").matches ? `${editorRect.left - hoverDiv.offsetWidth + 7}px` : `${editorRect.left - hoverDiv.offsetWidth - 5}px`
+          hoverDiv.style.top = window.matchMedia("(max-width: 768px)").matches ? `${topWithScroll-2}px` : `${topWithScroll-4}px`;
           hoverDiv.style.visibility = "visible";
       
         } catch (error) {
