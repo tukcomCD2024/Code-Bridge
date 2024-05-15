@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify, Response
 from app.services import auto_draw
-import json, tensorflow as tf
+import json
 
 bp = Blueprint(name='example',
                import_name=__name__,
@@ -12,7 +12,7 @@ ai: Blueprint = Blueprint(name='ai',
 
 
 @ai.route('/base64', methods=['POST'])
-def draw() -> str:
+def draw() -> Response:
     return jsonify(auto_draw.AIbyBase64(json.loads(request.get_json())))
 
 
