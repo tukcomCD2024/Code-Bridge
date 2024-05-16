@@ -21,6 +21,7 @@ export function hoverButtonPlugin() {
 
   return new Plugin({
     view(editorView) {
+      editorResizing();
       hoverDiv.classList.add("hoverDiv"); // CSS 클래스 적용
       document.body.appendChild(hoverDiv); // 바디에 직접 추가
 
@@ -134,6 +135,24 @@ export function hoverButtonPlugin() {
         increaseEditorHeightForScroll();
         updateButton(editorView, newPos, true);
       });
+
+      function editorResizing() {
+        const editor = document.querySelector("#editor");
+        const prosemirror = document.querySelector(".ProseMirror");
+        const initialEditorPaddingLeft = "8%";
+        const initialEditorPaddingRight = "5%";   
+        const initialProsemirrorMarginLeft = "40px";
+
+        if (getComputedStyle(hoverDiv).visibility !== "visible" && window.matchMedia("(max-width: 768px)").matches) {
+          editor.style.paddingLeft = "0%";
+          editor.style.paddingRight = "0%";
+          prosemirror.style.marginLeft = "0px";
+        } else {
+          editor.style.paddingLeft = initialEditorPaddingLeft;
+          editor.style.paddingRight = initialEditorPaddingRight;
+          prosemirror.style.marginLeft = initialProsemirrorMarginLeft;
+        }
+      }
       
       function updateButton(view, pos, show) {
         try {
@@ -144,6 +163,7 @@ export function hoverButtonPlugin() {
           // 버튼을 숨기는 경우는 바로 이전 노드가 없거나 작성 불가능한 노드(doc)를 클릭할 때
           if ((resolvedPos.depth === 0 && !resolvedPos.nodeBefore && !isImageNode) || (resolvedPos.depth === 0 && !show)) {
             hoverDiv.style.visibility = "hidden";
+            editorResizing();
             return;
           }
 
@@ -194,29 +214,33 @@ export function hoverButtonPlugin() {
             coords = view.coordsAtPos(startPos);
             hoverButton_lock.style.display = "block";
           }
+
+          hoverDiv.style.visibility = "visible";
+          editorResizing();
           
           // 스크롤 오프셋을 고려하여 좌표 조정
           const topWithScroll = coords.top + window.scrollY;
-      
           const editorRect = view.dom.getBoundingClientRect();
           hoverDiv.style.left = window.matchMedia("(max-width: 768px)").matches ? `${editorRect.left - hoverDiv.offsetWidth + 7}px` : `${editorRect.left - hoverDiv.offsetWidth - 5}px`
           hoverDiv.style.top = window.matchMedia("(max-width: 768px)").matches ? `${topWithScroll-2}px` : `${topWithScroll-4}px`;
-          hoverDiv.style.visibility = "visible";
-      
+
         } catch (error) {
           console.error("Failed to update button position:", error);
         }
       }
 
       function increaseEditorHeightForScroll() {
-        const paragraphNodeHeight = 48; // 추가할 높이 값
-        const editorElement = document.querySelector('.ProseMirror');
+        const paragraphNodeHeight = 8; // 추가할 높이 값
+        const editor = document.querySelector('#editor');
+        const editorContainer = document.querySelector('#EditorContainer');
       
-        if (editorElement) {
+        if (editor && editorContainer) {
           // 에디터 내부의 현재 높이를 계산합니다.
-          const currentEditorHeight = editorElement.scrollHeight;
+          const currentEditorHeight = editor.scrollHeight;
+          const currentEditorContainerHeight = editorContainer.scrollHeight;
           // 에디터의 높이를 조정합니다.
-          editorElement.style.height = `${currentEditorHeight + paragraphNodeHeight}px`;
+          editor.style.height = `${currentEditorHeight + paragraphNodeHeight}px`;
+          editorContainer.style.height = `${currentEditorContainerHeight + paragraphNodeHeight + 10}px`;
         }
       }
       
@@ -228,7 +252,7 @@ export function hoverButtonPlugin() {
         if (pos === null || pos === undefined) return;
 
         const isImageNode = editorView.state.selection.node;
-
+      
         // 이미지 노드가 아닌 경우(텍스트 노드 또는 doc 일 때)
         if (!isImageNode) {
           updateButton(editorView, pos, false);
@@ -247,7 +271,6 @@ export function hoverButtonPlugin() {
           updateButton(editorView, pos, false);
           return;
         }
-
         updateButton(editorView, pos, true);
       }
 

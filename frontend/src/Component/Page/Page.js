@@ -135,7 +135,7 @@ function Page() {
     if (pageIndex + 1 === pageInputValue) {
       return;
     }
-    const pageTargetID = pages[pageInputValue - 1]?.id;
+    const pageTargetID = pageInputValue == 0 ? pages[pageInputValue]?.id : pages[pageInputValue - 1]?.id;
     navigateToPage(pageTargetID);
   };
 
@@ -938,7 +938,7 @@ function Page() {
             ))}
           </ul>
           </NavigationBar>
-          <EditorContainer>
+          <EditorContainer id="EditorContainer">
             <div
               ref={editorRef}
               id="editor"
