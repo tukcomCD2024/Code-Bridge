@@ -77,7 +77,6 @@ class PageActivity : AppCompatActivity() {
         }
 
 
-        //val imageUrl = intent.getStringExtra(UrlTestActivity.EXTRA_IMAGE_URL)
         val imageUrl = intent.getStringExtra(PaintActivity.IMAGE_URL)
 
         // WebView가 로드되면 이미지를 업로드하는 함수 호출
@@ -136,8 +135,7 @@ class PageActivity : AppCompatActivity() {
             val jsFunction = "uploadImageToEditor('$imageUrl')"
             webView.evaluateJavascript(jsFunction, null)
         } else {
-            // 이미지 URL이 null인 경우 처리
-            Toast.makeText(this, "이미지 URL을 가져올 수 없습니다.", Toast.LENGTH_SHORT).show()
+         
         }
     }
 
