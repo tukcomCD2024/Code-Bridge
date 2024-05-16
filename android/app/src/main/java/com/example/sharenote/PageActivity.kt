@@ -135,7 +135,7 @@ class PageActivity : AppCompatActivity() {
             val jsFunction = "uploadImageToEditor('$imageUrl')"
             webView.evaluateJavascript(jsFunction, null)
         } else {
-         
+
         }
     }
 
