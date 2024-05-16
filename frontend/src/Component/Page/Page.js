@@ -938,7 +938,7 @@ function Page() {
             ))}
           </ul>
           </NavigationBar>
-          <EditorContainer>
+          <EditorContainer id="EditorContainer">
             <div
               ref={editorRef}
               id="editor"
