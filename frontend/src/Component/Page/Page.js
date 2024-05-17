@@ -3,11 +3,9 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import styled from "styled-components";
 
 // prosemirror 라이브러리(리치 텍스트 에디터)
-import { Schema, DOMParser } from "prosemirror-model";
+import { DOMParser } from "prosemirror-model";
 import { EditorState, Selection, Plugin } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
-import { schema as basicSchema } from "prosemirror-schema-basic";
-import { addListNodes } from "prosemirror-schema-list";
 import { exampleSetup } from "prosemirror-example-setup";
 import { keymap } from "prosemirror-keymap";
 import { mySchema } from "./utils/pageSettings";
@@ -268,23 +266,20 @@ function Page() {
   useEffect(() => {
     if (!editorRef.current) return;
 
-    const roomId = pageId;
-    const ydoc = getYDocInstance(roomId);
-    const provider = new WebsocketProvider(
-      // "wss://demos.yjs.dev/ws", // 웹소켓 서버 주소(데모용)
-      //"ws://localhost:4000",
-      //"ws://nodejs:4000", 
+    ydocProviderRef.current = new WebsocketProvider(
+      // "wss://demos.yjs.dev/ws", // yjs 데모 서버 주소
+      // "ws://localhost:4000",
+      // "ws://nodejs:4000", 
       "wss://sharenote.shop/ws",
-      roomId, // 방 이름
-      ydoc
+      pageId, // 방 이름
+      ydocRef.current
     );
 
-    const yXmlFragment = ydoc.getXmlFragment("prosemirror");
-    const yConnectedUserList = ydoc.getMap('connectedUsers');
-    const yLineLocks = ydoc.getMap('nodeInfo');
-    const yUserLocks = ydoc.getMap('yUserLocks');
-    const yLikeList = ydoc.getMap(`yLikeList_${userId}`);
-
+    const yXmlFragment = ydocRef.current.getXmlFragment("prosemirror");
+    const yConnectedUserList = ydocRef.current.getMap('connectedUsers');
+    const yLineLocks = ydocRef.current.getMap('nodeInfo');
+    const yUserLocks = ydocRef.current.getMap('yUserLocks');
+    const yLikeList = ydocRef.current.getMap(`yLikeList_${userId}`);
 
     function handleUserConnection() {
       const nicknameWithSuffix = `${nickname}_다중 접속`;
@@ -305,15 +300,15 @@ function Page() {
       
       if (!isSingleConnected) {
         yConnectedUserList.set(nickname, userColor);
-        provider.awareness.setLocalStateField('user', { name: nickname, color: userColor });
+        ydocProviderRef.current.awareness.setLocalStateField('user', { name: nickname, color: userColor });
       } else {
         yConnectedUserList.set(nicknameWithSuffix, userColor);
-        provider.awareness.setLocalStateField('user', { name: nicknameWithSuffix, color: userColor });
+        ydocProviderRef.current.awareness.setLocalStateField('user', { name: nicknameWithSuffix, color: userColor });
       }
       updateUsersAndColors(); // UI 업데이트
     }
 
-    provider.on("sync", (isSynced) => {
+    ydocProviderRef.current.on("sync", (isSynced) => {
       if (isWeb()) {
         if (isSynced) {
           handleUserConnection();
@@ -334,9 +329,9 @@ function Page() {
       }, 300); // 딜레이 있음
     });
 
-    provider.on('status', event => {
+    ydocProviderRef.current.on('status', event => {
       if (event.status === 'disconnected') {
-        const userState = provider.awareness.getLocalState();
+        const userState = ydocProviderRef.current.awareness.getLocalState();
         if (userState && userState.user) {
           yConnectedUserList.delete(userState.user.name);
           setReconnect(true);
@@ -352,7 +347,7 @@ function Page() {
     });
     
     function onlineUpdate() {
-      const userState = provider.awareness.getLocalState();
+      const userState = ydocProviderRef.current.awareness.getLocalState();
     
       if (userState && userState.user && userState.user.name) {
         const nickname = userState.user.name;
@@ -362,6 +357,7 @@ function Page() {
         }
     
         if (yConnectedUserList.get(nickname) === 'kicked') {
+          toastr.remove();
           toastr.warning("연결 정보가 없습니다!");
           navigate(`/organization/${pathSegments[1]}`);
           return;
@@ -387,15 +383,15 @@ function Page() {
       yUserLocks.delete(nickname);
     
       // Yjs 연결 해제 및 리소스 정리
-      const userState = provider.awareness.getLocalState();
+      const userState = ydocProviderRef.current.awareness.getLocalState();
       if (userState && userState.user) {
         yConnectedUserList.delete(userState.user.name);
       }
     
       // 연결 해제 및 리소스 정리
       view.destroy();
-      provider.destroy();
-      provider.disconnect();
+      ydocProviderRef.current.destroy();
+      ydocProviderRef.current.disconnect();
     }  
 
     const generateBlockIdPlugin = (guidGenerator = uuidv4) => {
@@ -490,15 +486,16 @@ function Page() {
       }
     }
     
-      if (currentLock) {
-        // 해당 줄이 이미 잠겨 있고, 현재 사용자가 잠근 경우 잠금 해제
-        if (currentLock === nickname) {
-            yLineLocks.delete(guid.toString());
-            yUserLocks.delete(nickname);
-            toastr.info(`편집 잠금이 해제되었습니다.`);
-        } else {
-          toastr.error(`[오류] ${currentLock} 에 의해 잠금 불가합니다.`);
-        }
+    toastr.remove();
+    if (currentLock) {
+      // 해당 줄이 이미 잠겨 있고, 현재 사용자가 잠근 경우 잠금 해제
+      if (currentLock === nickname) {
+          yLineLocks.delete(guid.toString());
+          yUserLocks.delete(nickname);
+          toastr.info(`편집 잠금이 해제되었습니다.`);
+      } else {
+        toastr.error(`[오류] ${currentLock} 에 의해 잠금 불가합니다.`);
+      }
     } else {
       yLineLocks.set(guid.toString(), nickname);
       yUserLocks.set(nickname, guid.toString());
@@ -536,6 +533,7 @@ function Page() {
         const currentLock = yLineLocks.get(guid.toString());
         if (currentLock) {
           if (currentLock !== nickname) {
+            toastr.remove();
             toastr.warning(`[알림] ${currentLock} 에 의해 편집 불가합니다.`);
           }
         }
@@ -669,7 +667,7 @@ function Page() {
 
         plugins: exampleSetup({ schema: mySchema }).concat(
           ySyncPlugin(yXmlFragment),
-          yCursorPlugin(provider.awareness, {
+          yCursorPlugin(ydocProviderRef.current.awareness, {
             cursorBuilder: myCursorBuilder,
           }),
           yUndoPlugin(),
