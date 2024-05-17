@@ -2,8 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useParams, Link, Route, Routes, useNavigate, useLocation } from "react-router-dom";
 import styled, { keyframes, css } from "styled-components";
 import OrganizationInfoModal from "./organizationInfo/organizationInfo";
-import ImagetoBackend from "../imageToBackend";
-import NoteDetail from "./NoteDetail";
+import ImagetoBackend from "../Utils/imageToBackend";
 import defaultImage from "../../image/NoneImage2.png";
 import { ReactComponent as AddNoteIcon } from "../../image/addNote.svg";
 import toastr from "toastr";
@@ -381,7 +380,6 @@ function NotePage() {
         {notes.map((note) => (
           <Route
             path={`/organization/${organizationId}/${note.id}/${note.pageId}`}
-            element={<NoteDetail note={note} notes={notes} />}
             key={note.id}
           />
         ))}

@@ -16,16 +16,16 @@ export function checkLocalStorage() {
         let { nickname, userId } = getDataFromStorage();
 
         if (nickname && userId) {
-        resolve();  
+            resolve();  
         } else {
-        setTimeout(() => {
-            let { nickname, userId } = getDataFromStorage();
-            if (nickname && userId) {
-            resolve();
-            } else {
-            reject(new Error("계정 정보가 로컬 스토리지에 없습니다."));
-            }
-        }, 3000);
+            setTimeout(() => {
+                let { nickname, userId } = getDataFromStorage();
+                if (nickname && userId) {
+                    resolve();
+                } else {
+                    reject(new Error("계정 정보가 로컬 스토리지에 없습니다."));
+                }
+            }, 3000);
         }
     });
 }

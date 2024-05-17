@@ -8,12 +8,11 @@ import { EditorState, Selection, Plugin } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
 import { exampleSetup } from "prosemirror-example-setup";
 import { keymap } from "prosemirror-keymap";
-import { mySchema } from "./utils/pageSettings";
+import { mySchema } from "./utils/editor/pageSettings";
 
 // yjs 라이브러리(동시편집)
 import * as Y from "yjs";
 import { WebsocketProvider } from "y-websocket";
-import { getYDocInstance } from "./utils/YjsInstance";
 import { ySyncPlugin, yCursorPlugin, yUndoPlugin, undo, redo  } from "y-prosemirror";
 
 import { imagePlugin } from "prosemirror-image-plugin";
@@ -23,19 +22,21 @@ import "./ProseMirror_css/prosemirror_image_plugin/sideResize.css";
 import "./ProseMirror_css/prosemirror_image_plugin/withoutResize.css";
 import "./ProseMirror_css/ProseMirror.css";
 
-import ModalImageComponent from "./utils/ModalImageComponent";
-import { imageSettings } from "./utils/pageSettings";
-import { inlinePlaceholderPlugin } from "./utils/inlinePlaceholderPlugin";
-import { hoverButtonPlugin } from "./utils/hoverButtonPlugin";
+import ModalImageComponent from "./utils/editor/ModalImageComponent";
+import ImageToEditor from "./utils/editor/ImageToEditor";
+import { imageSettings } from "./utils/editor/pageSettings";
+import { inlinePlaceholderPlugin } from "./utils/editor/plugin/inlinePlaceholderPlugin";
+import { hoverButtonPlugin } from "./utils/editor/plugin/hoverButtonPlugin";
+import { generateBlockIdPlugin } from "./utils/editor/plugin/generateBlockIdPlugin";
+
 import { isWeb, checkLocalStorage } from "./utils/initMobileWebView"
 import { cursorColors } from "../Utils/cursorColor"
-import NoteSettingModal from "./utils/noteSettingModal";
+import NoteSettingModal from "./utils/editor/noteSettingModal";
 import loadingImage from "../../image/loading.gif";
 
 import toastr from 'toastr';
 import 'toastr/build/toastr.css';
 
-import { v4 as uuidv4 } from "uuid";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faLeftLong, faRightLong, faSquarePlus, faTrashCan, faList, faGear } from "@fortawesome/free-solid-svg-icons";
@@ -394,75 +395,7 @@ function Page() {
       ydocProviderRef.current.disconnect();
     }  
 
-    const generateBlockIdPlugin = (guidGenerator = uuidv4) => {
-      return new Plugin({
-        appendTransaction: (transactions, prevState, nextState) => {
-          const tr = nextState.tr;
-          let modified = false;
-          const generatedIds = new Set();
-        
-          if (transactions.some(transaction => transaction.docChanged)) {
-            const { paragraph, image } = nextState.schema.nodes;
-            let prevNode = null; // 이전 노드를 추적하기 위한 변수
-            let prevPos = null; // 이전 노드의 위치를 저장
-        
-            nextState.doc.descendants((node, pos) => {
-              if (node.type === image) {
-                let currentGuid = node.attrs['data-guid'];
-                if (!currentGuid || generatedIds.has(currentGuid)) {
-                  let newGuid;
-                  do {
-                    newGuid = guidGenerator();
-                  } while (generatedIds.has(newGuid));
-                  generatedIds.add(newGuid);
-                  tr.setNodeMarkup(pos, undefined, {...node.attrs, 'data-guid': newGuid});
-                  modified = true;
-                } else {
-                  generatedIds.add(currentGuid);
-                }
-              } else if (node.type === paragraph) {
-                const nodeTextContent = node.textContent;
-                const selection = nextState.selection;
-                const cursorPosition = selection.head || selection.from;
-        
-                if (cursorPosition >= pos && cursorPosition <= pos + node.nodeSize) {
-                  const cursorPositionInNode = cursorPosition - pos;
-                  if (cursorPositionInNode === 1 && nodeTextContent !== "") {
-                    if (prevNode && !generatedIds.has(prevNode.attrs.guid)) {
-                      let newGuid;
-                      do {
-                        newGuid = guidGenerator();
-                      } while (generatedIds.has(newGuid));
-                      generatedIds.add(newGuid);
-                      tr.setNodeMarkup(pos, undefined, {...node.attrs, guid: newGuid});
-                      modified = true;
-                    }
-                  } else {
-                    // 일반적인 guid 할당 로직
-                    let currentGuid = node.attrs.guid;
-                    if (!currentGuid || generatedIds.has(currentGuid)) {
-                      let newGuid;
-                      do {
-                        newGuid = guidGenerator();
-                      } while (generatedIds.has(newGuid));
-                      generatedIds.add(newGuid);
-                      tr.setNodeMarkup(pos, undefined, {...node.attrs, guid: newGuid});
-                      modified = true;
-                    } else {
-                      generatedIds.add(currentGuid);
-                    }
-                  }
-                }
-                // 현재 노드와 위치를 이전 노드로 업데이트
-                prevNode = node;
-                prevPos = pos;
-              } 
-            });
-          }
-          return modified ? tr : null;
-        },
-      });
-    };
+
 
     // 줄 잠금/해제 함수
     window.toggleLineLock = function(guid, nickname) {
@@ -709,40 +642,7 @@ function Page() {
     };
   }, [pageId]);
 
-  window.uploadImageToEditor = (imageUrl) => {
-    const hoverDiv = document.querySelector(".hoverDiv");
-
-    // ProseMirror Transaction 생성
-    const transaction = editorRef.current.view.state.tr;
-    const transactionWithImage = transactionImageAtLine(imageUrl)(transaction);
-
-    // Transaction 적용하여 에디터에 이미지 삽입
-    editorRef.current.view.dispatch(transactionWithImage);
-    hoverDiv.style.visibility = "hidden";
-  };
-
-  const transactionImageAtLine = (imageUrl) => tr => {
-    // 이미지 노드 생성
-    const imageNode = editorRef.current.view.state.schema.nodes.image.create({ src: imageUrl });
-
-    // 특정 줄의 시작 노드 위치 찾기
-    let pos = 0;
-    editorRef.current.view.state.doc.nodesBetween(0, editorRef.current.view.state.doc.content.size, (node, nodePos) => {
-        if (node.isBlock && nodePos > pos) {
-            pos = nodePos;
-        }
-        pos = pos === 0 ? 1 : pos; 
-    });
-
-    // 이미지 노드 삽입
-    const insertTr = tr.insert(pos, imageNode);
-
-    // 이미지 삽입 후 커서 위치 설정
-    const resolvedPos = insertTr.doc.resolve(pos + imageNode.nodeSize);
-    const selection = editorRef.current.view.state.selection.constructor.near(resolvedPos);
-
-    return insertTr.setSelection(selection);
-  };
+  
 
   return (
     <div>
@@ -869,6 +769,8 @@ function Page() {
           setNoteInfo={setNoteInfo}
         />
       )}
+
+        <ImageToEditor ref={editorRef} />
     </div>
   );
 }

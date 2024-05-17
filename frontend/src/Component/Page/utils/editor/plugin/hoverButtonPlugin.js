@@ -1,6 +1,6 @@
 import { Plugin, Selection, NodeSelection } from "prosemirror-state";
-import down_arrow from "../../../image/down_arrow.svg";
-import lock from "../../../image/lock2.gif";
+import down_arrow from "../../../../../image/down_arrow.svg";
+import lock from "../../../../../image/lock2.gif";
 import { library, icon } from '@fortawesome/fontawesome-svg-core';
 import { faHeart } from '@fortawesome/free-solid-svg-icons';
 
