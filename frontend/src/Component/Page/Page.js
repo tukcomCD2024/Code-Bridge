@@ -10,13 +10,15 @@ import { schema as basicSchema } from "prosemirror-schema-basic";
 import { addListNodes } from "prosemirror-schema-list";
 import { exampleSetup } from "prosemirror-example-setup";
 import { keymap } from "prosemirror-keymap";
+import { mySchema } from "./utils/pageSettings";
 
 // yjs 라이브러리(동시편집)
+import * as Y from "yjs";
 import { WebsocketProvider } from "y-websocket";
 import { getYDocInstance } from "./utils/YjsInstance";
 import { ySyncPlugin, yCursorPlugin, yUndoPlugin, undo, redo  } from "y-prosemirror";
 
-import { updateImageNode, imagePlugin } from "prosemirror-image-plugin";
+import { imagePlugin } from "prosemirror-image-plugin";
 import "./ProseMirror_css/prosemirror_image_plugin/common.css";
 import "./ProseMirror_css/prosemirror_image_plugin/withResize.css";
 import "./ProseMirror_css/prosemirror_image_plugin/sideResize.css";
@@ -24,9 +26,10 @@ import "./ProseMirror_css/prosemirror_image_plugin/withoutResize.css";
 import "./ProseMirror_css/ProseMirror.css";
 
 import ModalImageComponent from "./utils/ModalImageComponent";
-import { imageSettings, imageNodeSpec } from "./utils/pageSettings";
+import { imageSettings } from "./utils/pageSettings";
 import { inlinePlaceholderPlugin } from "./utils/inlinePlaceholderPlugin";
 import { hoverButtonPlugin } from "./utils/hoverButtonPlugin";
+import { isWeb, checkLocalStorage } from "./utils/initMobileWebView"
 import { cursorColors } from "../Utils/cursorColor"
 import NoteSettingModal from "./utils/noteSettingModal";
 import loadingImage from "../../image/loading.gif";
@@ -41,6 +44,9 @@ import { faLeftLong, faRightLong, faSquarePlus, faTrashCan, faList, faGear } fro
 
 function Page() {
   const editorRef = useRef(null);
+  const ydocRef = useRef(new Y.Doc());
+  const ydocProviderRef = useRef(null);
+
   let nickname = localStorage.getItem('nickname');
   let userId = localStorage.getItem('userId');
 
@@ -62,61 +68,24 @@ function Page() {
   const [usersAndColors, setUsersAndColors] = useState([]); // 연결된 사용자와 색상 상태
   const [noteSettingModalOpen, setNoteSettingModalOpen] = useState(false);
   const [myimage, setMyImage] = useState(null);
-  const [showModalImage, setShowModalImage] = useState(false);
+  const [modalOpen_ImageZoom, setModalOpen_ImageZoom] = useState(false);
   const [clickedImageSrc, setClickedImageSrc] = useState('');
 
-  const uploadImage = (e) => {
-    const selectedFile = e.target.files[0];
-
-    // 파일이 선택되었고, 이미지 파일인 경우에만 처리
-    if (selectedFile && isImageFile(selectedFile)) {
-      setMyImage(URL.createObjectURL(selectedFile));
-    } else {
-      // 이미지 파일이 아닌 경우에 대한 처리 (예: 경고 메시지 등)
-      alert("올바른 이미지 파일을 선택해주세요.");
-    }
-  };
-
-  // 이미지 파일 여부를 확인하는 함수
-  const isImageFile = (file) => {
-    const allowedExtensions = ["jpg", "jpeg", "png", "gif"]; // 허용된 확장자들
-
-    // 파일 이름에서 확장자 추출
-    const fileName = file.name;
-    const fileExtension = fileName.split(".").pop().toLowerCase();
-
-    // 허용된 확장자들 중에 포함되어 있는지 확인
-    return allowedExtensions.includes(fileExtension);
-  };
-
-  const handleOpenNoteSettingModal = () => {
-    setNoteSettingModalOpen(true);
-  };
-
+  const handleModalOpen_ImageZoom = () => { setModalOpen_ImageZoom(true); };
+  const handleModalClose_ImageZoom = () => { setModalOpen_ImageZoom(false); };
+  const handleOpenNoteSettingModal = () => { setNoteSettingModalOpen(true); };
   const handleCloseNoteSettingModal = () => {
-    localStorage.setItem("recentImageUrl", '');
+    localStorage.removeItem("recentImageUrl");
     setMyImage(null);
     setNoteSettingModalOpen(false);
   };
 
-    const handleOpenImageZoomModal = () => {
-    setShowModalImage(true);
-  };
-
-  const handleCloseImageZoomModal = () => {
-    setShowModalImage(false);
-  };
-
-  // 네비게이션바에 페이지 이동 함수
-  const navigateToPage = (pageID) => {
-    navigate(`/organization/${organizationId}/${noteId}/${pageID}`);
-  };
+  // 페이지 이동 함수
+  const navigateToPage = (pageID) => { navigate(`/organization/${organizationId}/${noteId}/${pageID}`); };
 
   // 이전 페이지
   const prevPage = () => {
-    if (pageIndex === 0) {
-      return;
-    }
+    if (pageIndex === 0) return;
     const prevPageID = pages[pageIndex - 1]?.id;
     navigateToPage(prevPageID);
   };
@@ -124,23 +93,19 @@ function Page() {
   // 다음 페이지
   const nextPage = () => {
     const nextPageID = pages[pageIndex + 1]?.id;
-    if (!nextPageID) {
-      return;
-    }
+    if (!nextPageID) return;
     navigateToPage(nextPageID);
   };
 
   // 특정 페이지
   const pageTarget = () => {
-    if (pageIndex + 1 === pageInputValue) {
-      return;
-    }
+    if (pageIndex + 1 === pageInputValue) return;
     const pageTargetID = pageInputValue == 0 ? pages[pageInputValue]?.id : pages[pageInputValue - 1]?.id;
     navigateToPage(pageTargetID);
   };
 
-  const handleCreate = async (e) => {
-    const createUserId = userId;
+  // 페이지 생성 함수
+  const handleCreatePage = async (e) => {
     const createPage = (pageId) => {
       const newPage = {
         id: pageId,
@@ -156,7 +121,7 @@ function Page() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ organizationId, noteId, createUserId }),
+        body: JSON.stringify({ organizationId, noteId, createUserId: userId }),
       });
       if (response.ok) {
         const responseData = await response.json();
@@ -176,7 +141,8 @@ function Page() {
     }
   };
 
-  const handleRemove = async (e) => {
+  // 페이지 삭제 함수
+  const handleRemovePage = async (e) => {
     if(pageIndex === 0){
       alert("메인 페이지는 삭제하실 수 없습니다.");
       return;
@@ -204,14 +170,17 @@ function Page() {
       }
     }
   };
-  
+
+  // 페이지 번호 입력 함수
   const handlePageInputChange  = (event) => {
     const newValue = parseInt(event.target.value, 10);
+
+    // 페이지 번호 입력칸에 올바르지 않은 숫자값 입력 시 입력값을 0으로 설정
     if(isNaN(newValue)){
       setPageInputValue(0);
       return;
     }
-
+    // 페이지 번호가 최대 페이지 번호를 넘는 경우 페이지 최대 입력 가능한 값으로 설정
     if (!isNaN(newValue) && newValue >= 1 && newValue <= pages.length) {
       setPageInputValue(newValue);
     } else {
@@ -219,22 +188,23 @@ function Page() {
     }
   };
 
+  // 초기 페이지 입력칸은 항상 현재 페이지 번호로 설정 
   useEffect(() => {
     setPageInputValue(pageIndex !== 0 ? pageIndex + 1 : 1);
   }, [pageIndex]);
 
+  // 서버에서 페이지 정보 수신 함수
   useEffect(() => {
     let isCancelled = false;
   
     const fetchPageInfo = async () => {
       try {
-        const createUserId = userId;
         const response = await fetch(`/api/page/search`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ organizationId, noteId, createUserId }),
+          body: JSON.stringify({ organizationId, noteId, createUserId: userId }),
         });
         if (response.ok && !isCancelled) {
           const data = await response.json();
@@ -259,9 +229,9 @@ function Page() {
     return () => {
       isCancelled = true;
     };
-  }, [location, pageId]);
+  }, [pageId]);
   
-  
+  // 서버에서 노트 정보 수신 함수
   useEffect(() => {
     let isCancelled = false;
 
@@ -293,48 +263,7 @@ function Page() {
     return () => {
       isCancelled = true;
     };
-  }, [location, organizationId, noteId]);
-  // 네비게이션바에 페이지 컨트롤 코드_마지막
-
-  const { nodes, marks } = basicSchema.spec;
-  const extendedNodes = addListNodes(
-    nodes.append({ image: imageNodeSpec }),
-    "paragraph block*",
-    "block"
-  );
-
-  const customParagraphNode = {
-    ...nodes.get("paragraph"),
-    attrs: {
-      ...nodes.get("paragraph").attrs,
-      class: { default: "custom-paragraph" },
-      guid: { default: "" }, // Ensure guid attribute is included
-      writer: { default: userId },
-    },
-    parseDOM: [
-      {
-        tag: "p",
-        getAttrs: (dom) => ({guid: dom.getAttribute("data-guid"), writer: dom.getAttribute("data-writer"),}),
-      },
-    ],
-    toDOM(node) {
-      return ["p", { class: node.attrs.class, "data-guid": node.attrs.guid, "data-writer": node.attrs.writer}, 0];
-    },
-  };
-
-  const newParagraphNode = extendedNodes.update(
-    "paragraph",
-    customParagraphNode
-  );
-
-  const defaultNodes = updateImageNode(newParagraphNode, {
-    ...imageSettings,
-  });
-
-  const mySchema = new Schema({
-    nodes: defaultNodes,
-    marks: basicSchema.spec.marks,
-  });
+  }, [noteId]);
 
   useEffect(() => {
     if (!editorRef.current) return;
@@ -356,36 +285,7 @@ function Page() {
     const yUserLocks = ydoc.getMap('yUserLocks');
     const yLikeList = ydoc.getMap(`yLikeList_${userId}`);
 
-    function isWeb() {
-      const userAgent = navigator.userAgent.toLowerCase();
-      const isAndroidWebView = (userAgent.indexOf('android') > -1 && userAgent.indexOf('mobile') > -1) || userAgent.indexOf('app') > -1;
-      return isAndroidWebView
-    }
-    function checkLocalStorage() {
-      return new Promise((resolve, reject) => {
-        function getDataFromStorage() {
-          return {
-            nickname: localStorage.getItem('nickname'),
-            userId: localStorage.getItem('userId')
-          };
-        }
-    
-        let { nickname, userId } = getDataFromStorage();
-    
-        if (nickname && userId) {
-          resolve();  
-        } else {
-          setTimeout(() => {
-            let { nickname, userId } = getDataFromStorage();
-            if (nickname && userId) {
-              resolve();
-            } else {
-              reject(new Error("계정 정보가 로컬 스토리지에 없습니다."));
-            }
-          }, 3000);
-        }
-      });
-    }
+
     function handleUserConnection() {
       const nicknameWithSuffix = `${nickname}_다중 접속`;
       const isSingleConnected = yConnectedUserList.has(nickname);
@@ -617,7 +517,7 @@ function Page() {
           if (target.tagName.toLowerCase() === "img") {
               const imageUrl = target.getAttribute("src");
               setClickedImageSrc(imageUrl)
-              setShowModalImage(true);
+              setModalOpen_ImageZoom(true);
           }
       }
       lastClickTime = currentTime;
@@ -905,9 +805,9 @@ function Page() {
               <PageRemote>
                  <LeftPageRemote>
                   <CreateRemoveBtn>                  
-                    <FontAwesomeIcon icon={faSquarePlus} onClick={handleCreate} style={{ color: '#007bff', cursor: isPageHandleButtonDisabled ? 'not-allowed' : 'pointer' }}             
+                    <FontAwesomeIcon icon={faSquarePlus} onClick={handleCreatePage} style={{ color: '#007bff', cursor: isPageHandleButtonDisabled ? 'not-allowed' : 'pointer' }}             
                     disabled={isPageHandleButtonDisabled} title="페이지 추가"/>
-                    <FontAwesomeIcon icon={faTrashCan} onClick={handleRemove} style={{ color: '#707070', cursor: isPageHandleButtonDisabled ? 'not-allowed' : 'pointer' }}             
+                    <FontAwesomeIcon icon={faTrashCan} onClick={handleRemovePage} style={{ color: '#707070', cursor: isPageHandleButtonDisabled ? 'not-allowed' : 'pointer' }}             
                     disabled={isPageHandleButtonDisabled} title="현재 페이지 삭제"/>
                   </CreateRemoveBtn>
                  </LeftPageRemote>
@@ -953,11 +853,11 @@ function Page() {
         </EditorContainer>
         </LayoutContainer>
 
-        {showModalImage && (
+        {modalOpen_ImageZoom && (
         <ModalImageComponent 
           src={clickedImageSrc} 
-          modalOpen={handleOpenImageZoomModal}
-          closeModal={handleCloseImageZoomModal}
+          modalOpen={handleModalOpen_ImageZoom}
+          modalClose={handleModalClose_ImageZoom}
          />
       )}
 
@@ -965,8 +865,8 @@ function Page() {
         <NoteSettingModal
           modalOpen={noteSettingModalOpen}
           handleCloseModal={handleCloseNoteSettingModal}
+          setMyImage={setMyImage}
           myimage={myimage}
-          uploadImage={uploadImage}
           note={noteinfo}
           setNoteInfo={setNoteInfo}
         />

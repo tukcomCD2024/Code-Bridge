@@ -11,7 +11,7 @@ const NoteSettingModal = ({
     modalOpen,
     handleCloseModal,
     myimage,
-    uploadImage,
+    setMyImage,
     note,
     noteinfo,
     setNoteInfo,
@@ -26,6 +26,31 @@ const NoteSettingModal = ({
     const pathSegments = location.pathname.split('/').filter(Boolean); 
     const organizationId = pathSegments[1];
     const noteId = pathSegments[2];
+
+    // 이미지 업로드 함수
+    const uploadImage = (e) => {
+      const selectedFile = e.target.files[0];
+  
+      // 파일이 선택되었고, 이미지 파일인 경우에만 처리
+      if (selectedFile && isImageFile(selectedFile)) {
+        setMyImage(URL.createObjectURL(selectedFile));
+      } else {
+        // 이미지 파일이 아닌 경우에 대한 처리 (예: 경고 메시지 등)
+        alert("올바른 이미지 파일을 선택해주세요.");
+      }
+    };
+  
+    // 이미지 파일 여부를 확인하는 함수
+    const isImageFile = (file) => {
+      const allowedExtensions = ["jpg", "jpeg", "png", "gif"]; // 허용된 확장자들
+  
+      // 파일 이름에서 확장자 추출
+      const fileName = file.name;
+      const fileExtension = fileName.split(".").pop().toLowerCase();
+  
+      // 허용된 확장자들 중에 포함되어 있는지 확인
+      return allowedExtensions.includes(fileExtension);
+    };
   
     // 노트 제목 입력 처리 함수
     const handleNoteNameInputChange = (event) => {
@@ -65,7 +90,7 @@ const NoteSettingModal = ({
       }
     };
   
-    const handleKeyPress = (event) => {
+    const handleKeyDown = (event) => {
       if (event.key === "Enter") {
         handleModify();
       }
@@ -155,7 +180,7 @@ const NoteSettingModal = ({
                 <NoteNameInput
                   type="text"
                   value={noteNameInput}
-                  onKeyPress={handleKeyPress}
+                  onKeyDown={handleKeyDown}
                   onChange={handleNoteNameInputChange} // 입력 값 변경 처리
                   placeholder={note.name}
                 />
