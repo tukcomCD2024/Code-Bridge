@@ -217,7 +217,7 @@ class PaintActivity : AppCompatActivity() {
                             Log.e("PaintActivity", "Exception: ${e.message}")
                         }
                     }
-                    finish() // 예를 들어 액티비티를 종료
+                    //finish() // 예를 들어 액티비티를 종료
                 }
                 .setPositiveButton("아니요") { dialog, which ->
                     // "No" 버튼 클릭 시, 아무 일도 하지 않음
@@ -313,32 +313,32 @@ class PaintActivity : AppCompatActivity() {
             val url = drawingView.autoDraw()
 
 
-            lifecycleScope.launch {
-                try {
-                    // API 호출
-                    val response = apiService2.aiPickImages(url)
-
-                    // 메인 스레드에서 UI 업데이트
-                    withContext(Dispatchers.Main) {
-                        if (response.isSuccessful && response.body() != null) {
-                            // 서버로부터 받은 이미지 URL 리스트 처리
-                            val urlList = response.body()!!.imageUrls // 이거 리스트야
-
-                            // Intent 생성 및 시작
-                            val intent = Intent(this@PaintActivity, ImageSelect::class.java)
-                            intent.putStringArrayListExtra("urlList", ArrayList(urlList))
-                            startActivityForResult(intent, 1520)
-                        } else {
-                            Log.e("PaintActivity", "Error: ${response.errorBody()}")
-                        }
-                    }
-                } catch (e: Exception) {
-                    withContext(Dispatchers.Main) {
-                        Log.e("PaintActivity", "Exception: ${e.message}")
-                    }
-
-                }
-            }
+//            lifecycleScope.launch {
+//                try {
+//                    // API 호출
+//                    val response = apiService2.aiPickImages(url)
+//
+//                    // 메인 스레드에서 UI 업데이트
+//                    withContext(Dispatchers.Main) {
+//                        if (response.isSuccessful && response.body() != null) {
+//                            // 서버로부터 받은 이미지 URL 리스트 처리
+//                            val urlList = response.body()!!.imageUrls // 이거 리스트야
+//
+//                            // Intent 생성 및 시작
+//                            val intent = Intent(this@PaintActivity, ImageSelect::class.java)
+//                            intent.putStringArrayListExtra("urlList", ArrayList(urlList))
+//                            startActivityForResult(intent, 1520)
+//                        } else {
+//                            Log.e("PaintActivity", "Error: ${response.errorBody()}")
+//                        }
+//                    }
+//                } catch (e: Exception) {
+//                    withContext(Dispatchers.Main) {
+//                        Log.e("PaintActivity", "Exception: ${e.message}")
+//                    }
+//
+//                }
+//            }
 
             // 이미지 url을 서버로 전송하고 서버에서 받아온 이미지 url로 이미지 띄우기
             // 3 초간 정지 AI 서버에 요청한 척
