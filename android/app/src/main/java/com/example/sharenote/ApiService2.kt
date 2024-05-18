@@ -15,5 +15,5 @@ interface ApiService2 {
     suspend fun uploadImage(@Part multipartFile: MultipartBody.Part): Response<ImageResponse>
 
     @POST("ai/url")
-    suspend fun aiPickImages(@Body url: String): Response<AiImageUrls>
+    suspend fun aiPickImages(@Body url: AiImageRequest): Response<List<String>>
 }

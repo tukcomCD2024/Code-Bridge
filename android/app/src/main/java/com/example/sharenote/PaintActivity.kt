@@ -50,6 +50,7 @@ import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileOutputStream
 import java.util.UUID
+import kotlin.math.log
 import kotlin.math.max
 import kotlin.math.min
 
@@ -298,68 +299,73 @@ class PaintActivity : AppCompatActivity() {
             drawingView.clearDrawingBoard()
         }
         aiSendButton.setOnClickListener {
-            //
-
-
-
-
             // autoDraw 모드 강제 해제
             autoDrawButton.performClick()
 
             aiSendButton.visibility = View.GONE
             imageViewFixButton.visibility = View.VISIBLE
             // 테스트 로직(autoDraw로 그린 선만 노란색으로 바꾸기)
-            // 이미지 업로드하고 해당 이미지 url 받아오기
-            val url = drawingView.autoDraw()
 
 
-//            lifecycleScope.launch {
-//                try {
-//                    // API 호출
-//                    val response = apiService2.aiPickImages(url)
-//
-//                    // 메인 스레드에서 UI 업데이트
-//                    withContext(Dispatchers.Main) {
-//                        if (response.isSuccessful && response.body() != null) {
-//                            // 서버로부터 받은 이미지 URL 리스트 처리
-//                            val urlList = response.body()!!.imageUrls // 이거 리스트야
-//
-//                            // Intent 생성 및 시작
-//                            val intent = Intent(this@PaintActivity, ImageSelect::class.java)
-//                            intent.putStringArrayListExtra("urlList", ArrayList(urlList))
-//                            startActivityForResult(intent, 1520)
-//                        } else {
-//                            Log.e("PaintActivity", "Error: ${response.errorBody()}")
-//                        }
-//                    }
-//                } catch (e: Exception) {
-//                    withContext(Dispatchers.Main) {
-//                        Log.e("PaintActivity", "Exception: ${e.message}")
-//                    }
-//
-//                }
-//            }
+            // ai 적용
+            lifecycleScope.launch {
+                val url = drawingView.autoDraw()
+                if(url == "error") {
+                    Toast.makeText(this@PaintActivity, "AI 서버와의 통신에 실패했습니다.", Toast.LENGTH_SHORT).show()
+                    return@launch
+                }
+                Log.e("aiInputUrl", url)
+                try {
+                    val aiRequestUrl = AiImageRequest(
+                        url = url
+                    )
+                    // API 호출
+                    val response = apiService2.aiPickImages(aiRequestUrl)
+                    Log.e("aiInputUrl", url)
+
+                    // 메인 스레드에서 UI 업데이트
+                    withContext(Dispatchers.Main) {
+                        if (response.isSuccessful && response.body() != null) {
+                            // 서버로부터 받은 이미지 URL 리스트 처리
+                            val urlList = response.body()!!
+                            Log.e("aiOutputUrl", "AI Server Response: $urlList")
+
+                            // Intent 생성 및 시작
+                            val intent = Intent(this@PaintActivity, ImageSelect::class.java)
+                            intent.putStringArrayListExtra("urlList", ArrayList(urlList))
+                            startActivityForResult(intent, 1520)
+                        } else {
+                            Log.e("PaintActivity", "Error: ${response.errorBody()}")
+                        }
+                    }
+                } catch (e: Exception) {
+                    withContext(Dispatchers.Main) {
+                        Log.e("PaintActivity", "Exception: ${e.message}")
+                    }
+
+                }
+            }
 
             // 이미지 url을 서버로 전송하고 서버에서 받아온 이미지 url로 이미지 띄우기
             // 3 초간 정지 AI 서버에 요청한 척
-            Thread.sleep(3000)
-
-            // 서버에서 받아온 JSON 객체에서 6개의 url 꺼내서 다음 액티비티로 전달
-            // list 만들어줘
-            val urlList = ArrayList<String>()
-            urlList.add("https://sharenotebucket.s3.ap-northeast-2.amazonaws.com/apple-line.png")
-            urlList.add("https://sharenotebucket.s3.ap-northeast-2.amazonaws.com/airplane-outline.png")
-            urlList.add("https://sharenotebucket.s3.ap-northeast-2.amazonaws.com/bag-line.png")
-            urlList.add("https://sharenotebucket.s3.ap-northeast-2.amazonaws.com/bath-outline.png")
-            urlList.add("https://sharenotebucket.s3.ap-northeast-2.amazonaws.com/bed-outline.png")
-            urlList.add("https://sharenotebucket.s3.ap-northeast-2.amazonaws.com/calendar-line.png")
-
-
-
-            val intent = Intent(this, ImageSelect::class.java)
-            intent.putStringArrayListExtra("urlList", urlList)
-            // 100은 고유한 코드
-            startActivityForResult(intent, 100)  // IMAGE_SELECT_REQUEST_CODE는 상수
+//            Thread.sleep(3000)
+//
+//            // 서버에서 받아온 JSON 객체에서 6개의 url 꺼내서 다음 액티비티로 전달
+//            // list 만들어줘
+//            val urlList = ArrayList<String>()
+//            urlList.add("https://sharenotebucket.s3.ap-northeast-2.amazonaws.com/apple-line.png")
+//            urlList.add("https://sharenotebucket.s3.ap-northeast-2.amazonaws.com/airplane-outline.png")
+//            urlList.add("https://sharenotebucket.s3.ap-northeast-2.amazonaws.com/bag-line.png")
+//            urlList.add("https://sharenotebucket.s3.ap-northeast-2.amazonaws.com/bath-outline.png")
+//            urlList.add("https://sharenotebucket.s3.ap-northeast-2.amazonaws.com/bed-outline.png")
+//            urlList.add("https://sharenotebucket.s3.ap-northeast-2.amazonaws.com/calendar-line.png")
+//
+//
+//
+//            val intent = Intent(this, ImageSelect::class.java)
+//            intent.putStringArrayListExtra("urlList", urlList)
+//            // 100은 고유한 코드
+//            startActivityForResult(intent, 100)  // IMAGE_SELECT_REQUEST_CODE는 상수
 
 
         }
