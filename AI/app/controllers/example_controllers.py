@@ -6,13 +6,13 @@ bp = Blueprint(name='example',
                import_name=__name__,
                url_prefix='/example')
 
-ai = Blueprint(name='ai',
+ai: Blueprint = Blueprint(name='ai',
                import_name=__name__,
                url_prefix='/ai')
 
 
 @ai.route('/base64', methods=['POST'])
-def draw() -> str:
+def draw() -> Response:
     return jsonify(auto_draw.AIbyBase64(json.loads(request.get_json())))
 
 
@@ -26,6 +26,3 @@ def drawByURL() -> str:
     s = request.get_data()
     l = json.loads(s)
     return jsonify(auto_draw.AIbyURL(l))
-
-
-String.format("https://ap-northeast-2.console.aws.amazon.com/s3/object/ai-icons?region=ap-northeast-2&bucketType=general&prefix=svg/{}/{}-outline.png", 이름, 이름)

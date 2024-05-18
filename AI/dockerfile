@@ -1,14 +1,38 @@
-FROM python:3.8-slim
+# NVIDIA CUDA 베이스 이미지 사용
+FROM nvidia/cuda:11.2.2-cudnn8-runtime-ubuntu20.04
 
-COPY . .
+# 환경 변수 설정
+ENV DEBIAN_FRONTEND=noninteractive
 
-RUN pip3 install flask
-RUN pip3 install tensorflow
-RUN pip3 install pillow
-RUN pip3 install boto3
+# NVIDIA 패키지 리포지토리 추가 및 TensorRT 설치
+RUN apt-get update && apt-get install -y gnupg2
+RUN apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/3bf863cc.pub && \
+    apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu2004/x86_64/7fa2af80.pub && \
+    sh -c 'echo "deb https://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu2004/x86_64 /" > /etc/apt/sources.list.d/nvidia-ml.list' && \
+    apt-get update && apt-get install -y \
+    tzdata \
+    build-essential \
+    libhdf5-dev \
+    pkg-config \
+    python3 \
+    python3-pip \
+    libnvinfer8 \
+    libnvonnxparsers8 \
+    libnvparsers8 \
+    libnvinfer-plugin8 \
+    python3-libnvinfer-dev \
+    && ln -fs /usr/share/zoneinfo/Asia/Seoul /etc/localtime \
+    && dpkg-reconfigure --frontend noninteractive tzdata
 
-WORKDIR .
+# 작업 디렉토리 설정
+WORKDIR /app
 
-ENV FLASK_APP=app.py
+# 애플리케이션 코드 복사
+COPY . /app
 
-CMD ["python3", "-m", "flask", "run","--host=0.0.0.0"]
+# pip 업그레이드 및 패키지 설치
+RUN pip3 install --upgrade pip
+RUN pip3 install --no-cache-dir tensorflow gunicorn -r requirements.txt
+
+# Gunicorn을 사용하여 Flask 애플리케이션 실행
+CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:8000", "aiflask:app"]

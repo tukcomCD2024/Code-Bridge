@@ -1,5 +1,4 @@
 import io, base64
-import os
 from PIL import Image
 import boto3
 import requests
@@ -18,8 +17,7 @@ def downloadFromS3(bucket, key):
     client = boto3.client('s3',
                           aws_access_key_id=AWS_ACCESS_KEY_ID,
                           aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
-                          region_name=AWS_DEFAULT_REGION
-                          )
+                          region_name=AWS_DEFAULT_REGION)
 
     file_name = 'downLoad.png'  # 다운될 이미지 이름
     # bucket = 'mufi-photo'  # 버켓 주소
