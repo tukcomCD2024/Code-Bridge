@@ -1,26 +1,28 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, Response
 from app.services import auto_draw
-from app.services import example_service
+import json
 
 bp = Blueprint(name='example',
                import_name=__name__,
                url_prefix='/example')
 
-ai = Blueprint(name='draw',
+ai: Blueprint = Blueprint(name='ai',
                import_name=__name__,
-               url_prefix='/draw')
+               url_prefix='/ai')
 
-@bp.route('/', methods=['GET'])
-def mroute() -> str:
-    data = 'hello world'
-    result = example_service.mroute(data=data)
-    return jsonify(result=result)
-#
-# @bp.route('/<int:user_number>', methods=['GET'])
-# def mroute_add_param(user_number: int) -> str:
-#     result = example_service.mroute_add_param(user_number)
-#     return jsonify(result=result)
 
-@ai.route('/', methods=['GET', 'POST'])
-def draw()->str:
-    return jsonify(auto_draw.AI(request.get_json()))
+@ai.route('/base64', methods=['POST'])
+def draw() -> Response:
+    return jsonify(auto_draw.AIbyBase64(json.loads(request.get_json())))
+
+
+@ai.route('/s3', methods=['POST'])
+def drawByS3() -> str:  # str?????????????????????????????????????????????
+    return jsonify(auto_draw.AIbyS3(json.loads(request.get_json())))
+
+
+@ai.route('/url', methods=['POST'])
+def drawByURL() -> str:
+    s = request.get_data()
+    l = json.loads(s)
+    return jsonify(auto_draw.AIbyURL(l))

@@ -77,7 +77,7 @@
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/teamText"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="50dp"
                 android:background="@color/gray">
 
                 <TextView
@@ -85,7 +85,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="10dp"
                     android:gravity="center_vertical"
-                    android:text="팀스페이스"
+                    android:text="노트 목록"
                     android:textColor="#000"
                     android:textSize="22sp"
                     android:textStyle="bold"
@@ -93,40 +93,76 @@
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
 
-                <ImageButton
-                    android:id="@+id/themesBtn"
-                    android:layout_width="50dp"
-                    android:layout_height="50dp"
-                    android:layout_alignParentEnd="true"
-                    android:src="@drawable/baseline_keyboard_arrow_down_24"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
+
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
-            <Button
-                android:id="@+id/buttonCreateNote"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                android:backgroundTint="@color/gray"
+            <RelativeLayout
+                android:id="@+id/listLayout"
+                android:layout_width="match_parent"
+                android:layout_height="45dp"
                 android:layout_below="@+id/teamText"
-                android:text="작성하기" />
+                android:layout_marginTop="20dp"
+                android:padding="1dp">
+
+
+                <ImageView
+                    android:id="@+id/listLayout_1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="5dp"
+                    android:layout_centerVertical="true"
+                    android:src="@drawable/baseline_keyboard_arrow_down_24"/>
+
+                <ImageView
+                    android:id="@+id/listLayout_2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginLeft="5dp"
+                    android:layout_toRightOf="@id/listLayout_1"
+                    android:src="@drawable/ic_home"/>
+
+
+                <TextView
+                    android:id="@+id/listLayout_3"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentTop="true"
+                    android:layout_centerHorizontal="true"
+                    android:layout_marginLeft="5dp"
+                    android:layout_toRightOf="@id/listLayout_2"
+                    android:text="전체"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:layout_margin="8dp"/>
+
+                <ImageView
+                    android:id="@+id/listLayout_4"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_alignParentEnd="true"
+                    android:layout_marginEnd="16dp"
+                    android:src="@drawable/ic_add_note"/>
+
+
+            </RelativeLayout>
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/recyclerViewNotes"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
+                android:layout_marginTop="1dp"
                 android:layout_marginBottom="16dp"
-                android:layout_below="@+id/buttonCreateNote"/>
+                android:layout_below="@+id/listLayout"/>
 
 
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/bookText"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="50dp"
                 android:layout_below="@id/recyclerViewNotes"
                 android:layout_marginVertical="10dp"
                 android:background="@color/gray">
@@ -144,15 +180,6 @@
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
 
-                <ImageButton
-                    android:id="@+id/bookBtn"
-                    android:layout_width="50dp"
-                    android:layout_height="50dp"
-                    android:layout_alignParentEnd="true"
-                    android:background="@drawable/baseline_keyboard_arrow_down_24"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
-
             </androidx.constraintlayout.widget.ConstraintLayout>
 
             <FrameLayout
@@ -160,7 +187,14 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_below="@id/bookText"
-                android:padding="15dp"/>
+                android:padding="15dp" />
+            <Button
+                android:id="@+id/MoveDraw"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/list"
+                android:text="그림판"/>
+
 
         </RelativeLayout>
     </ScrollView>

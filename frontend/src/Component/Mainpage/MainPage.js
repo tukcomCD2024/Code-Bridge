@@ -87,7 +87,16 @@ function MainPage() {
   const [isInvalid, setIsInvalid] = useState(false);
   
   const location = useLocation(); // 현재 위치 정보를 가져옴
+  const navigate = useNavigate(); // useNavigate 훅 사용
   const userId = localStorage.getItem('userId');
+
+  useEffect(() => {
+    if(!userId){
+      navigate("/login");
+      alert("계정 정보가 없습니다. 로그인 후 접속하세요.");
+      return;
+    }
+  }, [location]);
 
   useEffect(() => {
     const fetchOrganizations = async () => {
@@ -95,11 +104,11 @@ function MainPage() {
         const response = await fetch(`/api/user/organization/${userId}`);
           if (response.ok) {
             const data = await response.json();
-            // 전체 데이터에서 id(Organization 고유값), name(Organization 이름), emoji(Organization 대표마크)만 추출
-            const fetchedOrganizationData = data.map(org => ({
+              const fetchedOrganizationData = data.map(org => ({
               id: org.id,
               name: org.name,
-              emoji: org.emoji
+              emoji: org.emoji,
+              members: org.members,
             }));
             setOrganizations(fetchedOrganizationData);
           } else {
@@ -163,7 +172,7 @@ function MainPage() {
   
       const updatedOrganizations = [...organizations, newOrganization];
       setOrganizations(updatedOrganizations);
-      localStorage.setItem("organizations", JSON.stringify(updatedOrganizations));
+      // localStorage.setItem("organizations", JSON.stringify(updatedOrganizations));
       handleCloseModal();
     };
   
@@ -186,12 +195,11 @@ function MainPage() {
         const errorData = await response.json();
         alert(`생성 실패: ${errorData.message}`);
       }
-    } catch (error) {      console.error("Error: ", error);
+    } catch (error) {      
+      console.error("Error: ", error);
       alert("처리 중 오류가 발생했습니다.");
     }
   };
-
-  
 
   return (
     <StContainer>

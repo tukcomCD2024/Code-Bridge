@@ -5,18 +5,59 @@
     android:orientation="vertical"
     android:padding="8dp">
 
-    <TextView
-        android:id="@+id/titleTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        android:layout_margin="8dp"/>
-
-    <View
+    <RelativeLayout
+        android:id="@+id/settingLayout"
         android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="@color/gray"
-        android:layout_marginVertical="8dp"/>
+        android:layout_height="wrap_content"
+        android:padding="10dp">
+
+        <ImageView
+            android:id="@+id/image1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="30dp"
+            android:src="@drawable/baseline_keyboard_arrow_right_24"/>
+
+        <ImageView
+            android:id="@+id/image2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_toRightOf="@+id/image1"
+            android:layout_marginLeft="5dp"
+            android:src="@drawable/ic_pencil"/>
+
+        <TextView
+            android:id="@+id/titleTextView"
+            android:layout_width="200dp"
+            android:layout_height="wrap_content"
+            android:layout_toRightOf="@+id/image2"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:layout_margin="8dp"/>
+
+        <ImageView
+            android:id="@+id/image3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_toLeftOf="@id/image4"
+            android:layout_marginRight="5dp"
+            android:src="@drawable/ic_setting_note"/>
+
+        <ImageView
+            android:id="@+id/image4"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_alignParentEnd="true"
+            android:src="@drawable/ic_add_note"/>
+
+
+
+
+    </RelativeLayout>
+
 
 </LinearLayout>

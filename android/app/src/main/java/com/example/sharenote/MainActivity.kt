@@ -37,7 +37,9 @@ class MainActivity : AppCompatActivity() {
                     true
                 }
                 R.id.fragment_search -> {
-                    // SearchFragment로 이동하는 코드 작성
+                    supportFragmentManager.beginTransaction()
+                        .replace(R.id.main_container, SearchFragment())
+                        .commit()
                     true
                 }
                 R.id.fragment_alert -> {

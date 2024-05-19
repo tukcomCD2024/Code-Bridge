@@ -84,7 +84,7 @@ class SignUpActivity : AppCompatActivity() {
     }
 
     private fun signUpUser() {
-        val userData = UserData(Name, Email, Password)
+        val userData = UserData(Name, "", Email, Password)
 
         // Firebase Authentication을 사용하여 사용자 등록
         auth.createUserWithEmailAndPassword(Email, Password)
@@ -137,18 +137,40 @@ class SignUpActivity : AppCompatActivity() {
 
         // Firestore에 사용자 정보 저장
         val collectionPath = "users" // 사용자 정보를 저장할 컬렉션 이름
-        db.collection(collectionPath).document(auth.currentUser!!.uid)
-            .set(user)
-            .addOnSuccessListener {
-                // Firestore에 데이터가 성공적으로 추가된 경우
-                Toast.makeText(this, "회원가입에 성공하였습니다.", Toast.LENGTH_SHORT).show()
-            }
-            .addOnFailureListener {
-                // Firestore에 데이터 추가 중 오류 발생한 경우
-                Toast.makeText(this, "회원가입에 실패하였습니다.", Toast.LENGTH_SHORT).show()
-            }
 
+        // 사용자가 로그인되어 있지 않은 상태일 경우
+        if (auth.currentUser == null) {
+            // 사용자가 로그인되어 있지 않은 경우에는 고유한 식별자를 생성하여 Firestore에 데이터를 저장
+            db.collection(collectionPath)
+                .add(user)
+                .addOnSuccessListener { documentReference ->
+                    // Firestore에 데이터가 성공적으로 추가된 경우
+                    Toast.makeText(this, "회원가입에 성공하였습니다.", Toast.LENGTH_SHORT).show()
+                    // 추가된 문서의 ID를 사용하여 추가적인 작업 수행 가능
+                    val userId = documentReference.id
+                    // 예: 사용자의 추가 정보를 저장하거나 추가 작업 수행
+                }
+                .addOnFailureListener {
+                    // Firestore에 데이터 추가 중 오류 발생한 경우
+                    Toast.makeText(this, "회원가입에 실패하였습니다.", Toast.LENGTH_SHORT).show()
+                }
+        } else {
+            // 사용자가 로그인되어 있는 경우에는 현재 사용자의 UID를 사용하여 Firestore에 데이터 저장
+            auth.currentUser?.let { currentUser ->
+                db.collection(collectionPath).document(currentUser.uid)
+                    .set(user)
+                    .addOnSuccessListener {
+                        // Firestore에 데이터가 성공적으로 추가된 경우
+                        Toast.makeText(this, "회원가입에 성공하였습니다.", Toast.LENGTH_SHORT).show()
+                    }
+                    .addOnFailureListener {
+                        // Firestore에 데이터 추가 중 오류 발생한 경우
+                        Toast.makeText(this, "회원가입에 실패하였습니다.", Toast.LENGTH_SHORT).show()
+                    }
+            }
+        }
     }
+
 
     private fun checkDuplicateUsername() {
         val enteredName = nameEditText.text.toString()

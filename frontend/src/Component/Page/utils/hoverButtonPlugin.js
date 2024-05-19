@@ -1,13 +1,14 @@
-import { Plugin, Selection } from "prosemirror-state";
+import { Plugin, Selection, NodeSelection } from "prosemirror-state";
 import down_arrow from "../../../image/down_arrow.svg";
 import lock from "../../../image/lock2.gif";
-import typing from "../../../image/typing.gif";
+import { library, icon } from '@fortawesome/fontawesome-svg-core';
+import { faHeart } from '@fortawesome/free-solid-svg-icons';
 
 // 문서 내 블록(노드)의 총 수를 계산하는 함수
 function countDocBlocks(doc) {
   let count = 0;
   doc.descendants(node => {
-    if (node.type.name === "paragraph" || node.isBlock) { // "paragraph"는 예시입니다. 실제 블록 타입에 따라 조정하세요.
+    if (node.type.name === "paragraph" || node.isBlock) {
       count++;
     }
   });
@@ -20,6 +21,7 @@ export function hoverButtonPlugin() {
 
   return new Plugin({
     view(editorView) {
+      editorResizing();
       hoverDiv.classList.add("hoverDiv"); // CSS 클래스 적용
       document.body.appendChild(hoverDiv); // 바디에 직접 추가
 
@@ -38,13 +40,42 @@ export function hoverButtonPlugin() {
       hoverButton_lock.title = "노드 편집 잠금";
       hoverButton_lock.classList.add("hoverButton_lock"); // CSS 클래스 적용
       hoverDiv.appendChild(hoverButton_lock);
+      
+      // hoverButton 생성(좋아요)
+      const hoverButton_like = document.createElement("div");
+      library.add(faHeart);
+      const heartIcon = icon(faHeart).node[0];
+      hoverButton_like.appendChild(heartIcon);
+      hoverButton_like.classList.add("hoverButton_like");
+      hoverButton_like.title = "좋아요";
+      hoverDiv.appendChild(hoverButton_like);
 
-      // hoverButton_2 생성(작성자 확인)
-      const hoverButton_writer = document.createElement("img");
-      hoverButton_writer.src = typing;
-      hoverButton_writer.title = "작성자 확인";
-      hoverButton_writer.classList.add("hoverButton_writer"); // CSS 클래스 적용
-      hoverDiv.appendChild(hoverButton_writer);
+      // hoverButton_like 요소에 클릭 이벤트 리스너 추가
+      hoverButton_like.addEventListener("click", function() {
+        const { state } = editorView;
+        const { selection } = state;
+
+        if (lastPos !== null) {
+          const resolvedPos = editorView.state.doc.resolve(lastPos);
+          const node = resolvedPos.node();
+          const liker = localStorage.getItem("userId");
+
+           // 노드가 uuid를 가지고 있는지 확인
+           if ((node && node.attrs.guid) || selection.node.attrs['data-guid'].toString()) {
+             const guid = node.attrs.guid || selection.node.attrs['data-guid'].toString();
+             const writer = node.attrs.writer || selection.node.attrs.writer.toString();
+             window.toggleLike(guid, liker ,writer);
+             if (liker !== writer) {
+              this.classList.toggle("hoverButton_like");
+              this.classList.toggle("hoverButton_like_fullRedHeart");
+            }
+           } else {
+             console.log('No UUID found for this node.');
+           }
+         } else {
+           console.error('No last position recorded.');
+         }
+      });
 
       hoverButton_lock.addEventListener("click", (event) => {
         event.stopPropagation(); // 이벤트 버블링 방지
@@ -68,16 +99,19 @@ export function hoverButtonPlugin() {
 
       hoverButton_plus.addEventListener("click", (event) => {
         const { state, dispatch } = editorView;
+        const { selection } = state;
         let tr = state.tr; // 현재 문서의 트랜잭션
-        const $clickPos = state.doc.resolve(lastPos);
         let insertPos;
+        let $clickPos = state.doc.resolve(lastPos);
+        const isImageNode = selection instanceof NodeSelection && selection.node.type.name === "image";
 
-        if ($clickPos.nodeBefore == null && $clickPos.nodeAfter && $clickPos.nodeAfter.type.name === "image") {
+        if ($clickPos.nodeBefore == null && isImageNode) {
           // 문서 시작 부분에 이미지가 있는 경우
           insertPos = 1;
-        } else if ($clickPos.nodeAfter && $clickPos.nodeAfter.type.name === "image") {
-          // 이미지 노드 바로 뒤의 위치를 삽입 위치로 설정
-          insertPos = $clickPos.pos + $clickPos.nodeAfter.nodeSize;
+        } else if (isImageNode) {
+          // 문서 중간 부분에 위치한 이미지 노드 바로 직후를 삽입 위치로 설정
+          $clickPos = selection.$anchor;
+          insertPos = $clickPos.pos + 1;
         } else {
           // 클릭한 위치(lastPos)를 기준으로 해당 노드의 끝 위치를 찾음
           const endOfNodePos = $clickPos.end($clickPos.depth);
@@ -101,47 +135,72 @@ export function hoverButtonPlugin() {
         increaseEditorHeightForScroll();
         updateButton(editorView, newPos, true);
       });
-      
-      function increaseEditorHeightForScroll() {
-        const paragraphNodeHeight = 48; // 추가할 높이 값
-        const editorElement = document.querySelector('.ProseMirror'); 
-      
-        if (editorElement) {
-          // 에디터 내부의 현재 높이를 계산합니다.
-          const currentEditorHeight = editorElement.scrollHeight;
-          // 에디터의 높이를 조정합니다.
-          editorElement.style.height = `${currentEditorHeight + paragraphNodeHeight}px`;
+
+      function editorResizing() {
+        const editor = document.querySelector("#editor");
+        const prosemirror = document.querySelector(".ProseMirror");
+        const initialEditorPaddingLeft = "8%";
+        const initialEditorPaddingRight = "5%";   
+        const initialProsemirrorMarginLeft = "40px";
+
+        if (getComputedStyle(hoverDiv).visibility !== "visible" && window.matchMedia("(max-width: 768px)").matches) {
+          editor.style.paddingLeft = "0%";
+          editor.style.paddingRight = "0%";
+          prosemirror.style.marginLeft = "0px";
+        } else {
+          editor.style.paddingLeft = initialEditorPaddingLeft;
+          editor.style.paddingRight = initialEditorPaddingRight;
+          prosemirror.style.marginLeft = initialProsemirrorMarginLeft;
         }
       }
       
       function updateButton(view, pos, show) {
         try {
-          const { doc } = view.state;
-          const resolvedPos = doc.resolve(pos);
-      
-          // 버튼을 숨기는 경우 또는 depth가 0이고 이전 노드가 paragraph가 아닌 경우
-          if ((resolvedPos.depth === 0 && resolvedPos.nodeBefore && resolvedPos.nodeBefore.type.name !== "paragraph") || 
-              (resolvedPos.depth === 0 && !show)) {
+          const { doc, selection } = view.state;
+          let resolvedPos = doc.resolve(pos);
+          const isImageNode = selection instanceof NodeSelection && selection.node.type.name === "image";
+
+          // 버튼을 숨기는 경우는 바로 이전 노드가 없거나 작성 불가능한 노드(doc)를 클릭할 때
+          if ((resolvedPos.depth === 0 && !resolvedPos.nodeBefore && !isImageNode) || (resolvedPos.depth === 0 && !show)) {
             hoverDiv.style.visibility = "hidden";
+            editorResizing();
             return;
           }
-      
+
           // 마지막 위치 업데이트
           lastPos = pos;
+
+          if (lastPos !== null) {
+            const resolvedPos = editorView.state.doc.resolve(lastPos);
+             const node = resolvedPos.node();
+         
+             // 노드가 uuid를 가지고 있는지 확인
+             if ((node && node.attrs.guid) || selection.node.attrs['data-guid'].toString()) {
+               const guid = node.attrs.guid || selection.node.attrs['data-guid'].toString()
+               const isLiked = window.getLikeList(guid);
+               if (isLiked) {
+                hoverButton_like.classList.remove('hoverButton_like');
+                hoverButton_like.classList.add('hoverButton_like_fullRedHeart');
+              } else {
+                hoverButton_like.classList.remove('hoverButton_like_fullRedHeart');
+                hoverButton_like.classList.add('hoverButton_like');
+              }
+            } else {
+               console.log('No UUID found for this node.');
+             }
+           } else {
+             console.error('No last position recorded.');
+           }
       
           let coords;
-      
+
           // 이미지 노드가 문서의 시작에 있을 때
-          if (pos === 1 && resolvedPos.nodeAfter && resolvedPos.nodeAfter.type.name === "image") {
-            // 문서 시작에 있는 이미지의 좌표
-            coords = view.coordsAtPos(1);
-            // 이 경우에는 lock 버튼을 숨깁니다.
+          if (pos === 0 && isImageNode) {
+            coords = view.coordsAtPos(0);
             hoverButton_lock.style.display = "none";
-          } else if (
-            resolvedPos.nodeAfter &&
-            resolvedPos.nodeAfter.type.name === "image"
-          ) {
-            // 문서 중간에 있는 이미지 노드 다음의 좌표
+          } else if (isImageNode) {
+            // 이미지 노드가 문서의 중간에 있을 때
+            resolvedPos = selection.$anchor;
             coords = view.coordsAtPos(resolvedPos.pos);
             hoverButton_lock.style.display = "none";
           } else {
@@ -155,30 +214,33 @@ export function hoverButtonPlugin() {
             coords = view.coordsAtPos(startPos);
             hoverButton_lock.style.display = "block";
           }
+
+          hoverDiv.style.visibility = "visible";
+          editorResizing();
           
           // 스크롤 오프셋을 고려하여 좌표 조정
           const topWithScroll = coords.top + window.scrollY;
-      
           const editorRect = view.dom.getBoundingClientRect();
-          hoverDiv.style.left = `${editorRect.left - hoverDiv.offsetWidth - 5}px`;
-          hoverDiv.style.top = `${topWithScroll}px`;
-          hoverDiv.style.visibility = "visible";
-      
+          hoverDiv.style.left = window.matchMedia("(max-width: 768px)").matches ? `${editorRect.left - hoverDiv.offsetWidth + 7}px` : `${editorRect.left - hoverDiv.offsetWidth - 5}px`
+          hoverDiv.style.top = window.matchMedia("(max-width: 768px)").matches ? `${topWithScroll-2}px` : `${topWithScroll-4}px`;
+
         } catch (error) {
           console.error("Failed to update button position:", error);
         }
       }
 
       function increaseEditorHeightForScroll() {
-        const paragraphNodeHeight = 48; // 추가할 높이 값
-        // 에디터의 root 요소를 선택합니다. 아이디나 클래스명을 에디터에 맞게 조정해야 합니다.
-        const editorElement = document.querySelector('.ProseMirror'); // 예시로 '.ProseMirror' 클래스 사용
+        const paragraphNodeHeight = 8; // 추가할 높이 값
+        const editor = document.querySelector('#editor');
+        const editorContainer = document.querySelector('#EditorContainer');
       
-        if (editorElement) {
+        if (editor && editorContainer) {
           // 에디터 내부의 현재 높이를 계산합니다.
-          const currentEditorHeight = editorElement.scrollHeight;
+          const currentEditorHeight = editor.scrollHeight;
+          const currentEditorContainerHeight = editorContainer.scrollHeight;
           // 에디터의 높이를 조정합니다.
-          editorElement.style.height = `${currentEditorHeight + paragraphNodeHeight}px`;
+          editor.style.height = `${currentEditorHeight + paragraphNodeHeight}px`;
+          editorContainer.style.height = `${currentEditorContainerHeight + paragraphNodeHeight + 10}px`;
         }
       }
       
@@ -189,14 +251,13 @@ export function hoverButtonPlugin() {
         });
         if (pos === null || pos === undefined) return;
 
-        const resolvedPos = editorView.state.doc.resolve(pos);
-        let node = resolvedPos.nodeAfter || resolvedPos.nodeBefore;
-
-        if (node && node.type.name !== "image") {
+        const isImageNode = editorView.state.selection.node;
+      
+        // 이미지 노드가 아닌 경우(텍스트 노드 또는 doc 일 때)
+        if (!isImageNode) {
           updateButton(editorView, pos, false);
           return;
         }
-
         updateButton(editorView, pos, true);
       }
 
@@ -210,10 +271,20 @@ export function hoverButtonPlugin() {
           updateButton(editorView, pos, false);
           return;
         }
-
         updateButton(editorView, pos, true);
       }
-          
+
+      function handleResize() {
+        try {
+          if (lastPos !== null) {
+            updateButton(editorView, lastPos, true);
+          }
+        } catch (error) {
+          console.error("Failed to handle resize:", error);
+        }
+      }
+
+      window.addEventListener("resize", handleResize);
       editorView.dom.addEventListener("click", handleInteraction);
       editorView.dom.addEventListener("keyup", (event) => {
         const { from } = editorView.state.selection;
@@ -223,8 +294,9 @@ export function hoverButtonPlugin() {
           }
       }
       });
+      
       editorView.dom.addEventListener("keydown", (event) => {
-        if (event.keyCode === 13) {
+        if (event.keyCode === 13 || event.key === "ArrowUp" || event.key === "ArrowDown") {
           const { from } = editorView.state.selection;
           if (from !== null) {
             hoverDiv.style.visibility = "hidden";
@@ -241,52 +313,10 @@ export function hoverButtonPlugin() {
         }
       });
 
-      function handleResize() {
-        try {
-          if (lastPos !== null) {
-            updateButton(editorView, lastPos, true);
-          }
-        } catch (error) {
-          console.error("Failed to handle resize:", error);
-        }
-      }
-
-      function handleClick(event) {
-        const { pos } = editorView.posAtCoords({
-          left: event.clientX,
-          top: event.clientY,
-        });
-        if (pos !== null) {
-          const resolvedPos = editorView.state.doc.resolve(pos);
-          let lineNumber = 1;
-          editorView.state.doc.nodesBetween(
-            0,
-            resolvedPos.pos,
-            (node, start) => {
-              if (node.isBlock) {
-                // 클릭된 위치가 현재 노드의 범위 내에 있는지 확인합니다.
-                if (
-                  start < resolvedPos.pos &&
-                  resolvedPos.pos <= start + node.nodeSize
-                ) {
-                  return false; // 순회 중단
-                }
-                lineNumber++;
-              }
-            }
-          );
-        }
-      }
-
-      // 클릭 이벤트 리스너 등록
-      editorView.dom.addEventListener("click", handleClick);
-      window.addEventListener("resize", handleResize);
-
       return {
         destroy() {
           hoverDiv.remove();
           window.removeEventListener("resize", handleResize);
-          editorView.dom.removeEventListener("click", handleClick);
         },
       };
     },
@@ -296,13 +326,11 @@ export function hoverButtonPlugin() {
       const oldDocBlocks = countDocBlocks(oldState.doc);
       const newDocBlocks = countDocBlocks(newState.doc);
     
-      // 블록 수가 줄어든 경우 alert 표시
       if (newDocBlocks < oldDocBlocks) {
         hoverDiv.style.visibility = "hidden";
       }
     
       return null; // 추가적인 트랜잭션을 반환하지 않음
     },
-
   });
 }

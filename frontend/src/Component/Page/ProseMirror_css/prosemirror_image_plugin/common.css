@@ -20,8 +20,9 @@ placeholder:after {
 .imagePluginRoot img {
   align-self: center;
   width: 100%;
+  max-height: 150vh; /* 이미지 (높이)크기 제한 */
+  object-fit: contain; /* 이미지 가로 세로 비율 유지 */
 }
-
 .imagePluginRoot:hover .imagePluginOverlay {
   opacity: 1;
 }

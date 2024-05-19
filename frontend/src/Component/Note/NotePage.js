@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useParams, Link, Route, Routes, useNavigate, useLocation } from "react-router-dom";
 import styled, { keyframes, css } from "styled-components";
-import { formatCreationTime } from "../Utils/formatCreationTime";
 import OrganizationInfoModal from "./organizationInfo/organizationInfo";
 import ImagetoBackend from "../imageToBackend";
 import NoteDetail from "./NoteDetail";
@@ -11,12 +10,10 @@ import toastr from "toastr";
 import "toastr/build/toastr.css";
 toastr.options.positionClass = "toast-top-right";
 
-
 function NoteCard({ note, index }) {
   return (
     <Link 
-      to={`/organization/${note.organizationId}/${note.id}`}
-      state={{ name: note.name, image: note.image }}
+      to={`/organization/${note.organizationId}/${note.id}/${note.pageId}`}
     >
       {/* {"📖"} */}
       <NoteContainer>
@@ -120,9 +117,8 @@ function NotePage() {
     return allowedExtensions.includes(fileExtension);
   };
 
-  useEffect(() => {
     const userId = localStorage.getItem('userId');
-    const fetchNotesInformation = async () => {
+    const fetchOrganizationInfo = async () => {
       try {
         const response = await fetch(`/api/user/organization/${userId}`);
         if (response.ok) {
@@ -139,31 +135,55 @@ function NotePage() {
       }
     };
 
-    const fetchNotes = async () => {
-      const organizaionId = id;
-      try {
-        const response = await fetch(`/api/user/note/${organizaionId}`);
+    useEffect(() => {
+      const fetchNotes = async () => {
+        const createUserId = localStorage.getItem("userId");
+        try {
+          const response = await fetch(`/api/user/note/${organizationId}`);
           if (response.ok) {
             const data = await response.json();
-            const fetchedNoteData = data.map(note => ({
-              id: note.id,
-              name: note.title,
-              image: note.noteImageUrl,
-              organizationId: organizationId
-
+            const fetchedNoteData = await Promise.all(data.map(async (note) => {
+              // Fetch pageId for each note
+              try {
+                const pageResponse = await fetch(`/api/page/search`, {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify({ organizationId, noteId: note.id, createUserId }),
+                });
+                if (pageResponse.ok) {
+                  const pageData = await pageResponse.json();
+                  if (pageData && pageData.length > 0) {
+                    return {
+                      id: note.id,
+                      name: note.title,
+                      image: note.noteImageUrl,
+                      organizationId: id,
+                      pageId: pageData[0].pageId, // Add pageId to the note data
+                    };
+                  }
+                } else {
+                  console.error(`Failed to fetch: HTTP status ${pageResponse.status}`);
+                }
+              } catch (error) {
+                console.error('Error fetching page', error);
+              }
+              return null; // Return null if pageId fetching fails
             }));
-            setNotes(fetchedNoteData);
+            setNotes(fetchedNoteData.filter(note => note !== null)); // Filter out null values
           } else {
             console.error("Failed to fetch");
           }
         } catch (error) {
-          console.error('Error fetching', error);
+          console.error('Error fetching notes', error);
         }
       };
-
-    fetchNotesInformation();
-    fetchNotes();
-  }, [id, location]);
+    
+      fetchOrganizationInfo();
+      fetchNotes();
+    }, [id, location]);
+    
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -200,6 +220,7 @@ function NotePage() {
   };
 
   const handleOpenOrganizationModal = () => {
+    fetchOrganizationInfo();
     setOrganizationModalOpen(true);
   };
 
@@ -219,19 +240,21 @@ function NotePage() {
     const organizationId = id;
     const title = noteName;
     const createUser = localStorage.getItem("userId");
+    const createUserId = localStorage.getItem("userId");
     const noteImageUrl = localStorage.getItem('recentImageUrl') || 'https://sharenotebucket.s3.ap-northeast-2.amazonaws.com/NoneImage2.png';
     
-    const createNote = (noteId) => {
+    const createNote = (noteId, pageId) => {
       const newNote = {
         id: noteId,
+        pageId: pageId,
         name: noteName,
         image: myimage || defaultImage,
         organizationId: organizationId
       };
-
+      console.log(newNote);
       const updatedNotes = [...notes, newNote];
       setNotes(updatedNotes);
-      localStorage.setItem("notes", JSON.stringify(updatedNotes));
+      fetchOrganizationInfo();
       handleCloseModal();
     };
     
@@ -243,20 +266,79 @@ function NotePage() {
         },
         body: JSON.stringify({ organizationId, title, createUser, noteImageUrl }),
       });
-      if (response.ok) {
-        const responseData = await response.json();
-        const noteId = responseData.noteId;
-        createNote(noteId);
-        console.log("생성 성공:", responseData);
-      } else {
+      if (!response.ok) {
         const errorData = await response.json();
-        alert(`생성 실패: ${errorData.message}`);
+        alert(`노트 생성 실패: ${errorData.message}`);
+        return;
       }
+      const responseData = await response.json(); // 한 번만 호출
+      const noteId = responseData.noteId;
+      console.log("노트 생성 성공:", responseData);
+
+      const responsePage = await fetch("/api/page", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ organizationId, noteId, createUserId }),
+      });
+      if (!responsePage.ok) {
+        const errorData = await responsePage.json();
+        alert(`페이지 생성 실패: ${errorData.message}`);
+        return;
+      }
+      const responseDataPage = await responsePage.json(); // 한 번만 호출
+      const pageId = responseDataPage.pageId;
+      console.log("페이지 생성 성공:", responseDataPage);
+      createNote(noteId, pageId);
     } catch (error) {
       console.error("Error: ", error);
       alert("처리 중 오류가 발생했습니다.");
     }
   };
+  
+  const removeOrganization = async () => {
+    if (organization?.name == null) {
+      toastr.info("정보를 불러오지 못했습니다.");
+      navigate("/main");
+      return;
+    }
+
+    const userLoginId = localStorage.getItem("email");
+    const isConfirmed = window.confirm(`"${organization?.name}" 의 모든 데이터를 삭제하시겠습니까? \n\n${organization.notes.length}개의 노트가 삭제되고, ${organization.members.length}명의 멤버가 추방됩니다.\n계속 진행하시려면 확인을 눌러주세요.`);
+
+    if (isConfirmed) {
+      try {
+        const response = await fetch("/api/user/organization", {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ organizationId, userLoginId }),
+        });
+        const contentType = response.headers.get('content-type');
+        // 삭제 성공
+        if (response.ok) {
+          if (contentType && contentType.includes('application/json')) {
+          navigate("/main");
+          toastr.info("정상적으로 삭제되었습니다.");
+          }
+        // 비정상적 상황
+        } else {
+          if (contentType && contentType.includes('text/plain')) {
+            const errorMessage = await response.text();
+            alert(`실패: ${errorMessage}`);
+          } else {
+            alert("이미 삭제된 Organization 입니다.");
+            navigate("/main");
+          }
+        }
+      } catch (error) {
+        console.error("Error: ", error);
+        alert("처리 중 오류가 발생했습니다.");
+      }
+  }
+};
 
   return (
     <div>
@@ -266,6 +348,9 @@ function NotePage() {
       <OrganizationInfo onClick={handleOpenOrganizationModal}>
         Organization 정보 확인
       </OrganizationInfo>
+      <OrganizationDelete onClick={removeOrganization}>
+        Organization 삭제
+      </OrganizationDelete>
       <NotesContainer>
         <StyledAddNoteIcon onClick={handleButtonClick}/>
 
@@ -295,7 +380,7 @@ function NotePage() {
       <Routes>
         {notes.map((note) => (
           <Route
-            path={`/organization/${organizationId}/${note.id}`}
+            path={`/organization/${organizationId}/${note.id}/${note.pageId}`}
             element={<NoteDetail note={note} notes={notes} />}
             key={note.id}
           />
@@ -334,6 +419,37 @@ const OrganizationInfo = styled.button`
     background-color: #cccccc;
     border-color: #cccccc;
     color: #000000;
+  }
+`;
+
+const OrganizationDelete = styled.button`
+  display: flex;
+  flex-direction: column;
+  margin-top: 10px;
+  margin: 10px auto; /* Auto margin for centering horizontally */
+  max-width: 1360px;
+  width: 100%;
+  height: 40px;
+  border: 2px solid #FF0000;
+  border-radius: 10px;
+  background-color: #FF0000;
+  text-align: center;
+  align-items: center;
+  line-height: 40px;
+  font-size: 16px;
+  color:  #ffffff;
+  cursor: pointer;
+
+  @media screen and (max-width: 768px) {
+    flex-direction: column;
+    gap: 0px;
+    width: 100%;
+  }
+
+  &:hover {
+    background-color: #FF6666;
+    border-color: #FF6666;
+    color:  #ffffff
   }
 `;
 

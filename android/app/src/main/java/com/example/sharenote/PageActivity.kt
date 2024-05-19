@@ -1,150 +1,190 @@
 package com.example.sharenote
 
+import android.animation.ObjectAnimator
+import android.app.Activity
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.widget.Button
-import android.widget.EditText
-import android.widget.ImageView
+import android.util.Log
+import android.view.LayoutInflater
+import android.webkit.WebChromeClient
+import android.webkit.WebSettings
+import android.webkit.WebView
+import android.webkit.WebViewClient
+import android.widget.PopupMenu
 import android.widget.Toast
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import com.bumptech.glide.Glide
-import com.example.sharenote.SharedPreferencesUtil.getRecentWorkspaceId
-import com.google.firebase.firestore.FirebaseFirestore
-import java.util.*
+import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 class PageActivity : AppCompatActivity() {
 
-    private lateinit var editTextPage: EditText
-    private lateinit var editTextTitle: EditText
-    private lateinit var buttonAddImage: Button
-    private lateinit var buttonSavePage: Button
-    private lateinit var imagePreview: ImageView
-
+    private lateinit var webView: WebView
+    private lateinit var floating: FloatingActionButton
+    private lateinit var fabDraw: FloatingActionButton
+    private var isFabOpen = false
     private var selectedImageUri: Uri? = null
-    private var pageId: String? = null
-
-    private val getContent = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        if (result.resultCode == RESULT_OK) {
-            val data: Intent? = result.data
-            data?.data?.let { uri ->
-                selectedImageUri = uri
-                Glide.with(this).load(selectedImageUri).into(imagePreview)
-                imagePreview.visibility = ImageView.VISIBLE
-            }
-        }
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_page)
 
-        editTextPage = findViewById(R.id.editTextPage)
-        editTextTitle = findViewById(R.id.editTextTitle)
-        buttonAddImage = findViewById(R.id.buttonAddImage)
-        buttonSavePage = findViewById(R.id.buttonSavePage)
-        imagePreview = findViewById(R.id.imagePreview)
+        webView = findViewById(R.id.webView)
+        floating = findViewById(R.id.floating)
+        fabDraw = findViewById(R.id.fabDraw)
 
-        // 이전에 작성한 데이터가 있는지 확인하고 있으면 해당 데이터를 불러옴
-        pageId = intent.getStringExtra("page_id")
 
-        if (!pageId.isNullOrEmpty()) {
-            val pageTitle = intent.getStringExtra("page_title")
-            val pageText = intent.getStringExtra("page_text")
-            val pageImageUri = intent.getStringExtra("page_image_uri")
 
-            editTextTitle.setText(pageTitle)
-            editTextPage.setText(pageText)
-            selectedImageUri = Uri.parse(pageImageUri)
-            Glide.with(this).load(selectedImageUri).into(imagePreview)
-            imagePreview.visibility = ImageView.VISIBLE
+        webView.apply {
+            webViewClient = WebViewClient() // 하이퍼링크 클릭시 새창 띄우기 방지
+            webChromeClient =
+                WebChromeClient() // 크롬환경에 맞는 세팅을 해줌. 특히, 알람등을 받기위해서는 꼭 선언해주어야함 (alert같은 경우)
+            settings.javaScriptEnabled = true // 자바스크립트 허용
+            settings.javaScriptCanOpenWindowsAutomatically = false
+            // 팝업창을 띄울 경우가 있는데, 해당 속성을 추가해야 window.open() 이 제대로 작동 , 자바스크립트 새창도 띄우기 허용여부
+            settings.setSupportMultipleWindows(false) // 새창 띄우기 허용 여부 (멀티뷰)
+            settings.loadsImagesAutomatically = true // 웹뷰가 앱에 등록되어 있는 이미지 리소스를 자동으로 로드하도록 설정하는 속성
+            settings.useWideViewPort = true // 화면 사이즈 맞추기 허용 여부
+            settings.loadWithOverviewMode = true // 메타태그 허용 여부
+            settings.setSupportZoom(true) // 화면 줌 허용여부
+            settings.builtInZoomControls = false // 화면 확대 축소 허용여부
+            settings.displayZoomControls = false // 줌 컨트롤 없애기.
+            settings.cacheMode = WebSettings.LOAD_NO_CACHE // 웹뷰의 캐시 모드를 설정하는 속성으로써 5가지 모드
+
+
+            settings.domStorageEnabled =
+                true // 로컬 스토리지 사용 여부를 설정하는 속성으로 팝업창등을 '하루동안 보지 않기' 기능 사용에 필요
+            settings.allowContentAccess // 웹뷰 내에서 파일 액세스 활성화 여부
+            settings.userAgentString = "app" // 웹에서 해당 속성을 통해 앱에서 띄운 웹뷰로 인지 할 수 있도록 합니다.
+            settings.defaultTextEncodingName = "UTF-8" // 인코딩 설정
+            settings.databaseEnabled = true //Database Storage API 사용 여부 설정
         }
 
-        buttonAddImage.setOnClickListener {
-            openGallery()
+        val nickname = getUserName()
+        val userId = getUserId()
+        val email = getUserEmail()
+
+        webView.webViewClient = object : WebViewClient() {
+            override fun onPageFinished(view: WebView?, url: String?) {
+                super.onPageFinished(view, url)
+                val script = """
+                    localStorage.setItem('nickname', '$nickname');
+                    localStorage.setItem('userId', '$userId');
+                    localStorage.setItem('email', '$email');
+                """.trimIndent()
+                webView.evaluateJavascript(script, null)
+            }
         }
 
-        buttonSavePage.setOnClickListener {
-            savePage()
+
+        val imageUrl = intent.getStringExtra(PaintActivity.IMAGE_URL)
+
+        // WebView가 로드되면 이미지를 업로드하는 함수 호출
+        webView.webViewClient = object : WebViewClient() {
+            override fun onPageFinished(view: WebView?, url: String?) {
+                super.onPageFinished(view, url)
+                // 이미지를 업로드하는 함수 호출
+                uploadImageToEditor(imageUrl)
+            }
         }
 
-        val buttonDeleteImage = findViewById<Button>(R.id.buttonDeleteImage)
-        buttonDeleteImage.setOnClickListener {
-            deleteImage()
+
+
+        // SharedPreferencesUtil을 사용하여 WorkSpaceId와 NoteId를 불러옵니다.
+        val workspaceId = SharedPreferencesUtil.getRecentWorkspaceId(this)
+        val noteId = SharedPreferencesUtil.getRecentNoteId(this)
+        val pageId = SharedPreferencesUtil.getRecentPageId(this)
+
+        webView.loadUrl("https://sharenote.shop/organization/$workspaceId/$noteId/$pageId")
+
+        // 플로팅 버튼 클릭시 에니메이션 동작 기능
+        floating.setOnClickListener {
+           toggleFab()
+        }
+
+
+
+        fabDraw.setOnClickListener {
+            val intent = Intent(this, PaintActivity::class.java)
+            startActivity(intent)
+            finish()
+            yjsDisconnect()
         }
     }
 
-    private fun deleteImage() {
-        selectedImageUri = null
-        imagePreview.setImageResource(android.R.color.transparent) // 이미지 뷰를 투명 이미지로 설정하여 이미지 제거
-        imagePreview.visibility = ImageView.GONE
-    }
-
-    private fun openGallery() {
-        val intent = Intent(Intent.ACTION_PICK)
-        intent.type = "image/*"
-        getContent.launch(intent)
-    }
-
-    private fun savePage() {
-        val pageTitle = editTextTitle.text.toString().trim()
-        val pageText = editTextPage.text.toString().trim()
-
-        if (pageText.isEmpty()) {
-            Toast.makeText(this, "노트를 입력하세요", Toast.LENGTH_SHORT).show()
-            return
+/*
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == 100 && resultCode == Activity.RESULT_OK) {
+            val imageUrl = data?.getStringExtra("imageUrl")
+            if (imageUrl != null) {
+                Log.d("PageActivity", "Received Image URL: $imageUrl")
+                Toast.makeText(this@PageActivity, imageUrl, Toast.LENGTH_SHORT).show()
+            } else {
+                Log.d("PageActivity", "Received Image URL is null")
+                Toast.makeText(this@PageActivity, "No image URL received", Toast.LENGTH_SHORT).show()
+            }
         }
+    }*/
 
-        val db = FirebaseFirestore.getInstance()
 
-        // 이전에 작성한 데이터가 있는 경우 해당 데이터의 ID를 사용하여 업데이트
-        if (!pageId.isNullOrEmpty()) {
-            // 이전에 작성한 데이터가 있는 경우 해당 데이터의 ID를 사용하여 업데이트
-            val page = hashMapOf(
-                "id" to pageId, // NoteId를 유지하도록 수정
-                "title" to pageTitle,
-                "text" to pageText,
-                "imageUri" to selectedImageUri.toString(),
-                "workSpaceId" to getRecentWorkspaceId(this) // 최근 워크스페이스 ID 추가
-            )
 
-            db.collection("pages")
-                .document(pageId!!)
-                .set(page)
-                .addOnSuccessListener {
-                    Toast.makeText(this, "노트 업데이트 성공", Toast.LENGTH_SHORT).show()
-                    val intent = Intent(this, MainActivity::class.java)
-                    startActivity(intent)
-                    finish() // 현재 액티비티 종료
-                }
-                .addOnFailureListener { e ->
-                    Toast.makeText(this, "노트 업데이트 실패: $e", Toast.LENGTH_SHORT).show()
-                }
+    private fun uploadImageToEditor(imageUrl: String?) {
+        if (imageUrl != null) {
+            // 이미지 URL을 JavaScript 함수에 전달
+            val jsFunction = "uploadImageToEditor('$imageUrl')"
+            webView.evaluateJavascript(jsFunction, null)
         } else {
-            // 이전에 작성한 데이터가 없는 경우 새로운 노트 생성
-            val newPageId = UUID.randomUUID().toString()
-            val page = hashMapOf(
-                "id" to newPageId, // 새로운 노트의 ID 생성
-                "title" to pageTitle,
-                "text" to pageText,
-                "imageUri" to selectedImageUri.toString(),
-                "workSpaceId" to getRecentWorkspaceId(this) // 최근 워크스페이스 ID 추가
-            )
-
-            db.collection("pages")
-                .document(newPageId)
-                .set(page)
-                .addOnSuccessListener {
-                    Toast.makeText(this, "노트 저장 성공", Toast.LENGTH_SHORT).show()
-                    val intent = Intent(this, MainActivity::class.java)
-                    startActivity(intent)
-                    finish() // 현재 액티비티 종료
-                }
-                .addOnFailureListener { e ->
-                    Toast.makeText(this, "노트 저장 실패: $e", Toast.LENGTH_SHORT).show()
-                }
+         
         }
     }
 
+
+    companion object {
+        private const val REQUEST_IMAGE_SELECTION = 100
+    }
+
+    override fun onBackPressed() {
+        if (webView.canGoBack()) {
+            //웹사이트에서 뒤로갈 페이지가 존재 한다면 수행
+            webView.goBack() // 웹사이트 뒤로가기
+            yjsDisconnect()
+
+        } else {
+            super.onBackPressed() // 본래의 백버튼 수행(안드로이드)
+            yjsDisconnect()
+        }
+    }
+
+    private fun yjsDisconnect(){
+        val jsCode = "yjsDisconnect()"
+        webView.evaluateJavascript(jsCode, null)
+    }
+
+    private fun toggleFab() {
+        // 플로팅 액션 버튼 닫기 - 열려있는 플로팅 버튼 집어넣는 애니메이션 세팅
+        if (isFabOpen) {
+            ObjectAnimator.ofFloat(fabDraw, "translationY", 0f).apply { start() }
+            floating.setImageResource(R.drawable.ic_floating_add)
+
+            // 플로팅 액션 버튼 열기 - 닫혀있는 플로팅 버튼 꺼내는 애니메이션 세팅
+        } else {
+            ObjectAnimator.ofFloat(fabDraw, "translationY", -200f,).apply { start() }
+            floating.setImageResource(R.drawable.ic_close)
+        }
+
+        isFabOpen = !isFabOpen
+
+    }
+
+    private fun getUserId(): String? {
+        return SharedPreferencesUtil.getUserId(this)
+    }
+
+    private fun getUserName(): String? {
+        return SharedPreferencesUtil.getUserName(this)
+    }
+    private fun getUserEmail(): String? {
+        return SharedPreferencesUtil.getUserEmail(this)
+    }
 }
