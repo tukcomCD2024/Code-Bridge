@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
@@ -7,6 +7,7 @@
 
 
     <TextView
+        android:id="@+id/login"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
@@ -23,6 +24,7 @@
         android:text="아이디"
         android:textSize="20dp"
         android:textColor="@color/black"
+        android:layout_below="@+id/login"
         android:layout_marginTop="20dp"
         android:layout_marginLeft="20dp"
         android:layout_marginBottom="10dp"/>
@@ -33,6 +35,7 @@
         android:layout_height="wrap_content"
         android:textSize="30sp"
         android:hint="   아이디를 입력하세요"
+        android:layout_below="@+id/logintext"
         android:textColorHint="@color/brightgray"
         android:background="@drawable/edittext"
         android:backgroundTint="@color/gray"
@@ -46,6 +49,7 @@
         android:text="비밀번호"
         android:textSize="20dp"
         android:textColor="@color/black"
+        android:layout_below="@+id/idEditText"
         android:layout_marginLeft="20dp"
         android:layout_marginBottom="10dp"/>
 
@@ -58,6 +62,7 @@
         android:textColorHint="@color/brightgray"
         android:background="@drawable/edittext"
         android:backgroundTint="@color/gray"
+        android:layout_below="@+id/passwordtext"
         android:inputType="textPassword"
         android:layout_marginBottom="45dp" />
 
@@ -68,17 +73,33 @@
         android:text="로그인"
         android:textSize="17dp"
         android:background="@drawable/button_background"
+        android:layout_below="@+id/passwordEditText"
         android:layout_marginBottom="8dp" />
 
-
-    <Button
-        android:id="@+id/signupButton"
-        android:layout_width="match_parent"
+    <TextView
+        android:id="@+id/signupText"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="회원가입"
-        android:textSize="17dp"
-        android:background="@drawable/button_background"
-        android:layout_marginBottom="20dp"/>
+        android:text="                    회원이 아니신가요? "
+        android:textSize="15dp"
+        android:gravity="center"
+        android:layout_below="@+id/loginButton"
+        android:layout_marginTop="16dp"
+        android:textColor="@android:color/darker_gray" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="  회원가입하기"
+        android:textSize="15dp"
+        android:textStyle="bold"
+        android:layout_toRightOf="@+id/signupText"
+        android:layout_below="@+id/loginButton"
+        android:layout_marginTop="16dp"
+        android:clickable="true"
+        android:textColor="@android:color/holo_blue_dark"
+        android:layout_gravity="center"
+        android:id="@+id/signupLink" />
 
 
     <ImageView
@@ -86,8 +107,9 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:src="@drawable/btn_login_google"
+        android:layout_below="@+id/signupText"
         android:scaleType="fitCenter"
         android:layout_marginBottom="8dp" />
 
 
-</LinearLayout>
+</RelativeLayout>

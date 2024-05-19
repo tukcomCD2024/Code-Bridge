@@ -1,2 +1,7 @@
 
+
 *.h5
+.env
+
+backend/shareNote/src/main/resources/application-email.yml
+

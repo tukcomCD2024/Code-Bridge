@@ -1,0 +1,145 @@
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by
+# separate terms of service, privacy policy, and support
+# documentation.
+# This workflow will build a Java project with Gradle and cache/restore any dependencies to improve the workflow execution time
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-java-with-gradle
+
+name: Java CI with Gradle
+
+on:
+  push:
+    branches: [ "develop","GithubActionSpeedUp" ] # develop 브랜치에 푸쉬하면 스크립트 실행
+  pull_request:
+    branches: [ "develop" ] # develop 브랜치에 풀리퀘되면 스크립트 실행
+
+# 실제 실행될 내용들을 정의한다.
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: make application-email.yml
+        run: |
+          cd ./backend/shareNote/src/main/resources
+          
+          # application-email.yml 파일을 생성합니다.
+          touch ./application-email.yml
+          
+          # GitHub-Actions 에서 설정한 값을 application-email.yml 파일에 작성합니다.
+          echo "${{ secrets.APPLICATION_EMAIL }}" >> ./application-email.yml
+        shell: bash
+
+      # gradle을 통해 소스를 빌드
+      - name: Build with Gradle
+        run: |
+          chmod +x ./gradlew
+          ./gradlew clean build -x test
+        working-directory: ./backend/shareNote
+
+      # Jar 파일을 빌드
+      - name: Build with Gradle 8.5
+        run: ./gradlew bootJar
+        working-directory: ./backend/shareNote
+
+      # dockerfile을 통해 이미지를 빌드하고, 이를 docker repo로 push 합니다.
+      # 이 때 사용되는 ${{ secrets.DOCKER_REPO }}/directors-dev 는 docker-hub에서 만든 것
+      
+      #docker driver를 사용하여 빌드를 빠르게 하기 위해 buildx를 사용합니다.
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      # docker login
+      - name: Docker login
+        run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Docker build backend & push to docker repo
+        uses: docker/build-push-action@v3
+        with:
+          context: ./backend/shareNote
+          file: ./backend/shareNote/dockerfile
+          push: true
+          tags: ${{ secrets.DOCKER_REPO }}:backend
+          cache-from: type=registry,ref=${{ secrets.DOCKER_REPO }}:backend-cache
+          cache-to: type=registry,ref=${{ secrets.DOCKER_REPO }}:backend-cache,mode=max
+        
+        # run: |
+        #   docker build -f ./backend/shareNote/dockerfile --platform linux/amd64 -t ${{ secrets.DOCKER_REPO }}:backend ./backend/shareNote 
+        #   docker push ${{ secrets.DOCKER_REPO }}:backend
+
+      - name: Docker build frontend & push to docker repo
+        uses: docker/build-push-action@v3
+        with:
+          context: ./frontend
+          file: ./frontend/dockerfile
+          push: true
+          tags: ${{ secrets.DOCKER_REPO }}:frontend
+          cache-from: type=registry,ref=${{ secrets.DOCKER_REPO }}:frontend-cache
+          cache-to: type=registry,ref=${{ secrets.DOCKER_REPO }}:frontend-cache,mode=max
+        
+        # run: |
+        #   docker build -f ./frontend/dockerfile --platform linux/amd64 -t ${{ secrets.DOCKER_REPO }}:frontend ./frontend
+        #   docker push ${{ secrets.DOCKER_REPO }}:frontend
+        
+      - name: Docker build nodejs & push to docker repo
+        uses: docker/build-push-action@v3
+        with:
+          context: ./nodejs
+          file: ./nodejs/Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKER_REPO }}:nodejs
+          cache-from: type=registry,ref=${{ secrets.DOCKER_REPO }}:nodejs-cache
+          cache-to: type=registry,ref=${{ secrets.DOCKER_REPO }}:nodejs-cache,mode=max
+        
+        # run: |          
+        #   docker build -f ./nodejs/Dockerfile --platform linux/amd64 -t ${{ secrets.DOCKER_REPO }}:nodejs ./nodejs
+        #   docker push ${{ secrets.DOCKER_REPO }}:nodejs
+    
+
+      # appleboy/ssh-action@master 액션을 사용하여 지정한 서버에 ssh로 접속하고, script를 실행합니다.
+      # script의 내용은 도커의 기존 프로세스들을 제거하고, docker repo로부터 방금 위에서 push한 내용을 pull 받아 실행하는 것입니다.
+      # 실행 시, docker-compose를 사용합니다.
+
+      - name: Deploy to server
+        uses: appleboy/ssh-action@master
+        id: deploy
+        with:
+          host: ${{ secrets.HOST }}
+          username: ec2-user
+          key: ${{ secrets.KEY }}
+          envs: GITHUB_SHA
+          script: |
+            sudo docker rm -f $(docker ps -qa)
+            sudo docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+            sudo docker pull ${{ secrets.DOCKER_REPO }}:backend
+            sudo docker pull ${{ secrets.DOCKER_REPO }}:frontend
+            sudo docker pull ${{ secrets.DOCKER_REPO }}:nodejs
+            docker-compose up -d
+            docker image prune -f
+
+    # Configure Gradle for optimal use in GiHub Actions, including caching of downloaded dependencies.
+    # See: https://github.com/gradle/actions/blob/main/setup-gradle/README.md
+    #- name: Setup Gradle
+    #  uses: gradle/actions/setup-gradle@417ae3ccd767c252f5661f1ace9f835f9654f2b5 # v3.1.0
+
+    #- name: Build with Gradle Wrapper
+    #  run: ./gradlew build
+
+    # NOTE: The Gradle Wrapper is the default and recommended way to run Gradle (https://docs.gradle.org/current/userguide/gradle_wrapper.html).
+    # If your project does not have the Gradle Wrapper configured, you can use the following configuration to run Gradle with a specified version.
+    #
+
+
+
+
+

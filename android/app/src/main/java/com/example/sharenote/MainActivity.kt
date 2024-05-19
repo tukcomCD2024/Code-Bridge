@@ -1,42 +1,64 @@
-// MainActivity.kt
 package com.example.sharenote
 
+import HomeFragment
+import SettingsFragment
 import android.content.Intent
 import android.os.Bundle
-import android.widget.Button
-import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import com.example.sharenote.databinding.ActivityMainBinding
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.auth.FirebaseAuth
 
 class MainActivity : AppCompatActivity() {
-
-    private lateinit var welcomeText: TextView
-    private lateinit var logoutButton: Button
+    private lateinit var binding: ActivityMainBinding
     private lateinit var auth: FirebaseAuth
+
+    private lateinit var bottomNavigationView: BottomNavigationView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(R.layout.activity_main)
 
-        // Firebase 인증 객체 초기화
+
         auth = FirebaseAuth.getInstance()
 
-        // 레이아웃에서 뷰 참조
-        welcomeText = findViewById(R.id.welcomeText)
-        logoutButton = findViewById(R.id.logoutButton)
 
-        // 환영 메시지 설정 (여기에서는 현재 로그인한 사용자의 이메일을 표시합니다)
-        val currentUser = auth.currentUser
-        welcomeText.text = "환영합니다, ${currentUser?.email}님!"
+        // BottomNavigationView 초기화
+        bottomNavigationView = findViewById(R.id.bottom_navigation_view)
 
-        // 로그아웃 버튼 클릭 시
-        logoutButton.setOnClickListener {
-            // Firebase에서 로그아웃
-            auth.signOut()
-
-            // 로그인 화면으로 이동
-            startActivity(Intent(this, LoginActivity::class.java))
-            finish()
+        // BottomNavigationView 아이템 클릭 리스너 설정
+        bottomNavigationView.setOnNavigationItemSelectedListener { menuItem ->
+            when (menuItem.itemId) {
+                R.id.fragment_home -> {
+                    supportFragmentManager.beginTransaction()
+                        .replace(R.id.main_container, HomeFragment())
+                        .commit()
+                    true
+                }
+                R.id.fragment_search -> {
+                    // SearchFragment로 이동하는 코드 작성
+                    true
+                }
+                R.id.fragment_alert -> {
+                    // AlertFragment로 이동하는 코드 작성
+                    true
+                }
+                R.id.fragment_settings -> {
+                    supportFragmentManager.beginTransaction()
+                        .replace(R.id.main_container, SettingsFragment())
+                        .commit()
+                    true
+                }
+                else -> false
+            }
         }
+        bottomNavigationView.selectedItemId = R.id.fragment_home
+    }
+
+
+    private fun createNote() {
+        val intent = Intent(this, PageActivity::class.java)
+        startActivity(intent)
     }
 }

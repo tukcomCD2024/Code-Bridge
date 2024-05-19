@@ -1,25 +1,37 @@
 import React, { useState, useRef, useEffect } from "react";
-import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
+import { Routes, Route, useLocation, useNavigate  } from "react-router-dom";
 import Header from "./Header";
-import OrganizationDetails from "../Note/NotePage";
-import styled from "styled-components";
-import { ReactComponent as AddNoteIcon } from "../../image/addNote.svg";
-import defaultImage from "../../image/NoneImage2.png";
+import NotePage from "../Note/NotePage"; // NotePage 컴포넌트를 가져옴.
+import styled, { keyframes, css } from "styled-components";
+import { defaultEmoji, emojiList } from "../Utils/emojiList";
 
-function OrganizationCard({ organization, index }) {
+function EmojiPicker({ onSelect }) {
   return (
-    <Link to={`/organization/${index}`} key={index}>
-      <OrganizationContainer>
-        <img src={organization.image} alt={`Organization-Picture-${index}`} />
-        <p>
-          <small>{organization.name}</small>
-        </p>
-        <p>
-          <small>{formatCreationTime(organization.submissionTime)}</small>
-        </p>
-      </OrganizationContainer>
-    </Link>
+    <EmojiContainer>
+      {emojiList.map((emoji) => (
+        <EmojiSelectButton key={emoji} onClick={() => onSelect(emoji)}>
+          {emoji}
+        </EmojiSelectButton>
+      ))}
+    </EmojiContainer>
   );
+}
+
+function OrganizationCard({ organization }) {
+ const navigate = useNavigate(); // useNavigate 훅 사용
+
+ const handleOrganizationClick = () => {
+   navigate(`/organization/${organization.id}`); // 해당 조직 페이지로 이동
+ };
+
+ return (
+  <OrganizationContainer onClick={handleOrganizationClick}>
+  <span style={{ fontSize: '120px', padding: '0px 0px' }}>{organization.emoji || defaultEmoji}</span>
+    <OrganizationName>
+      {organization.name}
+    </OrganizationName>
+  </OrganizationContainer>
+ );
 }
 
 function OrganizationModal({
@@ -27,45 +39,38 @@ function OrganizationModal({
   handleCloseModal,
   organizationName,
   setOrganizationName,
-  myimage,
-  uploadImage,
+  myEmoji,
+  setMyEmoji,
+  isInvalid,
   handleCreate,
 }) {
+  const handleSelectEmoji = (emoji) => {
+    setMyEmoji(emoji);
+  };
+
   return (
     <ModalContainer>
       <ModalContent ref={modalRef}>
-        <CloseButton onClick={handleCloseModal} style={{ color: "red" }}>
-          X
-        </CloseButton>
-        <p style={{ fontWeight: "bold" }}>Organization 생성하기</p>
-
+        <CloseButton onClick={handleCloseModal}>X</CloseButton>
+        <p style={{ fontWeight: "bold" }}>📚 Organization 생성하기</p>
         <OrganizationInputWrapper>
           <OrganizationInput
             id="OrganizationName"
             type="text"
             placeholder="Organization 이름을 입력해주세요."
             value={organizationName}
+            $isInvalid={isInvalid}
             onChange={(e) => setOrganizationName(e.target.value)}
           />
         </OrganizationInputWrapper>
-
-        <img
-          src={myimage || defaultImage}
-          alt="Organization-Picture"
-          style={{ maxWidth: "300px", width: "100%", height: "auto" }}
-        />
-
-        <ImageUploadWrapper htmlFor="fileInput">
-          <ImageUploadButton>이미지 찾기</ImageUploadButton>
-        </ImageUploadWrapper>
-        <input
-          id="fileInput"
-          type="file"
-          onChange={uploadImage}
-          style={{ display: "none" }}
-        />
+        <Emoji style={{ fontSize: "100px" }}>{myEmoji}</Emoji>
+        <div>
+          <EmojiPicker onSelect={handleSelectEmoji} />
+        </div>
         <hr />
-        <CreateButton onClick={handleCreate}>생성하기</CreateButton>
+        <CreateButton disabled={isInvalid} onClick={handleCreate}>
+          생성하기
+        </CreateButton>
       </ModalContent>
     </ModalContainer>
   );
@@ -76,19 +81,43 @@ function MainPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const modalRef = useRef();
 
-  const [myimage, setMyImage] = useState(null);
+  const [myEmoji, setMyEmoji] = useState(defaultEmoji);
   const [organizationName, setOrganizationName] = useState("");
   const [organizations, setOrganizations] = useState([]);
+  const [isInvalid, setIsInvalid] = useState(false);
+  
+  const location = useLocation(); // 현재 위치 정보를 가져옴
+  const userId = localStorage.getItem('userId');
 
-  const uploadImage = (e) => {
-    setMyImage(URL.createObjectURL(e.target.files[0]));
-  };
+  useEffect(() => {
+    const fetchOrganizations = async () => {
+      try {
+        const response = await fetch(`/api/user/organization/${userId}`);
+          if (response.ok) {
+            const data = await response.json();
+            // 전체 데이터에서 id(Organization 고유값), name(Organization 이름), emoji(Organization 대표마크)만 추출
+            const fetchedOrganizationData = data.map(org => ({
+              id: org.id,
+              name: org.name,
+              emoji: org.emoji
+            }));
+            setOrganizations(fetchedOrganizationData);
+          } else {
+            console.error(`${userId}의 Organization을 불러오는데 실패했습니다.`);
+          }
+        } catch (error) {
+          console.error('Error fetching organizations:', error);
+        }
+      };
+      fetchOrganizations();
+    }, [location, userId]);
+
 
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (modalRef.current && !modalRef.current.contains(event.target)) {
         setModalOpen(false);
-        setMyImage(defaultImage);
+        setMyEmoji(defaultEmoji);
         setOrganizationName("");
       }
     };
@@ -108,60 +137,102 @@ function MainPage() {
 
   const handleCloseModal = () => {
     setModalOpen(false);
-    setMyImage(defaultImage);
+    setMyEmoji(defaultEmoji);
     setOrganizationName("");
   };
 
-  const handleCreate = () => {
-    // Handle organization creation logic here
-    const newOrganization = {
-      name: organizationName,
-      image: myimage || defaultImage,
-      submissionTime: new Date().toISOString(), // Capture submission time in ISO format
+  const handleCreate = async (e) => {
+    e.preventDefault();
+
+    if (organizationName === "") {
+      setIsInvalid(true); // 유효성 상태 업데이트
+      setTimeout(() => setIsInvalid(false), 800); // 800ms 후 유효성 상태 초기화
+      return;
+    }
+
+    const owner = localStorage.getItem("email");
+    const name = organizationName;
+    const emoji = myEmoji; // Organization 대표 마크를 이모지로 설정함.
+
+    const createOrganization = (organizationId) => {
+      const newOrganization = {
+        id: organizationId,
+        name: organizationName,
+        emoji: myEmoji,
+      };
+  
+      const updatedOrganizations = [...organizations, newOrganization];
+      setOrganizations(updatedOrganizations);
+      localStorage.setItem("organizations", JSON.stringify(updatedOrganizations));
+      handleCloseModal();
     };
+  
+    try {
+      const response = await fetch("/api/user/organization", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ name, owner, emoji }),
+      });
 
-    setOrganizations([...organizations, newOrganization]);
+      if (response.ok) {
+        const responseData = await response.json();
+        const organizationId = responseData.organizationId;
+        createOrganization(organizationId);
+        console.log("생성 성공:", responseData);
 
-    // Reset modal state
-    handleCloseModal();
+      } else {
+        const errorData = await response.json();
+        alert(`생성 실패: ${errorData.message}`);
+      }
+    } catch (error) {      console.error("Error: ", error);
+      alert("처리 중 오류가 발생했습니다.");
+    }
   };
+
+  
 
   return (
     <StContainer>
       <StHeader>
         <Header toggle={toggle} setToggle={setToggle} />
         <StOrgCreateBtn onClick={handleButtonClick}>
-          Organization 생성 모달창 띄우는 버튼
+          Organization 생성하기
         </StOrgCreateBtn>
-        {/* <StyledAddNoteIcon onClick={handleButtonClick} /> */}
       </StHeader>
+      <OrganizationsContainer>
+      {organizations?.length > 0 ? (
+            organizations.map((org, index) => (
+              <OrganizationCard organization={org} index={index} key={org.id} />
+            ))
+          ) : (
+            <NoOrganizationMessage>
+              📢 소속된 Organization이 없습니다.
+            </NoOrganizationMessage>
+          )}
+      </OrganizationsContainer>
       {modalOpen && (
         <OrganizationModal
           modalRef={modalRef}
           handleCloseModal={handleCloseModal}
           organizationName={organizationName}
           setOrganizationName={setOrganizationName}
-          myimage={myimage}
-          uploadImage={uploadImage}
+          myEmoji={myEmoji}
+          setMyEmoji={setMyEmoji}
+          isInvalid={isInvalid}
+          setIsInvalid={setIsInvalid}
           handleCreate={handleCreate}
         />
       )}
-      {/* Display Organization Name and Image on Main Page */}
-      {organizations.map((org, index) => (
-        <OrganizationCard organization={org} index={index} />
-      ))}
-      {/* Add Route for OrganizationDetails */}
       <Routes>
-        {organizations.map((org, index) => (
+        {organizations.map((org) => (
           <Route
-            path={`/organization/${index}`}
+            path={`/organization/${org.id}`}
             element={
-              <OrganizationDetails
-                organizations={organizations}
-                index={index}
-              />
+              <NotePage organization={org} organizations={organizations} />
             }
-            key={index}
+            key={org.id}
           />
         ))}
       </Routes>
@@ -169,23 +240,58 @@ function MainPage() {
   );
 }
 
-// Add a new function to format the creation time
-function formatCreationTime(submissionTime) {
-  const submissionDate = new Date(submissionTime);
-  const today = new Date();
+const Emoji = styled.p`
+  font-size: 120px;
+  padding: 0px 0px;
 
-  if (
-    submissionDate.getFullYear() === today.getFullYear() &&
-    submissionDate.getMonth() === today.getMonth() &&
-    submissionDate.getDate() === today.getDate()
-  ) {
-    // If the submission time is today, display only the time
-    return submissionDate.toLocaleTimeString();
-  } else {
-    // If the submission time is not today, display only the date
-    return submissionDate.toLocaleDateString();
+  @media screen and (max-width: 1000px) {
+    padding: 0px 0px;
   }
-}
+`;
+
+
+const EmojiContainer = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  height: 80px;
+  overflow-y: scroll;
+  gap: 6px;
+  border: 1px solid #cccccc;
+  border-radius: 10px;
+  padding: 5px;
+  margin-bottom: 10px;
+
+  &::-webkit-scrollbar {
+    width: 7px; // 스크롤바의 너비
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: #888; // 스크롤바 썸의 배경색
+    border-radius: 10px; // 스크롤바 썸에 마우스 호버 시 색상
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background: #555; // 스크롤바 썸에 마우스 호버 시 색상
+  }
+
+  &::-webkit-scrollbar-corner {
+    background: transparent; // 스크롤바 코너 배경을 투명하게 설정
+  }
+`;
+
+const EmojiSelectButton = styled.button`
+  font-size: 20px;
+  border: none;
+  background: none;
+  cursor: pointer;
+
+  &:hover {
+    background-color: #cccccc;
+    border-color: #cccccc;
+    border-radius: 10px;
+    color: #000000;
+  }
+`;
 
 const StContainer = styled.div``;
 
@@ -225,14 +331,6 @@ const StOrgCreateBtn = styled.button`
   }
 `;
 
-// 노트 화면에서 사용할 요소(삭제X)
-const StyledAddNoteIcon = styled(AddNoteIcon)`
-  width: 15%;
-  height: 15%;
-  cursor: pointer;
-  margin-top: 10px;
-`;
-
 const ModalContainer = styled.div`
   position: fixed;
   top: 0;
@@ -247,6 +345,7 @@ const ModalContainer = styled.div`
 
 const CloseButton = styled.button`
   position: absolute;
+  color: red;
   font-size: 19px;
   font-weight: bold;
   top: 10px;
@@ -261,41 +360,38 @@ const OrganizationInputWrapper = styled.div`
   text-align: center;
   line-height: 40px;
   margin-bottom: 10px;
-  border-radius: 10px;
-  background-color: #ffff99;
+`;
+
+const shakeAnimation = keyframes`
+  0% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  50% { transform: translateX(5px); }
+  75% { transform: translateX(-5px); }
+  100% { transform: translateX(0); }
 `;
 
 const OrganizationInput = styled.input`
-  background-color: #ffff99;
+  width: 90%;
   border: none;
   outline: none;
-  width: 80%;
-  padding: 5px;
-  border-radius: 5px;
-`;
-
-const ImageUploadWrapper = styled.label`
-  display: block;
-  margin: 0 auto;
-  margin-top: 10px;
-  cursor: pointer;
-  padding: 0 80px;
-`;
-
-const ImageUploadButton = styled.span`
-  display: block;
-  text-align: center;
-  line-height: 40px;
-  border-radius: 10px;
-  border-color: #cccccc;
-  border-width: 1px; /* Add border-width property */
-  border-style: solid; /* Add border-style property */
+  padding: 10px;
   background-color: #ffffff;
+  border-radius: 8px;
+  border: 1px solid #d0d0d0;
+
+  ${(props) =>
+    props.$isInvalid &&
+    css`
+      border: 2px solid red;
+      animation: ${shakeAnimation} 0.5s ease-in-out;
+    `}
 `;
 
 // 모달창_생성하기 버튼
-const CreateButton = styled.span`
+const CreateButton = styled.button`
   display: block;
+  width: 100%;
+  font-size: 15px;
   text-align: center;
   line-height: 40px;
   border-radius: 10px;
@@ -306,9 +402,13 @@ const CreateButton = styled.span`
   cursor: pointer;
 
   &:hover {
-    background: #cccccc;
-    box-shadow: 0 0 5px #cccccc, 0 0 5px #cccccc, 0 0 5px #cccccc,
-      0 0 5px #cccccc;
+    background: ${(props) => (props.disabled ? "#cccccc" : "#bbbbbb")};
+  }
+
+  &:disabled {
+    background-color: #e0e0e0;
+    color: #a0a0a0;
+    cursor: not-allowed;
   }
 `;
 
@@ -321,24 +421,56 @@ const ModalContent = styled.div`
   position: relative;
 `;
 
+const OrganizationName = styled.p`
+  color: #000000;
+  text-decoration: underline white;
+  white-space: nowrap; /* 텍스트를 한 줄로 만들기 */
+  overflow: hidden; /* 오버플로우된 텍스트 숨기기 */
+  text-overflow: ellipsis; /* 오버플로우된 텍스트를 말줄임표로 표시 */
+  max-width: 100%; /* 최대 너비 설정 (조절 가능) */
+  display: block; /* 블록 레벨 요소로 만들기 (필요한 경우) */
+`;
+
+const OrganizationsContainer = styled.div`
+padding-left: 80px;
+display: flex;
+flex-wrap: wrap;
+justify-content: start; /* 가로 축에서 중앙 정렬 */
+
+gap: 20px;
+
+@media (max-width: 768px) {
+  padding-left: 0px;
+}
+
+a {
+  color: inherit; /* 상위 요소로부터 색상을 상속받습니다. */
+  text-decoration: none; /* 밑줄 등의 텍스트 장식을 제거합니다. */
+}
+`;
+
 const OrganizationContainer = styled.div`
-  width: 15%;
-  text-align: center;
-  display: inline-block;
-  margin: 10px;
+display: flex;
+flex-direction: column; // 항목을 세로로 정렬
+width: 180px;
+margin: 10px; // 주변 여백
+text-align: center;
+cursor: pointer; // 마우스 오버 시 커서 변경
+`;
 
-  p,
-  small {
-    margin: 0; /* Remove top and bottom margins */
-  }
+const NoOrganizationMessage = styled.div`
+  display: flex;
+  width: 100%;
+  justify-content: center;
+  margin-top: 200px;
+  margin-right: 80px;
+  align-items: center;
+  font-weight: bold;
+  font-size: 20px;
+  color: #666;
 
-  img {
-    width: 100%;
-    height: auto;
-    cursor: pointer;
-    margin-top: 10px;
-    max-width: 100%;
-    max-height: 100%;
+  @media screen and (max-width: 768px) {
+    margin-right: 0px;
   }
 `;
 
