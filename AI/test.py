@@ -4,10 +4,10 @@ import json
 import base64
 import cv2, os, io, numpy as np
 import urllib.request
-import app.services.auto_draw
+from app.services.ImageProcessing import imageProcessing
 
 
-image_name = 'test.png'
+image_name = r'C:\Users\Ka\Desktop\Ka\programming\AI\s3sample.png'
 img = cv2.imread(image_name)
 jpg_img = cv2.imencode('.png', img)
 b64_string = base64.b64encode(jpg_img[1]).decode('utf-8')

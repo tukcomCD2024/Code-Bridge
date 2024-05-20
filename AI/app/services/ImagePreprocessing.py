@@ -3,7 +3,7 @@ import numpy as np
 
 # 이미지를 흑백으로 변환
 def convertMono(img: Image):
-    fn = lambda x: 255 if x > 0 else 0
+    fn = lambda x: 255 if x > 240 else 0
     img = img.convert('L').point(fn, mode='1')
     return img
 
@@ -26,5 +26,6 @@ def imageToArray(img):
 def imageProcessing(img: Image):
     img = convertMono(img)
     img = resizing(img)
+    img.show()
     img = imageToArray(img)
     return img
