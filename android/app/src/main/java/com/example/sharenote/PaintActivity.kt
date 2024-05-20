@@ -66,8 +66,8 @@ class PaintActivity : AppCompatActivity() {
     private lateinit var btnClearscreen : ImageButton
 
     private lateinit var autoDrawButton : FloatingActionButton
-    private lateinit var aiSendButton : Button
-    private lateinit var imageViewFixButton: Button
+    private lateinit var aiSendButton : FloatingActionButton
+    private lateinit var imageViewFixButton: FloatingActionButton
 
     private lateinit var pdfButton: FloatingActionButton
     private lateinit var plusButton: FloatingActionButton
@@ -327,7 +327,11 @@ class PaintActivity : AppCompatActivity() {
                     withContext(Dispatchers.Main) {
                         if (response.isSuccessful && response.body() != null) {
                             // 서버로부터 받은 이미지 URL 리스트 처리
-                            val urlList = response.body()!!
+                            var urlList = response.body()!!.toMutableList()
+                            for (i in urlList.indices) {
+                                urlList[i] = "https://ai-icons.s3.ap-northeast-2.amazonaws.com" +
+                                        "/svg/${urlList[i]}/${urlList[i]}-outline.png"
+                            }
                             Log.e("aiOutputUrl", "AI Server Response: $urlList")
 
                             // Intent 생성 및 시작
@@ -350,8 +354,8 @@ class PaintActivity : AppCompatActivity() {
             // 3 초간 정지 AI 서버에 요청한 척
 //            Thread.sleep(3000)
 //
-//            // 서버에서 받아온 JSON 객체에서 6개의 url 꺼내서 다음 액티비티로 전달
-//            // list 만들어줘
+            // 서버에서 받아온 JSON 객체에서 6개의 url 꺼내서 다음 액티비티로 전달
+            // list 만들어줘
 //            val urlList = ArrayList<String>()
 //            urlList.add("https://sharenotebucket.s3.ap-northeast-2.amazonaws.com/apple-line.png")
 //            urlList.add("https://sharenotebucket.s3.ap-northeast-2.amazonaws.com/airplane-outline.png")
@@ -365,9 +369,13 @@ class PaintActivity : AppCompatActivity() {
 //            val intent = Intent(this, ImageSelect::class.java)
 //            intent.putStringArrayListExtra("urlList", urlList)
 //            // 100은 고유한 코드
-//            startActivityForResult(intent, 100)  // IMAGE_SELECT_REQUEST_CODE는 상수
+//            startActivityForResult(intent, 1520)  // IMAGE_SELECT_REQUEST_CODE는 상수
 
 
+        }
+
+        imageViewFixButton.setOnClickListener {
+            imageViewFixButton.visibility = View.GONE
         }
 
 
@@ -468,7 +476,7 @@ class PaintActivity : AppCompatActivity() {
     @SuppressLint("ClickableViewAccessibility")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == 100 && resultCode == Activity.RESULT_OK) {
+        if (requestCode == 1520 && resultCode == Activity.RESULT_OK) {
             val selectedUrl = data?.getStringExtra("selectedImageUrl")
             Log.e("PaintActivity", "Selected Image URL: $selectedUrl")
             // 여기서 선택된 이미지 URL로 필요한 작업을 수행합니다.
@@ -520,8 +528,9 @@ class PaintActivity : AppCompatActivity() {
                     // 버튼 클릭 시 ImageView 위치 고정
                     // 위치 고정 로직은 특별히 필요하지 않습니다. 사용자가 원하는 위치에 ImageView가 있고,
                     // 더 이상 이동하지 않도록 하려면 이벤트 핸들러를 비활성화하면 됩니다.
-                    imageView.setOnTouchListener(null) // 드래그 비활성화
+
                     imageViewFixButton.visibility = View.GONE // 버튼 비활성화
+                    imageView.setOnTouchListener(null) // 드래그 비활성화
                     imageViewList.add(imageView)
                 }
 

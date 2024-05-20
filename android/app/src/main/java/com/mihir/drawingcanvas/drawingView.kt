@@ -136,7 +136,7 @@ class drawingView(context: Context, attrs: AttributeSet) : View(context,attrs){
 
         // autoDrawPath에 저장된 모든 Path를 새로운 캔버스에 그림
         for (path in autoDrawPath) {
-            paint.color = path.color
+            paint.color = Color.BLACK
             paint.strokeWidth = path.brushThickness.toFloat()
             paint.alpha = path.alpha
             canvas.drawPath(path, paint)
