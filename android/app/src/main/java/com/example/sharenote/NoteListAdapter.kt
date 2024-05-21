@@ -10,6 +10,11 @@ class NoteListAdapter(private val onItemClick: (String) -> Unit) :
     RecyclerView.Adapter<NoteListAdapter.NoteViewHolder>() {
 
     private val noteList = mutableListOf<Note>()
+    private var filteredNoteList = mutableListOf<Note>()
+
+    init {
+        filteredNoteList.addAll(noteList)
+    }
 
     inner class NoteViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView), View.OnClickListener {
         init {
@@ -19,7 +24,7 @@ class NoteListAdapter(private val onItemClick: (String) -> Unit) :
         override fun onClick(v: View?) {
             val position = adapterPosition
             if (position != RecyclerView.NO_POSITION) {
-                val clickedNoteId = noteList[position].Id
+                val clickedNoteId = filteredNoteList[position].Id
                 onItemClick(clickedNoteId)
             }
         }
@@ -33,18 +38,26 @@ class NoteListAdapter(private val onItemClick: (String) -> Unit) :
     }
 
     override fun onBindViewHolder(holder: NoteViewHolder, position: Int) {
-        val currentItem = noteList[position]
-
-
+        val currentItem = filteredNoteList[position]
         // 아이템의 제목 설정
         holder.titleTextView.text = currentItem.title
     }
 
-    override fun getItemCount() = noteList.size
+    override fun getItemCount() = filteredNoteList.size
 
     fun setNotes(notes: List<Note>) {
         noteList.clear()
         noteList.addAll(notes)
+        filter("")
+    }
+
+    fun filter(query: String) {
+        filteredNoteList.clear()
+        if (query.isEmpty()) {
+            filteredNoteList.addAll(noteList)
+        } else {
+            filteredNoteList.addAll(noteList.filter { it.title.contains(query, ignoreCase = true) })
+        }
         notifyDataSetChanged()
     }
 }
