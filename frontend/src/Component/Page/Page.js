@@ -365,10 +365,11 @@ function Page() {
 
     function updateUsersAndColors() {
       const updatedUsersAndColors = [];
+
       yConnectedUserList.forEach((color, name) => {
           updatedUsersAndColors.push({ name, color });
       });
-      setUsersAndColors([...updatedUsersAndColors]); // 새로운 배열을 생성하여 업데이트
+      setUsersAndColors(updatedUsersAndColors);
     }
 
     function handleUserConnection() {
@@ -391,15 +392,15 @@ function Page() {
       if (!isSingleConnected) {
         yConnectedUserList.set(nickname, userColor);
         ydocProviderRef.current.awareness.setLocalStateField('user', { name: nickname, color: userColor });
-        updateUsersAndColors();
       } else {
         yConnectedUserList.set(nicknameWithSuffix, userColor);
         ydocProviderRef.current.awareness.setLocalStateField('user', { name: nicknameWithSuffix, color: userColor });
-        updateUsersAndColors();
       }
+      updateUsersAndColors();
     }
     
     function onlineUpdate() {
+      updateUsersAndColors(); 
       const userState = ydocProviderRef.current.awareness.getLocalState();
     
       if (userState && userState.user && userState.user.name) {
@@ -416,7 +417,6 @@ function Page() {
           return;
         }
       }
-      updateUsersAndColors();
     }
 
     window.yjsDisconnect = function() {

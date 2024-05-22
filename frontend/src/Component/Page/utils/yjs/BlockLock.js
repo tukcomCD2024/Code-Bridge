@@ -5,8 +5,8 @@ import 'toastr/build/toastr.css';
 
 const BlockLock = forwardRef(({ ydocRef }, ref) => {
     const navigate = useNavigate();
-    const yLineLocks = ydocRef.current.getMap('lineLocks');
-    const yUserLocks = ydocRef.current.getMap('userLocks');
+    const yLineLocks = ydocRef.current.getMap('nodeInfo');
+    const yUserLocks = ydocRef.current.getMap('yUserLocks');
   
     const toggleLineLock = (guid, nickname) => {
       if (!nickname) {
