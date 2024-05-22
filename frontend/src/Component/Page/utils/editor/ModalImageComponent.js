@@ -4,7 +4,7 @@ import styled from "styled-components";
 const ModalImageComponent = ({
   src, 
   modalOpen,
-  closeModal
+  modalClose
 }) => {
   const modalRef = useRef();
   const [isoverflow, setisoverflow] = useState(false);
@@ -32,7 +32,7 @@ const ModalImageComponent = ({
   if (!modalOpen) return null;
   return (
     <ModalContainer ref={modalRef}>
-      <CloseButton isoverflow={isoverflow} onClick={closeModal}>&times;</CloseButton>
+      <CloseButton isoverflow={isoverflow} onClick={modalClose}>&times;</CloseButton>
       <ModalContent>
         <ModalImage src={src} alt="modal" />
       </ModalContent>

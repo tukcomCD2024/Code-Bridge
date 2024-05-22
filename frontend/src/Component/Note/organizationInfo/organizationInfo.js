@@ -4,7 +4,6 @@ import styled from "styled-components";
 import toastr from "toastr";
 import "toastr/build/toastr.css";
 
-
 const OrganizationInfoModal = ({
   modalOpen,
   handleCloseModal,

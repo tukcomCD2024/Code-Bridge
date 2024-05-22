@@ -2,13 +2,6 @@ import { useState, useEffect } from "react";
 import styled from "styled-components";
 import $ from "jquery";
 
-const ImageUploadContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin: 20px;
-`;
-
 function ImagetoBackend({ onImageUpload }) {
   const [selectedFile, setSelectedFile] = useState(null);
 
@@ -76,6 +69,13 @@ function ImagetoBackend({ onImageUpload }) {
     </ImageUploadContainer>
   );
 }
+
+const ImageUploadContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 20px;
+`;
 
 const ImageUploadWrapper = styled.label`
   display: block;

@@ -1,6 +1,6 @@
 import { Plugin, Selection, NodeSelection } from "prosemirror-state";
-import down_arrow from "../../../image/down_arrow.svg";
-import lock from "../../../image/lock2.gif";
+import down_arrow from "../../../../../image/down_arrow.svg";
+import lock from "../../../../../image/lock2.gif";
 import { library, icon } from '@fortawesome/fontawesome-svg-core';
 import { faHeart } from '@fortawesome/free-solid-svg-icons';
 
@@ -16,7 +16,7 @@ function countDocBlocks(doc) {
 }
 
 // 노트 페이지에서 블록(노드)마다 작은 메뉴창이 뜨게 한다.
-export function hoverButtonPlugin() {
+export function hoverButtonPlugin(blockLikeRef, blockLockRef) {
   const hoverDiv = document.createElement("div");
 
   return new Plugin({
@@ -51,7 +51,7 @@ export function hoverButtonPlugin() {
       hoverDiv.appendChild(hoverButton_like);
 
       // hoverButton_like 요소에 클릭 이벤트 리스너 추가
-      hoverButton_like.addEventListener("click", function() {
+      hoverButton_like.addEventListener("click", async function() {
         const { state } = editorView;
         const { selection } = state;
 
@@ -64,7 +64,7 @@ export function hoverButtonPlugin() {
            if ((node && node.attrs.guid) || selection.node.attrs['data-guid'].toString()) {
              const guid = node.attrs.guid || selection.node.attrs['data-guid'].toString();
              const writer = node.attrs.writer || selection.node.attrs.writer.toString();
-             window.toggleLike(guid, liker ,writer);
+             await blockLikeRef.current.toggleLike(guid, liker, writer);
              if (liker !== writer) {
               this.classList.toggle("hoverButton_like");
               this.classList.toggle("hoverButton_like_fullRedHeart");
@@ -88,7 +88,7 @@ export function hoverButtonPlugin() {
           if (node && node.attrs.guid) {
             const nickname = localStorage.getItem("nickname");
             const guid = node.attrs.guid
-            window.toggleLineLock(guid, nickname);
+            blockLockRef.current.toggleLineLock(guid, nickname);
             } else {
             console.log('No UUID found for this node.');
           }
@@ -177,7 +177,7 @@ export function hoverButtonPlugin() {
              // 노드가 uuid를 가지고 있는지 확인
              if ((node && node.attrs.guid) || selection.node.attrs['data-guid'].toString()) {
                const guid = node.attrs.guid || selection.node.attrs['data-guid'].toString()
-               const isLiked = window.getLikeList(guid);
+               const isLiked = blockLikeRef.current.getLikeList(guid);
                if (isLiked) {
                 hoverButton_like.classList.remove('hoverButton_like');
                 hoverButton_like.classList.add('hoverButton_like_fullRedHeart');

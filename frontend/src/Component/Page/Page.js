@@ -3,47 +3,44 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import styled from "styled-components";
 
 // prosemirror 라이브러리(리치 텍스트 에디터)
-import { Schema, DOMParser } from "prosemirror-model";
-import { EditorState, Selection, Plugin } from "prosemirror-state";
+import { DOMParser } from "prosemirror-model";
+import { EditorState, Selection } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
-import { schema as basicSchema } from "prosemirror-schema-basic";
-import { addListNodes } from "prosemirror-schema-list";
 import { exampleSetup } from "prosemirror-example-setup";
 import { keymap } from "prosemirror-keymap";
-
-// yjs 라이브러리(동시편집)
-import { WebsocketProvider } from "y-websocket";
-import { getYDocInstance } from "./utils/YjsInstance";
-import { ySyncPlugin, yCursorPlugin, yUndoPlugin, undo, redo  } from "y-prosemirror";
-
-import { updateImageNode, imagePlugin } from "prosemirror-image-plugin";
+import { mySchema } from "./utils/editor/pageSettings";
+import { imagePlugin } from "prosemirror-image-plugin";
 import "./ProseMirror_css/prosemirror_image_plugin/common.css";
 import "./ProseMirror_css/prosemirror_image_plugin/withResize.css";
 import "./ProseMirror_css/prosemirror_image_plugin/sideResize.css";
 import "./ProseMirror_css/prosemirror_image_plugin/withoutResize.css";
 import "./ProseMirror_css/ProseMirror.css";
 
-import ModalImageComponent from "./utils/ModalImageComponent";
-import { imageSettings, imageNodeSpec } from "./utils/pageSettings";
-import { inlinePlaceholderPlugin } from "./utils/inlinePlaceholderPlugin";
-import { hoverButtonPlugin } from "./utils/hoverButtonPlugin";
-import { cursorColors } from "../Utils/cursorColor"
-import NoteSettingModal from "./utils/noteSettingModal";
-import loadingImage from "../../image/loading.gif";
+// yjs 라이브러리(동시편집)
+import { WebsocketProvider } from "y-websocket";
+import { ySyncPlugin, yCursorPlugin, yUndoPlugin, undo, redo  } from "y-prosemirror";
+import { getYDocInstance } from "./utils/yjs/YjsInstances";
 
+// toastr 라이브러리(웹 토스트 메세지)
 import toastr from 'toastr';
 import 'toastr/build/toastr.css';
 
-import { v4 as uuidv4 } from "uuid";
-
+import ModalImageComponent from "./utils/editor/ModalImageComponent";
+import ImageToEditor from "./utils/editor/ImageToEditor";
+import BlockLike from "./utils/yjs/BlockLike";
+import BlockLock from './utils/yjs/BlockLock'; 
+import { imageSettings } from "./utils/editor/pageSettings";
+import { inlinePlaceholderPlugin } from "./utils/editor/plugin/inlinePlaceholderPlugin";
+import { hoverButtonPlugin } from "./utils/editor/plugin/hoverButtonPlugin";
+import { generateBlockIdPlugin } from "./utils/editor/plugin/generateBlockIdPlugin";
+import { isWeb, checkLocalStorage } from "./utils/initMobileWebView"
+import NoteSettingModal from "./utils/editor/noteSettingModal";
+import loadingImage from "../../image/loading.gif";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faLeftLong, faRightLong, faSquarePlus, faTrashCan, faList, faGear } from "@fortawesome/free-solid-svg-icons";
+import { cursorColors } from "../Utils/cursorColor"
 
 function Page() {
-  const editorRef = useRef(null);
-  let nickname = localStorage.getItem('nickname');
-  let userId = localStorage.getItem('userId');
-
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -51,72 +48,44 @@ function Page() {
   const organizationId = pathSegments[1];
   const noteId = pathSegments[2];
   const pageId = pathSegments[3];
+
+  const editorRef = useRef(null);
+  const ydocRef = useRef(getYDocInstance(pageId));
+  const ydocProviderRef = useRef(null);
+  const blockLikeRef = useRef(null);
+  const blockLockRef = useRef(null);
+
+  let nickname = localStorage.getItem('nickname');
+  let userId = localStorage.getItem('userId');
   
   const [reconnect, setReconnect] = useState(false);
   const [noteinfo, setNoteInfo] = useState(null);
   const [isloaded, setisloaded] = useState(false); // 로딩 상태 관리
-  const [pages, setPages] = useState([]); // 페이지 상태 관리
+  const [pages, setPages] = useState([]);  // 페이지 상태 관리
   const [pageIndex, setPageIndex] = useState(0);
   const [pageInputValue, setPageInputValue] = useState(pageIndex !== 0 ? pageIndex + 1 : 1);
   const [isPageHandleButtonDisabled, setIsPageHandleButtonDisabled] = useState(false);
-  const [usersAndColors, setUsersAndColors] = useState([]); // 연결된 사용자와 색상 상태
+  const [usersAndColors, setUsersAndColors] = useState([]);
   const [noteSettingModalOpen, setNoteSettingModalOpen] = useState(false);
   const [myimage, setMyImage] = useState(null);
-  const [showModalImage, setShowModalImage] = useState(false);
+  const [modalOpen_ImageZoom, setModalOpen_ImageZoom] = useState(false);
   const [clickedImageSrc, setClickedImageSrc] = useState('');
 
-  const uploadImage = (e) => {
-    const selectedFile = e.target.files[0];
-
-    // 파일이 선택되었고, 이미지 파일인 경우에만 처리
-    if (selectedFile && isImageFile(selectedFile)) {
-      setMyImage(URL.createObjectURL(selectedFile));
-    } else {
-      // 이미지 파일이 아닌 경우에 대한 처리 (예: 경고 메시지 등)
-      alert("올바른 이미지 파일을 선택해주세요.");
-    }
-  };
-
-  // 이미지 파일 여부를 확인하는 함수
-  const isImageFile = (file) => {
-    const allowedExtensions = ["jpg", "jpeg", "png", "gif"]; // 허용된 확장자들
-
-    // 파일 이름에서 확장자 추출
-    const fileName = file.name;
-    const fileExtension = fileName.split(".").pop().toLowerCase();
-
-    // 허용된 확장자들 중에 포함되어 있는지 확인
-    return allowedExtensions.includes(fileExtension);
-  };
-
-  const handleOpenNoteSettingModal = () => {
-    setNoteSettingModalOpen(true);
-  };
-
+  const handleModalOpen_ImageZoom = () => { setModalOpen_ImageZoom(true); };
+  const handleModalClose_ImageZoom = () => { setModalOpen_ImageZoom(false); };
+  const handleOpenNoteSettingModal = () => { setNoteSettingModalOpen(true); };
   const handleCloseNoteSettingModal = () => {
-    localStorage.setItem("recentImageUrl", '');
+    localStorage.removeItem("recentImageUrl");
     setMyImage(null);
     setNoteSettingModalOpen(false);
   };
 
-    const handleOpenImageZoomModal = () => {
-    setShowModalImage(true);
-  };
-
-  const handleCloseImageZoomModal = () => {
-    setShowModalImage(false);
-  };
-
-  // 네비게이션바에 페이지 이동 함수
-  const navigateToPage = (pageID) => {
-    navigate(`/organization/${organizationId}/${noteId}/${pageID}`);
-  };
+  // 페이지 이동 함수
+  const navigateToPage = (pageID) => { navigate(`/organization/${organizationId}/${noteId}/${pageID}`); };
 
   // 이전 페이지
   const prevPage = () => {
-    if (pageIndex === 0) {
-      return;
-    }
+    if (pageIndex === 0) return;
     const prevPageID = pages[pageIndex - 1]?.id;
     navigateToPage(prevPageID);
   };
@@ -124,23 +93,19 @@ function Page() {
   // 다음 페이지
   const nextPage = () => {
     const nextPageID = pages[pageIndex + 1]?.id;
-    if (!nextPageID) {
-      return;
-    }
+    if (!nextPageID) return;
     navigateToPage(nextPageID);
   };
 
   // 특정 페이지
   const pageTarget = () => {
-    if (pageIndex + 1 === pageInputValue) {
-      return;
-    }
-    const pageTargetID = pageInputValue == 0 ? pages[pageInputValue]?.id : pages[pageInputValue - 1]?.id;
+    if (pageIndex + 1 === pageInputValue) return;
+    const pageTargetID = pageInputValue === 0 ? pages[pageInputValue]?.id : pages[pageInputValue - 1]?.id;
     navigateToPage(pageTargetID);
   };
 
-  const handleCreate = async (e) => {
-    const createUserId = userId;
+  // 페이지 생성 함수
+  const handleCreatePage = async (e) => {
     const createPage = (pageId) => {
       const newPage = {
         id: pageId,
@@ -156,7 +121,7 @@ function Page() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ organizationId, noteId, createUserId }),
+        body: JSON.stringify({ organizationId, noteId, createUserId: userId }),
       });
       if (response.ok) {
         const responseData = await response.json();
@@ -176,7 +141,8 @@ function Page() {
     }
   };
 
-  const handleRemove = async (e) => {
+  // 페이지 삭제 함수
+  const handleRemovePage = async (e) => {
     if(pageIndex === 0){
       alert("메인 페이지는 삭제하실 수 없습니다.");
       return;
@@ -204,14 +170,17 @@ function Page() {
       }
     }
   };
-  
+
+  // 페이지 번호 입력 함수
   const handlePageInputChange  = (event) => {
     const newValue = parseInt(event.target.value, 10);
+
+    // 페이지 번호 입력칸에 올바르지 않은 숫자값 입력 시 입력값을 0으로 설정
     if(isNaN(newValue)){
       setPageInputValue(0);
       return;
     }
-
+    // 페이지 번호가 최대 페이지 번호를 넘는 경우 페이지 최대 입력 가능한 값으로 설정
     if (!isNaN(newValue) && newValue >= 1 && newValue <= pages.length) {
       setPageInputValue(newValue);
     } else {
@@ -219,22 +188,23 @@ function Page() {
     }
   };
 
+  // 초기 페이지 입력칸은 항상 현재 페이지 번호로 설정 
   useEffect(() => {
     setPageInputValue(pageIndex !== 0 ? pageIndex + 1 : 1);
   }, [pageIndex]);
 
+  // 서버에서 페이지 정보 수신 함수
   useEffect(() => {
     let isCancelled = false;
   
     const fetchPageInfo = async () => {
       try {
-        const createUserId = userId;
         const response = await fetch(`/api/page/search`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ organizationId, noteId, createUserId }),
+          body: JSON.stringify({ organizationId, noteId, createUserId: userId }),
         });
         if (response.ok && !isCancelled) {
           const data = await response.json();
@@ -259,9 +229,9 @@ function Page() {
     return () => {
       isCancelled = true;
     };
-  }, [location, pageId]);
+  }, [pageId]);
   
-  
+  // 서버에서 노트 정보 수신 함수
   useEffect(() => {
     let isCancelled = false;
 
@@ -293,127 +263,37 @@ function Page() {
     return () => {
       isCancelled = true;
     };
-  }, [location, organizationId, noteId]);
-  // 네비게이션바에 페이지 컨트롤 코드_마지막
-
-  const { nodes, marks } = basicSchema.spec;
-  const extendedNodes = addListNodes(
-    nodes.append({ image: imageNodeSpec }),
-    "paragraph block*",
-    "block"
-  );
-
-  const customParagraphNode = {
-    ...nodes.get("paragraph"),
-    attrs: {
-      ...nodes.get("paragraph").attrs,
-      class: { default: "custom-paragraph" },
-      guid: { default: "" }, // Ensure guid attribute is included
-      writer: { default: userId },
-    },
-    parseDOM: [
-      {
-        tag: "p",
-        getAttrs: (dom) => ({guid: dom.getAttribute("data-guid"), writer: dom.getAttribute("data-writer"),}),
-      },
-    ],
-    toDOM(node) {
-      return ["p", { class: node.attrs.class, "data-guid": node.attrs.guid, "data-writer": node.attrs.writer}, 0];
-    },
-  };
-
-  const newParagraphNode = extendedNodes.update(
-    "paragraph",
-    customParagraphNode
-  );
-
-  const defaultNodes = updateImageNode(newParagraphNode, {
-    ...imageSettings,
-  });
-
-  const mySchema = new Schema({
-    nodes: defaultNodes,
-    marks: basicSchema.spec.marks,
-  });
+  }, [noteId]);
 
   useEffect(() => {
     if (!editorRef.current) return;
+    if (!ydocRef.current) return;
+    // ydocRef.current = new Y.Doc();
+    // ydocProviderRef.current = new WebsocketProvider(
+    //   // "wss://demos.yjs.dev/ws", // yjs 데모 서버 주소
+    //   // "ws://localhost:4000",
+    //   // "ws://nodejs:4000", 
+    //   "wss://sharenote.shop/ws",
+    //    pageId, // 방 이름
+    //    ydocRef.current
+    // );
 
-    const roomId = pageId;
-    const ydoc = getYDocInstance(roomId);
-    const provider = new WebsocketProvider(
-      // "wss://demos.yjs.dev/ws", // 웹소켓 서버 주소(데모용)
-      //"ws://localhost:4000",
-      //"ws://nodejs:4000", 
+    ydocRef.current = getYDocInstance(pageId);
+    ydocProviderRef.current = new WebsocketProvider(
+      // "wss://demos.yjs.dev/ws", // yjs 데모 서버 주소
+      // "ws://localhost:4000",
+      // "ws://nodejs:4000",
       "wss://sharenote.shop/ws",
-      roomId, // 방 이름
-      ydoc
+      pageId, // 방 이름
+      ydocRef.current
     );
 
-    const yXmlFragment = ydoc.getXmlFragment("prosemirror");
-    const yConnectedUserList = ydoc.getMap('connectedUsers');
-    const yLineLocks = ydoc.getMap('nodeInfo');
-    const yUserLocks = ydoc.getMap('yUserLocks');
-    const yLikeList = ydoc.getMap(`yLikeList_${userId}`);
+    const yXmlFragment = ydocRef.current.getXmlFragment("prosemirror");
+    const yConnectedUserList = ydocRef.current.getMap('connectedUsers');
+    const yLineLocks = ydocRef.current.getMap('nodeInfo');
+    const yUserLocks = ydocRef.current.getMap('yUserLocks');
 
-    function isWeb() {
-      const userAgent = navigator.userAgent.toLowerCase();
-      const isAndroidWebView = (userAgent.indexOf('android') > -1 && userAgent.indexOf('mobile') > -1) || userAgent.indexOf('app') > -1;
-      return isAndroidWebView
-    }
-    function checkLocalStorage() {
-      return new Promise((resolve, reject) => {
-        function getDataFromStorage() {
-          return {
-            nickname: localStorage.getItem('nickname'),
-            userId: localStorage.getItem('userId')
-          };
-        }
-    
-        let { nickname, userId } = getDataFromStorage();
-    
-        if (nickname && userId) {
-          resolve();  
-        } else {
-          setTimeout(() => {
-            let { nickname, userId } = getDataFromStorage();
-            if (nickname && userId) {
-              resolve();
-            } else {
-              reject(new Error("계정 정보가 로컬 스토리지에 없습니다."));
-            }
-          }, 3000);
-        }
-      });
-    }
-    function handleUserConnection() {
-      const nicknameWithSuffix = `${nickname}_다중 접속`;
-      const isSingleConnected = yConnectedUserList.has(nickname);
-      const isMultiConnected = yConnectedUserList.has(nicknameWithSuffix);
-  
-      if (isSingleConnected && isMultiConnected) {
-        const isConfirmed = window.confirm("동시 접속 가능한 횟수를 초과하셨습니다.\n기존 접속을 종료하고 새로 접속하시겠습니까?");
-        if (isConfirmed) {
-          yConnectedUserList.set(nicknameWithSuffix, 'kicked');
-        } else {
-          navigate(`/organization/${pathSegments[1]}`);
-          return;
-        }
-      }
-  
-      let userColor = yConnectedUserList.get(nickname) || yConnectedUserList.get(nicknameWithSuffix) || getRandomColor();
-      
-      if (!isSingleConnected) {
-        yConnectedUserList.set(nickname, userColor);
-        provider.awareness.setLocalStateField('user', { name: nickname, color: userColor });
-      } else {
-        yConnectedUserList.set(nicknameWithSuffix, userColor);
-        provider.awareness.setLocalStateField('user', { name: nicknameWithSuffix, color: userColor });
-      }
-      updateUsersAndColors(); // UI 업데이트
-    }
-
-    provider.on("sync", (isSynced) => {
+    ydocProviderRef.current.on("sync", (isSynced) => {
       if (isWeb()) {
         if (isSynced) {
           handleUserConnection();
@@ -433,10 +313,11 @@ function Page() {
         setisloaded(true);
       }, 300); // 딜레이 있음
     });
+    ydocProviderRef.current.connect();
 
-    provider.on('status', event => {
+    ydocProviderRef.current.on('status', event => {
       if (event.status === 'disconnected') {
-        const userState = provider.awareness.getLocalState();
+        const userState = ydocProviderRef.current.awareness.getLocalState();
         if (userState && userState.user) {
           yConnectedUserList.delete(userState.user.name);
           setReconnect(true);
@@ -450,9 +331,76 @@ function Page() {
         }
       }
     });
+
+    const myCursorBuilder = (user) => {
+      const cursor = document.createElement("span");
+      cursor.classList.add("ProseMirror-yjs-cursor");
+      cursor.setAttribute("style", `border-color: ${user.color}`);
+      const userDiv = document.createElement("div");
+      userDiv.setAttribute("style", `background-color: ${user.color}`);
+      userDiv.insertBefore(document.createTextNode(user.name), null)
+      const nonbreakingSpace1 = document.createTextNode('\u2060')
+      const nonbreakingSpace2 = document.createTextNode('\u2060')
+      cursor.insertBefore(nonbreakingSpace1, null)
+      cursor.insertBefore(userDiv, null)
+      cursor.insertBefore(nonbreakingSpace2, null)
+  
+      return cursor;
+    };
+
+    function getAvailableColors() {
+      const usedColors = new Set();
+      yConnectedUserList.forEach((color, name) => {
+        usedColors.add(color);
+      });
+      const availableColors = cursorColors.filter(color => !usedColors.has(color));
+      return availableColors;
+    }
+    
+    function getRandomColor() {
+      const availableColors = getAvailableColors();
+      const index = Math.floor(Math.random() * availableColors.length);
+      return availableColors[index];
+    }
+
+    function updateUsersAndColors() {
+      const updatedUsersAndColors = [];
+      yConnectedUserList.forEach((color, name) => {
+          updatedUsersAndColors.push({ name, color });
+      });
+      setUsersAndColors([...updatedUsersAndColors]); // 새로운 배열을 생성하여 업데이트
+    }
+
+    function handleUserConnection() {
+      const nicknameWithSuffix = `${nickname}_다중 접속`;
+      const isSingleConnected = yConnectedUserList.has(nickname);
+      const isMultiConnected = yConnectedUserList.has(nicknameWithSuffix);
+  
+      if (isSingleConnected && isMultiConnected) {
+        const isConfirmed = window.confirm("동시 접속 가능한 횟수를 초과하셨습니다.\n기존 접속을 종료하고 새로 접속하시겠습니까?");
+        if (isConfirmed) {
+          yConnectedUserList.set(nicknameWithSuffix, 'kicked');
+        } else {
+          navigate(`/organization/${organizationId}`);
+          return;
+        }
+      }
+  
+      let userColor = yConnectedUserList.get(nickname) || yConnectedUserList.get(nicknameWithSuffix) || getRandomColor();
+      
+      if (!isSingleConnected) {
+        yConnectedUserList.set(nickname, userColor);
+        ydocProviderRef.current.awareness.setLocalStateField('user', { name: nickname, color: userColor });
+        updateUsersAndColors();
+      } else {
+        yConnectedUserList.set(nicknameWithSuffix, userColor);
+        ydocProviderRef.current.awareness.setLocalStateField('user', { name: nicknameWithSuffix, color: userColor });
+        updateUsersAndColors();
+      }
+    }
     
     function onlineUpdate() {
-      const userState = provider.awareness.getLocalState();
+      const userState = ydocProviderRef.current.awareness.getLocalState();
     
       if (userState && userState.user && userState.user.name) {
         const nickname = userState.user.name;
@@ -462,14 +410,14 @@ function Page() {
         }
     
         if (yConnectedUserList.get(nickname) === 'kicked') {
+          toastr.remove();
           toastr.warning("연결 정보가 없습니다!");
-          navigate(`/organization/${pathSegments[1]}`);
+          navigate(`/organization/${organizationId}`);
           return;
         }
       }
       updateUsersAndColors();
     }
-   yConnectedUserList.observe(onlineUpdate);
 
     window.yjsDisconnect = function() {
       if(!editorRef) {
@@ -487,141 +435,33 @@ function Page() {
       yUserLocks.delete(nickname);
     
       // Yjs 연결 해제 및 리소스 정리
-      const userState = provider.awareness.getLocalState();
+      const userState = ydocProviderRef.current.awareness.getLocalState();
       if (userState && userState.user) {
         yConnectedUserList.delete(userState.user.name);
       }
     
       // 연결 해제 및 리소스 정리
       view.destroy();
-      provider.destroy();
-      provider.disconnect();
+      ydocProviderRef.current.destroy();
+      ydocProviderRef.current.disconnect();
     }  
-
-    const generateBlockIdPlugin = (guidGenerator = uuidv4) => {
-      return new Plugin({
-        appendTransaction: (transactions, prevState, nextState) => {
-          const tr = nextState.tr;
-          let modified = false;
-          const generatedIds = new Set();
-        
-          if (transactions.some(transaction => transaction.docChanged)) {
-            const { paragraph, image } = nextState.schema.nodes;
-            let prevNode = null; // 이전 노드를 추적하기 위한 변수
-            let prevPos = null; // 이전 노드의 위치를 저장
-        
-            nextState.doc.descendants((node, pos) => {
-              if (node.type === image) {
-                let currentGuid = node.attrs['data-guid'];
-                if (!currentGuid || generatedIds.has(currentGuid)) {
-                  let newGuid;
-                  do {
-                    newGuid = guidGenerator();
-                  } while (generatedIds.has(newGuid));
-                  generatedIds.add(newGuid);
-                  tr.setNodeMarkup(pos, undefined, {...node.attrs, 'data-guid': newGuid});
-                  modified = true;
-                } else {
-                  generatedIds.add(currentGuid);
-                }
-              } else if (node.type === paragraph) {
-                const nodeTextContent = node.textContent;
-                const selection = nextState.selection;
-                const cursorPosition = selection.head || selection.from;
-        
-                if (cursorPosition >= pos && cursorPosition <= pos + node.nodeSize) {
-                  const cursorPositionInNode = cursorPosition - pos;
-                  if (cursorPositionInNode === 1 && nodeTextContent !== "") {
-                    if (prevNode && !generatedIds.has(prevNode.attrs.guid)) {
-                      let newGuid;
-                      do {
-                        newGuid = guidGenerator();
-                      } while (generatedIds.has(newGuid));
-                      generatedIds.add(newGuid);
-                      tr.setNodeMarkup(pos, undefined, {...node.attrs, guid: newGuid});
-                      modified = true;
-                    }
-                  } else {
-                    // 일반적인 guid 할당 로직
-                    let currentGuid = node.attrs.guid;
-                    if (!currentGuid || generatedIds.has(currentGuid)) {
-                      let newGuid;
-                      do {
-                        newGuid = guidGenerator();
-                      } while (generatedIds.has(newGuid));
-                      generatedIds.add(newGuid);
-                      tr.setNodeMarkup(pos, undefined, {...node.attrs, guid: newGuid});
-                      modified = true;
-                    } else {
-                      generatedIds.add(currentGuid);
-                    }
-                  }
-                }
-                // 현재 노드와 위치를 이전 노드로 업데이트
-                prevNode = node;
-                prevPos = pos;
-              } 
-            });
-          }
-          return modified ? tr : null;
-        },
-      });
-    };
-
-    // 줄 잠금/해제 함수
-    window.toggleLineLock = function(guid, nickname) {
-      if(!nickname || !userId) {
-        toastr.info(`로그인 정보가 없습니다.`);
-        navigate("/login");
-        return;
-      }
-    const currentLock = yLineLocks.get(guid.toString());
-    
-    // 현재 사용자가 이미 다른 노드를 잠근 경우, 알림창 표시
-    const currentLockedNodeByUser = yUserLocks.get(nickname);
-    if (!currentLock && currentLockedNodeByUser && currentLockedNodeByUser !== guid.toString()) {
-      // 사용자에게 확인을 요청하는 대화 상자 표시
-      const isConfirmed = window.confirm("최대 1개까지 잠금이 가능합니다.\n이전에 설정한 잠금을 해제하시겠습니까?");
-      if (isConfirmed) {
-        yLineLocks.delete(currentLockedNodeByUser);
-        yUserLocks.delete(nickname); 
-      } else {
-        return;
-      }
-    }
-    
-      if (currentLock) {
-        // 해당 줄이 이미 잠겨 있고, 현재 사용자가 잠근 경우 잠금 해제
-        if (currentLock === nickname) {
-            yLineLocks.delete(guid.toString());
-            yUserLocks.delete(nickname);
-            toastr.info(`편집 잠금이 해제되었습니다.`);
-        } else {
-          toastr.error(`[오류] ${currentLock} 에 의해 잠금 불가합니다.`);
-        }
-    } else {
-      yLineLocks.set(guid.toString(), nickname);
-      yUserLocks.set(nickname, guid.toString());
-      toastr.success(`블록 편집 잠금이 설정되었습니다.`);
-    }
-  };
-
-    // 더블클릭 감지를 위한 클릭 시간.
-    let lastClickTime = 0;
 
     // 더블클릭 이벤트를 처리하는 함수
     const handleDoubleClick = (event) => {
+      // 더블클릭 감지를 위한 클릭 시간.
+      let lastClickTime = 0;
+
       const currentTime = new Date().getTime();
       if (currentTime - lastClickTime < 300) {
           const { target } = event;
           if (target.tagName.toLowerCase() === "img") {
               const imageUrl = target.getAttribute("src");
               setClickedImageSrc(imageUrl)
-              setShowModalImage(true);
+              setModalOpen_ImageZoom(true);
           }
       }
       lastClickTime = currentTime;
-  }
+    };
 
     const handleNodeClick = (nickname, event) => {
       handleDoubleClick(event);
@@ -636,6 +476,7 @@ function Page() {
         const currentLock = yLineLocks.get(guid.toString());
         if (currentLock) {
           if (currentLock !== nickname) {
+            toastr.remove();
             toastr.warning(`[알림] ${currentLock} 에 의해 편집 불가합니다.`);
           }
         }
@@ -671,85 +512,7 @@ function Page() {
       }
     };
 
-    // 블록 좋아요     
-    window.toggleLike = function(blockId, lover, heartReceiver) {
-      if (lover !== heartReceiver) {
-        const currentLikeState = yLikeList.get(blockId);
-        const newLikeState = !currentLikeState;
-        yLikeList.set(blockId, newLikeState);
-      }
-
-      const handleLike = async () => {
-        try {
-            const response = await fetch("/api/user/note/block/likes", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ organizationId, noteId, lover, blockId, heartReceiver}),
-            });
-            if (response.ok) {
-                const responseData = await response.text();
-                toastr.remove();
-                if (responseData.includes("좋아요 성공!")) { 
-                  toastr.success(responseData);
-                } else {
-                  toastr.info(responseData);
-                }
-            } else {
-                const errorData = await response.text();
-                toastr.remove();
-                toastr.error(errorData);
-            }
-        } catch (error) {
-            console.error("Error: ", error);
-            alert("처리 중 오류가 발생했습니다.");
-        }
-      };
-
-      return handleLike();
-    };
-
-    window.getLikeList = function(guid) {
-      const isLiked = yLikeList.get(guid.toString());
-      return !!isLiked;
-    };
-
-    function getAvailableColors() {
-      const usedColors = new Set();
-      yConnectedUserList.forEach((color, name) => {
-        usedColors.add(color);
-      });
-      const availableColors = cursorColors.filter(color => !usedColors.has(color));
-      return availableColors;
-    }
-    
-    function getRandomColor() {
-      const availableColors = getAvailableColors();
-      const index = Math.floor(Math.random() * availableColors.length);
-      return availableColors[index];
-    }
-
-    function updateUsersAndColors() {
-      const updatedUsersAndColors = [];
-      yConnectedUserList.forEach((color, name) => {
-        updatedUsersAndColors.push({ name, color });
-      });
-      setUsersAndColors(updatedUsersAndColors);
-    }
-
-    const myCursorBuilder = (user) => {
-      const cursor = document.createElement("span");
-      cursor.classList.add("ProseMirror-yjs-cursor");
-      cursor.setAttribute("style", `border-color: ${user.color}`);
-      const userDiv = document.createElement("div");
-      userDiv.setAttribute("style", `background-color: ${user.color}`);
-      userDiv.innerText = user.name;
-      cursor.appendChild(userDiv);
-
-      return cursor;
-    };
-
+    yConnectedUserList.observe(onlineUpdate);
     yConnectedUserList.observe(updateUsersAndColors);
     window.addEventListener("pagehide", window.yjsDisconnect);
     window.addEventListener("unload", window.yjsDisconnect);
@@ -769,24 +532,24 @@ function Page() {
 
         plugins: exampleSetup({ schema: mySchema }).concat(
           ySyncPlugin(yXmlFragment),
-          yCursorPlugin(provider.awareness, {
+          yCursorPlugin(ydocProviderRef.current.awareness, {
             cursorBuilder: myCursorBuilder,
           }),
           yUndoPlugin(),
-          hoverButtonPlugin(),
+          hoverButtonPlugin(blockLikeRef, blockLockRef),
           inlinePlaceholderPlugin(),
           generateBlockIdPlugin(),
           imagePlugin({
             ...imageSettings,
             resizeCallback: (el, updateCallback) => {
-              const observer = new ResizeObserver(entries => {
+              const observer = new ResizeObserver(() => {
                 window.requestAnimationFrame(() => {
                   updateCallback();
                 });
               });
               observer.observe(el);
               return () => observer.unobserve(el);
-            },
+            },            
           }),          
           keymap({
             "Mod-z": undo,
@@ -802,49 +565,14 @@ function Page() {
 
     return () => {
       setisloaded(false);
-      yConnectedUserList.unobserve(updateUsersAndColors);
       yConnectedUserList.unobserve(onlineUpdate);
+      yConnectedUserList.unobserve(updateUsersAndColors);
       window.removeEventListener("pagehide", window.yjsDisconnect);
       window.removeEventListener("unload", window.yjsDisconnect);
       window.removeEventListener("popstate", window.yjsDisconnect);
       window.yjsDisconnect();
     };
   }, [pageId]);
-
-  window.uploadImageToEditor = (imageUrl) => {
-    const hoverDiv = document.querySelector(".hoverDiv");
-
-    // ProseMirror Transaction 생성
-    const transaction = editorRef.current.view.state.tr;
-    const transactionWithImage = transactionImageAtLine(imageUrl)(transaction);
-
-    // Transaction 적용하여 에디터에 이미지 삽입
-    editorRef.current.view.dispatch(transactionWithImage);
-    hoverDiv.style.visibility = "hidden";
-  };
-
-  const transactionImageAtLine = (imageUrl) => tr => {
-    // 이미지 노드 생성
-    const imageNode = editorRef.current.view.state.schema.nodes.image.create({ src: imageUrl });
-
-    // 특정 줄의 시작 노드 위치 찾기
-    let pos = 0;
-    editorRef.current.view.state.doc.nodesBetween(0, editorRef.current.view.state.doc.content.size, (node, nodePos) => {
-        if (node.isBlock && nodePos > pos) {
-            pos = nodePos;
-        }
-        pos = pos === 0 ? 1 : pos; 
-    });
-
-    // 이미지 노드 삽입
-    const insertTr = tr.insert(pos, imageNode);
-
-    // 이미지 삽입 후 커서 위치 설정
-    const resolvedPos = insertTr.doc.resolve(pos + imageNode.nodeSize);
-    const selection = editorRef.current.view.state.selection.constructor.near(resolvedPos);
-
-    return insertTr.setSelection(selection);
-  };
 
   return (
     <div>
@@ -905,9 +633,9 @@ function Page() {
               <PageRemote>
                  <LeftPageRemote>
                   <CreateRemoveBtn>                  
-                    <FontAwesomeIcon icon={faSquarePlus} onClick={handleCreate} style={{ color: '#007bff', cursor: isPageHandleButtonDisabled ? 'not-allowed' : 'pointer' }}             
+                    <FontAwesomeIcon icon={faSquarePlus} onClick={handleCreatePage} style={{ color: '#007bff', cursor: isPageHandleButtonDisabled ? 'not-allowed' : 'pointer' }}             
                     disabled={isPageHandleButtonDisabled} title="페이지 추가"/>
-                    <FontAwesomeIcon icon={faTrashCan} onClick={handleRemove} style={{ color: '#707070', cursor: isPageHandleButtonDisabled ? 'not-allowed' : 'pointer' }}             
+                    <FontAwesomeIcon icon={faTrashCan} onClick={handleRemovePage} style={{ color: '#707070', cursor: isPageHandleButtonDisabled ? 'not-allowed' : 'pointer' }}             
                     disabled={isPageHandleButtonDisabled} title="현재 페이지 삭제"/>
                   </CreateRemoveBtn>
                  </LeftPageRemote>
@@ -929,14 +657,14 @@ function Page() {
             <hr />
             <p style={{ fontWeight: "bold", marginBottom: "0px" }}>접속중인 유저 목록</p>
             <p style={{ marginTop:"0px" }}><small>(커서 색상/닉네임)</small></p>
-           <ul>
-            {usersAndColors.map(({ name, color }) => (
-              <li key={name} style={{ display: 'flex', alignItems: 'center', marginBottom: '10px', marginLeft: '13px' }}>
-                <div style={{ width: '20px', height: '20px', backgroundColor: color, marginRight: '13px' }}></div>
-                {name} {name === nickname && "(본인)"}
-              </li>
-            ))}
-          </ul>
+            <ul>
+                {usersAndColors.map(({ name, color }) => (
+                    <li key={name} style={{ display: 'flex', alignItems: 'center', marginBottom: '10px', marginLeft: '13px' }}>
+                        <div style={{ width: '20px', height: '20px', backgroundColor: color, marginRight: '13px' }}></div>
+                        {name} {name === nickname && "(본인)"}
+                    </li>
+                ))}
+            </ul>
           </NavigationBar>
           <EditorContainer id="EditorContainer">
             <div
@@ -953,11 +681,11 @@ function Page() {
         </EditorContainer>
         </LayoutContainer>
 
-        {showModalImage && (
+        {modalOpen_ImageZoom && (
         <ModalImageComponent 
           src={clickedImageSrc} 
-          modalOpen={handleOpenImageZoomModal}
-          closeModal={handleCloseImageZoomModal}
+          modalOpen={handleModalOpen_ImageZoom}
+          modalClose={handleModalClose_ImageZoom}
          />
       )}
 
@@ -965,12 +693,16 @@ function Page() {
         <NoteSettingModal
           modalOpen={noteSettingModalOpen}
           handleCloseModal={handleCloseNoteSettingModal}
+          setMyImage={setMyImage}
           myimage={myimage}
-          uploadImage={uploadImage}
           note={noteinfo}
           setNoteInfo={setNoteInfo}
         />
       )}
+
+        <ImageToEditor ref={editorRef} />
+        <BlockLike ref={blockLikeRef} ydocRef={ydocRef} />
+        <BlockLock ref={blockLockRef} ydocRef={ydocRef} />
     </div>
   );
 }
