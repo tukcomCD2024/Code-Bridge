@@ -13,7 +13,27 @@ const ImageToEditor = React.forwardRef((props, ref) => {
       // Transaction 적용하여 에디터에 이미지 삽입
       editorRef.current.view.dispatch(transactionWithImage);
       hoverDiv.style.visibility = "hidden";
+      editorResizing();
     };
+
+    function editorResizing() {
+      const hoverDiv = document.querySelector(".hoverDiv");
+      const editor = document.querySelector("#editor");
+      const prosemirror = document.querySelector(".ProseMirror");
+      const initialEditorPaddingLeft = "8%";
+      const initialEditorPaddingRight = "5%";   
+      const initialProsemirrorMarginLeft = "40px";
+
+      if (getComputedStyle(hoverDiv).visibility !== "visible" && window.matchMedia("(max-width: 768px)").matches) {
+        editor.style.paddingLeft = "0%";
+        editor.style.paddingRight = "0%";
+        prosemirror.style.marginLeft = "0px";
+      } else {
+        editor.style.paddingLeft = initialEditorPaddingLeft;
+        editor.style.paddingRight = initialEditorPaddingRight;
+        prosemirror.style.marginLeft = initialProsemirrorMarginLeft;
+      }
+    }
 
   const transactionImageAtLine = (imageUrl) => tr => {
     // 이미지 노드 생성

@@ -24,6 +24,7 @@ import "./ProseMirror_css/ProseMirror.css";
 
 import ModalImageComponent from "./utils/editor/ModalImageComponent";
 import ImageToEditor from "./utils/editor/ImageToEditor";
+import BlockLike from "./utils/yjs/BlockLike";
 import { imageSettings } from "./utils/editor/pageSettings";
 import { inlinePlaceholderPlugin } from "./utils/editor/plugin/inlinePlaceholderPlugin";
 import { hoverButtonPlugin } from "./utils/editor/plugin/hoverButtonPlugin";
@@ -45,6 +46,7 @@ function Page() {
   const editorRef = useRef(null);
   const ydocRef = useRef(new Y.Doc());
   const ydocProviderRef = useRef(null);
+  const blockLikeRef = useRef(null);
 
   let nickname = localStorage.getItem('nickname');
   let userId = localStorage.getItem('userId');
@@ -99,7 +101,7 @@ function Page() {
   // 특정 페이지
   const pageTarget = () => {
     if (pageIndex + 1 === pageInputValue) return;
-    const pageTargetID = pageInputValue == 0 ? pages[pageInputValue]?.id : pages[pageInputValue - 1]?.id;
+    const pageTargetID = pageInputValue === 0 ? pages[pageInputValue]?.id : pages[pageInputValue - 1]?.id;
     navigateToPage(pageTargetID);
   };
 
@@ -280,7 +282,6 @@ function Page() {
     const yConnectedUserList = ydocRef.current.getMap('connectedUsers');
     const yLineLocks = ydocRef.current.getMap('nodeInfo');
     const yUserLocks = ydocRef.current.getMap('yUserLocks');
-    const yLikeList = ydocRef.current.getMap(`yLikeList_${userId}`);
 
     function handleUserConnection() {
       const nicknameWithSuffix = `${nickname}_다중 접속`;
@@ -502,49 +503,7 @@ function Page() {
       }
     };
 
-    // 블록 좋아요     
-    window.toggleLike = function(blockId, lover, heartReceiver) {
-      if (lover !== heartReceiver) {
-        const currentLikeState = yLikeList.get(blockId);
-        const newLikeState = !currentLikeState;
-        yLikeList.set(blockId, newLikeState);
-      }
 
-      const handleLike = async () => {
-        try {
-            const response = await fetch("/api/user/note/block/likes", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ organizationId, noteId, lover, blockId, heartReceiver}),
-            });
-            if (response.ok) {
-                const responseData = await response.text();
-                toastr.remove();
-                if (responseData.includes("좋아요 성공!")) { 
-                  toastr.success(responseData);
-                } else {
-                  toastr.info(responseData);
-                }
-            } else {
-                const errorData = await response.text();
-                toastr.remove();
-                toastr.error(errorData);
-            }
-        } catch (error) {
-            console.error("Error: ", error);
-            alert("처리 중 오류가 발생했습니다.");
-        }
-      };
-
-      return handleLike();
-    };
-
-    window.getLikeList = function(guid) {
-      const isLiked = yLikeList.get(guid.toString());
-      return !!isLiked;
-    };
 
     function getAvailableColors() {
       const usedColors = new Set();
@@ -604,7 +563,7 @@ function Page() {
             cursorBuilder: myCursorBuilder,
           }),
           yUndoPlugin(),
-          hoverButtonPlugin(),
+          hoverButtonPlugin(blockLikeRef),
           inlinePlaceholderPlugin(),
           generateBlockIdPlugin(),
           imagePlugin({
@@ -771,6 +730,7 @@ function Page() {
       )}
 
         <ImageToEditor ref={editorRef} />
+        <BlockLike ref={blockLikeRef} ydocRef={ydocRef} />
     </div>
   );
 }
