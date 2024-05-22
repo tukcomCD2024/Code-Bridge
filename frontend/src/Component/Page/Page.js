@@ -29,12 +29,13 @@ import ModalImageComponent from "./utils/editor/ModalImageComponent";
 import ImageToEditor from "./utils/editor/ImageToEditor";
 import BlockLike from "./utils/yjs/BlockLike";
 import BlockLock from './utils/yjs/BlockLock'; 
+import InitUser from "./utils/yjs/InitUser";
+import { myCursorBuilder } from "./utils/yjs/InitUser"
 import { imageSettings } from "./utils/editor/pageSettings";
 import { inlinePlaceholderPlugin } from "./utils/editor/plugin/inlinePlaceholderPlugin";
 import { hoverButtonPlugin } from "./utils/editor/plugin/hoverButtonPlugin";
 import { generateBlockIdPlugin } from "./utils/editor/plugin/generateBlockIdPlugin";
 import { isWeb, checkLocalStorage } from "./utils/initMobileWebView"
-import { cursorColors } from "../Utils/cursorColor"
 import NoteSettingModal from "./utils/editor/noteSettingModal";
 import loadingImage from "../../image/loading.gif";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -46,6 +47,7 @@ function Page() {
   const ydocProviderRef = useRef(null);
   const blockLikeRef = useRef(null);
   const blockLockRef = useRef(null);
+  const initUserRef = useRef(null);
 
   let nickname = localStorage.getItem('nickname');
   let userId = localStorage.getItem('userId');
@@ -268,6 +270,7 @@ function Page() {
   useEffect(() => {
     if (!editorRef.current) return;
 
+    ydocRef.current = new Y.Doc();
     ydocProviderRef.current = new WebsocketProvider(
       // "wss://demos.yjs.dev/ws", // yjs 데모 서버 주소
       // "ws://localhost:4000",
@@ -285,7 +288,7 @@ function Page() {
     ydocProviderRef.current.on("sync", (isSynced) => {
       if (isWeb()) {
         if (isSynced) {
-          handleUserConnection();
+          initUserRef.current.handleUserConnection();
         }
         checkLocalStorage().then(() => {
         }).catch(error => {
@@ -294,7 +297,7 @@ function Page() {
         });
       } else {
           if (isSynced) {
-            handleUserConnection();   
+            initUserRef.current.handleUserConnection();   
         }
       }
       // setisloaded(true); // 딜레이 없음
@@ -315,92 +318,10 @@ function Page() {
         const nicknameWithSuffix = `${nickname}_다중 접속`;
         if (reconnect && (!yConnectedUserList.get(nickname) || !yConnectedUserList.get(nicknameWithSuffix))) {
           setReconnect(false);
-          handleUserConnection();
+          initUserRef.current.handleUserConnection();
         }
       }
     });
-
-    function getAvailableColors() {
-      const usedColors = new Set();
-      yConnectedUserList.forEach((color, name) => {
-        usedColors.add(color);
-      });
-      const availableColors = cursorColors.filter(color => !usedColors.has(color));
-      return availableColors;
-    }
-    
-    function getRandomColor() {
-      const availableColors = getAvailableColors();
-      const index = Math.floor(Math.random() * availableColors.length);
-      return availableColors[index];
-    }
-
-    function updateUsersAndColors() {
-      const updatedUsersAndColors = [];
-      yConnectedUserList.forEach((color, name) => {
-        updatedUsersAndColors.push({ name, color });
-      });
-      setUsersAndColors(updatedUsersAndColors);
-    }
-
-    const myCursorBuilder = (user) => {
-      const cursor = document.createElement("span");
-      cursor.classList.add("ProseMirror-yjs-cursor");
-      cursor.setAttribute("style", `border-color: ${user.color}`);
-      const userDiv = document.createElement("div");
-      userDiv.setAttribute("style", `background-color: ${user.color}`);
-      userDiv.innerText = user.name;
-      cursor.appendChild(userDiv);
-
-      return cursor;
-    };
-
-    function handleUserConnection() {
-      const nicknameWithSuffix = `${nickname}_다중 접속`;
-      const isSingleConnected = yConnectedUserList.has(nickname);
-      const isMultiConnected = yConnectedUserList.has(nicknameWithSuffix);
-  
-      if (isSingleConnected && isMultiConnected) {
-        const isConfirmed = window.confirm("동시 접속 가능한 횟수를 초과하셨습니다.\n기존 접속을 종료하고 새로 접속하시겠습니까?");
-        if (isConfirmed) {
-          yConnectedUserList.set(nicknameWithSuffix, 'kicked');
-        } else {
-          navigate(`/organization/${pathSegments[1]}`);
-          return;
-        }
-      }
-  
-      let userColor = yConnectedUserList.get(nickname) || yConnectedUserList.get(nicknameWithSuffix) || getRandomColor();
-      
-      if (!isSingleConnected) {
-        yConnectedUserList.set(nickname, userColor);
-        ydocProviderRef.current.awareness.setLocalStateField('user', { name: nickname, color: userColor });
-      } else {
-        yConnectedUserList.set(nicknameWithSuffix, userColor);
-        ydocProviderRef.current.awareness.setLocalStateField('user', { name: nicknameWithSuffix, color: userColor });
-      }
-      updateUsersAndColors(); // UI 업데이트
-    }
-    
-    function onlineUpdate() {
-      const userState = ydocProviderRef.current.awareness.getLocalState();
-    
-      if (userState && userState.user && userState.user.name) {
-        const nickname = userState.user.name;
-    
-        if (!editorRef.current) {
-          yConnectedUserList.delete(nickname);
-        }
-    
-        if (yConnectedUserList.get(nickname) === 'kicked') {
-          toastr.remove();
-          toastr.warning("연결 정보가 없습니다!");
-          navigate(`/organization/${pathSegments[1]}`);
-          return;
-        }
-      }
-      updateUsersAndColors();
-    }
 
     window.yjsDisconnect = function() {
       if(!editorRef) {
@@ -495,8 +416,6 @@ function Page() {
       }
     };
 
-    yConnectedUserList.observe(onlineUpdate);
-    yConnectedUserList.observe(updateUsersAndColors);
     window.addEventListener("pagehide", window.yjsDisconnect);
     window.addEventListener("unload", window.yjsDisconnect);
     window.addEventListener("popstate", window.yjsDisconnect);
@@ -548,8 +467,6 @@ function Page() {
 
     return () => {
       setisloaded(false);
-      yConnectedUserList.unobserve(updateUsersAndColors);
-      yConnectedUserList.unobserve(onlineUpdate);
       window.removeEventListener("pagehide", window.yjsDisconnect);
       window.removeEventListener("unload", window.yjsDisconnect);
       window.removeEventListener("popstate", window.yjsDisconnect);
@@ -686,6 +603,7 @@ function Page() {
         <ImageToEditor ref={editorRef} />
         <BlockLike ref={blockLikeRef} ydocRef={ydocRef} />
         <BlockLock ref={blockLockRef} ydocRef={ydocRef} />
+        <InitUser ref={initUserRef} editorRef={editorRef} ydocRef={ydocRef} ydocProviderRef={ydocProviderRef} usersAndColors={usersAndColors} setUsersAndColors={setUsersAndColors}/>
     </div>
   );
 }
