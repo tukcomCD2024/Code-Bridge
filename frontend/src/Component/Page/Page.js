@@ -391,11 +391,12 @@ function Page() {
       if (!isSingleConnected) {
         yConnectedUserList.set(nickname, userColor);
         ydocProviderRef.current.awareness.setLocalStateField('user', { name: nickname, color: userColor });
+        updateUsersAndColors();
       } else {
         yConnectedUserList.set(nicknameWithSuffix, userColor);
         ydocProviderRef.current.awareness.setLocalStateField('user', { name: nicknameWithSuffix, color: userColor });
+        updateUsersAndColors();
       }
-      updateUsersAndColors(); // UI 업데이트
     }
     
     function onlineUpdate() {
