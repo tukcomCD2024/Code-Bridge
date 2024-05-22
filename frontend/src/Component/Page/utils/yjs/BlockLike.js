@@ -1,4 +1,4 @@
-import React, { useImperativeHandle, forwardRef } from 'react';
+import { useImperativeHandle, forwardRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import toastr from 'toastr';
 import 'toastr/build/toastr.css';

@@ -16,7 +16,7 @@ function countDocBlocks(doc) {
 }
 
 // 노트 페이지에서 블록(노드)마다 작은 메뉴창이 뜨게 한다.
-export function hoverButtonPlugin(blockLikeRef) {
+export function hoverButtonPlugin(blockLikeRef, blockLockRef) {
   const hoverDiv = document.createElement("div");
 
   return new Plugin({
@@ -88,7 +88,7 @@ export function hoverButtonPlugin(blockLikeRef) {
           if (node && node.attrs.guid) {
             const nickname = localStorage.getItem("nickname");
             const guid = node.attrs.guid
-            window.toggleLineLock(guid, nickname);
+            blockLockRef.current.toggleLineLock(guid, nickname);
             } else {
             console.log('No UUID found for this node.');
           }

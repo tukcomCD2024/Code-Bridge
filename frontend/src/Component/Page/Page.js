@@ -14,7 +14,6 @@ import { mySchema } from "./utils/editor/pageSettings";
 import * as Y from "yjs";
 import { WebsocketProvider } from "y-websocket";
 import { ySyncPlugin, yCursorPlugin, yUndoPlugin, undo, redo  } from "y-prosemirror";
-
 import { imagePlugin } from "prosemirror-image-plugin";
 import "./ProseMirror_css/prosemirror_image_plugin/common.css";
 import "./ProseMirror_css/prosemirror_image_plugin/withResize.css";
@@ -25,6 +24,7 @@ import "./ProseMirror_css/ProseMirror.css";
 import ModalImageComponent from "./utils/editor/ModalImageComponent";
 import ImageToEditor from "./utils/editor/ImageToEditor";
 import BlockLike from "./utils/yjs/BlockLike";
+import BlockLock from './utils/yjs/BlockLock'; 
 import { imageSettings } from "./utils/editor/pageSettings";
 import { inlinePlaceholderPlugin } from "./utils/editor/plugin/inlinePlaceholderPlugin";
 import { hoverButtonPlugin } from "./utils/editor/plugin/hoverButtonPlugin";
@@ -47,6 +47,7 @@ function Page() {
   const ydocRef = useRef(new Y.Doc());
   const ydocProviderRef = useRef(null);
   const blockLikeRef = useRef(null);
+  const blockLockRef = useRef(null);
 
   let nickname = localStorage.getItem('nickname');
   let userId = localStorage.getItem('userId');
@@ -397,46 +398,6 @@ function Page() {
     }  
 
 
-
-    // 줄 잠금/해제 함수
-    window.toggleLineLock = function(guid, nickname) {
-      if(!nickname || !userId) {
-        toastr.info(`로그인 정보가 없습니다.`);
-        navigate("/login");
-        return;
-      }
-    const currentLock = yLineLocks.get(guid.toString());
-    
-    // 현재 사용자가 이미 다른 노드를 잠근 경우, 알림창 표시
-    const currentLockedNodeByUser = yUserLocks.get(nickname);
-    if (!currentLock && currentLockedNodeByUser && currentLockedNodeByUser !== guid.toString()) {
-      // 사용자에게 확인을 요청하는 대화 상자 표시
-      const isConfirmed = window.confirm("최대 1개까지 잠금이 가능합니다.\n이전에 설정한 잠금을 해제하시겠습니까?");
-      if (isConfirmed) {
-        yLineLocks.delete(currentLockedNodeByUser);
-        yUserLocks.delete(nickname); 
-      } else {
-        return;
-      }
-    }
-    
-    toastr.remove();
-    if (currentLock) {
-      // 해당 줄이 이미 잠겨 있고, 현재 사용자가 잠근 경우 잠금 해제
-      if (currentLock === nickname) {
-          yLineLocks.delete(guid.toString());
-          yUserLocks.delete(nickname);
-          toastr.info(`편집 잠금이 해제되었습니다.`);
-      } else {
-        toastr.error(`[오류] ${currentLock} 에 의해 잠금 불가합니다.`);
-      }
-    } else {
-      yLineLocks.set(guid.toString(), nickname);
-      yUserLocks.set(nickname, guid.toString());
-      toastr.success(`블록 편집 잠금이 설정되었습니다.`);
-    }
-  };
-
     // 더블클릭 감지를 위한 클릭 시간.
     let lastClickTime = 0;
 
@@ -503,8 +464,6 @@ function Page() {
       }
     };
 
-
-
     function getAvailableColors() {
       const usedColors = new Set();
       yConnectedUserList.forEach((color, name) => {
@@ -563,7 +522,7 @@ function Page() {
             cursorBuilder: myCursorBuilder,
           }),
           yUndoPlugin(),
-          hoverButtonPlugin(blockLikeRef),
+          hoverButtonPlugin(blockLikeRef, blockLockRef),
           inlinePlaceholderPlugin(),
           generateBlockIdPlugin(),
           imagePlugin({
@@ -600,8 +559,6 @@ function Page() {
       window.yjsDisconnect();
     };
   }, [pageId]);
-
-  
 
   return (
     <div>
@@ -731,6 +688,7 @@ function Page() {
 
         <ImageToEditor ref={editorRef} />
         <BlockLike ref={blockLikeRef} ydocRef={ydocRef} />
+        <BlockLock ref={blockLockRef} ydocRef={ydocRef} />
     </div>
   );
 }
