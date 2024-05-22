@@ -11,6 +11,7 @@ import android.view.View
 import android.widget.Toast
 import androidx.annotation.IntRange
 import com.example.sharenote.ImageResponse
+import com.example.sharenote.RetrofitClient.apiService
 
 
 import com.example.sharenote.RetrofitClient.apiService2
@@ -107,8 +108,8 @@ class drawingView(context: Context, attrs: AttributeSet) : View(context,attrs){
     }
 
     // 설명 : 캔버스는 그림을 그리기 위한 도구이고 그 결과가 비트맵에 저장됩니다.
-    @SuppressLint("SuspiciousIndentation")
-    fun autoDraw() : String {
+
+    suspend fun autoDraw() : String {
 //autoDraw로 그린 선만 전부 노란색으로 바꾸기 성공 코드
 //        for(path in autoDrawPath){
 //            path.color = Color.YELLOW
@@ -135,7 +136,7 @@ class drawingView(context: Context, attrs: AttributeSet) : View(context,attrs){
 
         // autoDrawPath에 저장된 모든 Path를 새로운 캔버스에 그림
         for (path in autoDrawPath) {
-            paint.color = path.color
+            paint.color = Color.BLACK
             paint.strokeWidth = path.brushThickness.toFloat()
             paint.alpha = path.alpha
             canvas.drawPath(path, paint)
@@ -155,35 +156,21 @@ class drawingView(context: Context, attrs: AttributeSet) : View(context,attrs){
         Log.e("DrawingView", "이미지 저장 완료: $fileName")
 
         // 3. 이미지 업로드 API 호출
-        CoroutineScope(Dispatchers.IO).launch {
+        return withContext(Dispatchers.IO) {
             try {
-                val response = apiService2.uploadImage(imagePart)
-                withContext(Dispatchers.Main) {
-                    if (response.isSuccessful && response.body() != null) {
-                        //Toast.makeText(context, "이미지 업로드 성공!", Toast.LENGTH_SHORT).show()
-                        Log.e("DrawingView", "이미지 업로드 성공! ${response.body()!!.image_url})")
-                        // 비트맵을 멀티파트 바디 파트로 변환
-                        val imagePart = convertBitmapToMultipartBodyPart(bitmap, "multipartFile", "drawing.png")
-                        Log.e("imageUpload", "이미지 업로드 성공! ${response.body()!!.image_url})")
-                        return@withContext fileName.toString()
-
-                    } else {
-                        Log.e("DrawingView", "이미지 업로드 실패: ${response.message()}")
-                        //Toast.makeText(context, "이미지 업로드 실패: ${response.message()}", Toast.LENGTH_SHORT).show()
-                        return@withContext "error"
-                    }
+                val response = apiService.uploadImage(imagePart)
+                if (response.isSuccessful && response.body() != null) {
+                    Log.e("DrawingView", "이미지 업로드 성공! ${response.body()!!.image_url}")
+                    response.body()!!.image_url // 성공 시 이미지 URL 반환
+                } else {
+                    Log.e("DrawingView", "이미지 업로드 실패: ${response.message()}")
+                    "error"
                 }
             } catch (t: Throwable) {
-                withContext(Dispatchers.Main) {
-                    Log.e("DrawingView", "네트워크 오류: ${t.message}")
-                    //Toast.makeText(context, "네트워크 오류: ${t.message}", Toast.LENGTH_SHORT).show()
-                    Log.e("imageUpload", "네트워크 오류: ${t.message}")
-                    return@withContext "error"
-                }
+                Log.e("DrawingView", "네트워크 오류: ${t.message}")
+                "error"
             }
         }
-
-        return "error"
     }
 
     private fun convertBitmapToMultipartBodyPart(bitmap: Bitmap, paramName: String, fileName: String): MultipartBody.Part {

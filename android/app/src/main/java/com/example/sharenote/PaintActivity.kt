@@ -30,6 +30,7 @@ import androidx.core.view.drawToBitmap
 import androidx.lifecycle.ReportFragment.Companion.reportFragment
 import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
+import com.example.sharenote.RetrofitClient.apiService
 import com.example.sharenote.RetrofitClient.apiService2
 import com.github.dhaval2404.colorpicker.ColorPickerDialog
 import com.github.dhaval2404.colorpicker.model.ColorShape
@@ -49,12 +50,13 @@ import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileOutputStream
 import java.util.UUID
+import kotlin.math.log
 import kotlin.math.max
 import kotlin.math.min
 
 
 class PaintActivity : AppCompatActivity() {
-    private lateinit var backButton : Button
+    private lateinit var backButton : ImageButton
     //
     private lateinit var drawingView : drawingView
     private lateinit var btnUndo : ImageButton
@@ -64,8 +66,8 @@ class PaintActivity : AppCompatActivity() {
     private lateinit var btnClearscreen : ImageButton
 
     private lateinit var autoDrawButton : FloatingActionButton
-    private lateinit var aiSendButton : Button
-    private lateinit var imageViewFixButton: Button
+    private lateinit var aiSendButton : FloatingActionButton
+    private lateinit var imageViewFixButton: FloatingActionButton
 
     private lateinit var pdfButton: FloatingActionButton
     private lateinit var plusButton: FloatingActionButton
@@ -193,7 +195,7 @@ class PaintActivity : AppCompatActivity() {
                     // 파일을 서버로 업로드하는 로직 (Retrofit 등 사용)
                     lifecycleScope.launch {
                         try {
-                            val response = apiService2.uploadImage(imagePart)
+                            val response = apiService.uploadImage(imagePart)
 
                             withContext(Dispatchers.Main) {
                                 if (response.isSuccessful) {
@@ -216,7 +218,7 @@ class PaintActivity : AppCompatActivity() {
                             Log.e("PaintActivity", "Exception: ${e.message}")
                         }
                     }
-                    finish() // 예를 들어 액티비티를 종료
+                    //finish() // 예를 들어 액티비티를 종료
                 }
                 .setPositiveButton("아니요") { dialog, which ->
                     // "No" 버튼 클릭 시, 아무 일도 하지 않음
@@ -251,6 +253,7 @@ class PaintActivity : AppCompatActivity() {
         }
 
         btnBrush.setOnClickListener {
+
 
             val dialogView = LayoutInflater.from(this).inflate(R.layout.brush_settings_dialog, null)
 
@@ -302,31 +305,77 @@ class PaintActivity : AppCompatActivity() {
             aiSendButton.visibility = View.GONE
             imageViewFixButton.visibility = View.VISIBLE
             // 테스트 로직(autoDraw로 그린 선만 노란색으로 바꾸기)
-            // 이미지 업로드하고 해당 이미지 url 받아오기
-            val imageUrl = drawingView.autoDraw()
+
+
+            // ai 적용
+            lifecycleScope.launch {
+                val url = drawingView.autoDraw()
+                if(url == "error") {
+                    Toast.makeText(this@PaintActivity, "AI 서버와의 통신에 실패했습니다.", Toast.LENGTH_SHORT).show()
+                    return@launch
+                }
+                Log.e("aiInputUrl", url)
+                try {
+                    val aiRequestUrl = AiImageRequest(
+                        url = url
+                    )
+                    // API 호출
+                    val response = apiService2.aiPickImages(aiRequestUrl)
+                    Log.e("aiInputUrl", url)
+
+                    // 메인 스레드에서 UI 업데이트
+                    withContext(Dispatchers.Main) {
+                        if (response.isSuccessful && response.body() != null) {
+                            // 서버로부터 받은 이미지 URL 리스트 처리
+                            var urlList = response.body()!!.toMutableList()
+                            for (i in urlList.indices) {
+                                urlList[i] = "https://ai-icons.s3.ap-northeast-2.amazonaws.com" +
+                                        "/svg/${urlList[i]}/${urlList[i]}-outline.png"
+                            }
+                            Log.e("aiOutputUrl", "AI Server Response: $urlList")
+
+                            // Intent 생성 및 시작
+                            val intent = Intent(this@PaintActivity, ImageSelect::class.java)
+                            intent.putStringArrayListExtra("urlList", ArrayList(urlList))
+                            startActivityForResult(intent, 1520)
+                        } else {
+                            Log.e("PaintActivity", "Error: ${response.errorBody()}")
+                        }
+                    }
+                } catch (e: Exception) {
+                    withContext(Dispatchers.Main) {
+                        Log.e("PaintActivity", "Exception: ${e.message}")
+                    }
+
+                }
+            }
 
             // 이미지 url을 서버로 전송하고 서버에서 받아온 이미지 url로 이미지 띄우기
             // 3 초간 정지 AI 서버에 요청한 척
-            Thread.sleep(3000)
-
+//            Thread.sleep(3000)
+//
             // 서버에서 받아온 JSON 객체에서 6개의 url 꺼내서 다음 액티비티로 전달
             // list 만들어줘
-            val urlList = ArrayList<String>()
-            urlList.add("https://sharenotebucket.s3.ap-northeast-2.amazonaws.com/apple-line.png")
-            urlList.add("https://sharenotebucket.s3.ap-northeast-2.amazonaws.com/airplane-outline.png")
-            urlList.add("https://sharenotebucket.s3.ap-northeast-2.amazonaws.com/bag-line.png")
-            urlList.add("https://sharenotebucket.s3.ap-northeast-2.amazonaws.com/bath-outline.png")
-            urlList.add("https://sharenotebucket.s3.ap-northeast-2.amazonaws.com/bed-outline.png")
-            urlList.add("https://sharenotebucket.s3.ap-northeast-2.amazonaws.com/calendar-line.png")
+//            val urlList = ArrayList<String>()
+//            urlList.add("https://sharenotebucket.s3.ap-northeast-2.amazonaws.com/apple-line.png")
+//            urlList.add("https://sharenotebucket.s3.ap-northeast-2.amazonaws.com/airplane-outline.png")
+//            urlList.add("https://sharenotebucket.s3.ap-northeast-2.amazonaws.com/bag-line.png")
+//            urlList.add("https://sharenotebucket.s3.ap-northeast-2.amazonaws.com/bath-outline.png")
+//            urlList.add("https://sharenotebucket.s3.ap-northeast-2.amazonaws.com/bed-outline.png")
+//            urlList.add("https://sharenotebucket.s3.ap-northeast-2.amazonaws.com/calendar-line.png")
+//
+//
+//
+//            val intent = Intent(this, ImageSelect::class.java)
+//            intent.putStringArrayListExtra("urlList", urlList)
+//            // 100은 고유한 코드
+//            startActivityForResult(intent, 1520)  // IMAGE_SELECT_REQUEST_CODE는 상수
 
 
+        }
 
-            val intent = Intent(this, ImageSelect::class.java)
-            intent.putStringArrayListExtra("urlList", urlList)
-            // 100은 고유한 코드
-            startActivityForResult(intent, 100)  // IMAGE_SELECT_REQUEST_CODE는 상수
-
-
+        imageViewFixButton.setOnClickListener {
+            imageViewFixButton.visibility = View.GONE
         }
 
 
@@ -427,7 +476,7 @@ class PaintActivity : AppCompatActivity() {
     @SuppressLint("ClickableViewAccessibility")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == 100 && resultCode == Activity.RESULT_OK) {
+        if (requestCode == 1520 && resultCode == Activity.RESULT_OK) {
             val selectedUrl = data?.getStringExtra("selectedImageUrl")
             Log.e("PaintActivity", "Selected Image URL: $selectedUrl")
             // 여기서 선택된 이미지 URL로 필요한 작업을 수행합니다.
@@ -479,8 +528,9 @@ class PaintActivity : AppCompatActivity() {
                     // 버튼 클릭 시 ImageView 위치 고정
                     // 위치 고정 로직은 특별히 필요하지 않습니다. 사용자가 원하는 위치에 ImageView가 있고,
                     // 더 이상 이동하지 않도록 하려면 이벤트 핸들러를 비활성화하면 됩니다.
-                    imageView.setOnTouchListener(null) // 드래그 비활성화
+
                     imageViewFixButton.visibility = View.GONE // 버튼 비활성화
+                    imageView.setOnTouchListener(null) // 드래그 비활성화
                     imageViewList.add(imageView)
                 }
 
