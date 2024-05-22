@@ -9,17 +9,17 @@ import { EditorView } from "prosemirror-view";
 import { exampleSetup } from "prosemirror-example-setup";
 import { keymap } from "prosemirror-keymap";
 import { mySchema } from "./utils/editor/pageSettings";
-
-// yjs 라이브러리(동시편집)
-import * as Y from "yjs";
-import { WebsocketProvider } from "y-websocket";
-import { ySyncPlugin, yCursorPlugin, yUndoPlugin, undo, redo  } from "y-prosemirror";
 import { imagePlugin } from "prosemirror-image-plugin";
 import "./ProseMirror_css/prosemirror_image_plugin/common.css";
 import "./ProseMirror_css/prosemirror_image_plugin/withResize.css";
 import "./ProseMirror_css/prosemirror_image_plugin/sideResize.css";
 import "./ProseMirror_css/prosemirror_image_plugin/withoutResize.css";
 import "./ProseMirror_css/ProseMirror.css";
+
+// yjs 라이브러리(동시편집)
+import { WebsocketProvider } from "y-websocket";
+import { ySyncPlugin, yCursorPlugin, yUndoPlugin, undo, redo  } from "y-prosemirror";
+import { getYDocInstance } from "./utils/yjs/YjsInstances";
 
 // toastr 라이브러리(웹 토스트 메세지)
 import toastr from 'toastr';
@@ -29,8 +29,6 @@ import ModalImageComponent from "./utils/editor/ModalImageComponent";
 import ImageToEditor from "./utils/editor/ImageToEditor";
 import BlockLike from "./utils/yjs/BlockLike";
 import BlockLock from './utils/yjs/BlockLock'; 
-import InitUser from "./utils/yjs/InitUser";
-import { myCursorBuilder } from "./utils/yjs/InitUser"
 import { imageSettings } from "./utils/editor/pageSettings";
 import { inlinePlaceholderPlugin } from "./utils/editor/plugin/inlinePlaceholderPlugin";
 import { hoverButtonPlugin } from "./utils/editor/plugin/hoverButtonPlugin";
@@ -40,18 +38,9 @@ import NoteSettingModal from "./utils/editor/noteSettingModal";
 import loadingImage from "../../image/loading.gif";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faLeftLong, faRightLong, faSquarePlus, faTrashCan, faList, faGear } from "@fortawesome/free-solid-svg-icons";
+import { cursorColors } from "../Utils/cursorColor"
 
 function Page() {
-  const editorRef = useRef(null);
-  const ydocRef = useRef(new Y.Doc());
-  const ydocProviderRef = useRef(null);
-  const blockLikeRef = useRef(null);
-  const blockLockRef = useRef(null);
-  const initUserRef = useRef(null);
-
-  let nickname = localStorage.getItem('nickname');
-  let userId = localStorage.getItem('userId');
-
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -59,16 +48,24 @@ function Page() {
   const organizationId = pathSegments[1];
   const noteId = pathSegments[2];
   const pageId = pathSegments[3];
+
+  const editorRef = useRef(null);
+  const ydocRef = useRef(getYDocInstance(pageId));
+  const ydocProviderRef = useRef(null);
+  const blockLikeRef = useRef(null);
+  const blockLockRef = useRef(null);
+
+  let nickname = localStorage.getItem('nickname');
+  let userId = localStorage.getItem('userId');
   
   const [reconnect, setReconnect] = useState(false);
   const [noteinfo, setNoteInfo] = useState(null);
   const [isloaded, setisloaded] = useState(false); // 로딩 상태 관리
-  const [ydocs, setYdocs] = useState({});
   const [pages, setPages] = useState([]);  // 페이지 상태 관리
   const [pageIndex, setPageIndex] = useState(0);
   const [pageInputValue, setPageInputValue] = useState(pageIndex !== 0 ? pageIndex + 1 : 1);
   const [isPageHandleButtonDisabled, setIsPageHandleButtonDisabled] = useState(false);
-  const [usersAndColors, setUsersAndColors] = useState([]); // 연결된 사용자와 색상 상태
+  const [usersAndColors, setUsersAndColors] = useState([]);
   const [noteSettingModalOpen, setNoteSettingModalOpen] = useState(false);
   const [myimage, setMyImage] = useState(null);
   const [modalOpen_ImageZoom, setModalOpen_ImageZoom] = useState(false);
@@ -270,7 +267,7 @@ function Page() {
 
   useEffect(() => {
     if (!editorRef.current) return;
-
+    if (!ydocRef.current) return;
     // ydocRef.current = new Y.Doc();
     // ydocProviderRef.current = new WebsocketProvider(
     //   // "wss://demos.yjs.dev/ws", // yjs 데모 서버 주소
@@ -281,31 +278,16 @@ function Page() {
     //    ydocRef.current
     // );
 
-    const createWebSocketProvider = (pageId) => {
-      let ydoc;
-      if (!ydocs[pageId]) {
-        ydoc = new Y.Doc();
-        setYdocs((ydocs) => ({
-          ...ydocs,
-          [pageId]: ydoc
-        }));
-      } else {
-        ydoc = ydocs[pageId];
-      }
+    ydocRef.current = getYDocInstance(pageId);
+    ydocProviderRef.current = new WebsocketProvider(
+      // "wss://demos.yjs.dev/ws", // yjs 데모 서버 주소
+      // "ws://localhost:4000",
+      // "ws://nodejs:4000",
+      "wss://sharenote.shop/ws",
+      pageId, // 방 이름
+      ydocRef.current
+    );
 
-      ydocRef.current = ydoc;
-
-      return new WebsocketProvider(
-        "wss://demos.yjs.dev/ws", // yjs 데모 서버 주소
-        // "ws://localhost:4000",
-        // "ws://nodejs:4000",
-        // "wss://sharenote.shop/ws",
-        pageId, // 방 이름
-        ydoc
-      );
-    };
-
-    ydocProviderRef.current = createWebSocketProvider(pageId);
     const yXmlFragment = ydocRef.current.getXmlFragment("prosemirror");
     const yConnectedUserList = ydocRef.current.getMap('connectedUsers');
     const yLineLocks = ydocRef.current.getMap('nodeInfo');
@@ -314,7 +296,7 @@ function Page() {
     ydocProviderRef.current.on("sync", (isSynced) => {
       if (isWeb()) {
         if (isSynced) {
-          initUserRef.current.handleUserConnection();
+          handleUserConnection();
         }
         checkLocalStorage().then(() => {
         }).catch(error => {
@@ -323,7 +305,7 @@ function Page() {
         });
       } else {
           if (isSynced) {
-            initUserRef.current.handleUserConnection();   
+            handleUserConnection();   
         }
       }
       // setisloaded(true); // 딜레이 없음
@@ -345,10 +327,96 @@ function Page() {
         const nicknameWithSuffix = `${nickname}_다중 접속`;
         if (reconnect && (!yConnectedUserList.get(nickname) || !yConnectedUserList.get(nicknameWithSuffix))) {
           setReconnect(false);
-          initUserRef.current.handleUserConnection();
+          handleUserConnection();
         }
       }
     });
+
+    const myCursorBuilder = (user) => {
+      const cursor = document.createElement("span");
+      cursor.classList.add("ProseMirror-yjs-cursor");
+      cursor.setAttribute("style", `border-color: ${user.color}`);
+      const userDiv = document.createElement("div");
+      userDiv.setAttribute("style", `background-color: ${user.color}`);
+      userDiv.insertBefore(document.createTextNode(user.name), null)
+      const nonbreakingSpace1 = document.createTextNode('\u2060')
+      const nonbreakingSpace2 = document.createTextNode('\u2060')
+      cursor.insertBefore(nonbreakingSpace1, null)
+      cursor.insertBefore(userDiv, null)
+      cursor.insertBefore(nonbreakingSpace2, null)
+  
+      return cursor;
+    };
+
+    function getAvailableColors() {
+      const usedColors = new Set();
+      yConnectedUserList.forEach((color, name) => {
+        usedColors.add(color);
+      });
+      const availableColors = cursorColors.filter(color => !usedColors.has(color));
+      return availableColors;
+    }
+    
+    function getRandomColor() {
+      const availableColors = getAvailableColors();
+      const index = Math.floor(Math.random() * availableColors.length);
+      return availableColors[index];
+    }
+
+    function updateUsersAndColors() {
+      const updatedUsersAndColors = [];
+      yConnectedUserList.forEach((color, name) => {
+          updatedUsersAndColors.push({ name, color });
+      });
+      setUsersAndColors([...updatedUsersAndColors]); // 새로운 배열을 생성하여 업데이트
+    }
+
+    function handleUserConnection() {
+      const nicknameWithSuffix = `${nickname}_다중 접속`;
+      const isSingleConnected = yConnectedUserList.has(nickname);
+      const isMultiConnected = yConnectedUserList.has(nicknameWithSuffix);
+  
+      if (isSingleConnected && isMultiConnected) {
+        const isConfirmed = window.confirm("동시 접속 가능한 횟수를 초과하셨습니다.\n기존 접속을 종료하고 새로 접속하시겠습니까?");
+        if (isConfirmed) {
+          yConnectedUserList.set(nicknameWithSuffix, 'kicked');
+        } else {
+          navigate(`/organization/${organizationId}`);
+          return;
+        }
+      }
+  
+      let userColor = yConnectedUserList.get(nickname) || yConnectedUserList.get(nicknameWithSuffix) || getRandomColor();
+      
+      if (!isSingleConnected) {
+        yConnectedUserList.set(nickname, userColor);
+        ydocProviderRef.current.awareness.setLocalStateField('user', { name: nickname, color: userColor });
+      } else {
+        yConnectedUserList.set(nicknameWithSuffix, userColor);
+        ydocProviderRef.current.awareness.setLocalStateField('user', { name: nicknameWithSuffix, color: userColor });
+      }
+      updateUsersAndColors(); // UI 업데이트
+    }
+    
+    function onlineUpdate() {
+      const userState = ydocProviderRef.current.awareness.getLocalState();
+    
+      if (userState && userState.user && userState.user.name) {
+        const nickname = userState.user.name;
+    
+        if (!editorRef.current) {
+          yConnectedUserList.delete(nickname);
+        }
+    
+        if (yConnectedUserList.get(nickname) === 'kicked') {
+          toastr.remove();
+          toastr.warning("연결 정보가 없습니다!");
+          navigate(`/organization/${organizationId}`);
+          return;
+        }
+      }
+      updateUsersAndColors();
+    }
 
     window.yjsDisconnect = function() {
       if(!editorRef) {
@@ -443,6 +511,8 @@ function Page() {
       }
     };
 
+    yConnectedUserList.observe(onlineUpdate);
+    yConnectedUserList.observe(updateUsersAndColors);
     window.addEventListener("pagehide", window.yjsDisconnect);
     window.addEventListener("unload", window.yjsDisconnect);
     window.addEventListener("popstate", window.yjsDisconnect);
@@ -494,6 +564,8 @@ function Page() {
 
     return () => {
       setisloaded(false);
+      yConnectedUserList.unobserve(onlineUpdate);
+      yConnectedUserList.unobserve(updateUsersAndColors);
       window.removeEventListener("pagehide", window.yjsDisconnect);
       window.removeEventListener("unload", window.yjsDisconnect);
       window.removeEventListener("popstate", window.yjsDisconnect);
@@ -584,14 +656,14 @@ function Page() {
             <hr />
             <p style={{ fontWeight: "bold", marginBottom: "0px" }}>접속중인 유저 목록</p>
             <p style={{ marginTop:"0px" }}><small>(커서 색상/닉네임)</small></p>
-           <ul>
-            {usersAndColors.map(({ name, color }) => (
-              <li key={name} style={{ display: 'flex', alignItems: 'center', marginBottom: '10px', marginLeft: '13px' }}>
-                <div style={{ width: '20px', height: '20px', backgroundColor: color, marginRight: '13px' }}></div>
-                {name} {name === nickname && "(본인)"}
-              </li>
-            ))}
-          </ul>
+            <ul>
+                {usersAndColors.map(({ name, color }) => (
+                    <li key={name} style={{ display: 'flex', alignItems: 'center', marginBottom: '10px', marginLeft: '13px' }}>
+                        <div style={{ width: '20px', height: '20px', backgroundColor: color, marginRight: '13px' }}></div>
+                        {name} {name === nickname && "(본인)"}
+                    </li>
+                ))}
+            </ul>
           </NavigationBar>
           <EditorContainer id="EditorContainer">
             <div
@@ -630,7 +702,6 @@ function Page() {
         <ImageToEditor ref={editorRef} />
         <BlockLike ref={blockLikeRef} ydocRef={ydocRef} />
         <BlockLock ref={blockLockRef} ydocRef={ydocRef} />
-        <InitUser ref={initUserRef} editorRef={editorRef} ydocRef={ydocRef} ydocProviderRef={ydocProviderRef} usersAndColors={usersAndColors} setUsersAndColors={setUsersAndColors}/>
     </div>
   );
 }
