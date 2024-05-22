@@ -4,7 +4,7 @@ import styled from "styled-components";
 
 // prosemirror 라이브러리(리치 텍스트 에디터)
 import { DOMParser } from "prosemirror-model";
-import { EditorState, Selection, Plugin } from "prosemirror-state";
+import { EditorState, Selection } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
 import { exampleSetup } from "prosemirror-example-setup";
 import { keymap } from "prosemirror-keymap";
@@ -21,6 +21,10 @@ import "./ProseMirror_css/prosemirror_image_plugin/sideResize.css";
 import "./ProseMirror_css/prosemirror_image_plugin/withoutResize.css";
 import "./ProseMirror_css/ProseMirror.css";
 
+// toastr 라이브러리(웹 토스트 메세지)
+import toastr from 'toastr';
+import 'toastr/build/toastr.css';
+
 import ModalImageComponent from "./utils/editor/ModalImageComponent";
 import ImageToEditor from "./utils/editor/ImageToEditor";
 import BlockLike from "./utils/yjs/BlockLike";
@@ -29,16 +33,10 @@ import { imageSettings } from "./utils/editor/pageSettings";
 import { inlinePlaceholderPlugin } from "./utils/editor/plugin/inlinePlaceholderPlugin";
 import { hoverButtonPlugin } from "./utils/editor/plugin/hoverButtonPlugin";
 import { generateBlockIdPlugin } from "./utils/editor/plugin/generateBlockIdPlugin";
-
 import { isWeb, checkLocalStorage } from "./utils/initMobileWebView"
 import { cursorColors } from "../Utils/cursorColor"
 import NoteSettingModal from "./utils/editor/noteSettingModal";
 import loadingImage from "../../image/loading.gif";
-
-import toastr from 'toastr';
-import 'toastr/build/toastr.css';
-
-
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faLeftLong, faRightLong, faSquarePlus, faTrashCan, faList, faGear } from "@fortawesome/free-solid-svg-icons";
 
@@ -284,33 +282,6 @@ function Page() {
     const yLineLocks = ydocRef.current.getMap('nodeInfo');
     const yUserLocks = ydocRef.current.getMap('yUserLocks');
 
-    function handleUserConnection() {
-      const nicknameWithSuffix = `${nickname}_다중 접속`;
-      const isSingleConnected = yConnectedUserList.has(nickname);
-      const isMultiConnected = yConnectedUserList.has(nicknameWithSuffix);
-  
-      if (isSingleConnected && isMultiConnected) {
-        const isConfirmed = window.confirm("동시 접속 가능한 횟수를 초과하셨습니다.\n기존 접속을 종료하고 새로 접속하시겠습니까?");
-        if (isConfirmed) {
-          yConnectedUserList.set(nicknameWithSuffix, 'kicked');
-        } else {
-          navigate(`/organization/${pathSegments[1]}`);
-          return;
-        }
-      }
-  
-      let userColor = yConnectedUserList.get(nickname) || yConnectedUserList.get(nicknameWithSuffix) || getRandomColor();
-      
-      if (!isSingleConnected) {
-        yConnectedUserList.set(nickname, userColor);
-        ydocProviderRef.current.awareness.setLocalStateField('user', { name: nickname, color: userColor });
-      } else {
-        yConnectedUserList.set(nicknameWithSuffix, userColor);
-        ydocProviderRef.current.awareness.setLocalStateField('user', { name: nicknameWithSuffix, color: userColor });
-      }
-      updateUsersAndColors(); // UI 업데이트
-    }
-
     ydocProviderRef.current.on("sync", (isSynced) => {
       if (isWeb()) {
         if (isSynced) {
@@ -348,6 +319,68 @@ function Page() {
         }
       }
     });
+
+    function getAvailableColors() {
+      const usedColors = new Set();
+      yConnectedUserList.forEach((color, name) => {
+        usedColors.add(color);
+      });
+      const availableColors = cursorColors.filter(color => !usedColors.has(color));
+      return availableColors;
+    }
+    
+    function getRandomColor() {
+      const availableColors = getAvailableColors();
+      const index = Math.floor(Math.random() * availableColors.length);
+      return availableColors[index];
+    }
+
+    function updateUsersAndColors() {
+      const updatedUsersAndColors = [];
+      yConnectedUserList.forEach((color, name) => {
+        updatedUsersAndColors.push({ name, color });
+      });
+      setUsersAndColors(updatedUsersAndColors);
+    }
+
+    const myCursorBuilder = (user) => {
+      const cursor = document.createElement("span");
+      cursor.classList.add("ProseMirror-yjs-cursor");
+      cursor.setAttribute("style", `border-color: ${user.color}`);
+      const userDiv = document.createElement("div");
+      userDiv.setAttribute("style", `background-color: ${user.color}`);
+      userDiv.innerText = user.name;
+      cursor.appendChild(userDiv);
+
+      return cursor;
+    };
+
+    function handleUserConnection() {
+      const nicknameWithSuffix = `${nickname}_다중 접속`;
+      const isSingleConnected = yConnectedUserList.has(nickname);
+      const isMultiConnected = yConnectedUserList.has(nicknameWithSuffix);
+  
+      if (isSingleConnected && isMultiConnected) {
+        const isConfirmed = window.confirm("동시 접속 가능한 횟수를 초과하셨습니다.\n기존 접속을 종료하고 새로 접속하시겠습니까?");
+        if (isConfirmed) {
+          yConnectedUserList.set(nicknameWithSuffix, 'kicked');
+        } else {
+          navigate(`/organization/${pathSegments[1]}`);
+          return;
+        }
+      }
+  
+      let userColor = yConnectedUserList.get(nickname) || yConnectedUserList.get(nicknameWithSuffix) || getRandomColor();
+      
+      if (!isSingleConnected) {
+        yConnectedUserList.set(nickname, userColor);
+        ydocProviderRef.current.awareness.setLocalStateField('user', { name: nickname, color: userColor });
+      } else {
+        yConnectedUserList.set(nicknameWithSuffix, userColor);
+        ydocProviderRef.current.awareness.setLocalStateField('user', { name: nicknameWithSuffix, color: userColor });
+      }
+      updateUsersAndColors(); // UI 업데이트
+    }
     
     function onlineUpdate() {
       const userState = ydocProviderRef.current.awareness.getLocalState();
@@ -368,7 +401,6 @@ function Page() {
       }
       updateUsersAndColors();
     }
-   yConnectedUserList.observe(onlineUpdate);
 
     window.yjsDisconnect = function() {
       if(!editorRef) {
@@ -397,12 +429,11 @@ function Page() {
       ydocProviderRef.current.disconnect();
     }  
 
-
-    // 더블클릭 감지를 위한 클릭 시간.
-    let lastClickTime = 0;
-
     // 더블클릭 이벤트를 처리하는 함수
     const handleDoubleClick = (event) => {
+      // 더블클릭 감지를 위한 클릭 시간.
+      let lastClickTime = 0;
+
       const currentTime = new Date().getTime();
       if (currentTime - lastClickTime < 300) {
           const { target } = event;
@@ -413,7 +444,7 @@ function Page() {
           }
       }
       lastClickTime = currentTime;
-  }
+    };
 
     const handleNodeClick = (nickname, event) => {
       handleDoubleClick(event);
@@ -464,41 +495,7 @@ function Page() {
       }
     };
 
-    function getAvailableColors() {
-      const usedColors = new Set();
-      yConnectedUserList.forEach((color, name) => {
-        usedColors.add(color);
-      });
-      const availableColors = cursorColors.filter(color => !usedColors.has(color));
-      return availableColors;
-    }
-    
-    function getRandomColor() {
-      const availableColors = getAvailableColors();
-      const index = Math.floor(Math.random() * availableColors.length);
-      return availableColors[index];
-    }
-
-    function updateUsersAndColors() {
-      const updatedUsersAndColors = [];
-      yConnectedUserList.forEach((color, name) => {
-        updatedUsersAndColors.push({ name, color });
-      });
-      setUsersAndColors(updatedUsersAndColors);
-    }
-
-    const myCursorBuilder = (user) => {
-      const cursor = document.createElement("span");
-      cursor.classList.add("ProseMirror-yjs-cursor");
-      cursor.setAttribute("style", `border-color: ${user.color}`);
-      const userDiv = document.createElement("div");
-      userDiv.setAttribute("style", `background-color: ${user.color}`);
-      userDiv.innerText = user.name;
-      cursor.appendChild(userDiv);
-
-      return cursor;
-    };
-
+    yConnectedUserList.observe(onlineUpdate);
     yConnectedUserList.observe(updateUsersAndColors);
     window.addEventListener("pagehide", window.yjsDisconnect);
     window.addEventListener("unload", window.yjsDisconnect);
@@ -528,14 +525,14 @@ function Page() {
           imagePlugin({
             ...imageSettings,
             resizeCallback: (el, updateCallback) => {
-              const observer = new ResizeObserver(entries => {
+              const observer = new ResizeObserver(() => {
                 window.requestAnimationFrame(() => {
                   updateCallback();
                 });
               });
               observer.observe(el);
               return () => observer.unobserve(el);
-            },
+            },            
           }),          
           keymap({
             "Mod-z": undo,
