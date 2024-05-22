@@ -10,8 +10,12 @@ export const myCursorBuilder = (user) => {
     cursor.setAttribute("style", `border-color: ${user.color}`);
     const userDiv = document.createElement("div");
     userDiv.setAttribute("style", `background-color: ${user.color}`);
-    userDiv.innerText = user.name;
-    cursor.appendChild(userDiv);
+    userDiv.insertBefore(document.createTextNode(user.name), null)
+    const nonbreakingSpace1 = document.createTextNode('\u2060')
+    const nonbreakingSpace2 = document.createTextNode('\u2060')
+    cursor.insertBefore(nonbreakingSpace1, null)
+    cursor.insertBefore(userDiv, null)
+    cursor.insertBefore(nonbreakingSpace2, null)
 
     return cursor;
   };
@@ -101,9 +105,10 @@ const InitUser = forwardRef(({ editorRef, ydocRef, ydocProviderRef, usersAndColo
     }));
   
     useEffect(() => {
+        updateUsersAndColors();
         yConnectedUserList.observe(onlineUpdate);
         yConnectedUserList.observe(updateUsersAndColors);
-    
+
         return () => {
             yConnectedUserList.unobserve(onlineUpdate);
             yConnectedUserList.unobserve(updateUsersAndColors);

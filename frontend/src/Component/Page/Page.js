@@ -63,7 +63,8 @@ function Page() {
   const [reconnect, setReconnect] = useState(false);
   const [noteinfo, setNoteInfo] = useState(null);
   const [isloaded, setisloaded] = useState(false); // 로딩 상태 관리
-  const [pages, setPages] = useState([]); // 페이지 상태 관리
+  const [ydocs, setYdocs] = useState({});
+  const [pages, setPages] = useState([]);  // 페이지 상태 관리
   const [pageIndex, setPageIndex] = useState(0);
   const [pageInputValue, setPageInputValue] = useState(pageIndex !== 0 ? pageIndex + 1 : 1);
   const [isPageHandleButtonDisabled, setIsPageHandleButtonDisabled] = useState(false);
@@ -270,16 +271,41 @@ function Page() {
   useEffect(() => {
     if (!editorRef.current) return;
 
-    ydocRef.current = new Y.Doc();
-    ydocProviderRef.current = new WebsocketProvider(
-      // "wss://demos.yjs.dev/ws", // yjs 데모 서버 주소
-      // "ws://localhost:4000",
-      // "ws://nodejs:4000", 
-      "wss://sharenote.shop/ws",
-      pageId, // 방 이름
-      ydocRef.current
-    );
+    // ydocRef.current = new Y.Doc();
+    // ydocProviderRef.current = new WebsocketProvider(
+    //   // "wss://demos.yjs.dev/ws", // yjs 데모 서버 주소
+    //   // "ws://localhost:4000",
+    //   // "ws://nodejs:4000", 
+    //   "wss://sharenote.shop/ws",
+    //    pageId, // 방 이름
+    //    ydocRef.current
+    // );
 
+    const createWebSocketProvider = (pageId) => {
+      let ydoc;
+      if (!ydocs[pageId]) {
+        ydoc = new Y.Doc();
+        setYdocs((ydocs) => ({
+          ...ydocs,
+          [pageId]: ydoc
+        }));
+      } else {
+        ydoc = ydocs[pageId];
+      }
+
+      ydocRef.current = ydoc;
+
+      return new WebsocketProvider(
+        "wss://demos.yjs.dev/ws", // yjs 데모 서버 주소
+        // "ws://localhost:4000",
+        // "ws://nodejs:4000",
+        // "wss://sharenote.shop/ws",
+        pageId, // 방 이름
+        ydoc
+      );
+    };
+
+    ydocProviderRef.current = createWebSocketProvider(pageId);
     const yXmlFragment = ydocRef.current.getXmlFragment("prosemirror");
     const yConnectedUserList = ydocRef.current.getMap('connectedUsers');
     const yLineLocks = ydocRef.current.getMap('nodeInfo');
@@ -305,6 +331,7 @@ function Page() {
         setisloaded(true);
       }, 300); // 딜레이 있음
     });
+    ydocProviderRef.current.connect();
 
     ydocProviderRef.current.on('status', event => {
       if (event.status === 'disconnected') {
