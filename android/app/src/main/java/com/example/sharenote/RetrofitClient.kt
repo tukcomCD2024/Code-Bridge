@@ -11,7 +11,7 @@ import java.util.concurrent.TimeUnit
 object RetrofitClient {
 
     //private const val BASE_URL = "http://10.0.2.2:8080/api/" // 엔드포인트 주소 외에는 baseUrl에 포함되어야 함
-    private const val AI_BASE_URL = "http://52.90.215.91:8000/" // AI 서버 주소
+    private const val AI_BASE_URL = "http://54.85.65.14:8000/" // AI 서버 주소
     private const val BASE_URL = "https://sharenote.shop/api/" // 배포용
     private val retrofit: Retrofit by lazy {
         Retrofit.Builder()

@@ -56,7 +56,7 @@ import kotlin.math.min
 
 
 class PaintActivity : AppCompatActivity() {
-    private lateinit var backButton : Button
+    private lateinit var backButton : ImageButton
     //
     private lateinit var drawingView : drawingView
     private lateinit var btnUndo : ImageButton
