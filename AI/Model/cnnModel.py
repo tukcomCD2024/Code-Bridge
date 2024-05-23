@@ -2,7 +2,7 @@ from keras.models import Sequential
 from keras.layers import Dense, Conv2D, MaxPool2D, Flatten
 from keras.preprocessing.image import ImageDataGenerator
 from keras.callbacks import ModelCheckpoint, EarlyStopping
-from keras.optimizers import RMSprop
+from tensorflow.keras.optimizers import RMSprop
 import os
 
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
@@ -92,8 +92,10 @@ def createModel(model, lr, e1, name):
     plt.ylim(0, 5)
     plt.legend(["Accuracy", "Validation Accuracy", "Validation Loss"])
     plt.show()
+#
+# for e in range(40, 110, 10):
+#     createModel(cnnDepth6(), 0.0001, e, f'cnn6f32e{e}u1024.h5')
+#     createModel(cnnDepth5(), 0.0001, e, f'cnn5f32e{e}u1024.h5')
+#     createModel(cnnDepth4(), 0.0001, e, f'cnn4f32e{e}u1024.h5')
 
-for e in range(40, 110, 10):
-    createModel(cnnDepth6(), 0.0001, e, f'cnn6f32e{e}u1024.h5')
-    createModel(cnnDepth5(), 0.0001, e, f'cnn5f32e{e}u1024.h5')
-    createModel(cnnDepth4(), 0.0001, e, f'cnn4f32e{e}u1024.h5')
+createModel(cnnDepth4(), 0.0001, 90, f'2cnn6f32e{90}u1024.h5')
