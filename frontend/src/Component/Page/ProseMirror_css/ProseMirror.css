@@ -384,8 +384,9 @@ img.ProseMirror-separator {
 /* 아래부터는 직접 추가한 css 설정 */
 /*  문단(텍스트) 블록 단위_알록달록 */
 .placeholder::before {
-  content: var(--placeholder-text);
+  content: attr(data-placeholder);
   color: #7a4dff; /* 기본 텍스트 색상을 보라색 계열로 설정 */
+  pointer-events: none;
   cursor: text;
   position: absolute;
 
@@ -396,7 +397,7 @@ img.ProseMirror-separator {
 }
 
 .custom-paragraph:hover {
-  border-bottom:2px dashed #ff6161c6;
+  border-bottom: 2px dashed #ff6161c6;
 }
 
 .hoverDiv {
