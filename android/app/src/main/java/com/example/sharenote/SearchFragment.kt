@@ -1,6 +1,7 @@
 package com.example.sharenote
 
 import NoteListAdapter
+import SearchNoteListAdapter
 import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
@@ -22,7 +23,7 @@ import java.util.Locale
 class SearchFragment : Fragment() {
     private lateinit var searchEditText: EditText
     private lateinit var searchResultRecyclerView: RecyclerView
-    private lateinit var noteListAdapter: NoteListAdapter
+    private lateinit var noteListAdapter: SearchNoteListAdapter
     private var noteList: MutableList<Note> = mutableListOf()
 
     override fun onCreateView(
@@ -38,7 +39,7 @@ class SearchFragment : Fragment() {
         searchResultRecyclerView = view.findViewById(R.id.searchResultRecyclerView)
 
         searchResultRecyclerView.layoutManager = LinearLayoutManager(context)
-        noteListAdapter = NoteListAdapter { noteId ->
+        noteListAdapter = SearchNoteListAdapter { noteId ->
             // Handle item click
         }
         searchResultRecyclerView.adapter = noteListAdapter
