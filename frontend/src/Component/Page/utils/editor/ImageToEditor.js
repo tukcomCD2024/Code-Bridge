@@ -39,23 +39,18 @@ const ImageToEditor = React.forwardRef((props, ref) => {
     // 이미지 노드 생성
     const imageNode = editorRef.current.view.state.schema.nodes.image.create({ src: imageUrl });
 
-    // 특정 줄의 시작 노드 위치 찾기
-    let pos = 0;
-    editorRef.current.view.state.doc.nodesBetween(0, editorRef.current.view.state.doc.content.size, (node, nodePos) => {
-        if (node.isBlock && nodePos > pos) {
-            pos = nodePos;
-        }
-        pos = pos === 0 ? 1 : pos; 
-    });
+    // 사용자가 클릭한 위치 가져오기
+    const selection = editorRef.current.view.state.selection;
+    const pos = selection.from;
 
     // 이미지 노드 삽입
     const insertTr = tr.insert(pos, imageNode);
 
     // 이미지 삽입 후 커서 위치 설정
     const resolvedPos = insertTr.doc.resolve(pos + imageNode.nodeSize);
-    const selection = editorRef.current.view.state.selection.constructor.near(resolvedPos);
+    const newSelection = selection.constructor.near(resolvedPos);
 
-    return insertTr.setSelection(selection);
+    return insertTr.setSelection(newSelection);
   };
   return null;
 });
