@@ -37,6 +37,7 @@ public class NoteService {
                 .pages(new ArrayList<Organization.Page>())
                 .noteImageUrl(noteCreateDTO.getNoteImageUrl())
                 .likesInfo(new Organization.LikesInfo())
+                .quiz(new ArrayList<Organization.Quiz>())
                 .build();
         noteRepository.save(note);
         // organization에 note 추가

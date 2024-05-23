@@ -62,6 +62,7 @@ public class Organization {
         private LocalDateTime createdAt;
 
 
+        private List<Quiz> quiz;
 
         // 생성자, 게터, 세터 등 필요한 메서드들 추가
     }
@@ -79,6 +80,34 @@ public class Organization {
         private LocalDateTime createdAt;
 
     }
+
+    @Getter
+    @Builder
+    @Document(collection = "quizs")
+    public static class Quiz {
+        @Id
+        private String id;
+        // 생성자
+        private String userId;
+        // 객관식 or 주관식
+        private String quizType;
+        // 문제 설명
+        private String problem;
+        // 답안
+        private int answer;
+        // 객관식 보기
+        private List<String> solutions;
+        @CreatedDate
+        private LocalDateTime createdAt;
+
+        // 정답 맞춘 유저
+        private List<String> correctUser;
+        // 정답 틀린 유저
+        private List<String> wrongUser;
+
+    }
+
+
     @Getter
     @Slf4j
     public static class LikesInfo {
