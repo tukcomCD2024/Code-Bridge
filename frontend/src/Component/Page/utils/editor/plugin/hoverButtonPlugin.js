@@ -86,9 +86,8 @@ export function hoverButtonPlugin(blockLikeRef, blockLockRef) {
       
           // 노드가 uuid를 가지고 있는지 확인
           if (node && node.attrs.guid) {
-            const nickname = localStorage.getItem("nickname");
             const guid = node.attrs.guid
-            blockLockRef.current.toggleLineLock(guid, nickname);
+            blockLockRef.current.toggleLineLock(guid);
             } else {
             console.log('No UUID found for this node.');
           }

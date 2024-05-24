@@ -14,6 +14,7 @@ const BlockLock = forwardRef(({ ydocRef, editorRef }, ref) => {
     const yLineLocks = ydocRef.current.getMap('nodeInfo');
     const yUserLocks = ydocRef.current.getMap('yUserLocks');
     const yRequestUnLock = ydocRef.current.getMap('yRequestUnLock');
+    const yConnectedUserList = ydocRef.current.getMap('connectedUsers');
     const yUnLockInfo = ydocRef.current.getMap('yUnLockInfo');
     const yResultUnLock = ydocRef.current.getMap('yResultUnLock');
 
@@ -26,9 +27,9 @@ const BlockLock = forwardRef(({ ydocRef, editorRef }, ref) => {
     };
 
     const selfUnlockBlock = (locker, myLockedBlockId) => {
-      const unlockRequestor = yRequestUnLock.get(nickname)?.requestor;
-      if (yResultUnLock.has(`${unlockRequestor}`)) yResultUnLock.set(`${unlockRequestor}`, { responser: nickname, result: "lateAccept", unlockedBlockID: myLockedBlockId });
-      removeYjsMapUnLockData(locker);
+      const unlockRequestor = yRequestUnLock.get(locker)?.requestor;
+      if (yResultUnLock.get(`${unlockRequestor}`)?.result === "deny") yResultUnLock.set(`${unlockRequestor}`, { responser: locker, result: "lateAccept", unlockedBlockID: myLockedBlockId });
+      removeYjsMapUnLockData(nickname);
       yLineLocks.delete(myLockedBlockId);
       yUserLocks.delete(nickname);
     };
@@ -65,35 +66,16 @@ const BlockLock = forwardRef(({ ydocRef, editorRef }, ref) => {
       if (yUnLockInfo.has(locker)) yUnLockInfo.delete(locker);
     };
 
-    const checkRequestUnLock = () => {
-      const myLockedBlockId = yUserLocks.get(nickname);
-      const unlockRequestor = yRequestUnLock.get(nickname)?.requestor;
-
-      if (yRequestUnLock.has(nickname) && unlockRequestor !== nickname) {
-        const isConfirmed = window.confirm(`${unlockRequestor} 이(가) 블록 잠금 해제를 요청하였습니다. \n\n최근 설정한 블록 잠금을 해제하시겠습니까?`);
-          if (isConfirmed) {
-            yLineLocks.delete(myLockedBlockId);
-            yUserLocks.delete(nickname);
-            toastr.info(`편집 잠금이 해제되었습니다.`);
-            yResultUnLock.set(`${unlockRequestor}`, { responser: nickname, result: "accept" });
-          } 
-          else {
-            yResultUnLock.set(`${unlockRequestor}`, { responser: nickname, result: "deny" });
-            yUnLockInfo.set(nickname, { responseTime: Date() });
-          }
-      }
-    };
-
     const checkRequestUnLockTimer = (locker) => {
-      if (yRequestUnLock.has(locker)) {
+      if (yUnLockInfo.has(locker)) {
         const responseTime = new Date(yUnLockInfo.get(locker).responseTime);
         const currentTime = new Date();
 
         const timeDifference = currentTime - responseTime;
         
         // 시간 차이를 밀리초 단위로 계산 (1분 = 60,000밀리초)
-        if (timeDifference < 60000) {
-          alert(`${locker} 이(가) 해당 블록의 잠금 해제 요청을 최근에 거절했습니다. \n\n추가적인 요청은 ${Math.floor((60000 - timeDifference) / 1000)}초 후에 가능합니다.`);
+        if (timeDifference < 30000) {
+          alert(`${locker} 이(가) 해당 블록의 잠금 해제 요청을 최근에 거절했습니다. \n\n추가적인 요청은 ${Math.floor((30000 - timeDifference) / 1000)}초 후에 가능합니다.`);
           return false;
         } else {
           removeYjsMapUnLockData(locker);
@@ -102,26 +84,45 @@ const BlockLock = forwardRef(({ ydocRef, editorRef }, ref) => {
       }
       return true;
     };
+
+    const checkRequestUnLock = () => {
+      const myLockedBlockId = yUserLocks.get(nickname);
+      const unlockRequestor = yRequestUnLock.has(nickname) ? yRequestUnLock.get(nickname).requestor : null;
+
+      if (unlockRequestor && myLockedBlockId && unlockRequestor !== nickname) {
+        const isConfirmed = window.confirm(`${unlockRequestor} 이(가) 블록 잠금 해제를 요청하였습니다. \n\n최근 설정한 블록 잠금을 해제하시겠습니까?`) ? true : false;;
+          if (isConfirmed) {
+            yLineLocks.delete(myLockedBlockId);
+            yUserLocks.delete(nickname);
+            toastr.info(`편집 잠금이 해제되었습니다.`);
+            yResultUnLock.set(`${unlockRequestor}`, { responser: nickname, result: "accept" });
+          } else {
+            yResultUnLock.set(`${unlockRequestor}`, { responser: nickname, result: "deny" });
+            yUnLockInfo.set(nickname, { responseTime: Date() });
+          }
+      }
+    };
     
     const checkResultUnLock = () => {
       if (yResultUnLock.has(nickname)) {
-        if(yResultUnLock.get(nickname).result === "accept") {
-          const locker = yResultUnLock.get(nickname).responser.toString();
-          removeYjsMapUnLockData(locker);
+        const unlockResponser = yResultUnLock.get(nickname)?.responser;
+        const isOnline = yConnectedUserList.has(unlockResponser);
+        if (isOnline && yResultUnLock.get(nickname).result === "accept") {
           toastr.info("상대방이 요청을 수락하였습니다.");
-          return;
-        } else if (yResultUnLock.get(nickname).result === "lateAccept") {
-          const isConfirmed = window.confirm("이전에 요청하였으나 거절된 블록 잠금이 해제되었습니다.\n\n지금 즉시 해당 위치로 이동하시겠습니까?\n※ 다른 사용자가 먼저 잠금을 걸었을 수도 있습니다.");
+          removeYjsMapUnLockData(unlockResponser);
+        } else if (isOnline && yResultUnLock.get(nickname).result === "lateAccept") {
+          const isConfirmed = window.confirm("이전에 요청하였으나 거절된 블록 잠금이 해제되었습니다.\n\n지금 즉시 해당 위치로 이동하시겠습니까?") ? true : false;
           if (isConfirmed) moveCursorToNodeWithUUID(yResultUnLock.get(nickname).unlockedBlockID);
-          return;
-        } else {
+          removeYjsMapUnLockData(unlockResponser);
+        } else if (isOnline && yResultUnLock.get(nickname).result === "deny") {
           toastr.error("상대방이 요청을 거절하였습니다.");
-          return;
+        } else {
+          removeYjsMapUnLockData(unlockResponser);
         }
       }
     };
 
-    const toggleLineLock = (guid, nickname) => {
+    const toggleLineLock = (guid) => {
       const locker = yLineLocks.get(guid.toString());
       const myLockedBlockId = yUserLocks.get(nickname);
 
@@ -129,7 +130,7 @@ const BlockLock = forwardRef(({ ydocRef, editorRef }, ref) => {
       toastr.remove();
 
       if (locker && locker !== nickname && myLockedBlockId && myLockedBlockId !== guid.toString()) {
-        const isConfirmed = window.confirm("[알림] 기존에 잠금 설정된 블록이 존재합니다. \n\n이전에 설정한 잠금을 해제 후 요청을 보내시겠습니까?")
+        const isConfirmed = window.confirm("[알림] 기존에 잠금 설정된 블록이 존재합니다. \n\n이전에 설정한 잠금을 해제 후 요청을 보내시겠습니까?") ? true : false;
         if (isConfirmed) {
           yLineLocks.delete(myLockedBlockId);
           yUserLocks.delete(nickname);
@@ -139,9 +140,9 @@ const BlockLock = forwardRef(({ ydocRef, editorRef }, ref) => {
       }
 
       if (!locker && myLockedBlockId && myLockedBlockId !== guid.toString()) {
-        const isConfirmed = window.confirm("최대 1개까지 잠금이 가능합니다.\n\n이전에 설정한 잠금을 해제하시겠습니까?");
+        const isConfirmed = window.confirm("최대 1개까지 잠금이 가능합니다.\n\n이전에 설정한 잠금을 해제하시겠습니까?") ? true : false;
         if (isConfirmed) {
-          selfUnlockBlock(locker, myLockedBlockId)
+          selfUnlockBlock(nickname, myLockedBlockId)
         } else {
           return;
         }
@@ -155,11 +156,11 @@ const BlockLock = forwardRef(({ ydocRef, editorRef }, ref) => {
         }
         if (yRequestUnLock.has(locker) && !yUnLockInfo.has(locker)) {
           const requestor = yRequestUnLock.get(locker)?.requestor
-          const message = requestor === nickname ? `응답 대기 중입니다...` : `${requestor} 이(가) 잠금 해제 요청 중입니다.`;
+          const message = requestor === nickname ? `이전 요청을 처리 중입니다...` : `${requestor} 이(가) 잠금 해제 요청 중입니다.`;
           toastr.warning(message);
         } else {
           if(checkRequestUnLockTimer(locker)) {
-            const isConfirmed = window.confirm(`${locker} 에게 블록 잠금 해제를 요청합니다.`);
+            const isConfirmed = window.confirm(`${locker} 에게 블록 잠금 해제를 요청합니다.`) ? true : false;
             if (isConfirmed) yRequestUnLock.set(locker, { requestor: nickname });
           }
         } 
@@ -177,23 +178,24 @@ const BlockLock = forwardRef(({ ydocRef, editorRef }, ref) => {
     useEffect(() => {
       const checkRequestUnLockWrapper = (event) => {
         event.changes.keys.forEach((change) => {
-          if (change.action === 'add' || change.action === 'update') {
+          if (change.action === 'add' || change.action === 'update' ) {
             checkRequestUnLock();
           }
         });
       };
-  
+    
       const checkResultUnLockWrapper = (event) => {
         event.changes.keys.forEach((change) => {
-          if (change.action === 'add' || change.action === 'update') {
+          if (change.action === 'add' || change.action === 'update' ) {
             checkResultUnLock();
           }
         });
       };
-  
-      yRequestUnLock.observe(checkRequestUnLockWrapper);
-      yResultUnLock.observe(checkResultUnLockWrapper);
+        removeYjsMapUnLockData(nickname);
+        yRequestUnLock.observe(checkRequestUnLockWrapper);
+        yResultUnLock.observe(checkResultUnLockWrapper);
       return () => {
+        removeYjsMapUnLockData(nickname);
         yRequestUnLock.unobserve(checkRequestUnLockWrapper);
         yResultUnLock.unobserve(checkResultUnLockWrapper);
       };
