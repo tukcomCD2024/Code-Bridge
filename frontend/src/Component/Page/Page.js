@@ -702,7 +702,7 @@ function Page() {
 
         <ImageToEditor ref={editorRef} />
         <BlockLike ref={blockLikeRef} ydocRef={ydocRef} />
-        <BlockLock ref={blockLockRef} ydocRef={ydocRef} />
+        <BlockLock ref={blockLockRef} ydocRef={ydocRef} editorRef={editorRef}/>
     </div>
   );
 }
