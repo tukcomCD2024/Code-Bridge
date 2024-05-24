@@ -105,6 +105,9 @@ public class Organization {
         // 정답 틀린 유저
         private List<String> wrongUser;
 
+        // 닉네임
+        private String nickname;
+
     }
 
 
