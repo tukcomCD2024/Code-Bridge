@@ -24,6 +24,7 @@
     "react-router-dom": "6.21.3",
     "react-scripts": "5.0.1",
     "styled-components": "6.1.8",
+    "sweetalert2": "^11.11.0",
     "toastr": "^2.1.4",
     "uuid": "^9.0.1",
     "y-prosemirror": "^1.2.3",
