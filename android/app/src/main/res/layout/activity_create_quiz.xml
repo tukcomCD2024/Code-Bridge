@@ -1,95 +1,145 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <RelativeLayout
-        android:id="@+id/layout1"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="10dp"
-        android:layout_marginLeft="10dp">
+        android:orientation="vertical">
 
-
-        <TextView
-            android:id="@+id/titleText"
-            android:layout_width="300dp"
-            android:layout_height="55dp"
-            android:background="@drawable/rectangle_white"
-            android:layout_centerHorizontal="true"
-            android:layout_marginTop="2dp"
-            android:textSize="20sp" />
-
-        <EditText
-            android:id="@+id/titleEditText"
-            android:layout_width="270dp"
+        <RelativeLayout
+            android:id="@+id/layout1"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:layout_marginLeft="12dp"
-            android:layout_centerHorizontal="true"
-            android:background="@android:color/transparent"
-            android:hint="퀴즈 제목을 입력하세요"
-            android:textSize="13sp" />
-    </RelativeLayout>
+            android:layout_marginTop="25dp"
+            android:padding="1dp"
+            android:layout_marginLeft="10dp">
 
-    <RelativeLayout
-        android:id="@+id/layout2"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/layout1"
-        android:padding="1dp"
-        android:layout_marginLeft="10dp">
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="2dp">
 
+                <TextView
+                    android:id="@+id/noteText"
+                    android:layout_width="300dp"
+                    android:layout_height="55dp"
+                    android:background="@drawable/rectangle_white"
+                    android:drawableRight="@drawable/baseline_keyboard_arrow_down_24"
+                    android:layout_gravity="center"
+                    android:textSize="20sp" />
 
-        <TextView
-            android:id="@+id/noteText"
-            android:layout_width="300dp"
-            android:layout_height="55dp"
-            android:background="@drawable/rectangle_white"
-            android:layout_centerHorizontal="true"
-            android:drawableRight="@drawable/baseline_keyboard_arrow_down_24"
-            android:layout_marginTop="2dp"
-            android:textSize="20sp" />
+                <TextView
+                    android:id="@+id/noteEditText"
+                    android:layout_width="270dp"
+                    android:layout_height="wrap_content"
+                    android:background="@android:color/transparent"
+                    android:hint="노트 종류를 선택하세요"
+                    android:textSize="13sp"
+                    android:layout_gravity="center"
+                    android:paddingLeft="5dp" />
+            </FrameLayout>
+        </RelativeLayout>
 
-        <EditText
-            android:id="@+id/noteEditText"
-            android:layout_width="270dp"
+        <RelativeLayout
+            android:id="@+id/layout2"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:layout_marginLeft="12dp"
-            android:layout_centerHorizontal="true"
-            android:background="@android:color/transparent"
-            android:hint="노트 종류를 선택하세요"
-            android:textSize="13sp" />
-    </RelativeLayout>
+            android:layout_below="@id/layout1"
+            android:padding="10dp"
+            android:layout_marginLeft="10dp">
+
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="2dp">
+
+                <TextView
+                    android:id="@+id/titleText"
+                    android:layout_width="300dp"
+                    android:layout_height="170dp"
+                    android:background="@drawable/rectangle_white"
+                    android:layout_gravity="center"
+                    android:textSize="20sp" />
+
+                <EditText
+                    android:id="@+id/titleEditText"
+                    android:layout_width="270dp"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:background="@android:color/transparent"
+                    android:hint="퀴즈 문제 내용"
+                    android:textSize="13sp"
+                    android:paddingLeft="5dp"/>
+            </FrameLayout>
+        </RelativeLayout>
 
 
-    <RelativeLayout
-        android:id="@+id/buttonContainer"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/layout2">
-
-        <Button
-            android:id="@+id/button1"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:id="@+id/container"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_centerHorizontal="true"
-            android:background="@drawable/rectangle_white"
-            android:layout_weight="1"
-            android:text="Button 1" />
+            android:layout_below="@id/layout2"
+            android:orientation="vertical">
+        </LinearLayout>
 
-        <Button
-            android:id="@+id/button2"
-            android:layout_width="wrap_content"
+        <RelativeLayout
+            android:id="@+id/layout3"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_toRightOf="@+id/button1"
-            android:text="Button 2" />
-    </RelativeLayout>
+            android:layout_marginTop="25dp"
+            android:layout_below="@id/layout2"
+            android:padding="1dp"
+            android:layout_marginLeft="10dp">
 
-    <FrameLayout
-        android:id="@+id/fragmentContainer"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_below="@id/buttonContainer" />
-</RelativeLayout>
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="2dp">
+
+                <TextView
+                    android:id="@+id/plusText"
+                    android:layout_width="300dp"
+                    android:layout_height="60dp"
+                    android:background="@drawable/rectangle_white"
+                    android:layout_gravity="center"
+                    android:textSize="20sp" />
+
+                <TextView
+                    android:id="@+id/plusEditText"
+                    android:layout_width="270dp"
+                    android:layout_height="wrap_content"
+                    android:background="@android:color/transparent"
+                    android:drawableRight="@drawable/ic_add_note"
+                    android:hint="객관식 문항 추가"
+                    android:textSize="13sp"
+                    android:layout_gravity="center"
+                    android:paddingLeft="5dp" />
+            </FrameLayout>
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="25dp"
+            android:layout_below="@id/layout3"
+            android:padding="1dp"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp">
+
+            <Button
+                android:id="@+id/submitButton"
+                android:layout_width="250dp"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"
+                android:background="@drawable/rectangle_white"
+                android:text="출제하기"
+                android:textSize="15dp"
+                android:padding="10dp" />
+        </RelativeLayout>
+
+    </LinearLayout>
+</ScrollView>

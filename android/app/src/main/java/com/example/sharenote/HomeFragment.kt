@@ -20,6 +20,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.sharenote.ApiService
 import com.example.sharenote.CheckOrganization
 import com.example.sharenote.CreateNoteActivity
+import com.example.sharenote.CreateQuiz
 import com.example.sharenote.LoginActivity
 import com.example.sharenote.MainActivity
 import com.example.sharenote.Note
@@ -54,6 +55,7 @@ class HomeFragment : Fragment() {
     private lateinit var listLayout_1: ImageView
 
     private lateinit var MoveDraw: Button
+    private lateinit var Quiz : Button
 
     private lateinit var emailTextView1: TextView
     private lateinit var workSpaceText: TextView
@@ -89,6 +91,7 @@ class HomeFragment : Fragment() {
         listLayout_1 = view.findViewById(R.id.listLayout_1)
 
         MoveDraw = view.findViewById(R.id.MoveDraw)
+        Quiz = view.findViewById(R.id.Quiz)
 
 
         // account_layout을 팝업으로 사용하기 위해 팝업 뷰를 초기화
@@ -118,6 +121,10 @@ class HomeFragment : Fragment() {
             startActivityForResult(intent2, 1)
         }
 
+        Quiz.setOnClickListener {
+            val intent = Intent(requireContext(), CreateQuiz::class.java)
+            startActivity(intent)
+        }
 
         profileForm.setOnClickListener {
             // account_layout을 화면 아래에 절반 크기로 보여줌
