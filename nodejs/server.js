@@ -24,8 +24,8 @@ const databaseName = 'shareDB';
 
 function createConnectionString(databaseName) {
   logger.info(`@@@@@@@@@@@mongodb://root:1234@localhost:27017/${databaseName}?authSource=admin`);
-  //return `mongodb://root:1234@localhost:27017/${databaseName}?authSource=admin`;
-  return `mongodb://root:1234@mongodbService:27017/${databaseName}?authSource=admin`;
+  return `mongodb://root:1234@localhost:27017/${databaseName}?authSource=admin`;
+  //return `mongodb://root:1234@mongodbService:27017/${databaseName}?authSource=admin`;
 }
 
 const server = http.createServer((req, res) => {
@@ -58,7 +58,7 @@ wss.on('connection', (ws, req) => {
 });
 
 const mdb = new MongodbPersistence(createConnectionString(databaseName), {
-  collectionName: 'Pages',
+  collectionName: 'transactions',
   flushSize: 100,
   multipleCollections: true,
 });
@@ -69,15 +69,7 @@ yUtils.setPersistence({
       const persistedYdoc = await mdb.getYDoc(docName);
       const newUpdates = Y.encodeStateAsUpdate(ydoc);
 
-      //작성자의 nickname 추가
-      const authorNickname = 'nickname';
-      //추가 부분
-      const updateWithAuthor =  Y.encodeStateAsUpdate({
-        ...Y.applyUpdate(Y.emptyUpdate, newUpdates),
-        author: authorNickname,
-      });
-
-      await mdb.storeUpdate(docName, updateWithAuthor);
+      await mdb.storeUpdate(docName, newUpdates);
       Y.applyUpdate(ydoc, Y.encodeStateAsUpdate(persistedYdoc));
       ydoc.on('update', async (update) => {
         await mdb.storeUpdate(docName, update);
