@@ -12,5 +12,6 @@ public class QuizCreateDTO {
     private String quizType;
     private String problem;
     private Integer answer;
-    private List<String> solutions;
+    private List<String> problems;
+    private String quizTitle;
 }

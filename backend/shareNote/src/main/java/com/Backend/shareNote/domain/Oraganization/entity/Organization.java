@@ -96,7 +96,7 @@ public class Organization {
         // 답안
         private int answer;
         // 객관식 보기
-        private List<String> solutions;
+        private List<String> problems;
         @CreatedDate
         private LocalDateTime createdAt;
 
@@ -107,6 +107,7 @@ public class Organization {
 
         // 닉네임
         private String nickname;
+        private String quizTitle;
 
     }
 

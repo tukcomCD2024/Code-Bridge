@@ -1,10 +1,7 @@
 package com.Backend.shareNote.domain.Oraganization.service;
 
-import com.Backend.shareNote.domain.Oraganization.DTOs.quizdto.QuizCreateDTO;
-import com.Backend.shareNote.domain.Oraganization.DTOs.quizdto.QuizSearchDTO;
-import com.Backend.shareNote.domain.Oraganization.DTOs.quizdto.QuizSolveDTO;
+import com.Backend.shareNote.domain.Oraganization.DTOs.quizdto.*;
 import com.Backend.shareNote.domain.Oraganization.entity.Organization;
-import com.Backend.shareNote.domain.Oraganization.repository.NoteRepository;
 import com.Backend.shareNote.domain.Oraganization.repository.OrganizationRepository;
 import com.Backend.shareNote.domain.Oraganization.repository.QuizRepository;
 import com.Backend.shareNote.domain.User.entity.Users;
@@ -16,7 +13,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -44,11 +40,12 @@ public class QuizService {
                     .quizType(quizCreateDTO.getQuizType())
                     .problem(quizCreateDTO.getProblem())
                     .answer(quizCreateDTO.getAnswer())
-                    .solutions(quizCreateDTO.getSolutions())
+                    .problems(quizCreateDTO.getProblems())
                     .correctUser(new ArrayList<String>())
                     .wrongUser(new ArrayList<String>())
                     .userId(quizCreateDTO.getUserId())
                     .nickname(user.getNickname())
+                    .quizTitle(quizCreateDTO.getQuizTitle())
                     .build();
 
 
@@ -171,5 +168,92 @@ public class QuizService {
             return ResponseEntity.badRequest().body("Unexpected error: " + e.getMessage());
         }
 
+    }
+
+    public ResponseEntity<?> getQuizDetail(QuizDetailReqDTO quizDetailReqDTO) {
+        try {
+            // organization 찾기
+            Organization organization = organizationRepository.findById(quizDetailReqDTO.getOrganizationId())
+                    .orElseThrow(() -> new IllegalArgumentException("해당하는 organization이 없습니다."));
+
+            // note 찾기
+            Organization.Note note = organization.getNotes().stream()
+                    .filter(n -> n.getId().equals(quizDetailReqDTO.getNoteId()))
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalArgumentException("해당하는 note가 없습니다."));
+
+            // quiz 찾기
+            Organization.Quiz quiz = note.getQuiz().stream()
+                    .filter(q -> q.getId().equals(quizDetailReqDTO.getQuizId()))
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalArgumentException("해당하는 quiz가 없습니다."));
+
+            //
+            int corret;
+            if(quiz.getCorrectUser().contains(quizDetailReqDTO.getUserId())){
+                corret = 1;
+            }
+            else if(quiz.getWrongUser().contains(quizDetailReqDTO.getUserId())){
+                corret = 0;
+            }
+            else{
+                corret = -1;
+            }
+
+            QuizDetailResDTO dto = QuizDetailResDTO.builder()
+                    .quizTitle(quiz.getProblem())
+                    .quizType(quiz.getQuizType())
+                    .noteName(note.getTitle())
+                    .problems(quiz.getProblems())
+                    .correct(corret)
+                    .build();
+
+            return ResponseEntity.ok().body(dto);
+        }catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body("Invalid input: " + e.getMessage());
+        }
+        catch (Exception e) {
+            return ResponseEntity.badRequest().body("Unexpected error: " + e.getMessage());
+        }
+    }
+
+    public ResponseEntity<?> deleteQuiz(QuizDeleteDTO quizDeleteDTO) {
+        try {
+            // organization 찾기
+            Organization organization = organizationRepository.findById(quizDeleteDTO.getOrganizationId())
+                    .orElseThrow(() -> new IllegalArgumentException("해당하는 organization이 없습니다."));
+
+            // note 찾기
+            Organization.Note note = organization.getNotes().stream()
+                    .filter(n -> n.getId().equals(quizDeleteDTO.getNoteId()))
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalArgumentException("해당하는 note가 없습니다."));
+
+            // quiz 찾기
+            Organization.Quiz quiz = note.getQuiz().stream()
+                    .filter(q -> q.getId().equals(quizDeleteDTO.getQuizId()))
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalArgumentException("해당하는 quiz가 없습니다."));
+
+            // organization 멤버인지 확인하는 코드
+            if (!organization.getMembers().contains(quizDeleteDTO.getUserId())) {
+                throw new IllegalArgumentException("해당하는 organization의 멤버가 아닙니다.");
+            }
+
+            // 자기가 낸 문제인 경우만 삭제 가능
+            if (quiz.getUserId().equals(quizDeleteDTO.getUserId())) {
+                note.getQuiz().remove(quiz);
+                organizationRepository.save(organization);
+            } else{
+                throw new IllegalArgumentException("자신이 낸 문제만 삭제 가능합니다.");
+            }
+
+            return ResponseEntity.ok().body("퀴즈 삭제 성공");
+        }catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body("Invalid input: " + e.getMessage());
+        }
+        catch (Exception e) {
+            return ResponseEntity.badRequest().body("Unexpected error: " + e.getMessage());
+        }
     }
 }

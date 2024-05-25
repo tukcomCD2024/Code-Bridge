@@ -1,8 +1,6 @@
 package com.Backend.shareNote.domain.Oraganization.controller;
 
-import com.Backend.shareNote.domain.Oraganization.DTOs.quizdto.QuizCreateDTO;
-import com.Backend.shareNote.domain.Oraganization.DTOs.quizdto.QuizSearchDTO;
-import com.Backend.shareNote.domain.Oraganization.DTOs.quizdto.QuizSolveDTO;
+import com.Backend.shareNote.domain.Oraganization.DTOs.quizdto.*;
 import com.Backend.shareNote.domain.Oraganization.service.QuizService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -28,5 +26,15 @@ public class QuizController {
     @GetMapping("/quiz/{organizationId}/{noteId}/{userId}")
     public ResponseEntity<?> getQuiz(@PathVariable String organizationId, @PathVariable String noteId, @PathVariable String userId){
         return quizService.getQuiz(organizationId, noteId, userId);
+    }
+
+    @PostMapping("/quiz/detail")
+    public ResponseEntity<?> getQuizDetail(@RequestBody QuizDetailReqDTO quizDetailReqDTO){
+        return quizService.getQuizDetail(quizDetailReqDTO);
+    }
+
+    @DeleteMapping("/quiz")
+    public ResponseEntity<?> deleteQuiz(@RequestBody QuizDeleteDTO quizDeleteDTO){
+        return quizService.deleteQuiz(quizDeleteDTO);
     }
 }
