@@ -221,7 +221,7 @@ export function hoverButtonPlugin(blockLikeRef, blockLockRef) {
           const topWithScroll = coords.top + window.scrollY;
           const editorRect = view.dom.getBoundingClientRect();
           hoverDiv.style.left = window.matchMedia("(max-width: 768px)").matches ? `${editorRect.left - hoverDiv.offsetWidth + 7}px` : `${editorRect.left - hoverDiv.offsetWidth - 5}px`
-          hoverDiv.style.top = window.matchMedia("(max-width: 768px)").matches ? `${topWithScroll-2}px` : `${topWithScroll-4}px`;
+          hoverDiv.style.top = window.matchMedia("(max-width: 768px)").matches ? `${topWithScroll - 3}px` : `${topWithScroll - 5}px`;
 
         } catch (error) {
           console.error("Failed to update button position:", error);
