@@ -41,4 +41,7 @@ interface ApiService {
     @POST("image")
     suspend fun uploadImage(@Part multipartFile: MultipartBody.Part): Response<ImageResponse>
 
+    @POST("quiz")
+    fun createQuiz(@Body quizRequest: QuizRequest): Call<Void>
+
 }
