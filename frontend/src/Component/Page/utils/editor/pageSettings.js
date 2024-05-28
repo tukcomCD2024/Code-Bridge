@@ -51,6 +51,7 @@ const customParagraphNode = {
   attrs: {
     ...nodes.get("paragraph").attrs,
     class: { default: "custom-paragraph" },
+    id: { default: "non-locked" },
     guid: { default: "" }, // Ensure guid attribute is included
     writer: { default: localStorage.getItem("userId") },
   },
@@ -61,7 +62,7 @@ const customParagraphNode = {
     },
   ],
   toDOM(node) {
-    return ["p", { class: node.attrs.class, "data-guid": node.attrs.guid, "data-writer": node.attrs.writer}, 0];
+    return ["p", { class: node.attrs.class, id: node.attrs.id, "data-guid": node.attrs.guid, "data-writer": node.attrs.writer}, 0];
   },
 };
 
