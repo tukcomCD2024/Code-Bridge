@@ -575,3 +575,49 @@ animation: spin 2s ease-in-out infinite;
   padding-right: 2px;
   white-space: nowrap;
 }
+
+@keyframes pulse_red {
+  0%, 100% {
+    font-size: 1em;
+    font-weight: bolder;
+    color: red;
+  }
+  50% {
+    font-size: 1.1em;
+    color: red;
+  }
+}
+@keyframes pulse_orange {
+  0%, 100% {
+    font-size: 1em;
+    font-weight: bold;
+    color: rgb(255, 123, 0);
+  }
+  50% {
+    font-size: 1.1em;
+    color: rgb(255, 123, 0);
+  }
+}
+.pulsate_red {
+  animation: pulse_red 0.4s infinite;
+}
+.pulsate_orange {
+  animation: pulse_orange 0.5s infinite;
+}
+
+/* ID가 locked-node인 p 태그에 대한 스타일 */
+p#locked {
+  border: 1px solid #1E90FF;
+  background-color: #D6EAF8;
+  border-radius: 8px;
+  padding: 1px 7px;
+  background-image: url('/src/image/lock2.gif');
+  background-size: 0.8em;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+p#locked:hover {
+  background-image: none;
+}
+
