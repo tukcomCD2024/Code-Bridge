@@ -165,3 +165,26 @@ data class QuizList(
     val correct: Int,
     val nickname: String
 )
+
+data class QuizDetailRequest(
+    val organizationId: String,
+    val noteId: String,
+    val userId: String,
+    val quizId: String
+)
+
+data class QuizDetailResponse(
+    val quizTitle: String,
+    val quizType: String,
+    val noteName: String,
+    val problems: List<String>,
+    val correct: Int
+)
+
+data class SolveQuiz(
+    val organizationId: String,
+    val noteId: String,
+    val userId: String,
+    val quizId: String,
+    val answer: Int
+)

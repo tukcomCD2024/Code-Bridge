@@ -11,6 +11,10 @@ object SharedPreferencesUtil {
     private const val PREF_NAME1 = "MyPrefs1"
     private const val KEY_RECENT_NOTE_ID = "recent_note_id"
 
+    private const val KEY_RECENT_NOTE_TITLE = "recent_note_title"
+
+    private const val KEY_RECENT_QUIZ_ID = "recent_quiz_id"
+
     private const val KEY_RECENT_PAGE_ID = "recent_page_id"
 
 
@@ -54,6 +58,26 @@ object SharedPreferencesUtil {
     fun getRecentNoteId(context: Context): String? {
         val sharedPrefs = context.getSharedPreferences(PREF_NAME1, Context.MODE_PRIVATE)
         return sharedPrefs.getString(KEY_RECENT_NOTE_ID, null)
+    }
+
+    fun saveRecentNoteTitle(context: Context, noteTitle: String) {
+        val sharedPreferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+        sharedPreferences.edit().putString(KEY_RECENT_NOTE_TITLE, noteTitle).apply()
+    }
+
+    fun getRecentNoteTitle(context: Context): String? {
+        val sharedPreferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+        return sharedPreferences.getString(KEY_RECENT_NOTE_TITLE, null)
+    }
+
+    fun saveRecentQuizId(context: Context, quizId: String) {
+        val sharedPreferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+        sharedPreferences.edit().putString(KEY_RECENT_QUIZ_ID, quizId).apply()
+    }
+
+    fun getRecentQuizId(context: Context): String? {
+        val sharedPreferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+        return sharedPreferences.getString(KEY_RECENT_QUIZ_ID, null)
     }
 
     // 최근 페이지 ID 저장

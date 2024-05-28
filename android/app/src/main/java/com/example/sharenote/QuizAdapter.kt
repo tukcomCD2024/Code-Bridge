@@ -12,6 +12,7 @@ class QuizAdapter(private val quizList: MutableList<QuizList>, private val liste
     interface OnItemClickListener {
         fun onItemClick(quizId: String)
     }
+
     class QuizViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val quizTitleTextView: TextView = itemView.findViewById(R.id.quizTitleTextView)
         val nicknameTextView: TextView = itemView.findViewById(R.id.nicknameTextView)
@@ -34,6 +35,10 @@ class QuizAdapter(private val quizList: MutableList<QuizList>, private val liste
             else -> holder.itemView.setBackgroundResource(android.R.color.transparent)
         }
 
+        // 아이템 클릭 이벤트 설정
+        holder.itemView.setOnClickListener {
+            listener.onItemClick(quiz.quizId) // 클릭한 퀴즈의 아이디를 전달
+        }
     }
 
     override fun getItemCount(): Int {

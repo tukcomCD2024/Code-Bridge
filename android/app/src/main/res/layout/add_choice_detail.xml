@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <RelativeLayout
+        android:id="@+id/layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="25dp"
+        android:padding="1dp"
+        android:layout_marginLeft="10dp">
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="2dp">
+
+            <TextView
+                android:id="@+id/answerText"
+                android:layout_width="300dp"
+                android:layout_height="60dp"
+                android:background="@drawable/rectangle_white"
+                android:layout_gravity="center"
+                android:textSize="20sp" />
+
+            <TextView
+                android:id="@+id/answerEditText"
+                android:layout_width="270dp"
+                android:layout_height="wrap_content"
+                android:background="@android:color/transparent"
+                android:hint="객관식 n번 문항"
+                android:textSize="13sp"
+                android:layout_gravity="center"
+                android:paddingLeft="5dp" />
+
+            <CheckBox
+                android:id="@+id/choiceCheckBox"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical|right"/>
+
+        </FrameLayout>
+    </RelativeLayout>
+</RelativeLayout>

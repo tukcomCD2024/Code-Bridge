@@ -108,7 +108,6 @@ class CreateQuiz : AppCompatActivity() {
         choiceCheckBox.setOnClickListener {
             val index = it.tag as Int
             selectedChoiceIndex = index
-            Toast.makeText(this, "Selected Choice Index: $index", Toast.LENGTH_SHORT).show()
             checkBoxList.forEach { checkBox ->
                 if (checkBox != choiceCheckBox) {
                     checkBox.isChecked = false
@@ -202,8 +201,6 @@ class CreateQuiz : AppCompatActivity() {
             answer = selectedChoiceIndex,
             problems = solutions
         )
-        Log.d("CreateQuiz", "recentWorkspaceId: $recentWorkspaceId, userId: $userId, problem: $problem, selectedNoteId: $selectedNoteId, selectedChoiceIndex: $selectedChoiceIndex, answerTextList: $answerEditTextList")
-
 
         // 퀴즈 생성 요청 보내기
         apiService.createQuiz(quizRequest).enqueue(object : Callback<Void> {
