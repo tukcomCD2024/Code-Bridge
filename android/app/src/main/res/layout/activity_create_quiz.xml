@@ -8,10 +8,29 @@
         android:orientation="vertical">
 
         <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:padding="1dp">
+
+            <TextView
+                android:id="@+id/backTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginLeft="15dp"
+                android:layout_centerVertical="true"
+                android:text="이전"
+                android:textSize="20sp" />
+        </RelativeLayout>
+
+        <RelativeLayout
             android:id="@+id/layout1"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="25dp"
+            android:layout_marginTop="15dp"
             android:padding="1dp"
             android:layout_marginLeft="10dp">
 
