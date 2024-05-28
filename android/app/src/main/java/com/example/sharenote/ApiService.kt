@@ -44,4 +44,11 @@ interface ApiService {
     @POST("quiz")
     fun createQuiz(@Body quizRequest: QuizRequest): Call<Void>
 
+    @GET("quiz/{organization}/{noteId}/{userId}")
+    fun getQuizzes(
+        @Path("organization") organizationId: String,
+        @Path("noteId") noteId: String,
+        @Path("userId") userId: String
+    ): Call<List<QuizList>>
+
 }

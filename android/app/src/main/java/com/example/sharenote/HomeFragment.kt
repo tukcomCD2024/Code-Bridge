@@ -27,6 +27,7 @@ import com.example.sharenote.Note
 import com.example.sharenote.NoteActivity
 import com.example.sharenote.OrganizationActivity
 import com.example.sharenote.PaintActivity
+import com.example.sharenote.QuizActivity
 import com.example.sharenote.R
 import com.example.sharenote.RetrofitClient
 import com.example.sharenote.SharedPreferencesUtil
@@ -122,7 +123,7 @@ class HomeFragment : Fragment() {
         }
 
         Quiz.setOnClickListener {
-            val intent = Intent(requireContext(), CreateQuiz::class.java)
+            val intent = Intent(requireContext(), QuizActivity::class.java)
             startActivity(intent)
         }
 

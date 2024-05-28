@@ -34,6 +34,13 @@
                 android:textSize="13sp"
                 android:layout_gravity="center"
                 android:paddingLeft="5dp" />
+
+            <CheckBox
+                android:id="@+id/choiceCheckBox"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical|right"/>
+
         </FrameLayout>
     </RelativeLayout>
 </RelativeLayout>

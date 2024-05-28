@@ -33,7 +33,7 @@ class SearchNoteListAdapter(private val onItemClick: (String) -> Unit) :
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): NoteViewHolder {
-        val itemView = LayoutInflater.from(parent.context).inflate(R.layout.item_note, parent, false)
+        val itemView = LayoutInflater.from(parent.context).inflate(R.layout.item_search_note, parent, false)
         return NoteViewHolder(itemView)
     }
 
