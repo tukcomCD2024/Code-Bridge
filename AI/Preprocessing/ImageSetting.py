@@ -11,6 +11,7 @@ def getImageList(path):
     return os.listdir(path)
 
 
+# SVG파일을 PNG파일로 변환한다.
 def convertSVGtoPNG():
     for dir, subdir, files in os.walk(defaultRoute):
         # imgTo = i.replace('svg', 'png')
@@ -27,6 +28,7 @@ def convertSVGtoPNG():
                 print('fail')
 
 
+# 사진의 색갈을 흑백으로 바꿔준다
 def convertColor2Mono():
     for dir, subdirs, files in os.walk('../asset/image/animals'):
         # imgTo = dir.replace('animals', 'monoAnimals')
@@ -62,6 +64,7 @@ def boldLine():
             image.save(imgpath.replace('animalsMono', 'animalsFilter'))
 
 
+# 사진 배경의 투명함을 지우고 흰색 배경을 깔아준다
 def removeAlpha(img):
     size = 224
     img = img.convert("RGBA")
@@ -75,6 +78,8 @@ def removeAlpha(img):
     imageArray = np.resize(imageArray, [size, size])
     return Image.fromarray(imageArray)
 
+
+# 흰색 배경의 사진의 테두리를 잘라 이미지를 꽉차게 한다.
 def trim_white_borders(image, threshold=240):
     # 이미지 불러오기
     image_np = np.array(image)
@@ -114,6 +119,7 @@ def imageReform():
             trimImage.save(f'{dir}/{imageFile}')
 
 
+# svg파일의 크기를 너무 크거나 작지 않도록 조정한다.
 def svgImageResize():
     for dir, subdir, files in os.walk(defaultRoute):
         for imageName in files:
@@ -132,7 +138,6 @@ def svgImageResize():
             img = open(imgPath, 'w')
             img.write(imgSource)
             img.close()
-
 
 
 imageReform()

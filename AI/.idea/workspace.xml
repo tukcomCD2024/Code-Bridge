@@ -5,66 +5,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="e154c9bb-b9ef-41b8-8757-68a477a765ac" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/asset/image/svg/apple/hugeicons--apple-01.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/asset/image/svg/butterfly/butterfly-outline.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/asset/image/svg/butterfly/ph--butterfly-bold.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/asset/image/svg/carrot/carrot-outline.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/asset/image/svg/carrot/fluent--food-carrot-20-regular.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/asset/image/svg/cherry/cherry-outline.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/asset/image/svg/circle/circle-outline.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/asset/image/svg/cylinder/cylinder-outline.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/asset/image/svg/finger/finger-outline.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/asset/image/svg/lightning/fluent-mdl2--lightning-bolt.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/asset/image/svg/lollipop/hugeicons--lollipop.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/asset/image/svg/lollipop/lollipop-outline.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/asset/image/svg/meat/meat-outline.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/asset/image/svg/snail/hugeicons--snail.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/asset/image/svg/snail/snail-line.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/asset/image/svg/snail/snail-outline.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/asset/image/svg/snail/snail.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/asset/image/svg/sprout/carbon--sprout.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/asset/image/svg/square/square-outline.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/asset/image/svg/triangle/triangle-outline.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/asset/image/svg/zoom/tabler--zoom.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.name" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/AI.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/AI.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/asset/image/svg/apple/apple-line.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/asset/image/svg/apple/apple-outline.png" beforeDir="false" afterPath="$PROJECT_DIR$/asset/image/svg/apple/apple-outline.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/asset/image/svg/apple/apple-thin.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/asset/image/svg/bag/bag-regular.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/asset/image/svg/book/book-outline.png" beforeDir="false" afterPath="$PROJECT_DIR$/asset/image/svg/book/book-outline.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/asset/image/svg/book/book-regular.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/asset/image/svg/bucket/bucket-outline.png" beforeDir="false" afterPath="$PROJECT_DIR$/asset/image/svg/bucket/bucket-outline.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/asset/image/svg/cherry/lucide--cherry.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/asset/image/svg/clock/clock-line.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/asset/image/svg/coin/coin-outline.png" beforeDir="false" afterPath="$PROJECT_DIR$/asset/image/svg/coin/coin-outline.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/asset/image/svg/coin/coin-regular.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/asset/image/svg/coin/coin-thin.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/asset/image/svg/cylinder/cylinder-line.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/asset/image/svg/dress/dress-outline.png" beforeDir="false" afterPath="$PROJECT_DIR$/asset/image/svg/dress/dress-outline.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/asset/image/svg/dress/dress-thin.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/asset/image/svg/finger/mingcute--hand-finger-line.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/asset/image/svg/flame/flame-line.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/asset/image/svg/hospital/hospital-line.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/asset/image/svg/house/house-regular.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/asset/image/svg/lightning/lightning-line.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/asset/image/svg/lightning/lightning-outline.png" beforeDir="false" afterPath="$PROJECT_DIR$/asset/image/svg/lightning/lightning-outline.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/asset/image/svg/lightning/lightning-regular.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/asset/image/svg/meat/fluent-emoji-high-contrast--meat-on-bone.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/asset/image/svg/mouse/mouse-regular.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/asset/image/svg/nail/nail-outline.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/asset/image/svg/police/police-outline.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/asset/image/svg/tree/tree-regular.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/asset/image/svg/umbrella/umbrella-line.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/asset/image/svg/umbrella/umbrella-outline.png" beforeDir="false" afterPath="$PROJECT_DIR$/asset/image/svg/umbrella/umbrella-outline.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/asset/image/svg/vehicle/vehicle-outline.png" beforeDir="false" afterPath="$PROJECT_DIR$/asset/image/svg/vehicle/vehicle-outline.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/asset/image/svg/vehicle/vehicle-regular.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/asset/image/svg/wheel/wheel-thin.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/asset/image/svg/zoom/zoom-line.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/asset/image/svg/zoom/zoom-regular.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/asset/image/svg/zoom/zoom-thin.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Model/cnnModel.py" beforeDir="false" afterPath="$PROJECT_DIR$/Model/cnnModel.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Preprocessing/ImageSetting.py" beforeDir="false" afterPath="$PROJECT_DIR$/Preprocessing/ImageSetting.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -102,7 +46,7 @@
     &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;AI#36/Preprocessing&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;AI#117Model&quot;,
     &quot;last_opened_file_path&quot;: &quot;C:/Users/Ka/Desktop/Ka/대학교/졸업작품/project/Code-Bridge/AI/Flasktest&quot;,
     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
     &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
@@ -206,6 +150,7 @@
       <workItem from="1715661505119" duration="3525000" />
       <workItem from="1715672063313" duration="5310000" />
       <workItem from="1716387364757" duration="3010000" />
+      <workItem from="1716876005143" duration="1732000" />
     </task>
     <servers />
   </component>
@@ -230,7 +175,7 @@
     <SUITE FILE_PATH="coverage/AI$main.coverage" NAME="main Coverage Results" MODIFIED="1716426541958" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/AI$example_controllers.coverage" NAME="example_controllers Coverage Results" MODIFIED="1715587418802" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/app/controllers" />
     <SUITE FILE_PATH="coverage/ImageDataArrange_py$TagSetting.coverage" NAME="TagSetting Coverage Results" MODIFIED="1711503999382" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Preprocessing" />
-    <SUITE FILE_PATH="coverage/AI$test.coverage" NAME="test Coverage Results" MODIFIED="1716105003493" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/AI$test.coverage" NAME="test Coverage Results" MODIFIED="1716477567864" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/model" />
     <SUITE FILE_PATH="coverage/AI$LoadImage.coverage" NAME="LoadImage Coverage Results" MODIFIED="1715513227346" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/app/services" />
     <SUITE FILE_PATH="coverage/AI$auto_draw.coverage" NAME="auto_draw Coverage Results" MODIFIED="1715516525228" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/app/services" />
     <SUITE FILE_PATH="coverage/AI$ImageDataGenerator.coverage" NAME="ImageDataGenerator Coverage Results" MODIFIED="1709366323438" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Model" />
@@ -252,7 +197,7 @@
     <SUITE FILE_PATH="coverage/AI$aiflask.coverage" NAME="aiflask Coverage Results" MODIFIED="1715663728109" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/ImageDataArrange_py$imageConvertBase65.coverage" NAME="imageConvertBase65 Coverage Results" MODIFIED="1713883492461" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/ImageDataArrange_py$vgg16Sample.coverage" NAME="vgg16Sample Coverage Results" MODIFIED="1711279110242" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Model" />
-    <SUITE FILE_PATH="coverage/AI$cnnModel.coverage" NAME="cnnModel Coverage Results" MODIFIED="1716427349634" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/model" />
+    <SUITE FILE_PATH="coverage/AI$cnnModel.coverage" NAME="cnnModel Coverage Results" MODIFIED="1716472569343" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/model" />
     <SUITE FILE_PATH="coverage/AI$ImageSetting.coverage" NAME="ImageSetting Coverage Results" MODIFIED="1709236738847" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Preprocessing" />
     <SUITE FILE_PATH="coverage/ImageDataArrange_py$test.coverage" NAME="test Coverage Results" MODIFIED="1715986754537" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Model" />
     <SUITE FILE_PATH="coverage/AI$TagSetting.coverage" NAME="TagSetting Coverage Results" MODIFIED="1715555087810" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Preprocessing" />

@@ -16,17 +16,18 @@ tsdata = ImageDataGenerator()
 testdata = tsdata.flow_from_directory(directory=r"C:\Users\Ka\Desktop\Ka\대학교\졸업작품\project\Code-Bridge\AI\asset\image\svg", target_size=(imageSize, imageSize),
                                       class_mode='categorical')
 
+imageCount = len(os.listdir('../asset/image/svg/'))
+
 
 def cnnDepth4():
     model = Sequential()
     model.add(Conv2D(32, (3, 3), activation='relu', input_shape=(imageSize, imageSize, 3)))
     model.add(MaxPool2D((2, 2)))
-    model.add(Conv2D(64, (3, 3), activation='relu'))
-    model.add(MaxPool2D((2, 2)))
 
     model.add(Flatten())
     model.add(Dense(units=1024, activation="relu"))
-    model.add(Dense(units=103, activation="sigmoid"))
+    model.add(Dense(units=1024, activation="relu"))
+    model.add(Dense(units=imageCount, activation="sigmoid"))
 
     return model
 
@@ -41,7 +42,7 @@ def cnnDepth5():
     model.add(Flatten())
     model.add(Dense(units=1024, activation="relu"))
     model.add(Dense(units=1024, activation="relu"))
-    model.add(Dense(units=103, activation="sigmoid"))
+    model.add(Dense(units=imageCount, activation="sigmoid"))
 
     return model
 
@@ -58,7 +59,7 @@ def cnnDepth6():
     model.add(Flatten())
     model.add(Dense(units=1024, activation="relu"))
     model.add(Dense(units=1024, activation="relu"))
-    model.add(Dense(units=103, activation="sigmoid"))
+    model.add(Dense(units=imageCount, activation="sigmoid"))
 
     return model
 
@@ -81,21 +82,10 @@ def createModel(model, lr, e1, name):
     hist = model.fit(traindata, steps_per_epoch=len(traindata), validation_data=testdata, validation_steps=len(testdata),
                      epochs=e1, callbacks=[checkpoint, early], batch_size=5)
 
-    import matplotlib.pyplot as plt
 
-    plt.plot(hist.history["accuracy"])
-    plt.plot(hist.history['val_accuracy'])
-    plt.plot(hist.history['val_loss'])
-    plt.title("model accuracy")
-    plt.ylabel("Accuracy")
-    plt.xlabel("Epoch")
-    plt.ylim(0, 5)
-    plt.legend(["Accuracy", "Validation Accuracy", "Validation Loss"])
-    plt.show()
 #
 # for e in range(40, 110, 10):
-#     createModel(cnnDepth6(), 0.0001, e, f'cnn6f32e{e}u1024.h5')
-#     createModel(cnnDepth5(), 0.0001, e, f'cnn5f32e{e}u1024.h5')
-#     createModel(cnnDepth4(), 0.0001, e, f'cnn4f32e{e}u1024.h5')
-
-createModel(cnnDepth4(), 0.0001, 90, f'2cnn6f32e{90}u1024.h5')
+#     createModel(cnnDepth6(), 0.0001, e, f'2cnn6f32e{e}u1024.h5')
+    # createModel(cnnDepth5(), 0.0001, e, f'cnn5f32e{e}u1024.h5')
+    # createModel(cnnDepth4(), 0.0001, e, f'2cnn4f32e{e}u1024.h5')
+createModel(cnnDepth5(), 0.0001, 90, f'2cnn6f32e90u1024.h5')
