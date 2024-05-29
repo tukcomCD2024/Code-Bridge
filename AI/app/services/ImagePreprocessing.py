@@ -5,7 +5,7 @@ import numpy as np
 def convertMono(img: Image):
     fn = lambda x: 255 if x > 240 else 0
     img = img.convert('L').point(fn, mode='1')
-    return img
+    return img.convert('RGB')
 
 
 def trim_white_borders(image, threshold=240):
