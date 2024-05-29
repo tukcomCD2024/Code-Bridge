@@ -3,6 +3,8 @@ import down_arrow from "../../../../../image/down_arrow.svg";
 import lock from "../../../../../image/lock2.gif";
 import { library, icon } from '@fortawesome/fontawesome-svg-core';
 import { faHeart } from '@fortawesome/free-solid-svg-icons';
+import toastr from 'toastr';
+import 'toastr/build/toastr.css';
 
 // 문서 내 블록(노드)의 총 수를 계산하는 함수
 function countDocBlocks(doc) {
@@ -54,28 +56,36 @@ export function hoverButtonPlugin(blockLikeRef, blockLockRef) {
       hoverButton_like.addEventListener("click", async function() {
         const { state } = editorView;
         const { selection } = state;
+        const isImageNode = selection instanceof NodeSelection && selection.node.type.name === "image";
 
         if (lastPos !== null) {
           const resolvedPos = editorView.state.doc.resolve(lastPos);
-          const node = resolvedPos.node();
+          const node = resolvedPos.node(); 
           const liker = localStorage.getItem("userId");
 
            // 노드가 uuid를 가지고 있는지 확인
-           if ((node && node.attrs.guid) || selection.node.attrs['data-guid'].toString()) {
-             const guid = node.attrs.guid || selection.node.attrs['data-guid'].toString();
-             const writer = node.attrs.writer || selection.node.attrs.writer.toString();
-             await blockLikeRef.current.toggleLike(guid, liker, writer);
-             if (liker !== writer) {
-              this.classList.toggle("hoverButton_like");
-              this.classList.toggle("hoverButton_like_fullRedHeart");
+           if (node.type.name !== "doc" && ((node && node.attrs.guid) || selection.node.attrs['data-guid'].toString())) {
+              const guid = node.attrs.guid || selection.node.attrs['data-guid'].toString();
+              const writer = node.attrs.writer || selection.node.attrs.writer.toString();
+              let hasContent = false;
+              if (node.isTextblock && node.textContent.trim().length > 0) hasContent = true;
+              if (!isImageNode && !hasContent && this.classList.value === "hoverButton_like") {
+                toastr.remove();
+                toastr.warning("내용이 없는 블록입니다.");
+              } else {
+                  await blockLikeRef.current.toggleLike(guid, liker, writer);
+                  if (liker !== writer) {
+                    this.classList.toggle("hoverButton_like");
+                    this.classList.toggle("hoverButton_like_fullRedHeart");
+                  }
+              }
+            } else {
+              console.log('No UUID found for this node.');
             }
-           } else {
-             console.log('No UUID found for this node.');
-           }
-         } else {
-           console.error('No last position recorded.');
-         }
-      });
+          } else {
+            console.error('No last position recorded.');
+          }
+        });
 
       hoverButton_lock.addEventListener("click", (event) => {
         event.stopPropagation(); // 이벤트 버블링 방지
@@ -171,25 +181,35 @@ export function hoverButtonPlugin(blockLikeRef, blockLockRef) {
 
           if (lastPos !== null) {
             const resolvedPos = editorView.state.doc.resolve(lastPos);
-             const node = resolvedPos.node();
+            const node = resolvedPos.node();
          
+            // 좋아요 버튼 표시 여부에서 사용하는 변수
+            const nodeGuid = node?.attrs.guid;
+            const nodeWriter = node?.attrs.writer;
+            const imageGuid = isImageNode ? selection.node.attrs['data-guid']?.toString() : undefined;
+            const imageWriter = isImageNode ? selection.node.attrs['writer']?.toString() : undefined;
+            const userId = localStorage.getItem("userId");
+            const guid = isImageNode ? imageGuid : nodeGuid;
+
              // 노드가 uuid를 가지고 있는지 확인
-             if ((node && node.attrs.guid) || selection.node.attrs['data-guid'].toString()) {
-               const guid = node.attrs.guid || selection.node.attrs['data-guid'].toString()
-               const isLiked = blockLikeRef.current.getLikeList(guid);
-               if (isLiked) {
-                hoverButton_like.classList.remove('hoverButton_like');
-                hoverButton_like.classList.add('hoverButton_like_fullRedHeart');
+            if (guid) {
+              if (nodeWriter === userId || imageWriter === userId) {
+                hoverButton_like.style.display = "none";
               } else {
-                hoverButton_like.classList.remove('hoverButton_like_fullRedHeart');
-                hoverButton_like.classList.add('hoverButton_like');
+                hoverButton_like.style.display = "block";
+                const isLiked = blockLikeRef.current.getLikeList(guid);
+                if (isLiked) {
+                  hoverButton_like.classList.replace('hoverButton_like', 'hoverButton_like_fullRedHeart');
+                } else {
+                  hoverButton_like.classList.replace('hoverButton_like_fullRedHeart', 'hoverButton_like');
+                }
               }
             } else {
-               console.log('No UUID found for this node.');
-             }
-           } else {
+              console.log('No UUID found for this node.');
+            }
+          } else {
              console.error('No last position recorded.');
-           }
+          }
       
           let coords;
 
