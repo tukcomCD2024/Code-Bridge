@@ -19,6 +19,7 @@ const BlockLock = forwardRef(({ ydocRef, editorRef }, ref) => {
     const yConnectedUserList = ydocRef.current.getMap('connectedUsers');
     const yUnLockInfo = ydocRef.current.getMap('yUnLockInfo');
     const yResultUnLock = ydocRef.current.getMap('yResultUnLock');
+    const yReceivedMessage = ydocRef.current.getMap(`${nickname}_message`);
 
     const baseSwal = Swal.mixin({
       showCancelButton: true,
@@ -141,7 +142,7 @@ const BlockLock = forwardRef(({ ydocRef, editorRef }, ref) => {
         const currentTime = new Date();
 
         const timeDifference = currentTime - responseTime;
-        const expirationTime = 30000;
+        const expirationTime = yUnLockInfo.get(locker).nextResponseTime * 1000;
         let timerInterval;
         // 시간 차이를 밀리초 단위로 계산 (1분 = 60,000밀리초)
         if (timeDifference < expirationTime) {
@@ -165,7 +166,7 @@ const BlockLock = forwardRef(({ ydocRef, editorRef }, ref) => {
                                                 window.removeEventListener('popstate', handlePopState);
                                               }
                                           });
-          if (result.isDismissed && (result.dismiss === 'cancel' || result.dismiss === 'esc' || result.dismiss === 'close')) {
+          if (result.isDismissed) {
             return false;
           }
         } else {
@@ -184,40 +185,59 @@ const BlockLock = forwardRef(({ ydocRef, editorRef }, ref) => {
         let timerInterval;
         let forcedModalClose = false;
         const expirationTime = yRequestUnLock.get(nickname)?.expirationTime * 1000;
-        const result = await baseSwal.fire({ html: `<strong style="font-size: 1.1em; font-weight: bold;">${unlockRequestor} 이(가) 블록 잠금 해제를 요청하였습니다.</strong>
-                                                <br/>
-                                                <small>최근 설정한 블록 잠금을 해제하시겠습니까?</small>`,
-                                                footer: `<expiration></expiration> 초 안에 응답이 없을 경우 잠금이 해제됩니다.`,
-                                                icon: "warning",
-                                                timer: expirationTime,
-                                                timerProgressBar: true,
-                                                allowOutsideClick: false,
-                                                allowEscapeKey: false,
-                                                allowEnterKey: false,
-                                                didOpen: () => {
-                                                  const timer = baseSwal.getPopup().querySelector("expiration");
-                                                  timerInterval = setInterval(() => {
-                                                    if (yResultUnLock.has(`${unlockRequestor}`)) {
-                                                      baseSwal.close();
-                                                      forcedModalClose = true;
-                                                      toastr.info("동일 계정에서 응답하였습니다.");
-                                                      return;
-                                                    }
-                                                    const timeLeft = (Swal.getTimerLeft() / 1000).toFixed(1);
-                                                    timer.textContent = timeLeft;
-                                                    if (timeLeft <= 10 && timeLeft > 6) {
-                                                      timer.parentElement.classList.add('pulsate_orange');
-                                                    } else if (timeLeft <= 6) {
-                                                      timer.parentElement.classList.remove('pulsate_orange');
-                                                      timer.parentElement.classList.add('pulsate_red');
-                                                    } else {
-                                                      timer.parentElement.classList.remove('pulsate_red');
-                                                    }
-                                                  }, 100);
-                                                },
-                                                willClose: () => {
-                                                  clearInterval(timerInterval);
+        const result = await baseSwal.fire({ html: `<strong style="font-size: 1.2em; font-weight: bold;">${unlockRequestor} 이(가) 블록 잠금 해제를 요청하였습니다.</strong>
+                                                    <br/>
+                                                    <small style="color: #008080; font-weight: bold;">최근 설정한 블록 잠금을 해제하시겠습니까?</small>
+                                                    <br/><br/>
+                                                    <small>거절 시, 다음 요청 가능 시간(초)을 설정해주세요.</small>`,
+                                            footer: `<expiration></expiration> 초 안에 응답이 없을 경우 잠금이 해제됩니다.`,
+                                            icon: "warning",
+                                            timer: expirationTime,
+                                            timerProgressBar: true,
+                                            allowOutsideClick: false,
+                                            allowEscapeKey: false,
+                                            allowEnterKey: false,
+                                            confirmButtonText: '수락',
+                                            showDenyButton: true,
+                                            showCancelButton: false,
+                                            denyButtonText: '거절',
+                                            input: "range",
+                                            inputAttributes: {
+                                              min: "30",
+                                              max: "180",
+                                              step: "10"
+                                            },
+                                            inputValue: 30,
+                                            didOpen: () => {
+                                              const swalRange = document.querySelector('.swal2-range');
+                                              swalRange.style.marginTop = '-15px';
+                                              const timer = baseSwal.getPopup().querySelector("expiration");
+                                              timerInterval = setInterval(() => {
+                                                if (yResultUnLock.has(`${unlockRequestor}`)) {
+                                                  baseSwal.close();
+                                                  forcedModalClose = true;
+                                                  toastr.info("동일 계정에서 응답하였습니다.");
+                                                  return;
                                                 }
+                                                const timeLeft = (Swal.getTimerLeft() / 1000).toFixed(1);
+                                                timer.textContent = timeLeft;
+                                                if (timeLeft <= 10 && timeLeft > 6) {
+                                                  timer.parentElement.classList.add('pulsate_orange');
+                                                } else if (timeLeft <= 6) {
+                                                  timer.parentElement.classList.remove('pulsate_orange');
+                                                  timer.parentElement.classList.add('pulsate_red');
+                                                } else {
+                                                  timer.parentElement.classList.remove('pulsate_red');
+                                                }
+                                              }, 100);
+                                            },
+                                            willClose: () => {
+                                              clearInterval(timerInterval);
+                                            },
+                                            preDeny: () => {
+                                              const inputRangeValue = Swal.getInput().value;
+                                              return inputRangeValue;
+                                            }
                                           });
         if (result.isConfirmed || result.dismiss === baseSwal.DismissReason.timer) {
           yLineLocks.delete(myLockedBlockId);
@@ -226,8 +246,10 @@ const BlockLock = forwardRef(({ ydocRef, editorRef }, ref) => {
           toastr.info(`편집 잠금이 해제되었습니다.`);
           yResultUnLock.set(`${unlockRequestor}`, { responser: nickname, result: "accept", unlockedBlockID: myLockedBlockId });
         } else if (forcedModalClose === false) {
+          const yReceivedMessage = ydocRef.current.getMap(`${unlockRequestor}_message`);
+          yReceivedMessage.set(`${unlockRequestor}`, { message: "상대방이 요청을 거절하였습니다." });
           yResultUnLock.set(`${unlockRequestor}`, { responser: nickname, result: "deny" });
-          yUnLockInfo.set(nickname, { responseTime: Date() });
+          yUnLockInfo.set(nickname, { responseTime: Date(), nextResponseTime: result.value });
         }
       }
     };
@@ -267,7 +289,10 @@ const BlockLock = forwardRef(({ ydocRef, editorRef }, ref) => {
           if (result.isConfirmed) moveCursorToNodeWithUUID(unlockedBlockID);
           removeYjsMapUnLockData(unlockResponser);
         } else if (isOnline && yResultUnLock.get(nickname).result === "deny") {
-          toastr.error("상대방이 요청을 거절하였습니다.");
+          if (yReceivedMessage.has(nickname)) { 
+            toastr.error(yReceivedMessage.get(nickname).message.toString());
+            yReceivedMessage.delete(nickname);
+          };
         } else {
           removeYjsMapUnLockData(unlockResponser);
         }
