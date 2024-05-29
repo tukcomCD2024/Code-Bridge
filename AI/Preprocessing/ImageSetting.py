@@ -1,7 +1,7 @@
+import numpy as np
 from PIL import Image, ImageFilter, ImageOps
 import cairosvg
 import os
-import numpy as np
 
 tagsTemp = ['rabbit', 'bear', 'dog', 'cat', 'tiger', 'horse']
 defaultRoute = "../asset/image/svg"
