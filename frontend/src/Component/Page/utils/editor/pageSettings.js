@@ -53,7 +53,7 @@ const customParagraphNode = {
     class: { default: "custom-paragraph" },
     id: { default: "non-locked" },
     guid: { default: "" }, // Ensure guid attribute is included
-    writer: { default: localStorage.getItem("userId") },
+    writer: { default: "" },
   },
   parseDOM: [
     {
