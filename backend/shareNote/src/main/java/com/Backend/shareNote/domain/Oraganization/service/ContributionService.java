@@ -8,9 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -30,6 +28,8 @@ public class ContributionService {
             List<ContributionResultDTO> resultlist = new ArrayList<>();
 
             HashMap<String, Integer> quizMap = new HashMap<>();
+            HashMap<String, Integer> likeMap = new HashMap<>();
+
             // quizMap 초기화
             organization.getMembers().forEach(member -> {
                 quizMap.put(member, 0);
@@ -37,6 +37,14 @@ public class ContributionService {
 
             // 노트 조회 하면서 퀴즈의 맞춘 목록을 뒤지면서 quizMap 완성하기
             organization.getNotes().forEach(note -> {
+                //note의 like 정보를 갖고 있는 맵
+                Map<String, Set<Organization.BlockLike>> userLikes = note.getLikesInfo().getUserLikes();
+
+                for (String uuid :note.getLikesInfo().getUserLikes().keySet()) {
+                    likeMap.put(uuid, likeMap.getOrDefault(uuid,0) + userLikes.get(uuid).size() );
+                }
+
+
                 note.getQuiz().forEach(quiz -> {
                     for (String key : quiz.getCorrectUser()) {
                         quizMap.put(key, quizMap.get(key) + 1);
@@ -60,7 +68,7 @@ public class ContributionService {
                 contributionResultDTO.setQuizScore(quizMap.get(member));
 
                 // like 점수 추가 (추후에 추가 예정)
-                contributionResultDTO.setLikeScore(0);
+                contributionResultDTO.setLikeScore(likeMap.getOrDefault(member,0));
 
                 resultlist.add(contributionResultDTO);
             });
