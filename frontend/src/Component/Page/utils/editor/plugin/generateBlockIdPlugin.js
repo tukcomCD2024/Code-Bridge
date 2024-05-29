@@ -1,3 +1,4 @@
+import { localStorageCache } from "prosemirror-image-plugin";
 import { Plugin } from "prosemirror-state";
 import { v4 as uuidv4 } from "uuid";
 
@@ -22,7 +23,7 @@ export const generateBlockIdPlugin = (guidGenerator = uuidv4) => {
                   newGuid = guidGenerator();
                 } while (generatedIds.has(newGuid));
                 generatedIds.add(newGuid);
-                tr.setNodeMarkup(pos, undefined, {...node.attrs, 'data-guid': newGuid});
+                tr.setNodeMarkup(pos, undefined, {...node.attrs, 'data-guid': newGuid, 'data-writer': localStorage.getItem('userId')});
                 modified = true;
               } else {
                 generatedIds.add(currentGuid);
@@ -41,7 +42,7 @@ export const generateBlockIdPlugin = (guidGenerator = uuidv4) => {
                       newGuid = guidGenerator();
                     } while (generatedIds.has(newGuid));
                     generatedIds.add(newGuid);
-                    tr.setNodeMarkup(pos, undefined, {...node.attrs, guid: newGuid});
+                    tr.setNodeMarkup(pos, undefined, {...node.attrs, guid: newGuid, writer: localStorage.getItem('userId')});
                     modified = true;
                   }
                 } else {
@@ -53,7 +54,7 @@ export const generateBlockIdPlugin = (guidGenerator = uuidv4) => {
                       newGuid = guidGenerator();
                     } while (generatedIds.has(newGuid));
                     generatedIds.add(newGuid);
-                    tr.setNodeMarkup(pos, undefined, {...node.attrs, guid: newGuid});
+                    tr.setNodeMarkup(pos, undefined, {...node.attrs, guid: newGuid, writer: localStorage.getItem('userId')});
                     modified = true;
                   } else {
                     generatedIds.add(currentGuid);
