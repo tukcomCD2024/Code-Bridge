@@ -83,7 +83,19 @@ def createModel(model, lr, e1, name):
                      epochs=e1, callbacks=[checkpoint, early], batch_size=5)
 
 
-for e in range(50, 110, 10):
-    createModel(cnnDepth6(), 0.0001, e, f'cnn6f32e{e}u1024.h5')
-    createModel(cnnDepth5(), 0.0001, e, f'cnn5f32e{e}u1024.h5')
+# for e in range(50, 110, 10):
+#     createModel(cnnDepth6(), 0.0001, e, f'cnn6e{e}v2.h5')
+#     createModel(cnnDepth5(), 0.0001, e, f'cnn5e{e}v2.h5')
     # createModel(cnnDepth4(), 0.0001, e, f'cnn4f32e{e}u1024.h5')
+createModel(cnnDepth5(), 0.0001, 110, f'cnn5e110v2.h5')
+createModel(cnnDepth5(), 0.0001, 110, f'cnn5e110v2.h5')
+createModel(cnnDepth6(), 0.0001, 120, f'cnn6e120v2.h5')
+createModel(cnnDepth6(), 0.0001, 120, f'cnn6e120v2.h5')
+
+# model = cnnDepth6()
+# model.compile()
+# model.summary()
+#
+# model = cnnDepth5()
+# model.compile()
+# model.summary()

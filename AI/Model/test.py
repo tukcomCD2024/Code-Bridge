@@ -22,7 +22,7 @@ images = {'arrow': 4, 'heart': 54, 'heart2': 54, 'cloud': 31, 'sword': 96, 'skir
 from keras.models import load_model
 
 for i in os.listdir('./'):
-    if not 'f32' in i:
+    if not 'v2' in i:
         continue
     print(i)
 
