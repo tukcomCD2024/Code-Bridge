@@ -51,4 +51,9 @@ interface ApiService {
         @Path("userId") userId: String
     ): Call<List<QuizList>>
 
+    @POST("quiz/detail")
+    fun quizDetail(@Body request: QuizDetailRequest): Call<QuizDetailResponse>
+
+    @POST("quiz-solutions")
+    fun solveQuiz(@Body request: SolveQuiz): Call<ResponseBody>
 }
