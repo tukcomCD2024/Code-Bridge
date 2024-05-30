@@ -1,4 +1,3 @@
-import { localStorageCache } from "prosemirror-image-plugin";
 import { Plugin } from "prosemirror-state";
 import { v4 as uuidv4 } from "uuid";
 
