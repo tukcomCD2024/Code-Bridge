@@ -58,7 +58,7 @@ wss.on('connection', (ws, req) => {
 });
 
 const mdb = new MongodbPersistence(createConnectionString(databaseName), {
-  collectionName: 'Pages',
+  collectionName: 'transactions',
   flushSize: 100,
   multipleCollections: true,
 });
@@ -69,15 +69,7 @@ yUtils.setPersistence({
       const persistedYdoc = await mdb.getYDoc(docName);
       const newUpdates = Y.encodeStateAsUpdate(ydoc);
 
-      //작성자의 nickname 추가
-      const authorNickname = 'nickname';
-      //추가 부분
-      const updateWithAuthor =  Y.encodeStateAsUpdate({
-        ...Y.applyUpdate(Y.emptyUpdate, newUpdates),
-        author: authorNickname,
-      });
-
-      await mdb.storeUpdate(docName, updateWithAuthor);
+      await mdb.storeUpdate(docName, newUpdates);
       Y.applyUpdate(ydoc, Y.encodeStateAsUpdate(persistedYdoc));
       ydoc.on('update', async (update) => {
         await mdb.storeUpdate(docName, update);
