@@ -93,30 +93,6 @@ class NoteActivity : AppCompatActivity(), PageListAdapter.OnPageClickListener, P
         showSettingPopup(page, position)
     }
 
-    /*
-    private fun loadPagesFromFirestore(recentNoteId: String) {
-        val db = FirebaseFirestore.getInstance()
-        db.collection("pages")
-            .whereEqualTo("noteId", recentNoteId) // 해당 워크스페이스 ID와 일치하는 노트만 가져오기
-            .get()
-            .addOnSuccessListener { result ->
-                pages.clear()
-                for (document in result) {
-                    val pageID = document.getString("id") ?: ""
-                    val pageTitle = document.getString("title") ?:""
-                    val pageText = document.getString("text") ?: ""
-                    val pageImageUri = document.getString("imageUri") ?: ""
-                    val page = Page(pageID, pageTitle, pageText, pageImageUri)
-                    pages.add(page)
-                }
-                pageListAdapter.notifyDataSetChanged()
-            }
-            .addOnFailureListener { exception ->
-                // Handle any errors
-                // Log.e(TAG, "Error getting documents: ", exception)
-            }
-    }*/
-
 
     private fun loadPagesFromMongoDB(recentWorkspaceId: String, userId: String) {
         GlobalScope.launch(Dispatchers.IO) {

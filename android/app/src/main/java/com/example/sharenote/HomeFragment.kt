@@ -262,30 +262,6 @@ class HomeFragment : Fragment() {
         }
     }
 
-    /*
-    // 파이어스토어에서 워크스페이스 데이터를 가져와서 어댑터에 설정하는 함수
-    private fun loadWorkSpacesForPopup(adapter: WorkSpaceListAdapter) {
-        val db = FirebaseFirestore.getInstance()
-        db.collection("workSpaces")
-            .get()
-            .addOnSuccessListener { result ->
-                val workSpaceList = mutableListOf<WorkSpace>()
-                for (document in result) {
-                    val workSpaceName = document.getString("workSpaceName") ?: ""
-                    val owner = document.getString("owner") ?: ""
-                    val id = document.getString("workSpaceId") ?: ""
-                    val workSpace = WorkSpace(workSpaceName, owner, id)
-                    workSpaceList.add(workSpace)
-                }
-
-                // 어댑터에 워크스페이스 데이터 설정
-                adapter.setWorkSpaces(workSpaceList)
-            }
-            .addOnFailureListener { exception ->
-                // 쿼리 실패 시 에러 처리
-                // 예를 들어, 로그 출력 등
-            }
-    }*/
 
     private fun loadWorkSpacesForPopup(adapter: WorkSpaceListAdapter) {
         val currentUserEmail = getUserId()

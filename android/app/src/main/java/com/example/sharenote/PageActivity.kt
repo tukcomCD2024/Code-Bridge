@@ -105,22 +105,6 @@ class PageActivity : AppCompatActivity() {
         }
     }
 
-/*
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == 100 && resultCode == Activity.RESULT_OK) {
-            val imageUrl = data?.getStringExtra("imageUrl")
-            if (imageUrl != null) {
-                Log.d("PageActivity", "Received Image URL: $imageUrl")
-                Toast.makeText(this@PageActivity, imageUrl, Toast.LENGTH_SHORT).show()
-            } else {
-                Log.d("PageActivity", "Received Image URL is null")
-                Toast.makeText(this@PageActivity, "No image URL received", Toast.LENGTH_SHORT).show()
-            }
-        }
-    }*/
-
-
 
     private fun uploadImageToEditor(imageUrl: String?) {
         if (imageUrl != null) {
