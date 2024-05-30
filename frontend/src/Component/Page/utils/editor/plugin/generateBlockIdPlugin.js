@@ -7,6 +7,7 @@ export const generateBlockIdPlugin = (guidGenerator = uuidv4) => {
         const tr = nextState.tr;
         let modified = false;
         const generatedIds = new Set();
+        const userId = localStorage.getItem('userId');
       
         if (transactions.some(transaction => transaction.docChanged)) {
           const { paragraph, image } = nextState.schema.nodes;
@@ -22,7 +23,7 @@ export const generateBlockIdPlugin = (guidGenerator = uuidv4) => {
                   newGuid = guidGenerator();
                 } while (generatedIds.has(newGuid));
                 generatedIds.add(newGuid);
-                tr.setNodeMarkup(pos, undefined, {...node.attrs, 'data-guid': newGuid, 'data-writer': localStorage.getItem('userId')});
+                tr.setNodeMarkup(pos, undefined, {...node.attrs, 'data-guid': newGuid, 'data-writer': userId});
                 modified = true;
               } else {
                 generatedIds.add(currentGuid);
@@ -35,13 +36,13 @@ export const generateBlockIdPlugin = (guidGenerator = uuidv4) => {
               if (cursorPosition >= pos && cursorPosition <= pos + node.nodeSize) {
                 const cursorPositionInNode = cursorPosition - pos;
                 if (cursorPositionInNode === 1 && nodeTextContent !== "") {
-                  if (prevNode && !generatedIds.has(prevNode.attrs.guid)) {
+                  if (prevNode && !generatedIds.has(prevNode.attrs.guid) && node?.attrs.guid === prevNode?.attrs.guid) {
                     let newGuid;
                     do {
                       newGuid = guidGenerator();
                     } while (generatedIds.has(newGuid));
                     generatedIds.add(newGuid);
-                    tr.setNodeMarkup(pos, undefined, {...node.attrs, guid: newGuid, writer: localStorage.getItem('userId')});
+                    tr.setNodeMarkup(pos, undefined, {...node.attrs, guid: newGuid, writer: userId});
                     modified = true;
                   }
                 } else {
@@ -53,7 +54,7 @@ export const generateBlockIdPlugin = (guidGenerator = uuidv4) => {
                       newGuid = guidGenerator();
                     } while (generatedIds.has(newGuid));
                     generatedIds.add(newGuid);
-                    tr.setNodeMarkup(pos, undefined, {...node.attrs, guid: newGuid, writer: localStorage.getItem('userId')});
+                    tr.setNodeMarkup(pos, undefined, {...node.attrs, guid: newGuid, writer: userId});
                     modified = true;
                   } else {
                     generatedIds.add(currentGuid);
