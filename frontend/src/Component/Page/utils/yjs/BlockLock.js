@@ -70,7 +70,8 @@ const BlockLock = forwardRef(({ ydocRef, editorRef }, ref) => {
     
     function removeIdFromParagraph(uuid) {
       const hoverDiv = document.querySelector(".hoverDiv");
-      const hoverDivcurrentTop = parseFloat(window.getComputedStyle(hoverDiv).top);      const view = editorRef.current.view;
+      const hoverDivcurrentTop = parseFloat(window.getComputedStyle(hoverDiv).top);      
+      const view = editorRef.current.view;
       const { state, dispatch } = view;
       const { tr } = state;
     
@@ -300,77 +301,94 @@ const BlockLock = forwardRef(({ ydocRef, editorRef }, ref) => {
     };
 
     const toggleLineLock = async (guid) => {
-      const locker = yLineLocks.get(guid.toString());
-      const myLockedBlockId = yUserLocks.get(nickname);
+      try {
+        const locker = yLineLocks.get(guid.toString());
+        const myLockedBlockId = yUserLocks.get(nickname);
 
-      isLoggedIn();
-      toastr.remove();
+        isLoggedIn();
+        toastr.remove();
 
-      if (locker && locker !== nickname && myLockedBlockId && myLockedBlockId !== guid.toString()) {
-        const result = await baseSwal.fire({
-          title: "🔓",
-          html: `<strong>기존에 설정한 잠금을 해제 후 요청을 보내시겠습니까?<strong/>`,
-        });
-    
-        if (result.isConfirmed) {
-          removeIdFromParagraph(myLockedBlockId);
-          yLineLocks.delete(myLockedBlockId);
-          yUserLocks.delete(nickname);
-        } else {
-          return;
-        }
-      }
-
-      if (!locker && myLockedBlockId && myLockedBlockId !== guid.toString()) {
-        const result = await baseSwal.fire({
-          title: "최대 1개의 블록 잠금이 허용됩니다.",
-          text: "이전에 설정한 잠금을 해제하시겠습니까?",
-          icon: "warning",
-        });
-    
-        if (result.isConfirmed) {
-          selfUnlockBlock(nickname, myLockedBlockId)
-        } else {
-          return;
-        }
-      }
-  
-      if (locker) {
-        if (locker === nickname) {
-          selfUnlockBlock(locker, myLockedBlockId)
-          toastr.info(`편집 잠금이 해제되었습니다.`);
-          return;
-        }
-        if (yRequestUnLock.has(locker) && !yUnLockInfo.has(locker)) {
-          const requestor = yRequestUnLock.get(locker)?.requestor
-          const message = requestor === nickname ? `이전 요청을 처리 중입니다...` : `${requestor} 이(가) 잠금 해제 요청 중입니다.`;
-          toastr.warning(message);
-        } else {
-          const beforeRequest = await checkRequestUnLockTimer(locker);
-          if(beforeRequest) {
-            const result = await baseSwal.fire({
-              title: "✉️",
-              html: `<strong style="font-size: 1.2em; font-weight: bold;">${locker} 에게 블록 잠금 해제를 요청합니다.</strong>
-                     <br/>
-                     <small>요청 만료 시간(초)을 설정해주세요.</small>`,
-              input: "range",
-              inputAttributes: {
-                min: "15",
-                max: "30",
-                step: "5"
-              },
-              inputValue: 15
-            });
-            if (result.isConfirmed) {
-              yRequestUnLock.set(locker, { requestor: nickname, expirationTime: result.value });
-            }
+        if (locker && locker !== nickname && myLockedBlockId && myLockedBlockId !== guid.toString()) {
+          const result = await baseSwal.fire({
+            title: "🔓",
+            html: `<strong>기존에 설정한 잠금을 해제 후 요청을 보내시겠습니까?<strong/>`,
+          });
+      
+          if (result.isConfirmed) {
+            removeIdFromParagraph(myLockedBlockId);
+            yLineLocks.delete(myLockedBlockId);
+            yUserLocks.delete(nickname);
+          } else {
+            return;
           }
-        } 
-      } else {
-        yLineLocks.set(guid.toString(), nickname);
-        yUserLocks.set(nickname, guid.toString());
-        addIdToParagraph(guid.toString());
-        toastr.success(`블록 편집 잠금이 설정되었습니다.`);
+        }
+
+        if (!locker && myLockedBlockId && myLockedBlockId !== guid.toString()) {
+          const result = await baseSwal.fire({
+            title: "최대 1개의 블록 잠금이 허용됩니다.",
+            text: "이전에 설정한 잠금을 해제하시겠습니까?",
+            icon: "warning",
+          });
+      
+          if (result.isConfirmed) {
+            selfUnlockBlock(nickname, myLockedBlockId)
+          } else {
+            return;
+          }
+        }
+    
+        if (locker) {
+          if (locker === nickname) {
+            selfUnlockBlock(locker, myLockedBlockId)
+            toastr.info(`편집 잠금이 해제되었습니다.`);
+            return;
+          }
+          if (yRequestUnLock.has(locker) && !yUnLockInfo.has(locker)) {
+            const requestor = yRequestUnLock.get(locker)?.requestor
+            const message = requestor === nickname ? `이전 요청을 처리 중입니다...` : `${requestor} 이(가) 잠금 해제 요청 중입니다.`;
+            toastr.warning(message);
+          } else {
+            const beforeRequest = await checkRequestUnLockTimer(locker);
+            if(beforeRequest) {
+              const result = await baseSwal.fire({
+                title: "✉️",
+                html: `<strong style="font-size: 1.2em; font-weight: bold;">${locker} 에게 블록 잠금 해제를 요청합니다.</strong>
+                      <br/>
+                      <small>요청 만료 시간(초)을 설정해주세요.</small>`,
+                input: "range",
+                inputAttributes: {
+                  min: "15",
+                  max: "30",
+                  step: "5"
+                },
+                inputValue: 15
+              });
+              if (result.isConfirmed) {
+                if (!yUserLocks.has(locker) || guid?.toString() !== yUserLocks.get(locker)?.toString()) {
+                  toastr.remove();
+                  toastr.warning(`블록 잠금 정보가 변경되었습니다. <br/>다시 시도하세요.`);
+                } else if (yRequestUnLock.has(locker)) {
+                  const requestor = yRequestUnLock.get(locker)?.requestor;
+                  toastr.remove();
+                  toastr.error(`${requestor} 이(가) 이미 요청했습니다.`);
+                } else {
+                  yRequestUnLock.set(locker, { requestor: nickname, expirationTime: result.value });
+                }
+              }
+            }
+          } 
+        } else {
+          yLineLocks.set(guid.toString(), nickname);
+          yUserLocks.set(nickname, guid.toString());
+          addIdToParagraph(guid.toString());
+          toastr.success(`블록 편집 잠금이 설정되었습니다.`);
+        }
+      } catch (error) {
+        const hoverDiv = document.querySelector(".hoverDiv");
+        hoverDiv.style.visibility = "hidden";
+        toastr.remove();
+        toastr.warning(`다시 시도하세요.`);
+        console.error(error);
       }
     };
 
