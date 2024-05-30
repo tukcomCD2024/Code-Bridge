@@ -9,7 +9,6 @@ import Page from "./Component/Page/Page";
 import EmailTokenHandler from "./Component/Utils/EmailTokenHandler";
 import { BrowserRouter, Routes, Route  } from "react-router-dom";
 
-// mainPageId는 noteId와 동일함
 export default function App() {
   return (
     <div className="App">

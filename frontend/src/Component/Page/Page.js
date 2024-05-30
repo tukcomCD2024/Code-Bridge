@@ -17,9 +17,9 @@ import "./ProseMirror_css/prosemirror_image_plugin/withoutResize.css";
 import "./ProseMirror_css/ProseMirror.css";
 
 // yjs 라이브러리(동시편집)
+import * as Y from "yjs";
 import { WebsocketProvider } from "y-websocket";
 import { ySyncPlugin, yCursorPlugin, yUndoPlugin, undo, redo  } from "y-prosemirror";
-import { getYDocInstance } from "./utils/yjs/YjsInstances";
 
 // toastr 라이브러리(웹 토스트 메세지)
 import toastr from 'toastr';
@@ -50,13 +50,13 @@ function Page() {
   const pageId = pathSegments[3];
 
   const editorRef = useRef(null);
-  const ydocRef = useRef(getYDocInstance(pageId));
+  const ydocRef = useRef(new Y.Doc());
   const ydocProviderRef = useRef(null);
   const blockLikeRef = useRef(null);
   const blockLockRef = useRef(null);
 
-  let nickname = localStorage.getItem('nickname');
-  let userId = localStorage.getItem('userId');
+  const nickname = localStorage.getItem('nickname');
+  const userId = localStorage.getItem('userId');
   
   const [reconnect, setReconnect] = useState(false);
   const [noteinfo, setNoteInfo] = useState(null);
@@ -268,17 +268,8 @@ function Page() {
   useEffect(() => {
     if (!editorRef.current) return;
     if (!ydocRef.current) return;
-    // ydocRef.current = new Y.Doc();
-    // ydocProviderRef.current = new WebsocketProvider(
-    //   // "wss://demos.yjs.dev/ws", // yjs 데모 서버 주소
-    //   // "ws://localhost:4000",
-    //   // "ws://nodejs:4000", 
-    //   "wss://sharenote.shop/ws",
-    //    pageId, // 방 이름
-    //    ydocRef.current
-    // );
 
-    ydocRef.current = getYDocInstance(pageId);
+    ydocRef.current = new Y.Doc();
     ydocProviderRef.current = new WebsocketProvider(
       // "wss://demos.yjs.dev/ws", // yjs 데모 서버 주소
       // "ws://localhost:4000",
@@ -305,7 +296,8 @@ function Page() {
         });
       } else {
           if (isSynced) {
-            handleUserConnection();   
+            handleUserConnection();  
+            ydocProviderRef.current.connect(); 
         }
       }
       // setisloaded(true); // 딜레이 없음
@@ -313,7 +305,6 @@ function Page() {
         setisloaded(true);
       }, 300); // 딜레이 있음
     });
-    ydocProviderRef.current.connect();
 
     ydocProviderRef.current.on('status', event => {
       if (event.status === 'disconnected') {
@@ -365,10 +356,11 @@ function Page() {
 
     function updateUsersAndColors() {
       const updatedUsersAndColors = [];
+
       yConnectedUserList.forEach((color, name) => {
           updatedUsersAndColors.push({ name, color });
       });
-      setUsersAndColors([...updatedUsersAndColors]); // 새로운 배열을 생성하여 업데이트
+      setUsersAndColors(updatedUsersAndColors);
     }
 
     function handleUserConnection() {
@@ -391,15 +383,29 @@ function Page() {
       if (!isSingleConnected) {
         yConnectedUserList.set(nickname, userColor);
         ydocProviderRef.current.awareness.setLocalStateField('user', { name: nickname, color: userColor });
-        updateUsersAndColors();
       } else {
         yConnectedUserList.set(nicknameWithSuffix, userColor);
         ydocProviderRef.current.awareness.setLocalStateField('user', { name: nicknameWithSuffix, color: userColor });
-        updateUsersAndColors();
+      }
+      updateUsersAndColors();
+    }
+
+    function removeNicknameSuffix() {
+      const nicknameWithSuffix = `${nickname}_다중 접속`;
+      const hasOnlyNickname = yConnectedUserList.has(nickname);
+      const hasNicknameWithSuffix = yConnectedUserList.has(nicknameWithSuffix);
+
+      if (editorRef.current && !hasOnlyNickname && hasNicknameWithSuffix) {
+        let userColor = yConnectedUserList.get(nicknameWithSuffix) || yConnectedUserList.get(nickname) || getRandomColor();
+        yConnectedUserList.delete(nicknameWithSuffix);
+        yConnectedUserList.set(nickname, userColor);
+        ydocProviderRef.current.awareness.setLocalStateField('user', { name: nickname, color: userColor });
       }
     }
     
     function onlineUpdate() {
+      removeNicknameSuffix();
+      updateUsersAndColors(); 
       const userState = ydocProviderRef.current.awareness.getLocalState();
     
       if (userState && userState.user && userState.user.name) {
@@ -416,23 +422,53 @@ function Page() {
           return;
         }
       }
-      updateUsersAndColors();
     }
 
+    function removeIdFromParagraph(uuid) {
+      const { state, dispatch } = view;
+      const { tr } = state;
+    
+      let paragraphNode = null;
+      state.doc.descendants((node, pos) => {
+        if (node.attrs.guid === uuid) {
+          paragraphNode = { node, pos };
+          return false; // 찾았으니 순회 중단
+        }
+        return true;
+      });
+    
+      if (paragraphNode) {
+        const { node, pos } = paragraphNode;
+        if (!node.isText && !node.isInline) {
+          const { id, ...attrsWithoutId } = node.attrs;
+          const newAttrs = { ...attrsWithoutId, id: "non-locked" };
+          dispatch(tr.setNodeMarkup(pos, null, newAttrs));
+          view.updateState(state.apply(tr));
+        }
+      }
+    }
+    
     window.yjsDisconnect = function() {
       if(!editorRef) {
         return;
       }
 
       const keysToDelete = [];
+      const nicknameWithSuffix = `${nickname}_다중 접속`;
+      const isSingleConnected = yConnectedUserList.has(nickname);
+      const isMultiConnected = yConnectedUserList.has(nicknameWithSuffix);
+      
+      if ((!isSingleConnected && isMultiConnected) || (isSingleConnected && !isMultiConnected)) {
+        if(yUserLocks.has(nickname)) removeIdFromParagraph(yUserLocks.get(nickname).toString());
 
-      yLineLocks.forEach((value, key) => {
-        if (value === nickname) {
-          keysToDelete.push(key);
-        }
-      });
-      keysToDelete.forEach(key => yLineLocks.delete(key));
-      yUserLocks.delete(nickname);
+        yLineLocks.forEach((value, key) => {
+          if (value === nickname) {
+            keysToDelete.push(key);
+          }
+        });
+        keysToDelete.forEach(key => yLineLocks.delete(key));
+        yUserLocks.delete(nickname);
+      }
     
       // Yjs 연결 해제 및 리소스 정리
       const userState = ydocProviderRef.current.awareness.getLocalState();
@@ -442,8 +478,9 @@ function Page() {
     
       // 연결 해제 및 리소스 정리
       view.destroy();
-      ydocProviderRef.current.destroy();
       ydocProviderRef.current.disconnect();
+      ydocProviderRef.current.destroy();
+      ydocRef.current.destroy();
     }  
 
     // 더블클릭 이벤트를 처리하는 함수
@@ -672,6 +709,7 @@ function Page() {
               id="editor"
               style={{
                 visibility: isloaded ? "visible" : "hidden",
+                maxWidth: "72vw",
                 width: "100%",
                 margin: "0 auto",
                 paddingLeft: "8%",
@@ -702,7 +740,7 @@ function Page() {
 
         <ImageToEditor ref={editorRef} />
         <BlockLike ref={blockLikeRef} ydocRef={ydocRef} />
-        <BlockLock ref={blockLockRef} ydocRef={ydocRef} />
+        <BlockLock ref={blockLockRef} ydocRef={ydocRef} editorRef={editorRef}/>
     </div>
   );
 }

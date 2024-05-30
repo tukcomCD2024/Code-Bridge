@@ -3,6 +3,8 @@ import down_arrow from "../../../../../image/down_arrow.svg";
 import lock from "../../../../../image/lock2.gif";
 import { library, icon } from '@fortawesome/fontawesome-svg-core';
 import { faHeart } from '@fortawesome/free-solid-svg-icons';
+import toastr from 'toastr';
+import 'toastr/build/toastr.css';
 
 // 문서 내 블록(노드)의 총 수를 계산하는 함수
 function countDocBlocks(doc) {
@@ -54,41 +56,49 @@ export function hoverButtonPlugin(blockLikeRef, blockLockRef) {
       hoverButton_like.addEventListener("click", async function() {
         const { state } = editorView;
         const { selection } = state;
+        const isImageNode = selection instanceof NodeSelection && selection.node.type.name === "image";
 
         if (lastPos !== null) {
           const resolvedPos = editorView.state.doc.resolve(lastPos);
-          const node = resolvedPos.node();
+          const node = resolvedPos.depth !== 0 ? resolvedPos.node() : resolvedPos.nodeBefore;
           const liker = localStorage.getItem("userId");
 
            // 노드가 uuid를 가지고 있는지 확인
-           if ((node && node.attrs.guid) || selection.node.attrs['data-guid'].toString()) {
-             const guid = node.attrs.guid || selection.node.attrs['data-guid'].toString();
-             const writer = node.attrs.writer || selection.node.attrs.writer.toString();
-             await blockLikeRef.current.toggleLike(guid, liker, writer);
-             if (liker !== writer) {
-              this.classList.toggle("hoverButton_like");
-              this.classList.toggle("hoverButton_like_fullRedHeart");
+           if (node.type.name !== "doc" && ((node && node.attrs.guid) || selection.node.attrs['data-guid'].toString())) {
+              const guid = node.attrs.guid || selection.node.attrs['data-guid'].toString();
+              const writer = node.attrs.writer || selection.node.attrs.writer.toString();
+              let hasContent = false;
+              if (node.isTextblock && node.textContent.trim().length > 0) hasContent = true;
+              if (!isImageNode && !hasContent && this.classList.value === "hoverButton_like") {
+                toastr.remove();
+                toastr.warning("내용이 없는 블록입니다.");
+              } else {
+                  await blockLikeRef.current.toggleLike(guid, liker, writer);
+                  if (liker !== writer) {
+                    this.classList.toggle("hoverButton_like");
+                    this.classList.toggle("hoverButton_like_fullRedHeart");
+                  }
+              }
+            } else {
+              console.log('No UUID found for this node.');
             }
-           } else {
-             console.log('No UUID found for this node.');
-           }
-         } else {
-           console.error('No last position recorded.');
-         }
-      });
+          } else {
+            console.error('No last position recorded.');
+          }
+        });
 
       hoverButton_lock.addEventListener("click", (event) => {
         event.stopPropagation(); // 이벤트 버블링 방지
       
         if (lastPos !== null) {
-         const resolvedPos = editorView.state.doc.resolve(lastPos);
-          const node = resolvedPos.node();
-      
+
+          let resolvedPos = editorView.state.doc.resolve(lastPos);
+          const node = resolvedPos.depth !== 0 ? resolvedPos.node() : resolvedPos.nodeBefore;
+
           // 노드가 uuid를 가지고 있는지 확인
           if (node && node.attrs.guid) {
-            const nickname = localStorage.getItem("nickname");
             const guid = node.attrs.guid
-            blockLockRef.current.toggleLineLock(guid, nickname);
+            blockLockRef.current.toggleLineLock(guid);
             } else {
             console.log('No UUID found for this node.');
           }
@@ -103,37 +113,42 @@ export function hoverButtonPlugin(blockLikeRef, blockLockRef) {
         let tr = state.tr; // 현재 문서의 트랜잭션
         let insertPos;
         let $clickPos = state.doc.resolve(lastPos);
+        const node = $clickPos.depth !== 0 ? $clickPos.node() : $clickPos.nodeBefore;
         const isImageNode = selection instanceof NodeSelection && selection.node.type.name === "image";
 
-        if ($clickPos.nodeBefore == null && isImageNode) {
-          // 문서 시작 부분에 이미지가 있는 경우
-          insertPos = 1;
-        } else if (isImageNode) {
-          // 문서 중간 부분에 위치한 이미지 노드 바로 직후를 삽입 위치로 설정
-          $clickPos = selection.$anchor;
-          insertPos = $clickPos.pos + 1;
+        if (node?.type.name !== "doc") {
+          if ($clickPos.nodeBefore == null && isImageNode) {
+            // 문서 시작 부분에 이미지가 있는 경우
+            insertPos = 1;
+          } else if (isImageNode) {
+            // 문서 중간 부분에 위치한 이미지 노드 바로 직후를 삽입 위치로 설정
+            $clickPos = selection.$anchor;
+            insertPos = $clickPos.pos + 1;
+          } else {
+            // 클릭한 위치(lastPos)를 기준으로 해당 노드의 끝 위치를 찾음
+            const endOfNodePos = state.doc.content.size === $clickPos.end($clickPos.depth) ? $clickPos.start(1) : $clickPos.end($clickPos.depth);
+            // 클릭한 노드의 바로 다음 위치에 새 노드 삽입
+            insertPos = state.doc.content.size === $clickPos.end($clickPos.depth) ? endOfNodePos : endOfNodePos + 1;
+          }
+  
+          // 새 노드 삽입
+          const newNode = state.schema.nodes.paragraph.create();
+          tr = state.doc.content.size === $clickPos.end($clickPos.depth) ? tr.insert(insertPos - 1, newNode) : tr.insert(insertPos, newNode);
+  
+          // 삽입된 노드 내부에 커서 위치시키기
+          const newPos = state.doc.content.size === $clickPos.end($clickPos.depth) ? insertPos : insertPos + 1; // 노드 삽입 후 새로운 위치 조정
+          tr = tr.setSelection(Selection.near(tr.doc.resolve(newPos)));
+  
+          // 트랜잭션 적용
+          dispatch(tr);
+          editorView.focus();
+  
+          // hoverDiv 위치 업데이트
+          increaseEditorHeightForScroll();
+          updateButton(editorView, newPos, true);
         } else {
-          // 클릭한 위치(lastPos)를 기준으로 해당 노드의 끝 위치를 찾음
-          const endOfNodePos = $clickPos.end($clickPos.depth);
-          // 클릭한 노드의 바로 다음 위치에 새 노드 삽입
-          insertPos = endOfNodePos + 1;
+          console.error("paragraph 노드가 아닙니다.");
         }
-
-        // 새 노드 삽입
-        const newNode = state.schema.nodes.paragraph.create();
-        tr = tr.insert(insertPos, newNode);
-
-        // 삽입된 노드 내부에 커서 위치시키기
-        const newPos = insertPos + 1; // 노드 삽입 후 새로운 위치 조정
-        tr = tr.setSelection(Selection.near(tr.doc.resolve(newPos)));
-
-        // 트랜잭션 적용
-        dispatch(tr);
-        editorView.focus();
-
-        // hoverDiv 위치 업데이트
-        increaseEditorHeightForScroll();
-        updateButton(editorView, newPos, true);
       });
 
       function editorResizing() {
@@ -172,25 +187,35 @@ export function hoverButtonPlugin(blockLikeRef, blockLockRef) {
 
           if (lastPos !== null) {
             const resolvedPos = editorView.state.doc.resolve(lastPos);
-             const node = resolvedPos.node();
+            const node = resolvedPos.node();
          
+            // 좋아요 버튼 표시 여부에서 사용하는 변수
+            const nodeGuid = node?.attrs.guid;
+            const nodeWriter = node?.attrs.writer;
+            const imageGuid = isImageNode ? selection.node.attrs['data-guid']?.toString() : undefined;
+            const imageWriter = isImageNode ? selection.node.attrs['writer']?.toString() : undefined;
+            const userId = localStorage.getItem("userId");
+            const guid = isImageNode ? imageGuid : nodeGuid;
+
              // 노드가 uuid를 가지고 있는지 확인
-             if ((node && node.attrs.guid) || selection.node.attrs['data-guid'].toString()) {
-               const guid = node.attrs.guid || selection.node.attrs['data-guid'].toString()
-               const isLiked = blockLikeRef.current.getLikeList(guid);
-               if (isLiked) {
-                hoverButton_like.classList.remove('hoverButton_like');
-                hoverButton_like.classList.add('hoverButton_like_fullRedHeart');
+            if (guid) {
+              if (nodeWriter === userId || imageWriter === userId) {
+                hoverButton_like.style.display = "none";
               } else {
-                hoverButton_like.classList.remove('hoverButton_like_fullRedHeart');
-                hoverButton_like.classList.add('hoverButton_like');
+                hoverButton_like.style.display = "block";
+                const isLiked = blockLikeRef.current.getLikeList(guid);
+                if (isLiked) {
+                  hoverButton_like.classList.replace('hoverButton_like', 'hoverButton_like_fullRedHeart');
+                } else {
+                  hoverButton_like.classList.replace('hoverButton_like_fullRedHeart', 'hoverButton_like');
+                }
               }
             } else {
-               console.log('No UUID found for this node.');
-             }
-           } else {
+              console.log('No UUID found for this node.');
+            }
+          } else {
              console.error('No last position recorded.');
-           }
+          }
       
           let coords;
 
@@ -222,7 +247,7 @@ export function hoverButtonPlugin(blockLikeRef, blockLockRef) {
           const topWithScroll = coords.top + window.scrollY;
           const editorRect = view.dom.getBoundingClientRect();
           hoverDiv.style.left = window.matchMedia("(max-width: 768px)").matches ? `${editorRect.left - hoverDiv.offsetWidth + 7}px` : `${editorRect.left - hoverDiv.offsetWidth - 5}px`
-          hoverDiv.style.top = window.matchMedia("(max-width: 768px)").matches ? `${topWithScroll-2}px` : `${topWithScroll-4}px`;
+          hoverDiv.style.top = window.matchMedia("(max-width: 768px)").matches ? `${topWithScroll - 3}px` : `${topWithScroll - 5}px`;
 
         } catch (error) {
           console.error("Failed to update button position:", error);
