@@ -60,7 +60,7 @@ export function hoverButtonPlugin(blockLikeRef, blockLockRef) {
 
         if (lastPos !== null) {
           const resolvedPos = editorView.state.doc.resolve(lastPos);
-          const node = resolvedPos.node(); 
+          const node = resolvedPos.depth !== 0 ? resolvedPos.node() : resolvedPos.nodeBefore;
           const liker = localStorage.getItem("userId");
 
            // 노드가 uuid를 가지고 있는지 확인
@@ -91,9 +91,10 @@ export function hoverButtonPlugin(blockLikeRef, blockLockRef) {
         event.stopPropagation(); // 이벤트 버블링 방지
       
         if (lastPos !== null) {
-         const resolvedPos = editorView.state.doc.resolve(lastPos);
-          const node = resolvedPos.node();
-      
+
+          let resolvedPos = editorView.state.doc.resolve(lastPos);
+          const node = resolvedPos.depth !== 0 ? resolvedPos.node() : resolvedPos.nodeBefore;
+
           // 노드가 uuid를 가지고 있는지 확인
           if (node && node.attrs.guid) {
             const guid = node.attrs.guid
@@ -112,37 +113,42 @@ export function hoverButtonPlugin(blockLikeRef, blockLockRef) {
         let tr = state.tr; // 현재 문서의 트랜잭션
         let insertPos;
         let $clickPos = state.doc.resolve(lastPos);
+        const node = $clickPos.depth !== 0 ? $clickPos.node() : $clickPos.nodeBefore;
         const isImageNode = selection instanceof NodeSelection && selection.node.type.name === "image";
 
-        if ($clickPos.nodeBefore == null && isImageNode) {
-          // 문서 시작 부분에 이미지가 있는 경우
-          insertPos = 1;
-        } else if (isImageNode) {
-          // 문서 중간 부분에 위치한 이미지 노드 바로 직후를 삽입 위치로 설정
-          $clickPos = selection.$anchor;
-          insertPos = $clickPos.pos + 1;
+        if (node?.type.name !== "doc") {
+          if ($clickPos.nodeBefore == null && isImageNode) {
+            // 문서 시작 부분에 이미지가 있는 경우
+            insertPos = 1;
+          } else if (isImageNode) {
+            // 문서 중간 부분에 위치한 이미지 노드 바로 직후를 삽입 위치로 설정
+            $clickPos = selection.$anchor;
+            insertPos = $clickPos.pos + 1;
+          } else {
+            // 클릭한 위치(lastPos)를 기준으로 해당 노드의 끝 위치를 찾음
+            const endOfNodePos = state.doc.content.size === $clickPos.end($clickPos.depth) ? $clickPos.start(1) : $clickPos.end($clickPos.depth);
+            // 클릭한 노드의 바로 다음 위치에 새 노드 삽입
+            insertPos = state.doc.content.size === $clickPos.end($clickPos.depth) ? endOfNodePos : endOfNodePos + 1;
+          }
+  
+          // 새 노드 삽입
+          const newNode = state.schema.nodes.paragraph.create();
+          tr = state.doc.content.size === $clickPos.end($clickPos.depth) ? tr.insert(insertPos - 1, newNode) : tr.insert(insertPos, newNode);
+  
+          // 삽입된 노드 내부에 커서 위치시키기
+          const newPos = state.doc.content.size === $clickPos.end($clickPos.depth) ? insertPos : insertPos + 1; // 노드 삽입 후 새로운 위치 조정
+          tr = tr.setSelection(Selection.near(tr.doc.resolve(newPos)));
+  
+          // 트랜잭션 적용
+          dispatch(tr);
+          editorView.focus();
+  
+          // hoverDiv 위치 업데이트
+          increaseEditorHeightForScroll();
+          updateButton(editorView, newPos, true);
         } else {
-          // 클릭한 위치(lastPos)를 기준으로 해당 노드의 끝 위치를 찾음
-          const endOfNodePos = $clickPos.end($clickPos.depth);
-          // 클릭한 노드의 바로 다음 위치에 새 노드 삽입
-          insertPos = endOfNodePos + 1;
+          console.error("paragraph 노드가 아닙니다.");
         }
-
-        // 새 노드 삽입
-        const newNode = state.schema.nodes.paragraph.create();
-        tr = tr.insert(insertPos, newNode);
-
-        // 삽입된 노드 내부에 커서 위치시키기
-        const newPos = insertPos + 1; // 노드 삽입 후 새로운 위치 조정
-        tr = tr.setSelection(Selection.near(tr.doc.resolve(newPos)));
-
-        // 트랜잭션 적용
-        dispatch(tr);
-        editorView.focus();
-
-        // hoverDiv 위치 업데이트
-        increaseEditorHeightForScroll();
-        updateButton(editorView, newPos, true);
       });
 
       function editorResizing() {
