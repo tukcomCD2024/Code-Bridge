@@ -345,7 +345,7 @@ const BlockLock = forwardRef(({ ydocRef, editorRef }, ref) => {
           }
           if (yRequestUnLock.has(locker) && !yUnLockInfo.has(locker)) {
             const requestor = yRequestUnLock.get(locker)?.requestor
-            const message = requestor === nickname ? `이전 요청을 처리 중입니다...` : `${requestor} 이(가) 잠금 해제 요청 중입니다.`;
+            const message = requestor === nickname ? `이전 요청을 처리 중입니다...` : `<strong>${requestor}</strong> 이(가) 잠금 해제 요청 중입니다.`;
             toastr.warning(message);
           } else {
             const beforeRequest = await checkRequestUnLockTimer(locker);
@@ -366,11 +366,11 @@ const BlockLock = forwardRef(({ ydocRef, editorRef }, ref) => {
               if (result.isConfirmed) {
                 if (!yUserLocks.has(locker) || guid?.toString() !== yUserLocks.get(locker)?.toString()) {
                   toastr.remove();
-                  toastr.warning(`블록 잠금 정보가 변경되었습니다. <br/>다시 시도하세요.`);
+                  toastr.warning(`<strong>다시 시도하세요</strong>. <br/> 사유: 블록 잠금 정보가 변경됨`);
                 } else if (yRequestUnLock.has(locker)) {
                   const requestor = yRequestUnLock.get(locker)?.requestor;
                   toastr.remove();
-                  toastr.error(`${requestor} 이(가) 이미 요청했습니다.`);
+                  toastr.warning(`${requestor} 이(가) 이미 요청했습니다.`);
                 } else {
                   yRequestUnLock.set(locker, { requestor: nickname, expirationTime: result.value });
                 }
