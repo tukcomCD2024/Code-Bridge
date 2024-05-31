@@ -192,7 +192,7 @@ const BlockLock = forwardRef(({ ydocRef, editorRef }, ref) => {
       if (unlockRequestor && myLockedBlockId && unlockRequestor !== nickname) {
         let timerInterval;
         let forcedModalClose = false;
-        const expirationTime = 60000; // 요청 만료 시간(1분)
+        const expirationTime = 30000; // 요청 만료 시간(30초)
         const result = await baseSwal.fire({ html: `<strong>${unlockRequestor} 이(가) 블록 잠금 해제를 요청하였습니다.</strong>
                                                     <br/>
                                                     <small style="color: #008080; font-weight: bold;">최근 설정한 블록 잠금을 해제하시겠습니까?</small>
