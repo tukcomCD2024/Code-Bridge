@@ -18,6 +18,7 @@ const BlockLock = forwardRef(({ ydocRef, editorRef }, ref) => {
     const yRequestUnLock = ydocRef.current.getMap('yRequestUnLock');
     const yConnectedUserList = ydocRef.current.getMap('connectedUsers');
     const yUnLockInfo = ydocRef.current.getMap('yUnLockInfo');
+    const yRecentUnLockBlock = ydocRef.current.getArray('yRecentUnLockBlock');
     const yResultUnLock = ydocRef.current.getMap('yResultUnLock');
     const yReceivedMessage = ydocRef.current.getMap(`${nickname}_message`);
 
@@ -123,7 +124,10 @@ const BlockLock = forwardRef(({ ydocRef, editorRef }, ref) => {
 
     const selfUnlockBlock = (locker, myLockedBlockId) => {
       const unlockRequestor = yRequestUnLock.get(locker)?.requestor;
-      if (yResultUnLock.get(`${unlockRequestor}`)?.result === "deny") yResultUnLock.set(`${unlockRequestor}`, { responser: locker, result: "lateAccept", unlockedBlockID: myLockedBlockId });
+      if (yResultUnLock.get(`${unlockRequestor}`)?.result === "deny") { 
+        yResultUnLock.set(`${unlockRequestor}`, { responser: locker, result: "lateAccept", unlockedBlockID: myLockedBlockId }); 
+        yRecentUnLockBlock.push([`${myLockedBlockId}`]);
+      }
       removeYjsMapUnLockData(nickname);
       removeIdFromParagraph(myLockedBlockId);
       yLineLocks.delete(myLockedBlockId);
@@ -132,9 +136,12 @@ const BlockLock = forwardRef(({ ydocRef, editorRef }, ref) => {
 
     const removeYjsMapUnLockData = (locker) => {
       const unlockRequestor = yRequestUnLock.get(locker)?.requestor;
+      const unlockedBlockID = yResultUnLock.get(unlockRequestor)?.unlockedBlockID;
+      const yRecentUnLockBlockIndex = yRecentUnLockBlock.toArray().indexOf(unlockedBlockID?.toString())
       if (yResultUnLock.has(`${unlockRequestor}`)) yResultUnLock.delete(`${unlockRequestor}`);
       if (yRequestUnLock.has(locker)) yRequestUnLock.delete(locker);
       if (yUnLockInfo.has(locker)) yUnLockInfo.delete(locker);
+      if (yRecentUnLockBlockIndex !== -1) yRecentUnLockBlock.delete(`${yRecentUnLockBlockIndex}`, 1);
     };
 
     const checkRequestUnLockTimer = async (locker) => {
@@ -186,7 +193,7 @@ const BlockLock = forwardRef(({ ydocRef, editorRef }, ref) => {
         let timerInterval;
         let forcedModalClose = false;
         const expirationTime = 60000; // 요청 만료 시간(1분)
-        const result = await baseSwal.fire({ html: `<strong style="font-size: 1.2em; font-weight: bold;">${unlockRequestor} 이(가) 블록 잠금 해제를 요청하였습니다.</strong>
+        const result = await baseSwal.fire({ html: `<strong>${unlockRequestor} 이(가) 블록 잠금 해제를 요청하였습니다.</strong>
                                                     <br/>
                                                     <small style="color: #008080; font-weight: bold;">최근 설정한 블록 잠금을 해제하시겠습니까?</small>
                                                     <br/><br/>
@@ -245,6 +252,7 @@ const BlockLock = forwardRef(({ ydocRef, editorRef }, ref) => {
           yUserLocks.delete(nickname);
           removeIdFromParagraph(myLockedBlockId);
           toastr.info(`편집 잠금이 해제되었습니다.`);
+          yRecentUnLockBlock.push([`${myLockedBlockId}`]);
           yResultUnLock.set(`${unlockRequestor}`, { responser: nickname, result: "accept", unlockedBlockID: myLockedBlockId });
         } else if (forcedModalClose === false) {
           const yReceivedMessage = ydocRef.current.getMap(`${unlockRequestor}_message`);
@@ -307,6 +315,8 @@ const BlockLock = forwardRef(({ ydocRef, editorRef }, ref) => {
 
         isLoggedIn();
         toastr.remove();
+
+        if (yRecentUnLockBlock.toArray().indexOf(guid.toString()) !== -1) { toastr.warning(`<strong>잠시 후 시도하세요</strong>. <br/> 사유: 블록 잠금 정보가 남아있음`); return; }
 
         if (locker && locker !== nickname && myLockedBlockId && myLockedBlockId !== guid.toString()) {
           const result = await baseSwal.fire({
