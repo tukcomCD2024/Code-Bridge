@@ -23,8 +23,8 @@ const BlockLock = forwardRef(({ ydocRef, editorRef }, ref) => {
 
     const baseSwal = Swal.mixin({
       showCancelButton: true,
-      confirmButtonColor: "#3085d6",
-      cancelButtonColor: "#d33",
+      confirmButtonColor: "#28a745",
+      cancelButtonColor: "#6c757d",
       confirmButtonText: '확인',
       cancelButtonText: '취소'
     });
@@ -147,7 +147,7 @@ const BlockLock = forwardRef(({ ydocRef, editorRef }, ref) => {
         let timerInterval;
         // 시간 차이를 밀리초 단위로 계산 (1분 = 60,000밀리초)
         if (timeDifference < expirationTime) {
-          const result = await baseSwal.fire({ html: `<strong style="font-size: 1.1em; font-weight: bold;">${locker} 이(가) 해당 블록의 잠금 해제 요청을 거절했습니다.</strong>`,
+          const result = await baseSwal.fire({ html: `<strong style="font-size: 1.1em; font-weight: bold;">${locker}</strong> <strong style="font-size: 1.0em;">이(가) 해당 블록의 잠금 해제 요청을 거절했습니다.</strong>`,
                                               footer: `추가적인 요청은 <moreRequest></moreRequest>초 후에 가능합니다.`,
                                               icon: "error",
                                               timer: expirationTime - timeDifference,
@@ -185,7 +185,7 @@ const BlockLock = forwardRef(({ ydocRef, editorRef }, ref) => {
       if (unlockRequestor && myLockedBlockId && unlockRequestor !== nickname) {
         let timerInterval;
         let forcedModalClose = false;
-        const expirationTime = yRequestUnLock.get(nickname)?.expirationTime * 1000;
+        const expirationTime = 60000; // 요청 만료 시간(1분)
         const result = await baseSwal.fire({ html: `<strong style="font-size: 1.2em; font-weight: bold;">${unlockRequestor} 이(가) 블록 잠금 해제를 요청하였습니다.</strong>
                                                     <br/>
                                                     <small style="color: #008080; font-weight: bold;">최근 설정한 블록 잠금을 해제하시겠습니까?</small>
@@ -352,16 +352,7 @@ const BlockLock = forwardRef(({ ydocRef, editorRef }, ref) => {
             if(beforeRequest) {
               const result = await baseSwal.fire({
                 title: "✉️",
-                html: `<strong style="font-size: 1.2em; font-weight: bold;">${locker} 에게 블록 잠금 해제를 요청합니다.</strong>
-                      <br/>
-                      <small>요청 만료 시간(초)을 설정해주세요.</small>`,
-                input: "range",
-                inputAttributes: {
-                  min: "15",
-                  max: "30",
-                  step: "5"
-                },
-                inputValue: 15
+                html: `<strong style="font-size: 1.2em; font-weight: bold;">${locker}</strong> <strong style="font-size: 1.1em;">에게 블록 잠금 해제를 요청합니다.</strong>`,
               });
               if (result.isConfirmed) {
                 if (!yUserLocks.has(locker) || guid?.toString() !== yUserLocks.get(locker)?.toString()) {
@@ -372,7 +363,7 @@ const BlockLock = forwardRef(({ ydocRef, editorRef }, ref) => {
                   toastr.remove();
                   toastr.warning(`${requestor} 이(가) 이미 요청했습니다.`);
                 } else {
-                  yRequestUnLock.set(locker, { requestor: nickname, expirationTime: result.value });
+                  yRequestUnLock.set(locker, { requestor: nickname });
                 }
               }
             }
