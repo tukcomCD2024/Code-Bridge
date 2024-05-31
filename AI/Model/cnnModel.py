@@ -65,9 +65,6 @@ def cnnDepth6():
 
 
 def createModel(model, lr, e1, name):
-    modelNames = ['cnn4Depth.h5', 'cnn5Depth.h5', 'cnn6Depth.h5']
-    modelFuncs = [cnnDepth4(), cnnDepth5(), cnnDepth6()]
-
     opt = RMSprop(lr=lr)
     model.compile(optimizer=opt, loss='categorical_crossentropy', metrics=['accuracy'])
 
@@ -87,8 +84,6 @@ def createModel(model, lr, e1, name):
 #     createModel(cnnDepth6(), 0.0001, e, f'cnn6e{e}v2.h5')
 #     createModel(cnnDepth5(), 0.0001, e, f'cnn5e{e}v2.h5')
     # createModel(cnnDepth4(), 0.0001, e, f'cnn4f32e{e}u1024.h5')
-createModel(cnnDepth5(), 0.0001, 110, f'cnn5e110v2.h5')
-createModel(cnnDepth5(), 0.0001, 110, f'cnn5e110v2.h5')
 createModel(cnnDepth6(), 0.0001, 120, f'cnn6e120v2.h5')
 createModel(cnnDepth6(), 0.0001, 120, f'cnn6e120v2.h5')
 
