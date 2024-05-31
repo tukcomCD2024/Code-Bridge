@@ -3,8 +3,9 @@ import operator, os
 from app.services.ImageLoading import decodeFromJsonToImage, downloadFromS3, downloadFromURL
 from app.services.ImagePreprocessing import imageProcessing
 
-tags = 'airplane,apartment,apple,arm,arrow,axe,bag,baseball,basketball,bath,bed,bench,book,bottle,box,bread,broom,brush,bucket,bulb,cake,calendar,candle,candy,castle,chair,cherry,clock,cloud,coffee,coin,cookie,cup,cylinder,dice,dress,ear,earth,envelope,eraser,eye,finger,flag,flame,flask,flower,gamecontroller,ghost,gift,grape,hammer,heart,hospital,house,industry,injection,ladder,lake,leaf,leg,lightning,meat,megaphone,mic,money,monitor,mouse,mushroom,nail,nose,officebuilding,pants,peanut,pencil,police,pumpkin,rain,ribbon,rocket,ruler,school,shield,shirt,skirt,soccer,speaker,sprout,star,stethoscope,sun,swim,sword,television,tennis,tree,truck,umbrella,vehicle,volleyball,watch,wheel,windmill,zoom'.split(
-    ',')
+tags = (
+    'airplane,apartment,apple,arm,arrow,axe,bag,baseball,basketball,bath,bed,bench,book,bottle,box,bread,broom,brush,bucket,bulb,butterfly,cake,calendar,candle,candy,carrot,castle,chair,cherry,circle,clock,cloud,coffee,coin,cookie,cup,cylinder,dice,dress,ear,earth,envelope,eraser,eye,finger,flag,flame,flask,flower,game controller,ghost,gift,grape,hammer,heart,hospital,house,industry,injection,ladder,lake,leaf,leg,lightning,lollipop,meat,megaphone,mic,money,monitor,mouse,mushroom,nose,office building,pants,peanut,pencil,police,pumpkin,rain,ribbon,rocket,ruler,school,shield,shirt,skirt,snail,soccer,speaker,sprout,square,star,stethoscope,sun,swim,sword,television,tennis,tree,triangle,truck,umbrella,vehicle,volleyball,watch,wheel,windmill,zoom'
+    .split(','))
 
 
 # AI를 이용하여 유사하다고 예상되는 이미지(이름) 출력
