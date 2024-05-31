@@ -52,6 +52,7 @@ function Page() {
   const editorRef = useRef(null);
   const ydocRef = useRef(new Y.Doc());
   const ydocProviderRef = useRef(null);
+  const yDocInitialized = useRef(null);
   const blockLikeRef = useRef(null);
   const blockLockRef = useRef(null);
 
@@ -270,6 +271,7 @@ function Page() {
     if (!ydocRef.current) return;
 
     ydocRef.current = new Y.Doc();
+    yDocInitialized.current = false;
     ydocProviderRef.current = new WebsocketProvider(
       // "wss://demos.yjs.dev/ws", // yjs 데모 서버 주소
       // "ws://localhost:4000",
@@ -297,12 +299,13 @@ function Page() {
       } else {
           if (isSynced) {
             handleUserConnection();  
-            ydocProviderRef.current.connect(); 
-        }
+            ydocProviderRef.current.connect();
+          }
       }
       // setisloaded(true); // 딜레이 없음
       setTimeout(() => {
         setisloaded(true);
+        yDocInitialized.current = true;
       }, 300); // 딜레이 있음
     });
 
@@ -575,7 +578,7 @@ function Page() {
           yUndoPlugin(),
           hoverButtonPlugin(blockLikeRef, blockLockRef),
           inlinePlaceholderPlugin(),
-          generateBlockIdPlugin(),
+          generateBlockIdPlugin({ yDocInitialized }),
           imagePlugin({
             ...imageSettings,
             resizeCallback: (el, updateCallback) => {

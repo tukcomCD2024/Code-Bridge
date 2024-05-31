@@ -1,14 +1,19 @@
 import { Plugin } from "prosemirror-state";
 import { v4 as uuidv4 } from "uuid";
 
-export const generateBlockIdPlugin = (guidGenerator = uuidv4) => {
-    return new Plugin({
+export const generateBlockIdPlugin = ({ yDocInitialized, guidGenerator = uuidv4 }) => {
+  return new Plugin({
       appendTransaction: (transactions, prevState, nextState) => {
+        // Yjs 문서가 초기화되지 않은 경우 동작하지 않도록 함
+        if (!yDocInitialized.current) {
+          return null;        
+        }
+
         const tr = nextState.tr;
         let modified = false;
         const generatedIds = new Set();
         const userId = localStorage.getItem('userId');
-      
+
         if (transactions.some(transaction => transaction.docChanged)) {
           const { paragraph, image } = nextState.schema.nodes;
           let prevNode = null; // 이전 노드를 추적하기 위한 변수
