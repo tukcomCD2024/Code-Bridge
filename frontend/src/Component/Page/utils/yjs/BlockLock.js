@@ -379,6 +379,7 @@ const BlockLock = forwardRef(({ ydocRef, editorRef }, ref) => {
             }
           } 
         } else {
+          removeYjsMapUnLockData(nickname);
           yLineLocks.set(guid.toString(), nickname);
           yUserLocks.set(nickname, guid.toString());
           addIdToParagraph(guid.toString());
@@ -414,7 +415,6 @@ const BlockLock = forwardRef(({ ydocRef, editorRef }, ref) => {
           }
         });
       };
-        removeYjsMapUnLockData(nickname);
         window.addEventListener('popstate', handlePopState);
         yRequestUnLock.observe(checkRequestUnLockWrapper);
         yResultUnLock.observe(checkResultUnLockWrapper);
