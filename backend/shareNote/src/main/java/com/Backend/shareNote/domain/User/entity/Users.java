@@ -34,6 +34,8 @@ public class Users {
     @CreatedDate
     private LocalDateTime createdAt;
 
+    private String role;
+
 
 
 }

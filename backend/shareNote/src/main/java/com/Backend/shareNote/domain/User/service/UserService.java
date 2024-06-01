@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -25,15 +26,32 @@ public class UserService {
     private final UserRepository userRepository;
 
     private final OrganizationService organizationService;
-    public void signUp(UserSignUpDTO userSignUpDTO) {
-        Users users = Users.builder()
-                .email(userSignUpDTO.getEmail())
-                .password(userSignUpDTO.getPassword())
-                .nickname(userSignUpDTO.getNickname())
-                .organizations(new ArrayList<String>())
-                .build();
 
-        userRepository.save(users);
+    private final BCryptPasswordEncoder bCryptEncoder;
+    public ResponseEntity<?> signUp(UserSignUpDTO userSignUpDTO) {
+        try {
+            boolean isExist = userRepository.existsByEmail(userSignUpDTO.getEmail());
+
+            if (isExist) {
+                throw new IllegalArgumentException("이미 존재하는 이메일입니다.");
+            }
+
+            Users users = Users.builder()
+                    .email(userSignUpDTO.getEmail())
+                    // 암호화 해서 비밀번호 저장
+                    .password(bCryptEncoder.encode(userSignUpDTO.getPassword()))
+                    .nickname(userSignUpDTO.getNickname())
+                    .organizations(new ArrayList<String>())
+                    .role("ROLE_USER")
+                    .build();
+
+            userRepository.save(users);
+
+            return ResponseEntity.ok("회원가입 성공");
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
     }
 
     public ResponseEntity<Object> login(UserLoginDTO userLoginDTO) {

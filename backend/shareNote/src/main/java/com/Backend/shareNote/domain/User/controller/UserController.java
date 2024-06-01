@@ -15,13 +15,13 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
     private final UserService UserService;
     @PostMapping("/user/signUp")
-    public String signUp(@RequestBody UserSignUpDTO userSignUpDTO) {
-        UserService.signUp(userSignUpDTO);
-        return "회원가입 성공";
+    public ResponseEntity<?> signUp(@RequestBody UserSignUpDTO userSignUpDTO) {
+        return UserService.signUp(userSignUpDTO);
     }
 
     @PostMapping("/user/login")
     public ResponseEntity<Object> login(@RequestBody UserLoginDTO userLoginDTO) {
+        log.error("login");
         return UserService.login(userLoginDTO);
     }
 
