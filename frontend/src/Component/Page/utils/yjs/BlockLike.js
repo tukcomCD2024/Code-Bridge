@@ -8,10 +8,11 @@ const BlockLike = forwardRef(({ ydocRef }, ref) => {
   const pathSegments = location.pathname.split('/').filter(Boolean); 
   const organizationId = pathSegments[1];
   const noteId = pathSegments[2];
+  const hoverButton_like = document.querySelector(".hoverButton_like");
 
   const userId = localStorage.getItem('userId');
   const yLikeList = ydocRef.current.getMap(`yLikeList_${userId}`);
-
+  
   const toggleLike = async (blockId, lover, heartReceiver) => {
     if (lover !== heartReceiver) {
       const currentLikeState = yLikeList.get(blockId);
@@ -34,8 +35,10 @@ const BlockLike = forwardRef(({ ydocRef }, ref) => {
       if (response.ok) {
         if (responseData.includes("좋아요 성공!")) {
           toastr.success(responseData);
+          hoverButton_like.classList.replace('hoverButton_like', 'hoverButton_like_fullRedHeart');
         } else {
           toastr.info(responseData);
+          hoverButton_like.classList.replace('hoverButton_like_fullRedHeart', 'hoverButton_like');
         }
       } else {
         toastr.error(responseData);

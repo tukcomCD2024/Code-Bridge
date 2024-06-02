@@ -43,10 +43,14 @@ const BlockLock = forwardRef(({ ydocRef, editorRef }, ref) => {
       }
     };
 
+    function updateHoverDivPosition(hoverDiv, change) {
+      const hoverDivcurrentTop = parseFloat(window.getComputedStyle(hoverDiv)?.top || "0");
+      const newTop = window.matchMedia("(max-width: 768px)").matches ? hoverDivcurrentTop + change : hoverDivcurrentTop + (change * 2);
+      hoverDiv.style.top = `${newTop}px`;
+    }
+    
     function addIdToParagraph(uuid) {
       const hoverDiv = document.querySelector(".hoverDiv");
-      const hoverDivcurrentTop = parseFloat(window.getComputedStyle(hoverDiv).top);
-
       const view = editorRef.current.view;
       const { state, dispatch } = view;
       const { tr } = state;
@@ -63,15 +67,14 @@ const BlockLock = forwardRef(({ ydocRef, editorRef }, ref) => {
       if (paragraphNode) {
         const { node, pos } = paragraphNode;
         const paragraphWithId = node.type.create({ ...node.attrs, id: 'locked' }, node.content, node.marks);
-        dispatch(tr.replaceWith(pos, pos + node.nodeSize, paragraphWithId));
-        view.updateState(state.apply(tr));
-        hoverDiv.style.top = window.matchMedia("(max-width: 768px)").matches ? `${hoverDivcurrentTop + 2}px` : `${hoverDivcurrentTop + 4}px`;
+        tr.replaceWith(pos, pos + node.nodeSize, paragraphWithId);
+        dispatch(tr);
+        updateHoverDivPosition(hoverDiv, 2);
       }
     }
     
     function removeIdFromParagraph(uuid) {
       const hoverDiv = document.querySelector(".hoverDiv");
-      const hoverDivcurrentTop = parseFloat(window.getComputedStyle(hoverDiv).top);      
       const view = editorRef.current.view;
       const { state, dispatch } = view;
       const { tr } = state;
@@ -90,12 +93,12 @@ const BlockLock = forwardRef(({ ydocRef, editorRef }, ref) => {
         if (!node.isText && !node.isInline) {
           const { id, ...attrsWithoutId } = node.attrs;
           const newAttrs = { ...attrsWithoutId, id: "non-locked" };
-          dispatch(tr.setNodeMarkup(pos, null, newAttrs));
-          view.updateState(state.apply(tr));
-          hoverDiv.style.top = window.matchMedia("(max-width: 768px)").matches ? `${hoverDivcurrentTop - 2}px` : `${hoverDivcurrentTop - 4}px`;
+          tr.setNodeMarkup(pos, null, newAttrs);
+          dispatch(tr);
+          updateHoverDivPosition(hoverDiv, -2);
         }
       }
-    }
+    }    
 
     // 특정 UUID로 노드를 찾아 해당 노드의 위치로 커서를 이동시키는 함수
     function moveCursorToNodeWithUUID(uuid) {

@@ -74,10 +74,6 @@ export function hoverButtonPlugin(blockLikeRef, blockLockRef) {
                 toastr.warning("내용이 없는 블록입니다.");
               } else {
                   await blockLikeRef.current.toggleLike(guid, liker, writer);
-                  if (liker !== writer) {
-                    this.classList.toggle("hoverButton_like");
-                    this.classList.toggle("hoverButton_like_fullRedHeart");
-                  }
               }
             } else {
               console.log('No UUID found for this node.');
