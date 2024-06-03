@@ -19,7 +19,7 @@ public class JWTUtil {
 
     public String getUsername(String token) {
         return Jwts.parser().verifyWith(secretKey).build()
-                .parseSignedClaims(token).getPayload().get("email").toString();
+                .parseSignedClaims(token).getPayload().get("username").toString();
     }
 
     public String getRole(String token)  {
@@ -33,9 +33,9 @@ public class JWTUtil {
                 .parseSignedClaims(token).getPayload().getExpiration().before(new Date());
     }
 
-    public String createJwt(String email, String role, Long expiredMs) {
+    public String createJwt(String username, String role, Long expiredMs) {
         return Jwts.builder()
-                .claim("email", email)
+                .claim("username", username)
                 .claim("role", role)
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + expiredMs))

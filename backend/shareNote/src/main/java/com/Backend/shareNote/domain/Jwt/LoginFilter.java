@@ -34,6 +34,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
             String password = requestBody.get("password");
 
             // 스프링 시큐리티에서 username과 password를 검증하기 위해서는 token을 생성해야함
+            // 여기서 넘기는 email이 loadUserByUsername의 인자로 들어감!!!
             UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(email, password, null);
 
             // token 검증을 위해 AuthenticationManager로 전달
@@ -47,7 +48,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authentication) {
         CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
-        // email 반환
+        // email 반환 -> nickname으로 바꿈
         String username = customUserDetails.getUsername();
         Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
         Iterator<? extends GrantedAuthority> iterator = authorities.iterator();

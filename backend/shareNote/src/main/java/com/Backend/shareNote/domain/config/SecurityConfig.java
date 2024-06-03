@@ -5,6 +5,8 @@ package com.Backend.shareNote.domain.config;
 import com.Backend.shareNote.domain.Jwt.JWTFilter;
 import com.Backend.shareNote.domain.Jwt.JWTUtil;
 import com.Backend.shareNote.domain.Jwt.LoginFilter;
+import com.Backend.shareNote.domain.User.service.CustomOAuth2UserService;
+import com.Backend.shareNote.domain.oauth2.CustomSuccessHandler;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -14,6 +16,7 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.oauth2.client.web.OAuth2LoginAuthenticationFilter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
@@ -29,6 +32,9 @@ public class SecurityConfig {
     //AuthenticationManager가 인자로 받을 AuthenticationConfiguration 주입
     private final AuthenticationConfiguration authenticationConfiguration;
     private final JWTUtil jwtUtil;
+    private final CustomOAuth2UserService customOAuth2UserService;
+    private final CustomSuccessHandler customSuccessHandler;
+
     @Bean
     public BCryptPasswordEncoder bCryptPasswordEncoder(){
         return new BCryptPasswordEncoder();
@@ -43,6 +49,7 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         LoginFilter loginFIlter = new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil);
         loginFIlter.setFilterProcessesUrl("/api/user/login");
+
         // CORS 설정
         http
                 .cors((corsCustomizer -> corsCustomizer.configurationSource(new CorsConfigurationSource() {
@@ -64,6 +71,7 @@ public class SecurityConfig {
                         configuration.setMaxAge(3600L);
 
                         // 헤더에 Authorization을 추가해줘야 클라이언트에서 접근 가능
+                        configuration.setExposedHeaders(Collections.singletonList("Set-Cookie"));
                         configuration.setExposedHeaders(Collections.singletonList("Authorization"));
 
                         return configuration;
@@ -77,6 +85,12 @@ public class SecurityConfig {
                 .formLogin((auth -> auth.disable()));
         http
                 .httpBasic((auth -> auth.disable()));
+        http
+                .oauth2Login((oauth2) -> oauth2
+                        .userInfoEndpoint((userInfoEndpointConfig) -> userInfoEndpointConfig
+                                .userService(customOAuth2UserService))
+                        .successHandler(customSuccessHandler)
+                );
         // 경로별 인가 작업
         http
                 .authorizeHttpRequests((auth -> auth
@@ -84,7 +98,7 @@ public class SecurityConfig {
                         .requestMatchers("/admin").hasRole("ADMIN")
                         .anyRequest().authenticated())
                 );
-        http.addFilterBefore(new JWTFilter(jwtUtil), LoginFilter.class);
+        http.addFilterAfter(new JWTFilter(jwtUtil), OAuth2LoginAuthenticationFilter.class);
 
         http
                 .addFilterAt(loginFIlter, UsernamePasswordAuthenticationFilter.class);

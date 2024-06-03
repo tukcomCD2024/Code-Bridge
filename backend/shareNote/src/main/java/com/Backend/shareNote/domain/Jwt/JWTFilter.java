@@ -61,7 +61,7 @@ public class JWTFilter extends OncePerRequestFilter {
 
         // userEntity를 생성하여 값 설정
         Users userEntity = Users.builder()
-                .email(username)
+                .nickname(username)
                 // 임시로 만들라는데?
                 .password("tempPassword")
                 .role(role)
