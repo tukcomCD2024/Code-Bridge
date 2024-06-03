@@ -2,6 +2,8 @@ package com.example.sharenote
 
 import MemberListAdapter
 import PageListAdapter
+import QuizAlertAdapter
+import android.app.Dialog
 import android.content.ContentValues.TAG
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
@@ -9,6 +11,7 @@ import android.os.Bundle
 import android.util.Log
 import android.view.Gravity
 import android.view.LayoutInflater
+import android.view.WindowManager
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageButton
@@ -39,6 +42,7 @@ class NoteActivity : AppCompatActivity(), PageListAdapter.OnPageClickListener, P
     private lateinit var pageListAdapter: PageListAdapter
 
     private lateinit var orgPopupWindow: PopupWindow
+    private lateinit var badgeView: BadgeView
 
     private var pages: MutableList<Page> = mutableListOf()
 
@@ -48,6 +52,8 @@ class NoteActivity : AppCompatActivity(), PageListAdapter.OnPageClickListener, P
 
         backTextView = findViewById(R.id.backTextView)
         createPageButton = findViewById(R.id.CreatePage)
+
+        badgeView = findViewById(R.id.badgeView)
 
         recyclerView = findViewById(R.id.recyclerViewPages)
         val layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
@@ -76,6 +82,14 @@ class NoteActivity : AppCompatActivity(), PageListAdapter.OnPageClickListener, P
         // 최근에 사용한 노트의 ID 가져오기
         val recentWorkspaceId = SharedPreferencesUtil.getRecentWorkspaceId(this)
 
+        loadQuizzes()
+
+        badgeView.setOnClickListener {
+            // BadgeView를 클릭했을 때 처리할 내용을 여기에 추가합니다.
+            // 팝업창을 열거나 기타 동작을 수행할 수 있습니다.
+            loadQuizzesForPopup()
+        }
+
         // 페이지 데이터를 불러오는 함수 호출
         recentWorkspaceId?.let {
             val userId = SharedPreferencesUtil.getUserId(this) ?: ""
@@ -91,6 +105,88 @@ class NoteActivity : AppCompatActivity(), PageListAdapter.OnPageClickListener, P
 
     override fun onSettingClick(page: Page, position: Int) {
         showSettingPopup(page, position)
+    }
+
+    private fun loadQuizzes() {
+        val recentWorkspaceId = SharedPreferencesUtil.getRecentWorkspaceId(this) ?: ""
+        val noteId = SharedPreferencesUtil.getRecentNoteId(this) ?: ""
+        val userId = SharedPreferencesUtil.getUserId(this) ?: ""
+
+        apiService.getQuizzes(recentWorkspaceId, noteId, userId).enqueue(object : Callback<List<QuizList>> {
+            override fun onResponse(call: Call<List<QuizList>>, response: Response<List<QuizList>>) {
+                if (response.isSuccessful) {
+                    response.body()?.let { quizzes ->
+                        // correct 값이 -1인 퀴즈 항목의 수를 계산
+                        val unansweredCount = quizzes.count { quiz -> quiz.correct == -1 }
+                        // correct 값이 -1인 퀴즈 항목의 수가 0이 아니면 배지에 표시
+                        if (unansweredCount > 0) {
+                            badgeView.setCount(unansweredCount)
+                        } else {
+                            badgeView.setCount(0) // 배지 숨김
+                        }
+                    }
+                } else {
+                    Toast.makeText(this@NoteActivity, "Failed to load quizzes", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            override fun onFailure(call: Call<List<QuizList>>, t: Throwable) {
+                Toast.makeText(this@NoteActivity, "Failed to load quizzes: ${t.message}", Toast.LENGTH_SHORT).show()
+            }
+        })
+    }
+
+    private fun loadQuizzesForPopup() {
+        val recentWorkspaceId = SharedPreferencesUtil.getRecentWorkspaceId(this) ?: ""
+        val noteId = SharedPreferencesUtil.getRecentNoteId(this) ?: ""
+        val userId = SharedPreferencesUtil.getUserId(this) ?: ""
+
+        apiService.getQuizzes(recentWorkspaceId, noteId, userId).enqueue(object : Callback<List<QuizList>> {
+            override fun onResponse(call: Call<List<QuizList>>, response: Response<List<QuizList>>) {
+                if (response.isSuccessful) {
+                    response.body()?.let { quizzes ->
+                        val unansweredQuizzes = quizzes.filter { it.correct == -1 }
+                        showQuizzesPopup(unansweredQuizzes)
+                    }
+                } else {
+                    Toast.makeText(this@NoteActivity, "Failed to load quizzes", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            override fun onFailure(call: Call<List<QuizList>>, t: Throwable) {
+                Toast.makeText(this@NoteActivity, "Failed to load quizzes: ${t.message}", Toast.LENGTH_SHORT).show()
+            }
+        })
+    }
+
+    private fun showQuizzesPopup(quizzes: List<QuizList>) {
+        // 다이얼로그를 생성하고 레이아웃을 설정합니다.
+        val dialog = Dialog(this)
+        dialog.setContentView(R.layout.quiz_alert_popup_layout)
+
+        // 다이얼로그 크기 설정
+        val layoutParams = WindowManager.LayoutParams()
+        layoutParams.copyFrom(dialog.window?.attributes)
+        layoutParams.width = WindowManager.LayoutParams.MATCH_PARENT
+        layoutParams.height = WindowManager.LayoutParams.WRAP_CONTENT
+        dialog.window?.attributes = layoutParams
+
+        // 리사이클러뷰 설정
+        val recyclerView = dialog.findViewById<RecyclerView>(R.id.recyclerView)
+        recyclerView.layoutManager = LinearLayoutManager(this)
+        val adapter = QuizAlertAdapter(quizzes, object : QuizAlertAdapter.OnItemClickListener {
+            override fun onItemClick(quizId: String) {
+                // 퀴즈 아이템 클릭 시 QuizActivity로 이동하는 로직을 여기에 추가
+                val intent = Intent(this@NoteActivity, QuizActivity::class.java)
+                startActivity(intent)
+                finish()
+                dialog.dismiss() // 다이얼로그 닫기
+            }
+        })
+        recyclerView.adapter = adapter
+
+        // 다이얼로그를 화면에 표시합니다.
+        dialog.show()
     }
 
 
@@ -253,37 +349,35 @@ class NoteActivity : AppCompatActivity(), PageListAdapter.OnPageClickListener, P
         val recentWorkspaceId = getRecentWorkSpaceId() ?: ""
         val userId = getUserId() ?: ""
         val userName = getUserName() ?: ""
-        // 팝업 창의 레이아웃을 inflate하여 가져옴
-        val popupView = LayoutInflater.from(this).inflate(R.layout.org_info_layout, null)
 
+        // 다이얼로그를 생성하고 레이아웃을 설정합니다.
+        val dialog = Dialog(this)
+        dialog.setContentView(R.layout.org_info_layout)
 
-        // 워크스페이스 이름을 표시할 텍스트뷰 선언
-        val organizationTextView = popupView.findViewById<TextView>(R.id.Organization)
+        // 다이얼로그 크기 설정
+        val layoutParams = WindowManager.LayoutParams()
+        layoutParams.copyFrom(dialog.window?.attributes)
+        layoutParams.width = WindowManager.LayoutParams.MATCH_PARENT
+        layoutParams.height = WindowManager.LayoutParams.WRAP_CONTENT
+        dialog.window?.attributes = layoutParams
 
+        // 워크스페이스 이름을 표시할 텍스트뷰 설정
+        val organizationTextView = dialog.findViewById<TextView>(R.id.Organization)
         val workspaceName = SharedPreferencesUtil.getRecentWorkspaceName(this)
         organizationTextView.text = workspaceName
 
-
-        // 팝업 창을 생성
-        orgPopupWindow = PopupWindow(
-            popupView,
-            LinearLayout.LayoutParams.MATCH_PARENT,
-            LinearLayout.LayoutParams.WRAP_CONTENT,
-            true
-        )
-
-
-        // 팝업 창 내의 RecyclerView 설정
-        val memberRecyclerView = popupView.findViewById<RecyclerView>(R.id.recyclerViewMembers)
+        // RecyclerView 설정
+        val memberRecyclerView = dialog.findViewById<RecyclerView>(R.id.recyclerViewMembers)
         val layoutManager = LinearLayoutManager(this)
         memberRecyclerView.layoutManager = layoutManager
         val memberAdapter = MemberListAdapter(mutableListOf()) // 초기에는 빈 리스트를 넣어 초기화
         memberRecyclerView.adapter = memberAdapter
 
+        // 멤버 데이터를 가져와서 어댑터에 설정
         fetchOrganizationMembers(recentWorkspaceId, userId, memberAdapter)
 
-        // 팝업 창 내의 멤버 수 텍스트뷰 설정
-        val membersTextView = popupView.findViewById<TextView>(R.id.members)
+        // 멤버 수 텍스트뷰 설정
+        val membersTextView = dialog.findViewById<TextView>(R.id.members)
         memberAdapter.registerAdapterDataObserver(object : RecyclerView.AdapterDataObserver() {
             override fun onChanged() {
                 super.onChanged()
@@ -291,11 +385,10 @@ class NoteActivity : AppCompatActivity(), PageListAdapter.OnPageClickListener, P
             }
         })
 
-
         // Send Invitation 버튼 클릭 시 이메일 전송
-        val sendInvitationButton = popupView.findViewById<Button>(R.id.send)
+        val sendInvitationButton = dialog.findViewById<Button>(R.id.send)
         sendInvitationButton.setOnClickListener {
-            val emailEditText = popupView.findViewById<EditText>(R.id.inviteEditText)
+            val emailEditText = dialog.findViewById<EditText>(R.id.inviteEditText)
             val email = emailEditText.text.toString()
 
             // 이메일을 보낼 때 사용할 데이터
@@ -309,9 +402,10 @@ class NoteActivity : AppCompatActivity(), PageListAdapter.OnPageClickListener, P
             sendInvitationEmail(inviteData)
         }
 
-        // 팝업 창을 화면에 표시
-        orgPopupWindow.showAtLocation(popupView, Gravity.CENTER, 0, 0)
+        // 다이얼로그를 화면에 표시합니다.
+        dialog.show()
     }
+
 
 
     fun sendInvitationEmail(data: InvitationData) {

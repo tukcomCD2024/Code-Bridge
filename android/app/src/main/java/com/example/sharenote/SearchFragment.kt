@@ -40,7 +40,9 @@ class SearchFragment : Fragment() {
 
         searchResultRecyclerView.layoutManager = LinearLayoutManager(context)
         noteListAdapter = SearchNoteListAdapter { noteId ->
-            // Handle item click
+            saveRecentNoteId(noteId) // 클릭된 노트의 ID를 저장합니다.
+            val intent = Intent(requireContext(), NoteActivity::class.java)
+            startActivity(intent)
         }
         searchResultRecyclerView.adapter = noteListAdapter
 
