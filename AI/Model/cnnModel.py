@@ -64,7 +64,7 @@ def cnnDepth6():
     return model
 
 
-def createModel(model, lr, e1, name):
+def createModel(model, lr, e, name):
     opt = RMSprop(lr=lr)
     model.compile(optimizer=opt, loss='categorical_crossentropy', metrics=['accuracy'])
 
@@ -72,20 +72,18 @@ def createModel(model, lr, e1, name):
 
     checkpoint = ModelCheckpoint(name, monitor='val_accuracy', verbose=1, save_best_only=True,
                                  save_weights_only=False, mode='auto', period=1)
-    early = EarlyStopping(monitor='val_accuracy', min_delta=0, patience=30, verbose=1, mode='auto')
+    early = EarlyStopping(monitor='val_accuracy', min_delta=0, patience=60, verbose=1, mode='auto')
     # hist = model.fit_generator(steps_per_epoch=len(traindata), generator=traindata, validation_data=testdata,
     #                            validation_steps=len(testdata), epochs=4, callbacks=[checkpoint, early])
 
     hist = model.fit(traindata, steps_per_epoch=len(traindata), validation_data=testdata, validation_steps=len(testdata),
-                     epochs=e1, callbacks=[checkpoint, early], batch_size=5)
+                     epochs=e, callbacks=[checkpoint, early], batch_size=5)
 
 
-# for e in range(50, 110, 10):
-#     createModel(cnnDepth6(), 0.0001, e, f'cnn6e{e}v2.h5')
-#     createModel(cnnDepth5(), 0.0001, e, f'cnn5e{e}v2.h5')
+for e in range(40, 100, 10):
+    createModel(cnnDepth6(), 0.0001, e, f'cnn6e{e}vc2.h5')
+    createModel(cnnDepth5(), 0.0001, e, f'cnn5e{e}vc2.h5')
     # createModel(cnnDepth4(), 0.0001, e, f'cnn4f32e{e}u1024.h5')
-createModel(cnnDepth6(), 0.0001, 120, f'cnn6e120v2.h5')
-createModel(cnnDepth6(), 0.0001, 120, f'cnn6e120v2.h5')
 
 # model = cnnDepth6()
 # model.compile()
