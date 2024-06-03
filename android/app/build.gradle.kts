@@ -46,7 +46,9 @@ android {
         dataBinding = true
         viewBinding = true
     }
+
 }
+
 
 
 dependencies {
@@ -63,6 +65,8 @@ dependencies {
     implementation("com.google.firebase:firebase-auth-ktx:22.3.1")
     implementation("com.google.firebase:firebase-firestore:24.10.1")
     implementation("com.google.firebase:firebase-storage-ktx:20.3.0")
+
+    implementation("com.google.firebase:firebase-messaging:20.2.4")
 
     implementation ("com.squareup.retrofit2:retrofit:2.9.0")
     implementation ("com.squareup.retrofit2:converter-gson:2.9.0")
