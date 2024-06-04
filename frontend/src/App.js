@@ -6,7 +6,7 @@ import SignupPage from "./Component/Auth/SignupPage";
 import NotePage from "./Component/Note/NotePage";
 import UserProfileEdit from "./Component/Auth/UserProfileEdit";
 import Page from "./Component/Page/Page";
-import Contribution from "./Component/Contribution/ContributionPage";
+// import Contribution from "./Component/Contribution/ContributionPage";
 import EmailTokenHandler from "./Component/Utils/EmailTokenHandler";
 import { BrowserRouter, Routes, Route  } from "react-router-dom";
 
