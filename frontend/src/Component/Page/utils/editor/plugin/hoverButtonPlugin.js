@@ -74,10 +74,6 @@ export function hoverButtonPlugin(blockLikeRef, blockLockRef) {
                 toastr.warning("내용이 없는 블록입니다.");
               } else {
                   await blockLikeRef.current.toggleLike(guid, liker, writer);
-                  if (liker !== writer) {
-                    this.classList.toggle("hoverButton_like");
-                    this.classList.toggle("hoverButton_like_fullRedHeart");
-                  }
               }
             } else {
               console.log('No UUID found for this node.');
@@ -133,10 +129,10 @@ export function hoverButtonPlugin(blockLikeRef, blockLockRef) {
   
           // 새 노드 삽입
           const newNode = state.schema.nodes.paragraph.create();
-          tr = state.doc.content.size === $clickPos.end($clickPos.depth) ? tr.insert(insertPos - 1, newNode) : tr.insert(insertPos, newNode);
+          tr = state.doc.content.size === $clickPos.end($clickPos.depth) && !isImageNode ? tr.insert(insertPos - 1, newNode) : tr.insert(insertPos, newNode);
   
           // 삽입된 노드 내부에 커서 위치시키기
-          const newPos = state.doc.content.size === $clickPos.end($clickPos.depth) ? insertPos : insertPos + 1; // 노드 삽입 후 새로운 위치 조정
+          const newPos = state.doc.content.size === $clickPos.end($clickPos.depth) && !isImageNode ? insertPos : insertPos + 1; // 노드 삽입 후 새로운 위치 조정
           tr = tr.setSelection(Selection.near(tr.doc.resolve(newPos)));
   
           // 트랜잭션 적용

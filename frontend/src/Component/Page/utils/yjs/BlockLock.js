@@ -18,13 +18,14 @@ const BlockLock = forwardRef(({ ydocRef, editorRef }, ref) => {
     const yRequestUnLock = ydocRef.current.getMap('yRequestUnLock');
     const yConnectedUserList = ydocRef.current.getMap('connectedUsers');
     const yUnLockInfo = ydocRef.current.getMap('yUnLockInfo');
+    const yRecentUnLockBlock = ydocRef.current.getArray('yRecentUnLockBlock');
     const yResultUnLock = ydocRef.current.getMap('yResultUnLock');
     const yReceivedMessage = ydocRef.current.getMap(`${nickname}_message`);
 
     const baseSwal = Swal.mixin({
       showCancelButton: true,
-      confirmButtonColor: "#3085d6",
-      cancelButtonColor: "#d33",
+      confirmButtonColor: "#28a745",
+      cancelButtonColor: "#6c757d",
       confirmButtonText: '확인',
       cancelButtonText: '취소'
     });
@@ -42,10 +43,14 @@ const BlockLock = forwardRef(({ ydocRef, editorRef }, ref) => {
       }
     };
 
+    function updateHoverDivPosition(hoverDiv, change) {
+      const hoverDivcurrentTop = parseFloat(window.getComputedStyle(hoverDiv)?.top || "0");
+      const newTop = window.matchMedia("(max-width: 768px)").matches ? hoverDivcurrentTop + change : hoverDivcurrentTop + (change * 2);
+      hoverDiv.style.top = `${newTop}px`;
+    }
+    
     function addIdToParagraph(uuid) {
       const hoverDiv = document.querySelector(".hoverDiv");
-      const hoverDivcurrentTop = parseFloat(window.getComputedStyle(hoverDiv).top);
-
       const view = editorRef.current.view;
       const { state, dispatch } = view;
       const { tr } = state;
@@ -62,15 +67,15 @@ const BlockLock = forwardRef(({ ydocRef, editorRef }, ref) => {
       if (paragraphNode) {
         const { node, pos } = paragraphNode;
         const paragraphWithId = node.type.create({ ...node.attrs, id: 'locked' }, node.content, node.marks);
-        dispatch(tr.replaceWith(pos, pos + node.nodeSize, paragraphWithId));
-        view.updateState(state.apply(tr));
-        hoverDiv.style.top = window.matchMedia("(max-width: 768px)").matches ? `${hoverDivcurrentTop + 2}px` : `${hoverDivcurrentTop + 4}px`;
+        tr.replaceWith(pos, pos + node.nodeSize, paragraphWithId);
+        dispatch(tr);
+        updateHoverDivPosition(hoverDiv, 2);
       }
     }
     
     function removeIdFromParagraph(uuid) {
       const hoverDiv = document.querySelector(".hoverDiv");
-      const hoverDivcurrentTop = parseFloat(window.getComputedStyle(hoverDiv).top);      const view = editorRef.current.view;
+      const view = editorRef.current.view;
       const { state, dispatch } = view;
       const { tr } = state;
     
@@ -88,12 +93,12 @@ const BlockLock = forwardRef(({ ydocRef, editorRef }, ref) => {
         if (!node.isText && !node.isInline) {
           const { id, ...attrsWithoutId } = node.attrs;
           const newAttrs = { ...attrsWithoutId, id: "non-locked" };
-          dispatch(tr.setNodeMarkup(pos, null, newAttrs));
-          view.updateState(state.apply(tr));
-          hoverDiv.style.top = window.matchMedia("(max-width: 768px)").matches ? `${hoverDivcurrentTop - 2}px` : `${hoverDivcurrentTop - 4}px`;
+          tr.setNodeMarkup(pos, null, newAttrs);
+          dispatch(tr);
+          updateHoverDivPosition(hoverDiv, -2);
         }
       }
-    }
+    }    
 
     // 특정 UUID로 노드를 찾아 해당 노드의 위치로 커서를 이동시키는 함수
     function moveCursorToNodeWithUUID(uuid) {
@@ -122,7 +127,10 @@ const BlockLock = forwardRef(({ ydocRef, editorRef }, ref) => {
 
     const selfUnlockBlock = (locker, myLockedBlockId) => {
       const unlockRequestor = yRequestUnLock.get(locker)?.requestor;
-      if (yResultUnLock.get(`${unlockRequestor}`)?.result === "deny") yResultUnLock.set(`${unlockRequestor}`, { responser: locker, result: "lateAccept", unlockedBlockID: myLockedBlockId });
+      if (yResultUnLock.get(`${unlockRequestor}`)?.result === "deny") { 
+        yResultUnLock.set(`${unlockRequestor}`, { responser: locker, result: "lateAccept", unlockedBlockID: myLockedBlockId }); 
+        yRecentUnLockBlock.push([`${myLockedBlockId}`]);
+      }
       removeYjsMapUnLockData(nickname);
       removeIdFromParagraph(myLockedBlockId);
       yLineLocks.delete(myLockedBlockId);
@@ -131,9 +139,12 @@ const BlockLock = forwardRef(({ ydocRef, editorRef }, ref) => {
 
     const removeYjsMapUnLockData = (locker) => {
       const unlockRequestor = yRequestUnLock.get(locker)?.requestor;
+      const unlockedBlockID = yResultUnLock.get(unlockRequestor)?.unlockedBlockID;
+      const yRecentUnLockBlockIndex = yRecentUnLockBlock.toArray().indexOf(unlockedBlockID?.toString())
       if (yResultUnLock.has(`${unlockRequestor}`)) yResultUnLock.delete(`${unlockRequestor}`);
       if (yRequestUnLock.has(locker)) yRequestUnLock.delete(locker);
       if (yUnLockInfo.has(locker)) yUnLockInfo.delete(locker);
+      if (yRecentUnLockBlockIndex !== -1) yRecentUnLockBlock.delete(`${yRecentUnLockBlockIndex}`, 1);
     };
 
     const checkRequestUnLockTimer = async (locker) => {
@@ -146,7 +157,7 @@ const BlockLock = forwardRef(({ ydocRef, editorRef }, ref) => {
         let timerInterval;
         // 시간 차이를 밀리초 단위로 계산 (1분 = 60,000밀리초)
         if (timeDifference < expirationTime) {
-          const result = await baseSwal.fire({ html: `<strong style="font-size: 1.1em; font-weight: bold;">${locker} 이(가) 해당 블록의 잠금 해제 요청을 거절했습니다.</strong>`,
+          const result = await baseSwal.fire({ html: `<strong style="font-size: 1.1em; font-weight: bold;">${locker}</strong> <strong style="font-size: 1.0em;">이(가) 해당 블록의 잠금 해제 요청을 거절했습니다.</strong>`,
                                               footer: `추가적인 요청은 <moreRequest></moreRequest>초 후에 가능합니다.`,
                                               icon: "error",
                                               timer: expirationTime - timeDifference,
@@ -184,8 +195,8 @@ const BlockLock = forwardRef(({ ydocRef, editorRef }, ref) => {
       if (unlockRequestor && myLockedBlockId && unlockRequestor !== nickname) {
         let timerInterval;
         let forcedModalClose = false;
-        const expirationTime = yRequestUnLock.get(nickname)?.expirationTime * 1000;
-        const result = await baseSwal.fire({ html: `<strong style="font-size: 1.2em; font-weight: bold;">${unlockRequestor} 이(가) 블록 잠금 해제를 요청하였습니다.</strong>
+        const expirationTime = 30000; // 요청 만료 시간(30초)
+        const result = await baseSwal.fire({ html: `<strong>${unlockRequestor} 이(가) 블록 잠금 해제를 요청하였습니다.</strong>
                                                     <br/>
                                                     <small style="color: #008080; font-weight: bold;">최근 설정한 블록 잠금을 해제하시겠습니까?</small>
                                                     <br/><br/>
@@ -244,6 +255,7 @@ const BlockLock = forwardRef(({ ydocRef, editorRef }, ref) => {
           yUserLocks.delete(nickname);
           removeIdFromParagraph(myLockedBlockId);
           toastr.info(`편집 잠금이 해제되었습니다.`);
+          yRecentUnLockBlock.push([`${myLockedBlockId}`]);
           yResultUnLock.set(`${unlockRequestor}`, { responser: nickname, result: "accept", unlockedBlockID: myLockedBlockId });
         } else if (forcedModalClose === false) {
           const yReceivedMessage = ydocRef.current.getMap(`${unlockRequestor}_message`);
@@ -300,77 +312,88 @@ const BlockLock = forwardRef(({ ydocRef, editorRef }, ref) => {
     };
 
     const toggleLineLock = async (guid) => {
-      const locker = yLineLocks.get(guid.toString());
-      const myLockedBlockId = yUserLocks.get(nickname);
+      try {
+        const locker = yLineLocks.get(guid.toString());
+        const myLockedBlockId = yUserLocks.get(nickname);
 
-      isLoggedIn();
-      toastr.remove();
+        isLoggedIn();
+        toastr.remove();
 
-      if (locker && locker !== nickname && myLockedBlockId && myLockedBlockId !== guid.toString()) {
-        const result = await baseSwal.fire({
-          title: "🔓",
-          html: `<strong>기존에 설정한 잠금을 해제 후 요청을 보내시겠습니까?<strong/>`,
-        });
-    
-        if (result.isConfirmed) {
-          removeIdFromParagraph(myLockedBlockId);
-          yLineLocks.delete(myLockedBlockId);
-          yUserLocks.delete(nickname);
-        } else {
-          return;
-        }
-      }
+        if (yRecentUnLockBlock.toArray().indexOf(guid.toString()) !== -1) { toastr.warning(`<strong>잠시 후 시도하세요</strong>. <br/> 사유: 블록 잠금 정보가 남아있음`); return; }
 
-      if (!locker && myLockedBlockId && myLockedBlockId !== guid.toString()) {
-        const result = await baseSwal.fire({
-          title: "최대 1개의 블록 잠금이 허용됩니다.",
-          text: "이전에 설정한 잠금을 해제하시겠습니까?",
-          icon: "warning",
-        });
-    
-        if (result.isConfirmed) {
-          selfUnlockBlock(nickname, myLockedBlockId)
-        } else {
-          return;
-        }
-      }
-  
-      if (locker) {
-        if (locker === nickname) {
-          selfUnlockBlock(locker, myLockedBlockId)
-          toastr.info(`편집 잠금이 해제되었습니다.`);
-          return;
-        }
-        if (yRequestUnLock.has(locker) && !yUnLockInfo.has(locker)) {
-          const requestor = yRequestUnLock.get(locker)?.requestor
-          const message = requestor === nickname ? `이전 요청을 처리 중입니다...` : `${requestor} 이(가) 잠금 해제 요청 중입니다.`;
-          toastr.warning(message);
-        } else {
-          const beforeRequest = await checkRequestUnLockTimer(locker);
-          if(beforeRequest) {
-            const result = await baseSwal.fire({
-              title: "✉️",
-              html: `<strong style="font-size: 1.2em; font-weight: bold;">${locker} 에게 블록 잠금 해제를 요청합니다.</strong>
-                     <br/>
-                     <small>요청 만료 시간(초)을 설정해주세요.</small>`,
-              input: "range",
-              inputAttributes: {
-                min: "15",
-                max: "30",
-                step: "5"
-              },
-              inputValue: 15
-            });
-            if (result.isConfirmed) {
-              yRequestUnLock.set(locker, { requestor: nickname, expirationTime: result.value });
-            }
+        if (locker && locker !== nickname && myLockedBlockId && myLockedBlockId !== guid.toString()) {
+          const result = await baseSwal.fire({
+            title: "🔓",
+            html: `<strong>기존에 설정한 잠금을 해제 후 요청을 보내시겠습니까?<strong/>`,
+          });
+      
+          if (result.isConfirmed) {
+            removeIdFromParagraph(myLockedBlockId);
+            yLineLocks.delete(myLockedBlockId);
+            yUserLocks.delete(nickname);
+          } else {
+            return;
           }
-        } 
-      } else {
-        yLineLocks.set(guid.toString(), nickname);
-        yUserLocks.set(nickname, guid.toString());
-        addIdToParagraph(guid.toString());
-        toastr.success(`블록 편집 잠금이 설정되었습니다.`);
+        }
+
+        if (!locker && myLockedBlockId && myLockedBlockId !== guid.toString()) {
+          const result = await baseSwal.fire({
+            title: "최대 1개의 블록 잠금이 허용됩니다.",
+            text: "이전에 설정한 잠금을 해제하시겠습니까?",
+            icon: "warning",
+          });
+      
+          if (result.isConfirmed) {
+            selfUnlockBlock(nickname, myLockedBlockId)
+          } else {
+            return;
+          }
+        }
+    
+        if (locker) {
+          if (locker === nickname) {
+            selfUnlockBlock(locker, myLockedBlockId)
+            toastr.info(`편집 잠금이 해제되었습니다.`);
+            return;
+          }
+          if (yRequestUnLock.has(locker) && !yUnLockInfo.has(locker)) {
+            const requestor = yRequestUnLock.get(locker)?.requestor
+            const message = requestor === nickname ? `이전 요청을 처리 중입니다...` : `<strong>${requestor}</strong> 이(가) 잠금 해제 요청 중입니다.`;
+            toastr.warning(message);
+          } else {
+            const beforeRequest = await checkRequestUnLockTimer(locker);
+            if(beforeRequest) {
+              const result = await baseSwal.fire({
+                title: "✉️",
+                html: `<strong style="font-size: 1.2em; font-weight: bold;">${locker}</strong> <strong style="font-size: 1.1em;">에게 블록 잠금 해제를 요청합니다.</strong>`,
+              });
+              if (result.isConfirmed) {
+                if (!yUserLocks.has(locker) || guid?.toString() !== yUserLocks.get(locker)?.toString()) {
+                  toastr.remove();
+                  toastr.warning(`<strong>다시 시도하세요</strong>. <br/> 사유: 블록 잠금 정보가 변경됨`);
+                } else if (yRequestUnLock.has(locker)) {
+                  const requestor = yRequestUnLock.get(locker)?.requestor;
+                  toastr.remove();
+                  toastr.warning(`${requestor} 이(가) 이미 요청했습니다.`);
+                } else {
+                  yRequestUnLock.set(locker, { requestor: nickname });
+                }
+              }
+            }
+          } 
+        } else {
+          removeYjsMapUnLockData(nickname);
+          yLineLocks.set(guid.toString(), nickname);
+          yUserLocks.set(nickname, guid.toString());
+          addIdToParagraph(guid.toString());
+          toastr.success(`블록 편집 잠금이 설정되었습니다.`);
+        }
+      } catch (error) {
+        const hoverDiv = document.querySelector(".hoverDiv");
+        hoverDiv.style.visibility = "hidden";
+        toastr.remove();
+        toastr.warning(`다시 시도하세요.`);
+        console.error(error);
       }
     };
 
@@ -395,7 +418,6 @@ const BlockLock = forwardRef(({ ydocRef, editorRef }, ref) => {
           }
         });
       };
-        removeYjsMapUnLockData(nickname);
         window.addEventListener('popstate', handlePopState);
         yRequestUnLock.observe(checkRequestUnLockWrapper);
         yResultUnLock.observe(checkResultUnLockWrapper);
