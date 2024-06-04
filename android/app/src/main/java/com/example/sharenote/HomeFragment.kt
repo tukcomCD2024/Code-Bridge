@@ -1,13 +1,17 @@
 import android.animation.ObjectAnimator
 import android.app.Activity
+import android.app.Dialog
 import android.content.ContentValues.TAG
 import android.content.Intent
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.util.Log
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.WindowManager
 import android.widget.Button
 import android.widget.ImageButton
 import android.widget.ImageView
@@ -138,7 +142,7 @@ class HomeFragment : Fragment() {
         }
 
         setting_circle.setOnClickListener {
-            showAccountMenuPopup()
+
         }
 
 
@@ -180,52 +184,58 @@ class HomeFragment : Fragment() {
 
 
     private fun showPopupAccount() {
+        val dialog = Dialog(requireContext())
+        val popupView = LayoutInflater.from(requireContext()).inflate(R.layout.account_layout, null)
+        dialog.setContentView(popupView)
 
-        // PopupWindow 생성
-        val popupWindow = PopupWindow(
-            popupView,
-            ViewGroup.LayoutParams.MATCH_PARENT,
-            1200,
-            true
-        )
+        val layoutParams = WindowManager.LayoutParams()
+        layoutParams.copyFrom(dialog.window?.attributes)
+        layoutParams.width = WindowManager.LayoutParams.MATCH_PARENT
+        layoutParams.height = 1200
+        layoutParams.gravity = Gravity.BOTTOM
+        dialog.window?.attributes = layoutParams
 
-        // account_layout 내의 RecyclerView를 찾습니다.
+        dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+
         val recyclerViewWorkSpace = popupView.findViewById<RecyclerView>(R.id.recyclerViewWorkSpace)
-        val workSpaceListAdapter = WorkSpaceListAdapter(mutableListOf(), object :
-            WorkSpaceListAdapter.OnWorkSpaceClickListener {
+        val workSpaceListAdapter = WorkSpaceListAdapter(mutableListOf(), object : WorkSpaceListAdapter.OnWorkSpaceClickListener {
             override fun onWorkSpaceClick(workSpace: WorkSpace) {
-                // 워크스페이스를 클릭했을 때 처리할 내용을 여기에 작성합니다.
                 saveRecentWorkspaceId(workSpace.id)
                 saveRecentWorkspaceName(workSpace.name)
-                val MainIntent = Intent(requireContext(), MainActivity::class.java)
-                startActivity(MainIntent)
+                val mainIntent = Intent(requireContext(), MainActivity::class.java)
+                startActivity(mainIntent)
                 requireActivity().finish()
             }
         })
         recyclerViewWorkSpace.adapter = workSpaceListAdapter
         recyclerViewWorkSpace.layoutManager = LinearLayoutManager(requireContext())
 
-        // MongoDB에서 워크스페이스 데이터를 가져와서 어댑터에 설정
         loadWorkSpacesForPopup(workSpaceListAdapter)
 
-        // PopupWindow를 화면 아래쪽에 표시합니다.
-        popupWindow.showAtLocation(view, Gravity.BOTTOM, 0, 0)
-
-        // PopupWindow가 바깥을 터치하면 닫히도록 설정합니다.
-        popupWindow.isOutsideTouchable = true
-
-        // 팝업 창에서 로그아웃 항목을 클릭했을 때의 동작 정의
         val settingLayoutView = popupView.findViewById<RelativeLayout>(R.id.logoutLayout)
         settingLayoutView.setOnClickListener {
             auth.signOut()
             val loginIntent = Intent(requireContext(), LoginActivity::class.java)
             startActivity(loginIntent)
             requireActivity().finish()
-            popupWindow.dismiss() // 팝업 창 닫기
+            dialog.dismiss()
         }
+
+        val emailTextView1 = popupView.findViewById<TextView>(R.id.email)
+        val userEmail = SharedPreferencesUtil.getUserEmail(requireContext())
+        emailTextView1.text = userEmail
+
+        val settingCircle = popupView.findViewById<ImageView>(R.id.setting_circle)
+        settingCircle.setOnClickListener {
+            showAccountMenuPopup(settingCircle) // setting_circle을 전달하여 팝업 창이 해당 뷰의 아래쪽에 표시
+        }
+
+        dialog.show()
     }
 
-    private fun showAccountMenuPopup() {
+
+
+    private fun showAccountMenuPopup(anchorView: View) {
         val inflater = LayoutInflater.from(requireContext())
         val popupView = inflater.inflate(R.layout.menu_account, null)
 
@@ -242,7 +252,7 @@ class HomeFragment : Fragment() {
         popupWindow.isFocusable = true
 
         // 팝업 창을 표시할 위치 설정
-        popupWindow.showAsDropDown(setting_circle) // settingCircleImageView가 클릭된 위치에 따라 팝업 창이 표시됩니다.
+        popupWindow.showAsDropDown(anchorView, 0, 0) // setting_circle 아래에 표시
 
         // 워크스페이스 생성 또는 참여 항목 클릭 시 처리
         val workSpaceLayout = popupView.findViewById<RelativeLayout>(R.id.workSpaceLayout)
@@ -261,6 +271,11 @@ class HomeFragment : Fragment() {
             popupWindow.dismiss() // 팝업 창 닫기
         }
     }
+
+
+
+
+
 
 
     private fun loadWorkSpacesForPopup(adapter: WorkSpaceListAdapter) {
