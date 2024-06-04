@@ -23,7 +23,7 @@ export default function App() {
           <Route path="/organization/invitation/approve" element={<EmailTokenHandler />} />
           <Route path="/organization/:id/*" element={<NotePage />} /> 
           <Route path="/organization/:id/:noteId/:pageId" element={<Page />} /> 
-          <Route path="/contribution/:id" element={<Contribution />} /> 
+          {/* <Route path="/contribution/:id" element={<Contribution />} />  */}
         </Routes>
       </BrowserRouter>
     </div>
