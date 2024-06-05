@@ -8,8 +8,7 @@ import os
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 imageSize = 128
 
-trdata = ImageDataGenerator(zoom_range=[0.9, 1.3], height_shift_range=0.3, width_shift_range=0.2, horizontal_flip=True, rotation_range=0.3,
-                            validation_split=0.1)
+trdata = ImageDataGenerator(zoom_range=[0.8, 1.3], shear_range=0.72, horizontal_flip=True, rotation_range=45)
 traindata = trdata.flow_from_directory(directory=r"C:\Users\Ka\Desktop\Ka\대학교\졸업작품\project\Code-Bridge\AI\asset\image\svg",
                                        target_size=(imageSize, imageSize), class_mode='categorical', batch_size=20)
 tsdata = ImageDataGenerator()
@@ -53,7 +52,7 @@ def cnnDepth6():
     model.add(MaxPool2D((2, 2)))
     model.add(Conv2D(64, (3, 3), activation='relu'))
     model.add(MaxPool2D((2, 2)))
-    model.add(Conv2D(64, (3, 3), activation='relu'))
+    model.add(Conv2D(128, (3, 3), activation='relu'))
     model.add(MaxPool2D((2, 2)))
 
     model.add(Flatten())
@@ -81,9 +80,8 @@ def createModel(model, lr, e, name):
 
 
 for e in range(40, 100, 10):
-    createModel(cnnDepth6(), 0.0001, e, f'cnn6e{e}vc2.h5')
-    createModel(cnnDepth5(), 0.0001, e, f'cnn5e{e}vc2.h5')
-    # createModel(cnnDepth4(), 0.0001, e, f'cnn4f32e{e}u1024.h5')
+    createModel(cnnDepth6(), 0.0001, e, f'cnn6e{e}v7.h5')
+    createModel(cnnDepth5(), 0.0001, e, f'cnn5e{e}v7.h5')
 
 # model = cnnDepth6()
 # model.compile()
