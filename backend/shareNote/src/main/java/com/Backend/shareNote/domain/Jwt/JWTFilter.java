@@ -4,6 +4,7 @@ import com.Backend.shareNote.domain.User.dto.CustomUserDetails;
 import com.Backend.shareNote.domain.User.entity.Users;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -32,20 +33,29 @@ public class JWTFilter extends OncePerRequestFilter {
         }
 
         // request에서 Authorization 헤더를 찾음
-        String authorization = request.getHeader("Authorization");
+        //String authorization = request.getHeader("Authorization");
+        String authorization = null;
+        Cookie[] cookies = request.getCookies();
+        if(cookies == null) {
+            log.error("cookie가 없음");
+            filterChain.doFilter(request, response);
+            return;
+        }
+        for (Cookie cookie : cookies) {
+            if(cookie.getName().equals("Authorization")) {
+                authorization = cookie.getValue();
+            }
+        }
 
-        // Authorization 헤더 검증
-        if (authorization == null || !authorization.startsWith("Bearer ")) {
-            log.error("Authorization 헤더가 없음");
-            // 필터 체인상의 다음 필터 실행해라
+        if (authorization == null) {
+            log.error("cookie에 jwt가 없음");
             filterChain.doFilter(request, response);
 
-            // 메서드 종료 해줘야 하나봐 근데 회색인거 보면 알아서 해주는 듯?
             return;
         }
 
-        //Bearer 부분 제거 후 순수 토큰 획득
-        String token = authorization.split(" ")[1];
+        // 쿠키에서 추출한거
+        String token = authorization;
 
         //토큰 소멸 시간 검증
         if (jwtUtil.isExpired(token)) {

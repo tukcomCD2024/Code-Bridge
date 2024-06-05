@@ -10,12 +10,14 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Iterator;
 
 @RequiredArgsConstructor
+@Component
 public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
     private final JWTUtil jwtUtil;
 
@@ -35,7 +37,7 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
         response.addCookie(createCookie("Authorization", token));
         // 이거는 배포버전이랑 로컬이랑 다르게 해줘야 겠네
-        response.sendRedirect("http://localhost:3000");
+        //response.sendRedirect("http://localhost:3000");
 
     }
 
