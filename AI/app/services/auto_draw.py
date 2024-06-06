@@ -10,7 +10,7 @@ tags = (
 
 # AI를 이용하여 유사하다고 예상되는 이미지(이름) 출력
 def getPredict(img):
-    saved_model = load_model(os.getcwd() + "/app/services/cnn2.h5")
+    saved_model = load_model(os.getcwd() + "/app/services/cnn4.h5")
     pre = saved_model.predict(img)
     return pre
 
