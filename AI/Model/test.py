@@ -3,6 +3,9 @@ import operator
 import numpy as np
 from PIL import Image
 from keras.models import load_model
+from keras_preprocessing.image import ImageDataGenerator
+import matplotlib.pyplot as plt
+import cv2
 
 
 def resultByDesc(result):
@@ -31,7 +34,7 @@ def allModels():
 
 def imagePredictMono():
     for i in os.listdir('.'):
-        if not '.h5' in i:
+        if not 'cnn5e70v5.h5' in i:
             continue
 
         saved_model = load_model("./" + i)
@@ -53,7 +56,7 @@ def imagePredictMono():
             for j in range(40):
                 try:
                     if images[key] in result[j]:
-                        # print(key, j)
+                        print(key, j)
                         total += j
                         total -= 40
                         correct += 1
@@ -61,9 +64,9 @@ def imagePredictMono():
                 except:
                     # print("outOfBound")
                     break
-        if total < 400:
-            print(i)
-            print("total:", total)
+        # if total < 400:
+        print(i)
+        print("total:", total)
         # print("correct:", correct)
 
 
