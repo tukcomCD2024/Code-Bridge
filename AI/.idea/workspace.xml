@@ -6,8 +6,6 @@
   <component name="ChangeListManager">
     <list default="true" id="faca5fc6-4a4a-435a-9941-2c94547c1cd8" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/services/auto_draw.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/services/auto_draw.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test.py" beforeDir="false" afterPath="$PROJECT_DIR$/test.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -210,6 +208,7 @@
       <updated>1716987446040</updated>
       <workItem from="1716987446042" duration="1240000" />
       <workItem from="1717196391283" duration="855000" />
+      <workItem from="1717656036483" duration="313000" />
     </task>
     <servers />
   </component>
@@ -223,7 +222,7 @@
     <SUITE FILE_PATH="coverage/AI$main.coverage" NAME="main Coverage Results" MODIFIED="1716426541958" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/AI$example_controllers.coverage" NAME="example_controllers Coverage Results" MODIFIED="1715587418802" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/app/controllers" />
     <SUITE FILE_PATH="coverage/ImageDataArrange_py$TagSetting.coverage" NAME="TagSetting Coverage Results" MODIFIED="1711503999382" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Preprocessing" />
-    <SUITE FILE_PATH="coverage/AI$test.coverage" NAME="test Coverage Results" MODIFIED="1717147144799" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/model" />
+    <SUITE FILE_PATH="coverage/AI$test.coverage" NAME="test Coverage Results" MODIFIED="1717654801323" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/model" />
     <SUITE FILE_PATH="coverage/AI$LoadImage.coverage" NAME="LoadImage Coverage Results" MODIFIED="1715513227346" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/app/services" />
     <SUITE FILE_PATH="coverage/AI$auto_draw.coverage" NAME="auto_draw Coverage Results" MODIFIED="1715516525228" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/app/services" />
     <SUITE FILE_PATH="coverage/AI$ImagePreprocessing.coverage" NAME="ImagePreprocessing Coverage Results" MODIFIED="1716989653858" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/app/services" />
@@ -246,7 +245,7 @@
     <SUITE FILE_PATH="coverage/AI$aiflask.coverage" NAME="aiflask Coverage Results" MODIFIED="1717196137825" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/ImageDataArrange_py$imageConvertBase65.coverage" NAME="imageConvertBase65 Coverage Results" MODIFIED="1713883492461" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/ImageDataArrange_py$vgg16Sample.coverage" NAME="vgg16Sample Coverage Results" MODIFIED="1711279110242" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Model" />
-    <SUITE FILE_PATH="coverage/AI$cnnModel.coverage" NAME="cnnModel Coverage Results" MODIFIED="1717116472217" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/model" />
+    <SUITE FILE_PATH="coverage/AI$cnnModel.coverage" NAME="cnnModel Coverage Results" MODIFIED="1717649775870" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/model" />
     <SUITE FILE_PATH="coverage/AI$ImageSetting.coverage" NAME="ImageSetting Coverage Results" MODIFIED="1716976740641" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Preprocessing" />
     <SUITE FILE_PATH="coverage/ImageDataArrange_py$test.coverage" NAME="test Coverage Results" MODIFIED="1715986754537" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Model" />
     <SUITE FILE_PATH="coverage/AI$TagSetting.coverage" NAME="TagSetting Coverage Results" MODIFIED="1715555087810" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Preprocessing" />
