@@ -1,6 +1,10 @@
 .ProseMirror {
   position: relative;
   text-align: left;
+
+  @media (max-width: 768px) {
+    margin-left: 40px;
+  }
 }
 
 .ProseMirror {
@@ -342,18 +346,18 @@ img.ProseMirror-separator {
 .editor {
   background-image: url('/src/image/note_paper\(8\).svg');
   background-size: 100% 135%;
-   background-repeat: no-repeat; 
+  background-repeat: no-repeat; 
   background-position: center -10px; 
   border-radius: 4px;
   padding: 5px 0;
   margin-bottom: 23px;
 
   @media (max-width: 768px) {
-      background: white;
-      color: black;
-      background-clip: padding-box;
-      background-position: 0px 0px;
-      border: 2px solid rgba(0, 0, 0, 0.2);
+    background: white;
+    color: black;
+    background-clip: padding-box;
+    background-position: 0px 0px;
+    border: 3px solid rgba(198, 241, 86, 0.315);
   }
 }
 
@@ -378,18 +382,11 @@ img.ProseMirror-separator {
 }
 
 /* 아래부터는 직접 추가한 css 설정 */
-/*  문단(텍스트) 블록 단위 */
-/* .placeholder::before {
-  content: var(--placeholder-text);
-  color: #aaa;
-  cursor: text;
-  position: absolute;
-} */
-
 /*  문단(텍스트) 블록 단위_알록달록 */
 .placeholder::before {
-  content: var(--placeholder-text);
+  content: attr(data-placeholder);
   color: #7a4dff; /* 기본 텍스트 색상을 보라색 계열로 설정 */
+  pointer-events: none;
   cursor: text;
   position: absolute;
 
@@ -400,15 +397,15 @@ img.ProseMirror-separator {
 }
 
 .custom-paragraph:hover {
-  border-bottom:2px dashed #ff6161c6;
+  border-bottom: 2px dashed #ff6161c6;
 }
 
 .hoverDiv {
   position: absolute;
   width: auto; /* 요소들을 포함할 수 있도록 너비를 auto로 조정 */
-  height: 20px; /* 높이는 필요에 따라 조정 */
+  height: 25px; /* 높이는 필요에 따라 조정 */
   display: flex; /* flexbox 레이아웃을 사용 */
-  justify-content: space-around; /* 내부 요소들 사이에 공간을 균등하게 배분 */
+  justify-content: center;
   align-items: center; /* 내부 요소들을 세로 방향으로 가운데 정렬 */
   visibility: hidden; /* 초기에는 숨김 처리 */
   padding: 3px;
@@ -416,21 +413,125 @@ img.ProseMirror-separator {
   background: #f9f9f9;
   box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
   border-radius: 4px;
+
+  @media (max-width: 768px) {
+    padding: 1px;
+  }
 }
 
-.hoverButton_plus, .hoverButton_lock, .hoverButton_writer {
+.hoverButton_plus, .hoverButton_lock{
   cursor: pointer;
   width: 18px;
   height: 20px;
   margin: 4px;
+  padding-top: 1px;
+
+  @media (max-width: 768px) {
+    width: 14px;
+    height: 16px;
+  }
 }
 
-/* .hoverButton_writer {
+.hoverButton_plus:hover {
+  animation: verticalBeat 1s ease-in-out infinite;
+}
+
+.hoverButton_lock:hover {
+animation: spin 2s ease-in-out infinite;
+}
+
+.hoverButton_like,
+.hoverButton_like_fullRedHeart {
   cursor: pointer;
-  width: 20px;
-  height: 20px;
-  margin-left: 8px;
-} */
+  display: flex;
+  align-items: center;
+  font-size: 22px;
+  margin: 0px 4px;
+
+  @media (max-width: 768px) {
+    font-size: 18px;
+  }
+}
+
+.hoverButton_like {
+  fill: gray;
+  color: gray;
+}
+
+.hoverButton_like_fullRedHeart {
+  fill: red;
+  color: red;
+}
+
+.hoverButton_like:hover,
+.hoverButton_like_fullRedHeart:hover {
+  animation: heartbeat 1s infinite;
+}
+
+
+@keyframes heartbeat {
+  0% {
+    transform: scale(1.0);
+  }
+  15% {
+    transform: scale(0.9);
+  }
+  30% {
+    transform: scale(1.1);
+  }
+  45% {
+    transform: scale(0.9); 
+  }
+  60% {
+    transform: scale(1.05); 
+  }
+  75% {
+    transform: scale(0.95);
+  }
+  90% {
+    transform: scale(1.03);
+  }
+  100% {
+    transform: scale(1.0);
+  }
+}
+@keyframes verticalBeat {
+  0% {
+    transform: translateY(0);
+  }
+  25% {
+    transform: translateY(1px);
+  }
+  50% {
+    transform: translateY(-1px);
+  }
+  75% {
+    transform: translateY(1px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  20% {
+    transform: rotate(10deg);
+  }
+  40% {
+    transform: rotate(-10deg);
+  }
+  60% {
+    transform: rotate(5deg);
+  }
+  80% {
+    transform: rotate(-5deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
 
 /* this is a rough fix for the first cursor position when the first paragraph is empty */
 .ProseMirror > .ProseMirror-yjs-cursor:first-child {
@@ -474,3 +575,49 @@ img.ProseMirror-separator {
   padding-right: 2px;
   white-space: nowrap;
 }
+
+@keyframes pulse_red {
+  0%, 100% {
+    font-size: 1em;
+    font-weight: bolder;
+    color: red;
+  }
+  50% {
+    font-size: 1.1em;
+    color: red;
+  }
+}
+@keyframes pulse_orange {
+  0%, 100% {
+    font-size: 1em;
+    font-weight: bold;
+    color: rgb(255, 123, 0);
+  }
+  50% {
+    font-size: 1.1em;
+    color: rgb(255, 123, 0);
+  }
+}
+.pulsate_red {
+  animation: pulse_red 0.4s infinite;
+}
+.pulsate_orange {
+  animation: pulse_orange 0.5s infinite;
+}
+
+/* ID가 locked-node인 p 태그에 대한 스타일 */
+p#locked {
+  border: 1px solid #1E90FF;
+  background-color: #D6EAF8;
+  border-radius: 8px;
+  padding: 1px 7px;
+  background-image: url('/src/image/lock2.gif');
+  background-size: 0.8em;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+p#locked:hover {
+  background-image: none;
+}
+

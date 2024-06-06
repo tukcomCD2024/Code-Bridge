@@ -9,8 +9,13 @@ import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.example.sharenote.SharedPreferencesUtil.saveRecentWorkspaceId
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class WorkSpaceActivity : AppCompatActivity() {
 
@@ -37,12 +42,15 @@ class WorkSpaceActivity : AppCompatActivity() {
 
         continueButton.setOnClickListener {
             val workSpaceName = workSpaceNameEditText.text.toString().trim()
+            val userEmail = SharedPreferencesUtil.getUserEmail(this).toString()
 
             if (workSpaceName.isNotEmpty()) {
-                val currentUserEmail = auth.currentUser?.email
+                /*val currentUserEmail = auth.currentUser?.email
                 currentUserEmail?.let { email ->
                     saveWorkSpaceToFirestore(workSpaceName, email)
-                }
+                }*/
+                val organization = Organization(workSpaceName, userEmail,"")
+                saveWorkSpaceToMongoDB(organization)
             } else {
                 // 워크스페이스 이름이 비어있는 경우
                 Toast.makeText(this, "워크스페이스 이름을 정해주세요.", Toast.LENGTH_SHORT).show()
@@ -54,6 +62,7 @@ class WorkSpaceActivity : AppCompatActivity() {
         }
 
     }
+
 
     private fun saveWorkSpaceToFirestore(workSpaceName: String, email: String) {
         val workSpaceData = hashMapOf(
@@ -92,9 +101,70 @@ class WorkSpaceActivity : AppCompatActivity() {
             }
     }
 
+
+    private fun saveWorkSpaceToMongoDB(organization: Organization) {
+        GlobalScope.launch(Dispatchers.IO) {
+            try {
+                // MongoDB에 워크스페이스 데이터를 전송
+                val response = RetrofitClient.apiService.sendWorkSpaceData(organization)
+                if (response.isSuccessful) {
+                    // MongoDB에 데이터 저장 성공 시
+                    val workSpaceResponse = response.body() // 응답 데이터 파싱
+                    if (workSpaceResponse != null) {
+                        // 반환된 데이터로부터 워크스페이스 ID 추출
+                        val workSpaceName = organization.name
+                        val workSpaceId = workSpaceResponse.organizationId
+
+                        // 워크스페이스 이름을 SharedPreferences에 저장
+                        saveRecentWorkspaceName(workSpaceName)
+
+                        // 추출한 ID를 SharedPreferences에 저장
+                        saveRecentWorkspaceId(workSpaceId)
+
+                        // InviteActivity로 이동
+                        val intent = Intent(this@WorkSpaceActivity, InviteActivity::class.java)
+                        startActivity(intent)
+                        finish() // 현재 Activity 종료
+                    } else {
+                        // 반환된 데이터가 없을 경우 에러 처리
+                        withContext(Dispatchers.Main) {
+                            Toast.makeText(
+                                this@WorkSpaceActivity,
+                                "워크스페이스 정보를 받아오지 못했습니다.",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    }
+                } else {
+                    // MongoDB에 데이터 저장 실패 시
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(
+                            this@WorkSpaceActivity,
+                            "워크스페이스 정보를 저장하는 데 실패했습니다.",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                }
+            } catch (e: Exception) {
+                // 네트워크 오류 등 예외 처리
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(
+                        this@WorkSpaceActivity,
+                        "네트워크 오류가 발생했습니다.",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
+        }
+    }
+
     // SharedPreferences에 워크스페이스 ID 저장
     private fun saveRecentWorkspaceId(workspaceId: String) {
         SharedPreferencesUtil.saveRecentWorkspaceId(this, workspaceId)
+    }
+
+    private fun saveRecentWorkspaceName(workspaceName: String) {
+        SharedPreferencesUtil.saveRecentWorkspaceName(this, workspaceName)
     }
 
 }

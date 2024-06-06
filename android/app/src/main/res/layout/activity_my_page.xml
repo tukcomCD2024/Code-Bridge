@@ -13,7 +13,7 @@
 
         <Button
             android:id="@+id/backButton"
-            android:layout_width="80dp"
+            android:layout_width="125dp"
             android:layout_height="wrap_content"
             android:background="@android:color/transparent"
             android:drawableLeft="@drawable/baseline_keyboard_arrow_left_24"

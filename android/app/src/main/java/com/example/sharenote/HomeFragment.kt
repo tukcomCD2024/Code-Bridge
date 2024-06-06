@@ -1,5 +1,6 @@
+import android.animation.ObjectAnimator
+import android.app.Activity
 import android.content.ContentValues.TAG
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -7,32 +8,38 @@ import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.inputmethod.InputMethodManager
 import android.widget.Button
-import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.PopupWindow
 import android.widget.RelativeLayout
 import android.widget.TextView
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.sharenote.ApiService
+import com.example.sharenote.CheckOrganization
 import com.example.sharenote.CreateNoteActivity
 import com.example.sharenote.LoginActivity
 import com.example.sharenote.MainActivity
 import com.example.sharenote.Note
 import com.example.sharenote.NoteActivity
-import com.example.sharenote.PageActivity
 import com.example.sharenote.OrganizationActivity
-import com.example.sharenote.Page
+import com.example.sharenote.PaintActivity
 import com.example.sharenote.R
+import com.example.sharenote.RetrofitClient
 import com.example.sharenote.SharedPreferencesUtil
 import com.example.sharenote.WorkSpace
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import retrofit2.Callback
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 
 class HomeFragment : Fragment() {
 
@@ -42,6 +49,11 @@ class HomeFragment : Fragment() {
     private lateinit var emailTextView: TextView
     private lateinit var menuBtn: ImageButton
     private lateinit var profileForm: RelativeLayout
+
+    private lateinit var listLayout: RelativeLayout
+    private lateinit var listLayout_1: ImageView
+
+    private lateinit var MoveDraw: Button
 
     private lateinit var emailTextView1: TextView
     private lateinit var workSpaceText: TextView
@@ -63,8 +75,8 @@ class HomeFragment : Fragment() {
         // noteListAdapter를 초기화합니다.
         noteListAdapter = NoteListAdapter { noteId ->
             // 노트 아이템 클릭 시 NoteActivity로 이동
+            saveRecentNoteId(noteId) // 클릭된 노트의 ID를 저장합니다.
             val intent = Intent(requireContext(), NoteActivity::class.java)
-            intent.putExtra("note_id", noteId)
             startActivity(intent)
         }
 
@@ -72,6 +84,12 @@ class HomeFragment : Fragment() {
         recyclerView.adapter = noteListAdapter
         menuBtn = view.findViewById(R.id.menuBtn)
         profileForm = view.findViewById(R.id.profileForm)
+
+        listLayout = view.findViewById(R.id.listLayout)
+        listLayout_1 = view.findViewById(R.id.listLayout_1)
+
+        MoveDraw = view.findViewById(R.id.MoveDraw)
+
 
         // account_layout을 팝업으로 사용하기 위해 팝업 뷰를 초기화
         popupView = layoutInflater.inflate(R.layout.account_layout, null)
@@ -87,11 +105,19 @@ class HomeFragment : Fragment() {
         val recentWorkspaceId = getRecentWorkspaceId()
 
         // 사용자 이메일을 표시합니다.
-        displayUserEmail()
+        val userEmail = SharedPreferencesUtil.getUserEmail(requireContext())
+        emailTextView.text = userEmail
+        emailTextView1.text = userEmail
 
         recentWorkspaceId?.let {
             displayWorkspaceName(it)
         }
+
+        MoveDraw.setOnClickListener {
+            val intent2 = Intent(requireContext(), PaintActivity::class.java)
+            startActivityForResult(intent2, 1)
+        }
+
 
         profileForm.setOnClickListener {
             // account_layout을 화면 아래에 절반 크기로 보여줌
@@ -107,24 +133,39 @@ class HomeFragment : Fragment() {
             showAccountMenuPopup()
         }
 
-        // themesBtn 클릭 시 buttonCreateNote와 recyclerViewNotes의 가시성을 토글합니다.
-        val themesBtn = view.findViewById<ImageButton>(R.id.themesBtn)
-        themesBtn.setOnClickListener {
-            togglePagesVisibility(themesBtn)
+
+        listLayout_1.setOnClickListener {
+            // recyclerViewNotes의 가시성을 토글
+            if (recyclerView.visibility == View.VISIBLE) {
+                animateView(false)
+            } else {
+                animateView(true)
+            }
         }
 
         // Create Note 버튼 클릭 시 NoteActivity로 이동
-        val buttonCreatePage = view.findViewById<Button>(R.id.buttonCreateNote)
-        buttonCreatePage.setOnClickListener {
+        val buttonCreateNote = view.findViewById<ImageView>(R.id.listLayout_4)
+        buttonCreateNote.setOnClickListener {
             createNote()
         }
 
         // 최근 워크스페이스 ID를 loadNotesFromFirestore() 함수로 전달하여 해당 워크스페이스에 속한 노트들을 가져옵니다.
         recentWorkspaceId?.let {
-            loadNotesFromFirestore(it)
+            val userId = SharedPreferencesUtil.getUserId(requireContext()) ?: ""
+            loadNotesFromMongoDB(it, userId)
         }
 
         return view
+    }
+
+    // 이게 없어서 지금까지 계속 튕김
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == 1) {
+            val imageUri = data?.getStringExtra("imageUrl")
+            Log.e("imageUrl", imageUri ?: "")
+        }
     }
 
 
@@ -147,6 +188,7 @@ class HomeFragment : Fragment() {
             override fun onWorkSpaceClick(workSpace: WorkSpace) {
                 // 워크스페이스를 클릭했을 때 처리할 내용을 여기에 작성합니다.
                 saveRecentWorkspaceId(workSpace.id)
+                saveRecentWorkspaceName(workSpace.name)
                 val MainIntent = Intent(requireContext(), MainActivity::class.java)
                 startActivity(MainIntent)
                 requireActivity().finish()
@@ -155,7 +197,7 @@ class HomeFragment : Fragment() {
         recyclerViewWorkSpace.adapter = workSpaceListAdapter
         recyclerViewWorkSpace.layoutManager = LinearLayoutManager(requireContext())
 
-        // 파이어스토어에서 워크스페이스 데이터를 가져와서 어댑터에 설정
+        // MongoDB에서 워크스페이스 데이터를 가져와서 어댑터에 설정
         loadWorkSpacesForPopup(workSpaceListAdapter)
 
         // PopupWindow를 화면 아래쪽에 표시합니다.
@@ -212,6 +254,7 @@ class HomeFragment : Fragment() {
         }
     }
 
+    /*
     // 파이어스토어에서 워크스페이스 데이터를 가져와서 어댑터에 설정하는 함수
     private fun loadWorkSpacesForPopup(adapter: WorkSpaceListAdapter) {
         val db = FirebaseFirestore.getInstance()
@@ -234,7 +277,35 @@ class HomeFragment : Fragment() {
                 // 쿼리 실패 시 에러 처리
                 // 예를 들어, 로그 출력 등
             }
+    }*/
+
+    private fun loadWorkSpacesForPopup(adapter: WorkSpaceListAdapter) {
+        val currentUserEmail = getUserId()
+
+        currentUserEmail?.let { email ->
+            GlobalScope.launch(Dispatchers.IO) {
+                try {
+                    // Retrofit을 사용하여 HTTP 요청을 보냅니다.
+                    val organizationList = RetrofitClient.apiService.getOrganization(email)
+
+                    // 받아온 organization 데이터를 WorkSpace 객체로 변환하여 어댑터에 추가합니다.
+                    val workSpaceList = organizationList.map { organization ->
+                        WorkSpace(organization.name, organization.owner, organization.id)
+                    }
+
+                    // 어댑터에 워크스페이스 데이터 설정
+                    withContext(Dispatchers.Main) {
+                        adapter.setWorkSpaces(workSpaceList)
+                    }
+                } catch (e: Exception) {
+                    // 실패한 경우 처리
+                    Log.e(TAG, "Error getting organizations", e)
+                }
+            }
+        }
     }
+
+
 
 
 
@@ -274,23 +345,18 @@ class HomeFragment : Fragment() {
 
 
 
-    private fun togglePagesVisibility(themesBtn: ImageButton) {
-        // recyclerViewNotes의 가시성을 토글합니다.
-        recyclerView.visibility = if (recyclerView.visibility == View.VISIBLE) {
-            View.GONE
-        } else {
-            View.VISIBLE
-        }
+    private fun animateView(visible: Boolean) {
+        // 애니메이션 생성 및 설정
+        val rotationFrom = if (visible) -90f else 0f
+        val rotationTo = if (visible) 0f else -90f
+        val rotationAnimation = ObjectAnimator.ofFloat(listLayout_1, "rotation", rotationFrom, rotationTo)
+        rotationAnimation.duration = 200 // 애니메이션의 지속 시간을 설정합니다 (밀리초 단위)
 
-        // themesBtn 이미지를 변경합니다.
-        val newImageResource = if (recyclerView.visibility == View.VISIBLE) {
-            R.drawable.baseline_keyboard_arrow_right_24 // 토글 후 recyclerView가 보이는 경우
-        } else {
-            R.drawable.baseline_keyboard_arrow_down_24 // 토글 후 recyclerView가 숨겨진 경우
-        }
+        // 애니메이션 시작
+        rotationAnimation.start()
 
-        // 새로운 이미지로 설정합니다.
-        themesBtn.setImageResource(newImageResource)
+        // recyclerViewNotes의 가시성 변경
+        recyclerView.visibility = if (visible) View.VISIBLE else View.GONE
     }
 
 
@@ -300,6 +366,7 @@ class HomeFragment : Fragment() {
     }
 
 
+    /*
     private fun loadNotesFromFirestore(recentWorkspaceId: String) {
         val db = FirebaseFirestore.getInstance()
         db.collection("notes")
@@ -312,7 +379,8 @@ class HomeFragment : Fragment() {
                     val title = document.getString("title") ?: ""
                     val organizationId = document.getString("organizationId") ?: ""
                     val userId = document.getString("userId") ?: ""
-                    val note = Note(noteId, title, organizationId, userId)
+                    val noteImageUrl = document.getString("noteImageUrl") ?: ""
+                    val note = Note(organizationId, title, userId, noteImageUrl, noteId)
                     notes.add(note) // 새로운 노트를 어댑터에 추가합니다.
                 }
                 // 어댑터에 데이터 설정
@@ -321,26 +389,88 @@ class HomeFragment : Fragment() {
             .addOnFailureListener { exception ->
                 Log.e(TAG, "Error getting notes:", exception)
             }
+    }*/
+
+    private fun loadNotesFromMongoDB(recentWorkspaceId: String, userId: String) {
+        GlobalScope.launch(Dispatchers.IO) {
+            try {
+                val notes = mutableListOf<Note>()
+
+                // Retrofit을 사용하여 HTTP 요청을 보냅니다.
+                val response = RetrofitClient.apiService.getOrganization(userId)
+
+                // 받아온 데이터에서 현재 organizationId와 일치하는 조직을 찾습니다.
+                val matchingOrganization = response.find { it.id == recentWorkspaceId }
+
+                // 현재 organizationId와 일치하는 조직이 없을 경우 처리합니다.
+                if (matchingOrganization == null) {
+                    // 처리할 내용을 추가하세요
+                    return@launch
+                }
+
+                // 일치하는 조직의 노트 정보를 추출합니다.
+                val organizationNotes = matchingOrganization.notes
+
+                // 추출된 노트 정보를 Note 객체로 변환하여 리스트에 추가합니다.
+                for (noteData in organizationNotes) {
+                    val note = Note(
+                        Id = noteData.id,
+                        createUser = matchingOrganization.owner,
+                        title = noteData.title,
+                        noteImageUrl = noteData.noteImageUrl,
+                    )
+                    notes.add(note)
+                }
+
+                // 어댑터에 데이터 설정
+                withContext(Dispatchers.Main) {
+                    noteListAdapter.setNotes(notes)
+                }
+            } catch (e: Exception) {
+                // 오류 처리
+                // e.printStackTrace()
+                // 예상치 못한 오류가 발생했을 때
+            }
+        }
     }
+
+
+
+
 
 
 
 
 
     private fun displayWorkspaceName(workspaceId: String) {
-        val db = FirebaseFirestore.getInstance()
-        db.collection("workSpaces")
-            .document(workspaceId)
-            .get()
-            .addOnSuccessListener { document ->
-                val workspaceName = document.getString("workSpaceName")
-                // 가져온 워크스페이스 이름을 TextView에 설정합니다.
-                workSpaceText.text = workspaceName
+        val currentUserEmail = getUserId()
+
+        currentUserEmail?.let { email ->
+            GlobalScope.launch(Dispatchers.IO) {
+                try {
+                    // Retrofit을 사용하여 HTTP 요청을 보냅니다.
+                    val organizationList = RetrofitClient.apiService.getOrganization(email)
+
+                    // 받아온 organization 데이터 중에서 workspaceId와 일치하는 Organization을 찾습니다.
+                    val organization = organizationList.find { it.id == workspaceId }
+
+                    // 찾은 Organization의 이름을 가져옵니다.
+                    val workspaceName = organization?.name
+
+                    // 가져온 워크스페이스 이름을 TextView에 설정합니다.
+                    withContext(Dispatchers.Main) {
+                        workSpaceText.text = workspaceName
+                    }
+                } catch (e: Exception) {
+                    // 실패한 경우 처리
+                    Log.e(TAG, "Error getting workspace name", e)
+                }
             }
-            .addOnFailureListener { exception ->
-                // 워크스페이스 이름을 가져오지 못한 경우 처리할 내용을 여기에 작성합니다.
-            }
+        }
     }
+
+
+
 
     private fun displayUserEmail() {
         // FirebaseAuth 인스턴스를 사용하여 현재 사용자를 가져옵니다.
@@ -359,8 +489,20 @@ class HomeFragment : Fragment() {
         SharedPreferencesUtil.saveRecentWorkspaceId(requireContext(), workspaceId)
     }
 
+    private fun saveRecentWorkspaceName(workspaceName: String) {
+        SharedPreferencesUtil.saveRecentWorkspaceName(requireContext(), workspaceName)
+    }
+
     private fun getRecentWorkspaceId(): String? {
         return SharedPreferencesUtil.getRecentWorkspaceId(requireContext())
+    }
+
+    private fun getUserId(): String? {
+        return SharedPreferencesUtil.getUserId(requireContext())
+    }
+
+    private fun saveRecentNoteId(noteId: String) {
+        SharedPreferencesUtil.saveRecentNoteId(requireContext(), noteId)
     }
 }
 

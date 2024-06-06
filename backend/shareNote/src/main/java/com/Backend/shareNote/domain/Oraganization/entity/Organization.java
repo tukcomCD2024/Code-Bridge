@@ -10,10 +10,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Document(collection = "organizations")
 @Builder
@@ -62,6 +59,7 @@ public class Organization {
         private LocalDateTime createdAt;
 
 
+        private List<Quiz> quiz;
 
         // 생성자, 게터, 세터 등 필요한 메서드들 추가
     }
@@ -79,10 +77,42 @@ public class Organization {
         private LocalDateTime createdAt;
 
     }
+
+    @Getter
+    @Builder
+    @Document(collection = "quizs")
+    public static class Quiz {
+        @Id
+        private String id;
+        // 생성자
+        private String userId;
+        // 객관식 or 주관식
+        private String quizType;
+        // 문제 설명
+        private String problem;
+        // 답안
+        private int answer;
+        // 객관식 보기
+        private List<String> problems;
+        @CreatedDate
+        private LocalDateTime createdAt;
+
+        // 정답 맞춘 유저
+        private List<String> correctUser;
+        // 정답 틀린 유저
+        private List<String> wrongUser;
+
+        // 닉네임
+        private String nickname;
+        private String quizTitle;
+
+    }
+
+
     @Getter
     @Slf4j
     public static class LikesInfo {
-        private Map<String, UserLike> userLikes = new HashMap<>();
+        private Map<String, Set<BlockLike>> userLikes = new HashMap<>();
 
         /**
          * 좋아요를 추가하거나 취소합니다.
@@ -96,43 +126,49 @@ public class Organization {
             if(userUuid.equals(likerUuid)) {
                 throw new SelfLikedException("자기 블록에 좋아요를 누를 수 없습니다.");
             }
-            return userLikes.computeIfAbsent(userUuid, k -> new UserLike())
-                    .addBlockLike(blockId, likerUuid);
 
+            BlockLike blockLike = new BlockLike(blockId, likerUuid);
+            userLikes.putIfAbsent(userUuid, new HashSet<>());
+            if(userLikes.get(userUuid).contains(blockLike)) {
+                log.info("이미 좋아요를 누른 상태입니다.");
+                userLikes.get(userUuid).remove(blockLike);
+                return false;
+            }else {
+                userLikes.get(userUuid).add(blockLike);
+                return true;
+            }
         }
 
-        // 필요한 메서드 추가...
-    }
-    @Getter
-    public static class UserLike {
-        private Map<String, BlockLike> blockLikes = new HashMap<>();
-
-        public Boolean addBlockLike(String blockId, String likerUuid) {
-            return blockLikes.computeIfAbsent(blockId, k -> new BlockLike())
-                    .addLiker(likerUuid);
+        // 기여도에서 좋아요 개수를 가져오기 위한 메서드
+        public int getLikeCount(String userUuid){
+            return userLikes.get(userUuid).size();
         }
 
         // 필요한 메서드 추가...
     }
     @Getter
     public static class BlockLike {
-        private List<String> likers = new ArrayList<>();
-
-        public Boolean addLiker(String likerUuid) {
-            // 좋아요 취소 로직 구현 및 좋아요 여부 확인
-            if(likers.contains(likerUuid)){
-                likers.remove(likerUuid);
-                return false;
-            }
-            else{
-                likers.add(likerUuid);
-                return true;
-            }
-
+        private String blockId;
+        private String likerUuid;
+        public BlockLike(String blockId, String likerUuid) {
+            this.blockId = blockId;
+            this.likerUuid = likerUuid;
         }
 
-        // 필요한 메서드 추가...
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            BlockLike blockLike = (BlockLike) o;
+            return Objects.equals(blockId, blockLike.blockId) && Objects.equals(likerUuid, blockLike.likerUuid);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(blockId, likerUuid);
+        }
     }
+
 
 
 

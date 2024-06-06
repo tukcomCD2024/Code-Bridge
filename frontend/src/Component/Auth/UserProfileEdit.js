@@ -4,44 +4,39 @@ import styled from "styled-components";
 import cameraIcon from "../../image/camera_icon.png";
 
 const UserProfileEdit = () => {
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [nickname, setNickname] = useState("");
   const [password, setPassword] = useState("");
-  const [resultMessage, setResultMessage] = useState("");
+  const [passwordCheck, setPasswordCheck] = useState("");
+  const [isEmailValid, setIsEmailValid] = useState(false); // 이메일 유효성 검사 상태
+  const [isNicknameValid, setIsNicknameValid] = useState(false); // 닉네임 유효성 검사 상태
   const navigate = useNavigate();
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    if (name === "username") {
-      setUsername(value);
+    if (name === "email") {
+      setEmail(value);
+      setIsEmailValid(false);
+    } else if (name === "nickname") {
+      setNickname(value);
+      setIsNicknameValid(false); // 닉네임 변경 시 유효성 재검증
     } else if (name === "password") {
       setPassword(value);
+    } else if (name === "passwordCheck") {
+      setPasswordCheck(value);
     }
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Add logic for handling form submission
-    // Example fetch call:
-    // fetch('/userController?action=login', {
-    //   method: 'POST',
-    //   headers: {
-    //     'Content-Type': 'application/json',
-    //   },
-    //   body: JSON.stringify({ username, password }),
-    // })
-    //   .then(response => response.json())
-    //   .then(data => {
-    //     // Handle response data
-    //     setResultMessage(data.resultMessage);
-    //   })
-    //   .catch(error => {
-    //     console.error('Error:', error);
-    //   });
+
+    // 내 정보 수정 제출 시 동작 코드
   };
 
   return (
     <Container>
       <ContentWrapper>
+      <form onSubmit={handleSubmit}>
         <p style={{ fontWeight: "bold", fontSize: "25px" }}>내 정보 수정</p>
         <ProfilePicture>
           <CameraIcon src={cameraIcon} alt="Edit profile picture" />
@@ -49,42 +44,50 @@ const UserProfileEdit = () => {
         <Nickname_InputWrapper>
           닉네임
           <Nickname_Input
-            Nickname="Nickname"
+            name="nickname"
             type="text"
             placeholder="닉네임을 입력하세요."
-            //   value={Nickname}
+            onChange={handleInputChange}
+            value={nickname}
           />
           <Nickname_Duplicate_CheckBtn>중복확인</Nickname_Duplicate_CheckBtn>
         </Nickname_InputWrapper>
         <Id_InputWrapper>
           이메일(ID)
           <Id_Input
-            id="id"
+            name="email"
             type="text"
             placeholder="이메일을 입력하세요."
-            //   value={id}
+            autocomplete="new-email"
+            onChange={handleInputChange}
+            value={email}
           />
           <ID_Duplicate_CheckBtn>중복확인</ID_Duplicate_CheckBtn>
         </Id_InputWrapper>
         <Password_InputWrapper>
           비밀번호
           <Password_Input
-            id="password"
+            name="password"
             type="password"
             placeholder="비밀번호를 입력해주세요."
-            //   value={password}
+            autocomplete="new-password"
+            onChange={handleInputChange}
+            value={password}
           />
         </Password_InputWrapper>
         <Passwordcheck_InputWrapper>
           비밀번호 확인
           <Passwordcheck_Input
-            Nickname="passwordcheck"
+            name="passwordCheck"
             type="password"
             placeholder="비밀번호를 한 번 더 입력해주세요."
-            //   value={password}
+            autocomplete="new-password"
+            onChange={handleInputChange}
+            value={passwordCheck}
           />
         </Passwordcheck_InputWrapper>
         <EditBtn>수정하기</EditBtn>
+        </form>
         <HomeBtn onClick={() => navigate("/main")}>
           <small>홈으로 돌아가기</small>
         </HomeBtn>

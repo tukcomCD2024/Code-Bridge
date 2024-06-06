@@ -1,0 +1,26 @@
+axe
+sword
+hammer
+tree
+flag
+mic
+game controller
+boomerang
+skirts
+pants
+dress
+socks
+ghost
+pillow
+bulb
+brush
+broom
+comb
+soccer
+basketball
+cake
+cookie
+coffee
+juice
+steak
+cherry

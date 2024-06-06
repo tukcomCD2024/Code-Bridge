@@ -4,7 +4,6 @@ import styled from "styled-components";
 import toastr from "toastr";
 import "toastr/build/toastr.css";
 
-
 const OrganizationInfoModal = ({
   modalOpen,
   handleCloseModal,
@@ -13,26 +12,11 @@ const OrganizationInfoModal = ({
   const modalRef = useRef();
   const navigate = useNavigate();
 
-  const [userNicknames, setUserNicknames] = useState([]);
   const [userEmailInput, setUserEmailInput] = useState(""); // 사용자 이메일 입력 상태 관리
   const [isSendButtonDisabled, setIsSendButtonDisabled] = useState(false);
 
   const { id } = useParams();
   const organizationId = String(id);
-
-  const initialNicknames = [
-    "닉네임1",
-    "닉네임2",
-    "닉네임3",
-    "닉네임4",
-    "닉네임5",
-    "닉네임6",
-    "닉네임7",
-    "닉네임8",
-    "닉네임9",
-  ];
-
-  localStorage.setItem("userNicknames", JSON.stringify(initialNicknames));
 
   // 이메일 입력 처리 함수
   const handleEmailInputChange = (event) => {
@@ -95,12 +79,6 @@ const OrganizationInfoModal = ({
       toastr.info("정보를 불러오지 못했습니다.");
       navigate("/main");
     }
-
-    // 로컬 스토리지에서 유저 이메일 배열을 읽어와 상태에 저장합니다.
-    const storedEmails = localStorage.getItem("userNicknames");
-    if (storedEmails) {
-      setUserNicknames(JSON.parse(storedEmails));
-    }
   }, [organization, navigate]);
 
   // 모달 바깥 클릭시 닫기 로직
@@ -159,10 +137,10 @@ const OrganizationInfoModal = ({
           <BottomContainer>
             {" "}
             <Title>
-              &nbsp;&nbsp;◾ 멤버 목록 ({initialNicknames.length}명)
+              &nbsp;&nbsp;◾ 멤버 목록 ({organization.members.length}명)
             </Title>
             <UserList>
-              {userNicknames.map((nickname, index) => (
+              {organization.members.map((nickname, index) => (
                 <div
                   key={index}
                   style={{
@@ -269,7 +247,7 @@ const BottomContainer = styled.div`
 
 const UserList = styled.div`
   background: #ffffff;
-  padding: 12px 15px;
+  padding: 11px 20px;
   border: 1px solid #d0d0d0;
   width: 100%;
   height: 100%;

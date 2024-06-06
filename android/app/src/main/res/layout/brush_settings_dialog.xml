@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:padding="16dp"
+    tools:context=".PaintActivity">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="사이즈 설정"
+        android:textSize="24sp">
+    </TextView>
+
+    <com.google.android.material.slider.Slider
+        android:id="@+id/brushSizeSlider"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+
+        android:valueFrom="0.0"
+        android:valueTo="50.0"
+        android:stepSize="1.0"
+        />
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="투명도 설정"
+        android:textSize="24sp"/>
+
+    <com.google.android.material.slider.Slider
+        android:id="@+id/brushAlphaSlider"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+
+        android:valueFrom="0.0"
+        android:valueTo="255.0"
+        android:stepSize="1"
+
+        />
+
+</LinearLayout>

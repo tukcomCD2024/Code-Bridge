@@ -50,6 +50,7 @@ public class PageService {
             Organization organization = organizationRepository.findById(pageDeleteDTO.getOrganizationId()).get();
             organization.deletePageFromNote(pageDeleteDTO.getNoteId(), pageDeleteDTO.getPageId());
             organizationRepository.save(organization);
+            pageRepository.deleteById(pageDeleteDTO.getPageId());
             return true;
         }catch (IllegalArgumentException e){
             e.printStackTrace();
