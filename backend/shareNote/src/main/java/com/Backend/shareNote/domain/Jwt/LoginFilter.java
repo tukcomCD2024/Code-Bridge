@@ -1,6 +1,8 @@
 package com.Backend.shareNote.domain.Jwt;
 
 import com.Backend.shareNote.domain.User.dto.CustomUserDetails;
+import com.Backend.shareNote.domain.User.entity.Users;
+import com.Backend.shareNote.domain.User.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.Cookie;
@@ -8,7 +10,11 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -17,6 +23,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -45,7 +52,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
             // token 검증을 위해 AuthenticationManager로 전달
             return authenticationManager.authenticate(authToken);
         } catch (IOException e){
-            throw new RuntimeException();
+            throw new RuntimeException(e);
         }
     }
 
@@ -56,7 +63,13 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
         CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
         // email 반환 -> nickname으로 바꿈
+        // email도 반환해 줘야 함
         String username = customUserDetails.getUsername();
+
+        // 이 이메일로 유저 정보를 검색해서 클라이언트에 반환 필요(로컬 스토리지)
+        String email = customUserDetails.getEmail();
+        String userId = customUserDetails.getId();
+
         Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
         Iterator<? extends GrantedAuthority> iterator = authorities.iterator();
         GrantedAuthority auth = iterator.next();
@@ -70,6 +83,17 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         response.addCookie(createCookie("Authorization", token));
         // 이거는 배포버전이랑 로컬이랑 다르게 해줘야 겠네
         // response.sendRedirect("http://localhost:3000");
+
+
+        // JSON 응답 데이터 생성
+        Map<String, String> responseData = new HashMap<>();
+        responseData.put("name", username);
+        responseData.put("userId", userId);
+
+        // 사용자 정보를 JSON 형식으로 반환
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+        response.getWriter().write(objectMapper.writeValueAsString(responseData));
     }
 
     private Cookie createCookie(String key, String value) {
@@ -85,11 +109,20 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     }
 
     @Override
-    protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) {
-        // 로그인 실패시 401 응답 코드 반환
-        response.setStatus(401);
+    protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) throws IOException {
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
 
+        Map<String, String> errorData = new HashMap<>();
+        if (failed instanceof BadCredentialsException) {
+            errorData.put("message", "아이디 혹은 비밀번호를 확인해주세요");
+        } else {
+            errorData.put("message", "Authentication failed");
+        }
 
+        ResponseEntity<Map<String, String>> responseEntity = ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorData);
 
+        response.setStatus(responseEntity.getStatusCodeValue());
+        response.getWriter().write(objectMapper.writeValueAsString(responseEntity.getBody()));
     }
 }

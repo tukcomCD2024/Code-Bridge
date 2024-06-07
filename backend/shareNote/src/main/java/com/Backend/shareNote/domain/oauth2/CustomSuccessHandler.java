@@ -20,6 +20,7 @@ import java.util.Iterator;
 @Component
 public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
     private final JWTUtil jwtUtil;
+    
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
@@ -37,7 +38,8 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
         response.addCookie(createCookie("Authorization", token));
         // 이거는 배포버전이랑 로컬이랑 다르게 해줘야 겠네
-        //response.sendRedirect("http://localhost:3000");
+        response.sendRedirect("http://localhost:3000/main");
+        // response.sendRedirect("https://sharenote.shop/main");
 
     }
 

@@ -20,13 +20,21 @@ public class CustomUserDetailsService implements UserDetailsService {
     public UserDetails loadUserByUsername(String userEmail) throws UsernameNotFoundException {
 
         // DB에서 조회
-        Optional<Users> userData = userRepository.findByEmail(userEmail);
+        try {
+            Optional<Users> userData = userRepository.findByEmail(userEmail);
+            if (userData.isEmpty()) {
+                throw new UsernameNotFoundException("해당 유저를 찾을 수 없습니다.");
+            }
 
-        if (!userData.isEmpty()) {
 
-            // UserDetails에 담아서 반환하면 AuthenticationManager가 검증 함
-            // UserDetails는 DTO 느낌이네
-            return new CustomUserDetails(userData.get());
+            if (!userData.isEmpty()) {
+
+                // UserDetails에 담아서 반환하면 AuthenticationManager가 검증 함
+                // UserDetails는 DTO 느낌이네
+                return new CustomUserDetails(userData.get());
+            }
+        }catch (Exception e) {
+            throw new UsernameNotFoundException("해당 유저를 찾을 수 없습니다.");
         }
 
         return null;

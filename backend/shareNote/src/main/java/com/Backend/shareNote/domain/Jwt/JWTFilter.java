@@ -9,6 +9,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.catalina.valves.rewrite.InternalRewriteMap;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -47,20 +48,17 @@ public class JWTFilter extends OncePerRequestFilter {
             }
         }
 
-        if (authorization == null) {
-            log.error("cookie에 jwt가 없음");
-            filterChain.doFilter(request, response);
 
-            return;
-        }
 
         // 쿠키에서 추출한거
         String token = authorization;
 
         //토큰 소멸 시간 검증
-        if (jwtUtil.isExpired(token)) {
-            log.error("토큰이 만료됨");
-            filterChain.doFilter(request, response);
+        if (jwtUtil.isExpired(token) || token == null) {
+            log.error("토큰이 만료됨거나 없음");
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.getWriter().write("JWT token is expired");
+            //filterChain.doFilter(request, response);
             // 조건이 만료되면 메서드 종료 (필수)
             return;
         }

@@ -6,17 +6,21 @@ import com.Backend.shareNote.domain.Jwt.JWTFilter;
 import com.Backend.shareNote.domain.Jwt.JWTUtil;
 import com.Backend.shareNote.domain.Jwt.LoginFilter;
 import com.Backend.shareNote.domain.User.service.CustomOAuth2UserService;
+import com.Backend.shareNote.domain.User.service.UserService;
 import com.Backend.shareNote.domain.oauth2.CustomSuccessHandler;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.oauth2.client.web.OAuth2LoginAuthenticationFilter;
+import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
@@ -34,6 +38,7 @@ public class SecurityConfig {
     private final JWTUtil jwtUtil;
     private final CustomOAuth2UserService customOAuth2UserService;
     private final CustomSuccessHandler customSuccessHandler;
+
 
     @Bean
     public BCryptPasswordEncoder bCryptPasswordEncoder(){
@@ -87,6 +92,8 @@ public class SecurityConfig {
                 .httpBasic((auth -> auth.disable()));
         http
                 .oauth2Login((oauth2) -> oauth2
+                        .authorizationEndpoint(authorization -> authorization
+                                .baseUri("/api/oauth2/authorization"))
                         .userInfoEndpoint((userInfoEndpointConfig) -> userInfoEndpointConfig
                                 .userService(customOAuth2UserService))
                         .successHandler(customSuccessHandler)
@@ -103,6 +110,9 @@ public class SecurityConfig {
         http
                 .addFilterAt(loginFIlter, UsernamePasswordAuthenticationFilter.class);
 
+        http
+                .exceptionHandling((exception) -> exception
+                        .authenticationEntryPoint(customAuthenticationEntryPoint()));
         // 세션 설정
         http
                 .sessionManagement((session) -> session
@@ -110,6 +120,14 @@ public class SecurityConfig {
 
         return http.build();
 
+    }
+
+    @Bean
+    public AuthenticationEntryPoint customAuthenticationEntryPoint() {
+        return (request, response, authException) -> {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.getWriter().write("Unauthorized: 토큰이 없거나 만료되었습니다.");
+        };
     }
 
 }

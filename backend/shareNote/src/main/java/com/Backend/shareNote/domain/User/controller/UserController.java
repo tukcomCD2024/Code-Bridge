@@ -19,11 +19,14 @@ public class UserController {
         return UserService.signUp(userSignUpDTO);
     }
 
-    @PostMapping("/user/login")
-    public ResponseEntity<Object> login(@RequestBody UserLoginDTO userLoginDTO) {
-        log.error("login");
-        return UserService.login(userLoginDTO);
-    }
+
+
+
+//    @PostMapping("/user/login")
+//    public ResponseEntity<Object> login(@RequestBody UserLoginDTO userLoginDTO) {
+//        log.error("login");
+//        return UserService.login(userLoginDTO);
+//    }
 
     @PostMapping("/user/uniqueEmail/{email}")
     public ResponseEntity<Boolean> emailOnly(@PathVariable String email) {

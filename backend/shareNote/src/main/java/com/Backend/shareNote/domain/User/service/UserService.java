@@ -54,45 +54,45 @@ public class UserService {
         }
     }
 
-    public ResponseEntity<Object> login(UserLoginDTO userLoginDTO) {
-        try {
-            Optional<Users> userOptional = userRepository.findByEmail(userLoginDTO.getEmail());
-
-            if (userOptional.isPresent()) {
-                Users loginUser = userOptional.get();
-                if (!loginUser.getPassword().equals(userLoginDTO.getPassword())) {
-                    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("비밀번호를 확인해 주세요");
-                } else {
-                    // 로그인 성공 시 UserId와 name을 JSON 형태로 반환
-                    // 로그인 성공 시 UserId와 name을 JSON 형태로 반환
-                    Map<String, Object> responseJson = new HashMap<>();
-                    responseJson.put("userId", loginUser.getId());
-                    responseJson.put("name", loginUser.getNickname());
-
-                    //token 존재 시 token에 적힌 organization에 가입하는 로직 추가
-                    if(userLoginDTO.getToken() != null){
-                        try {
-                            AcceptInvitationDTO acceptInvitationDTO = new AcceptInvitationDTO();
-                            acceptInvitationDTO.setToken(userLoginDTO.getToken());
-                            acceptInvitationDTO.setUserId(loginUser.getId());
-
-                            organizationService.acceptInvitation(acceptInvitationDTO);
-                        }catch (Exception e){
-                            e.printStackTrace();
-                        }
-                    }
-
-
-
-                    return ResponseEntity.ok(responseJson);
-                }
-            } else {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("아이디를 확인해 주세요");
-            }
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("서버 오류가 발생했습니다");
-        }
-    }
+//    public ResponseEntity<Object> login(UserLoginDTO userLoginDTO) {
+//        try {
+//            Optional<Users> userOptional = userRepository.findByEmail(userLoginDTO.getEmail());
+//
+//            if (userOptional.isPresent()) {
+//                Users loginUser = userOptional.get();
+//                if (!loginUser.getPassword().equals(userLoginDTO.getPassword())) {
+//                    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("비밀번호를 확인해 주세요");
+//                } else {
+//                    // 로그인 성공 시 UserId와 name을 JSON 형태로 반환
+//                    // 로그인 성공 시 UserId와 name을 JSON 형태로 반환
+//                    Map<String, Object> responseJson = new HashMap<>();
+//                    responseJson.put("userId", loginUser.getId());
+//                    responseJson.put("name", loginUser.getNickname());
+//
+//                    //token 존재 시 token에 적힌 organization에 가입하는 로직 추가
+//                    if(userLoginDTO.getToken() != null){
+//                        try {
+//                            AcceptInvitationDTO acceptInvitationDTO = new AcceptInvitationDTO();
+//                            acceptInvitationDTO.setToken(userLoginDTO.getToken());
+//                            acceptInvitationDTO.setUserId(loginUser.getId());
+//
+//                            organizationService.acceptInvitation(acceptInvitationDTO);
+//                        }catch (Exception e){
+//                            e.printStackTrace();
+//                        }
+//                    }
+//
+//
+//
+//                    return ResponseEntity.ok(responseJson);
+//                }
+//            } else {
+//                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("아이디를 확인해 주세요");
+//            }
+//        } catch (Exception e) {
+//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("서버 오류가 발생했습니다");
+//        }
+//    }
 
     public ResponseEntity<Boolean> uniqueEmail(String email) {
         Optional<Users> userOptional = userRepository.findByEmail(email);
@@ -103,4 +103,6 @@ public class UserService {
         Optional<Users> userOptional = userRepository.findByNickname(nickname);
         return ResponseEntity.ok(userOptional.isEmpty());
     }
+
+
 }
