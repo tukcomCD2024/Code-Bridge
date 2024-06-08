@@ -357,7 +357,6 @@ img.ProseMirror-separator {
     color: black;
     background-clip: padding-box;
     background-position: 0px 0px;
-    border: 3px solid rgba(198, 241, 86, 0.315);
   }
 }
 
@@ -611,7 +610,7 @@ p#locked {
   background-color: #D6EAF8;
   border-radius: 8px;
   padding: 1px 7px;
-  background-image: url('/src/image/lock2.gif');
+  background-image: url('../../../image/lock2.gif');
   background-size: 0.8em;
   background-position: center;
   background-repeat: no-repeat;
