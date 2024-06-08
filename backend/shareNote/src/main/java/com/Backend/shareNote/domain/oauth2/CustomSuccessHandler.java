@@ -34,7 +34,7 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         GrantedAuthority auth = iterator.next();
         String role = auth.getAuthority();
 
-        String token = jwtUtil.createJwt(username, role, 60 * 60 * 60L);
+        String token = jwtUtil.createJwt("access",username, role, 60 * 60 * 60L);
 
         response.addCookie(createCookie("Authorization", token));
         // 이거는 배포버전이랑 로컬이랑 다르게 해줘야 겠네

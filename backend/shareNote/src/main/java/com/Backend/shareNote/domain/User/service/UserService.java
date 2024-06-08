@@ -1,11 +1,15 @@
 package com.Backend.shareNote.domain.User.service;
 
+import com.Backend.shareNote.domain.Jwt.JWTUtil;
 import com.Backend.shareNote.domain.Oraganization.DTOs.organdto.AcceptInvitationDTO;
 import com.Backend.shareNote.domain.Oraganization.service.OrganizationService;
 import com.Backend.shareNote.domain.User.dto.UserLoginDTO;
 import com.Backend.shareNote.domain.User.dto.UserSignUpDTO;
 import com.Backend.shareNote.domain.User.entity.Users;
 import com.Backend.shareNote.domain.User.repository.UserRepository;
+import io.jsonwebtoken.ExpiredJwtException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -28,6 +32,9 @@ public class UserService {
     private final OrganizationService organizationService;
 
     private final BCryptPasswordEncoder bCryptEncoder;
+
+    private final JWTUtil jwtUtil;
+
     public ResponseEntity<?> signUp(UserSignUpDTO userSignUpDTO) {
         try {
             boolean isExist = userRepository.existsByEmail(userSignUpDTO.getEmail());
@@ -105,4 +112,41 @@ public class UserService {
     }
 
 
+    public ResponseEntity<?> reissue(HttpServletRequest request, HttpServletResponse response) {
+        String refresh = request.getHeader("refresh");
+        //Refresh 토큰이 존재하는지 확인
+        if(refresh == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("refresh 토큰이 없습니다.");
+        }
+
+        //Bearer랑 토큰 분리
+        refresh = refresh.split(" ")[1];
+
+        //Refresh 토큰이 만료되었는지 확인
+        try {
+            jwtUtil.isExpired(refresh);
+        } catch (ExpiredJwtException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("refresh 토큰이 만료되었습니다.");
+        }
+
+        //토큰이 refresh인지 확인
+        String category = jwtUtil.getCategory(refresh);
+        if(!category.equals("refresh")) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("refresh 토큰이 아닙니다.");
+        }
+        //다시 만들 재료 뽑기
+        String username = jwtUtil.getUsername(refresh);
+        String role = jwtUtil.getRole(refresh);
+
+        //새로운 토큰 발급
+        String newAccess = jwtUtil.createJwt("access", username, role, 600000L);
+        String newRefresh = jwtUtil.createJwt("refresh", username, role, 86400000L);
+        //헤더에 넣기
+        response.setHeader("access", "Bearer " + newAccess);
+        response.setHeader("refresh", "Bearer " + newRefresh);
+
+        return new ResponseEntity<>(HttpStatus.OK);
+
+
+    }
 }

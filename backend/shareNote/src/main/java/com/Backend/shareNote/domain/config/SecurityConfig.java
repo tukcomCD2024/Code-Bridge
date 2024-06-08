@@ -103,6 +103,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests((auth -> auth
                         .requestMatchers("/api/user/login","/","/api/user/signUp").permitAll()
                         .requestMatchers("/admin").hasRole("ADMIN")
+                        .requestMatchers("/api/user/reissue").permitAll()
                         .anyRequest().authenticated())
                 );
         http.addFilterAfter(new JWTFilter(jwtUtil), OAuth2LoginAuthenticationFilter.class);

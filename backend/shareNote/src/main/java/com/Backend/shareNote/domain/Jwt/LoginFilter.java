@@ -60,7 +60,6 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authentication)
     throws IOException{
-
         CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
         // email 반환 -> nickname으로 바꿈
         // email도 반환해 줘야 함
@@ -76,11 +75,12 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
         String role = auth.getAuthority();
 
-        String token = jwtUtil.createJwt(username, role, 600 * 600 * 10L);
+        String access = jwtUtil.createJwt("access", username, role, 600000L);
+        String refresh = jwtUtil.createJwt("refresh", username, role, 600000L);
 
-        //response.addHeader("Authorization", "Bearer " + token);
-        //헤더 방식에서 쿠키 방식으로 변경
-        response.addCookie(createCookie("Authorization", token));
+        response.addHeader("access", "Bearer " + access);
+        response.addHeader("refresh", "Bearer " + refresh);
+        //response.addCookie(createCookie("Authorization", access));
         // 이거는 배포버전이랑 로컬이랑 다르게 해줘야 겠네
         // response.sendRedirect("http://localhost:3000");
 
@@ -96,17 +96,17 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         response.getWriter().write(objectMapper.writeValueAsString(responseData));
     }
 
-    private Cookie createCookie(String key, String value) {
-        Cookie cookie = new Cookie(key, value);
-        cookie.setMaxAge(60 * 60 * 60);
-        //이 부분은 https에서만 쿠키를 전송하겠다는 의미
-        //cookie.setSecure(true);
-        cookie.setPath("/");
-        //이 부분은 자바스크립트에서 쿠키에 접근하지 못하도록 하는 속성
-        cookie.setHttpOnly(true);
-
-        return cookie;
-    }
+//    private Cookie createCookie(String key, String value) {
+//        Cookie cookie = new Cookie(key, value);
+//        cookie.setMaxAge(60 * 60 * 60);
+//        //이 부분은 https에서만 쿠키를 전송하겠다는 의미
+//        //cookie.setSecure(true);
+//        cookie.setPath("/");
+//        //이 부분은 자바스크립트에서 쿠키에 접근하지 못하도록 하는 속성
+//        cookie.setHttpOnly(true);
+//
+//        return cookie;
+//    }
 
     @Override
     protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) throws IOException {

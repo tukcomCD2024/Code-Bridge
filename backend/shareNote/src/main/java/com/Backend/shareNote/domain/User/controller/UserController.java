@@ -3,6 +3,8 @@ package com.Backend.shareNote.domain.User.controller;
 import com.Backend.shareNote.domain.User.dto.UserLoginDTO;
 import com.Backend.shareNote.domain.User.dto.UserSignUpDTO;
 import com.Backend.shareNote.domain.User.service.UserService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -36,6 +38,12 @@ public class UserController {
     @PostMapping("/user/uniqueNickname/{nickname}")
     public ResponseEntity<Boolean> nicknameOnly(@PathVariable String nickname) {
         return UserService.uniqueNickname(nickname);
+    }
+
+    @PostMapping("/user/reissue")
+    public ResponseEntity<?> reissue(HttpServletRequest request, HttpServletResponse response) {
+        return UserService.reissue(request, response);
+
     }
 
 }
