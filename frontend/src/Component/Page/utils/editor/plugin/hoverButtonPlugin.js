@@ -54,6 +54,7 @@ export function hoverButtonPlugin(blockLikeRef, blockLockRef) {
 
       // hoverButton_like 요소에 클릭 이벤트 리스너 추가
       hoverButton_like.addEventListener("click", async function() {
+        try {
         const { state } = editorView;
         const { selection } = state;
         const isImageNode = selection instanceof NodeSelection && selection.node.type.name === "image";
@@ -80,6 +81,9 @@ export function hoverButtonPlugin(blockLikeRef, blockLockRef) {
             }
           } else {
             console.error('No last position recorded.');
+          } 
+        } catch (error) {
+            console.error("Failed:", error);
           }
         });
 
