@@ -1,7 +1,9 @@
 package com.Backend.shareNote.domain.Jwt;
 
 import com.Backend.shareNote.domain.User.dto.CustomUserDetails;
+import com.Backend.shareNote.domain.User.entity.Refresh;
 import com.Backend.shareNote.domain.User.entity.Users;
+import com.Backend.shareNote.domain.User.repository.RefreshRepository;
 import com.Backend.shareNote.domain.User.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
@@ -22,10 +24,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import java.io.IOException;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -35,6 +34,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     private final JWTUtil jwtUtil;
     // ObjectMapper는 JSON을 다루기 위한 클래스, request에서 JSON 추출
     private final ObjectMapper objectMapper = new ObjectMapper();
+    private final RefreshRepository refreshRepository;
 
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
         try {
@@ -74,9 +74,13 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         GrantedAuthority auth = iterator.next();
 
         String role = auth.getAuthority();
+        //토큰 생성
+        String access = jwtUtil.createJwt("access", userId, username, role, 600000L);
+        String refresh = jwtUtil.createJwt("refresh", userId, username, role, 600000L);
 
-        String access = jwtUtil.createJwt("access", username, role, 600000L);
-        String refresh = jwtUtil.createJwt("refresh", username, role, 600000L);
+        //Refresh 토큰 저장
+        //이제 로그인하면 Refresh 토큰이 DB에 저장됨
+        addRefreshEntity(userId, refresh, 86400000L);
 
         response.addHeader("access", "Bearer " + access);
         response.addHeader("refresh", "Bearer " + refresh);
@@ -96,17 +100,21 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         response.getWriter().write(objectMapper.writeValueAsString(responseData));
     }
 
-//    private Cookie createCookie(String key, String value) {
-//        Cookie cookie = new Cookie(key, value);
-//        cookie.setMaxAge(60 * 60 * 60);
-//        //이 부분은 https에서만 쿠키를 전송하겠다는 의미
-//        //cookie.setSecure(true);
-//        cookie.setPath("/");
-//        //이 부분은 자바스크립트에서 쿠키에 접근하지 못하도록 하는 속성
-//        cookie.setHttpOnly(true);
-//
-//        return cookie;
-//    }
+    private void addRefreshEntity(String userId, String refresh, Long expiredMs) {
+
+        Date date = new Date(System.currentTimeMillis() + expiredMs);
+
+        Refresh refreshToken = Refresh.builder()
+                .userId(userId)
+                .refresh(refresh)
+                .expiration(date.toString())
+                .build();
+
+
+        refreshRepository.save(refreshToken);
+    }
+
+
 
     @Override
     protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) throws IOException {

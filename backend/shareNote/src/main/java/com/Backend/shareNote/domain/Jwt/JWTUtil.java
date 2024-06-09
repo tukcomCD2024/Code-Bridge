@@ -38,8 +38,14 @@ public class JWTUtil {
                 .parseSignedClaims(token).getPayload().get("category", String.class);
     }
 
-    public String createJwt(String category, String username, String role, Long expiredMs) {
+    public String getUserId(String token) {
+        return Jwts.parser().verifyWith(secretKey).build()
+                .parseSignedClaims(token).getPayload().get("userId", String.class);
+    }
+
+    public String createJwt(String category, String userId, String username, String role, Long expiredMs) {
         return Jwts.builder()
+                .claim("userId", userId)
                 .claim("category", category)
                 .claim("username", username)
                 .claim("role", role)

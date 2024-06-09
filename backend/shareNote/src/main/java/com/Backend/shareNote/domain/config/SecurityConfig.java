@@ -2,12 +2,15 @@ package com.Backend.shareNote.domain.config;
 
 
 
+import com.Backend.shareNote.domain.Jwt.CustomLogoutFilter;
 import com.Backend.shareNote.domain.Jwt.JWTFilter;
 import com.Backend.shareNote.domain.Jwt.JWTUtil;
 import com.Backend.shareNote.domain.Jwt.LoginFilter;
+import com.Backend.shareNote.domain.User.repository.RefreshRepository;
 import com.Backend.shareNote.domain.User.service.CustomOAuth2UserService;
 import com.Backend.shareNote.domain.User.service.UserService;
 import com.Backend.shareNote.domain.oauth2.CustomSuccessHandler;
+import com.nimbusds.oauth2.sdk.token.RefreshToken;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +26,7 @@ import org.springframework.security.oauth2.client.web.OAuth2LoginAuthenticationF
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.logout.LogoutFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 
@@ -38,6 +42,7 @@ public class SecurityConfig {
     private final JWTUtil jwtUtil;
     private final CustomOAuth2UserService customOAuth2UserService;
     private final CustomSuccessHandler customSuccessHandler;
+    private final RefreshRepository refreshRepository;
 
 
     @Bean
@@ -52,7 +57,7 @@ public class SecurityConfig {
     }
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        LoginFilter loginFIlter = new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil);
+        LoginFilter loginFIlter = new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil, refreshRepository);
         loginFIlter.setFilterProcessesUrl("/api/user/login");
 
         // CORS 설정
@@ -118,6 +123,8 @@ public class SecurityConfig {
         http
                 .sessionManagement((session) -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+        http
+                .addFilterBefore(new CustomLogoutFilter(jwtUtil, refreshRepository), LogoutFilter.class);
 
         return http.build();
 

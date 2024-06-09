@@ -5,7 +5,9 @@ import com.Backend.shareNote.domain.Oraganization.DTOs.organdto.AcceptInvitation
 import com.Backend.shareNote.domain.Oraganization.service.OrganizationService;
 import com.Backend.shareNote.domain.User.dto.UserLoginDTO;
 import com.Backend.shareNote.domain.User.dto.UserSignUpDTO;
+import com.Backend.shareNote.domain.User.entity.Refresh;
 import com.Backend.shareNote.domain.User.entity.Users;
+import com.Backend.shareNote.domain.User.repository.RefreshRepository;
 import com.Backend.shareNote.domain.User.repository.UserRepository;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -17,10 +19,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -34,6 +33,7 @@ public class UserService {
     private final BCryptPasswordEncoder bCryptEncoder;
 
     private final JWTUtil jwtUtil;
+    private final RefreshRepository refreshRepository;
 
     public ResponseEntity<?> signUp(UserSignUpDTO userSignUpDTO) {
         try {
@@ -134,13 +134,27 @@ public class UserService {
         if(!category.equals("refresh")) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("refresh 토큰이 아닙니다.");
         }
+        //DB에 refresh 토큰이 존재하는지 확인
+        Boolean isExist = refreshRepository.existsByRefresh(refresh);
+        if(!isExist) {
+            //이거는 탈취된거지?
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("존재하지 않는 refresh 토큰입니다.");
+        }
+
         //다시 만들 재료 뽑기
         String username = jwtUtil.getUsername(refresh);
         String role = jwtUtil.getRole(refresh);
+        String userId = jwtUtil.getUserId(refresh);
 
         //새로운 토큰 발급
-        String newAccess = jwtUtil.createJwt("access", username, role, 600000L);
-        String newRefresh = jwtUtil.createJwt("refresh", username, role, 86400000L);
+        String newAccess = jwtUtil.createJwt("access",  userId, username, role,600000L);
+        String newRefresh = jwtUtil.createJwt("refresh",  userId, username, role,86400000L);
+
+        //Refresh 토큰 삭제
+        refreshRepository.deleteByRefresh(refresh);
+        //새로운 Refresh 토큰 저장
+        addRefreshEntity(userId, newRefresh, 86400000L);
+
         //헤더에 넣기
         response.setHeader("access", "Bearer " + newAccess);
         response.setHeader("refresh", "Bearer " + newRefresh);
@@ -148,5 +162,18 @@ public class UserService {
         return new ResponseEntity<>(HttpStatus.OK);
 
 
+    }
+
+    private void addRefreshEntity(String userId, String refresh, Long expiredMs) {
+
+        Date date = new Date(System.currentTimeMillis() + expiredMs);
+
+        Refresh newRefresh = Refresh.builder()
+                .userId(userId)
+                .refresh(refresh)
+                .expiration(date.toString())
+                .build();
+
+        refreshRepository.save(newRefresh);
     }
 }
