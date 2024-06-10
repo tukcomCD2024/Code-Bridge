@@ -296,7 +296,10 @@ function Page() {
     ydocProviderRef.current.on("sync", (isSynced) => {
       if (isWeb()) {
         if (isSynced) {
-          handleUserConnection();
+          setTimeout(() => {
+            handleUserConnection();
+            ydocProviderRef.current.connect();
+          }, 300);
         }
         checkLocalStorage().then(() => {
         }).catch(error => {
@@ -305,8 +308,10 @@ function Page() {
         });
       } else {
           if (isSynced) {
-            handleUserConnection();  
-            ydocProviderRef.current.connect();
+            setTimeout(() => {
+              handleUserConnection();
+              ydocProviderRef.current.connect();
+            }, 300);
           }
       }
       // setisloaded(true); // 딜레이 없음
@@ -625,7 +630,7 @@ function Page() {
       window.removeEventListener("popstate", window.yjsDisconnect);
       window.yjsDisconnect();
     };
-  }, [pageId]);
+  }, [location, pageId]);
 
   return (
     <div>
