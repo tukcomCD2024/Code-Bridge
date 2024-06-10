@@ -826,8 +826,7 @@ const Notename = styled.div`
   text-overflow: ellipsis;
 
   @media screen and (max-width: 1500px) {
-      width: auto;
-      max-width: 80%; 
+      max-width: 72%; 
   }
 `;
 

@@ -375,8 +375,7 @@ const MyName = styled.div`
   text-overflow: ellipsis;
 
   @media screen and (max-width: 1500px) {
-      width: auto;
-      max-width: 80%; 
+      max-width: 72%; 
   }
 `;
 
@@ -404,10 +403,14 @@ const IdInfoBtn = styled.button`
   }
 
   @media (max-width: 1700px) {
-    font-size: 12px;
+    font-size: 14px;
   }
 
   @media (max-width: 1600px) {
+    font-size: 12px;
+  }
+
+  @media (max-width: 1000px) {
     font-size: 10px;
   }
 `;
@@ -647,6 +650,21 @@ const OrganizationInfo = styled.div`
         padding: 1px 7px;
         font-size: 15px;
         font-weight: 500;
+
+        @media (max-width: 1600px) {
+          font-size: 13px;
+          margin-right: 3px;
+        }
+      
+        @media (max-width: 1200px) {
+          font-size: 11px;
+          margin-right: 2px;
+        }
+      
+        @media (max-width: 800px) {
+          font-size: 9px;
+          margin-right: 1px;
+        }
       }
 
       .trash-icon:hover{
