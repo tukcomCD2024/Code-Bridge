@@ -5,8 +5,10 @@ import com.Backend.shareNote.domain.Oraganization.DTOs.organdto.AcceptInvitation
 import com.Backend.shareNote.domain.Oraganization.service.OrganizationService;
 import com.Backend.shareNote.domain.User.dto.UserLoginDTO;
 import com.Backend.shareNote.domain.User.dto.UserSignUpDTO;
+import com.Backend.shareNote.domain.User.entity.Fcm;
 import com.Backend.shareNote.domain.User.entity.Refresh;
 import com.Backend.shareNote.domain.User.entity.Users;
+import com.Backend.shareNote.domain.User.repository.FcmRepository;
 import com.Backend.shareNote.domain.User.repository.RefreshRepository;
 import com.Backend.shareNote.domain.User.repository.UserRepository;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -34,6 +36,7 @@ public class UserService {
 
     private final JWTUtil jwtUtil;
     private final RefreshRepository refreshRepository;
+    private final FcmRepository fcmRepository;
 
     public ResponseEntity<?> signUp(UserSignUpDTO userSignUpDTO) {
         try {
@@ -175,5 +178,30 @@ public class UserService {
                 .build();
 
         refreshRepository.save(newRefresh);
+    }
+    //fcm을 앱에서 재발급한 경우 Spring도 새로운 fcm으로 교체해주기
+    public ResponseEntity<?> reissueFcm(HttpServletRequest request, HttpServletResponse response) {
+        String fcm = request.getHeader("fcm");
+        if(fcm == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("fcm이 없습니다.");
+        }
+        else {
+            String userId = jwtUtil.getUserId(request.getHeader("access"));
+            Fcm fcmToken = fcmRepository.findByUserId(userId);
+            if(fcmToken != null) {
+                //있으면 새로운 fcm으로 교체하기 or 똑같아도 그냥 넣어
+                fcmToken.setFcm(fcm);
+                fcmRepository.save(fcmToken);
+            } else {
+                //없으면 새로운 fcm 만들어서 저장
+                Fcm newfcm = Fcm.builder()
+                        .userId(userId)
+                        .fcm(fcm)
+                        .build();
+                fcmRepository.save(newfcm);
+            }
+
+            return ResponseEntity.status(HttpStatus.OK).body("fcm 저장 성공");
+        }
     }
 }

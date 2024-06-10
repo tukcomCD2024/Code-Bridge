@@ -46,4 +46,9 @@ public class UserController {
 
     }
 
+    @PostMapping("/user/reissue/fcm")
+    public ResponseEntity<?> reissueFcm(HttpServletRequest request, HttpServletResponse response) {
+        return UserService.reissueFcm(request, response);
+    }
+
 }

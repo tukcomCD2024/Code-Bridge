@@ -1,8 +1,10 @@
 package com.Backend.shareNote.domain.Jwt;
 
 import com.Backend.shareNote.domain.User.dto.CustomUserDetails;
+import com.Backend.shareNote.domain.User.entity.Fcm;
 import com.Backend.shareNote.domain.User.entity.Refresh;
 import com.Backend.shareNote.domain.User.entity.Users;
+import com.Backend.shareNote.domain.User.repository.FcmRepository;
 import com.Backend.shareNote.domain.User.repository.RefreshRepository;
 import com.Backend.shareNote.domain.User.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -35,6 +37,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     // ObjectMapper는 JSON을 다루기 위한 클래스, request에서 JSON 추출
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final RefreshRepository refreshRepository;
+    private final FcmRepository fcmRepository;
 
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
         try {
@@ -88,6 +91,25 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         // 이거는 배포버전이랑 로컬이랑 다르게 해줘야 겠네
         // response.sendRedirect("http://localhost:3000");
 
+        //fcm 저장
+        String fcm = request.getHeader("fcm");
+        if(fcm != null) {
+            Fcm fcmToken = fcmRepository.findByUserId(userId);
+            if(fcmToken != null) {
+                //있으면 새로운 fcm으로 교체하기 or 똑같아도 그냥 넣어
+                fcmToken.setFcm(fcm);
+                fcmRepository.save(fcmToken);
+            } else {
+                //없으면 새로운 fcm 만들어서 저장
+                Fcm newfcm = Fcm.builder()
+                        .userId(userId)
+                        .fcm(fcm)
+                        .build();
+                fcmRepository.save(newfcm);
+            }
+
+        }
+
 
         // JSON 응답 데이터 생성
         Map<String, String> responseData = new HashMap<>();
@@ -132,5 +154,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
         response.setStatus(responseEntity.getStatusCodeValue());
         response.getWriter().write(objectMapper.writeValueAsString(responseEntity.getBody()));
+        ArrayList<Integer> ary = new ArrayList<>();
+
     }
 }
