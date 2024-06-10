@@ -42,15 +42,6 @@ export function hoverButtonPlugin(blockLikeRef, blockLockRef, imageZoom) {
       hoverButton_lock.title = "노드 편집 잠금";
       hoverButton_lock.classList.add("hoverButton_lock"); // CSS 클래스 적용
       hoverDiv.appendChild(hoverButton_lock);
-      
-      // hoverButton 생성(좋아요)
-      const hoverButton_like = document.createElement("div");
-      library.add(faHeart);
-      const heartIcon = icon(faHeart).node[0];
-      hoverButton_like.appendChild(heartIcon);
-      hoverButton_like.classList.add("hoverButton_like");
-      hoverButton_like.title = "좋아요";
-      hoverDiv.appendChild(hoverButton_like);
 
       // hoverButton 생성(이미지 확대)
       const hoverButton_imageZoom = document.createElement("div");
@@ -60,6 +51,15 @@ export function hoverButtonPlugin(blockLikeRef, blockLockRef, imageZoom) {
       hoverButton_imageZoom.classList.add("hoverButton_imageZoom");
       hoverButton_imageZoom.title = "이미지 확대";
       hoverDiv.appendChild(hoverButton_imageZoom);
+      
+      // hoverButton 생성(좋아요)
+      const hoverButton_like = document.createElement("div");
+      library.add(faHeart);
+      const heartIcon = icon(faHeart).node[0];
+      hoverButton_like.appendChild(heartIcon);
+      hoverButton_like.classList.add("hoverButton_like");
+      hoverButton_like.title = "좋아요";
+      hoverDiv.appendChild(hoverButton_like);
 
       // hoverButton_like 요소에 클릭 이벤트 리스너 추가
       hoverButton_like.addEventListener("click", async function() {
