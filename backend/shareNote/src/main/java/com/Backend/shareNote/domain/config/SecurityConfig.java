@@ -6,6 +6,7 @@ import com.Backend.shareNote.domain.Jwt.CustomLogoutFilter;
 import com.Backend.shareNote.domain.Jwt.JWTFilter;
 import com.Backend.shareNote.domain.Jwt.JWTUtil;
 import com.Backend.shareNote.domain.Jwt.LoginFilter;
+import com.Backend.shareNote.domain.User.repository.FcmRepository;
 import com.Backend.shareNote.domain.User.repository.RefreshRepository;
 import com.Backend.shareNote.domain.User.service.CustomOAuth2UserService;
 import com.Backend.shareNote.domain.User.service.UserService;
@@ -43,6 +44,7 @@ public class SecurityConfig {
     private final CustomOAuth2UserService customOAuth2UserService;
     private final CustomSuccessHandler customSuccessHandler;
     private final RefreshRepository refreshRepository;
+    private final FcmRepository fcmRepository;
 
 
     @Bean
@@ -57,7 +59,7 @@ public class SecurityConfig {
     }
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        LoginFilter loginFIlter = new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil, refreshRepository);
+        LoginFilter loginFIlter = new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil, refreshRepository, fcmRepository);
         loginFIlter.setFilterProcessesUrl("/api/user/login");
 
         // CORS 설정
@@ -108,7 +110,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests((auth -> auth
                         .requestMatchers("/api/user/login","/","/api/user/signUp").permitAll()
                         .requestMatchers("/admin").hasRole("ADMIN")
-                        .requestMatchers("/api/user/reissue").permitAll()
+                        .requestMatchers("/api/user/reissue","/api/user/cookieToJwt").permitAll()
                         .anyRequest().authenticated())
                 );
         http.addFilterAfter(new JWTFilter(jwtUtil), OAuth2LoginAuthenticationFilter.class);

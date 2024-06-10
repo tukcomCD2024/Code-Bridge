@@ -12,6 +12,7 @@ import com.Backend.shareNote.domain.User.repository.FcmRepository;
 import com.Backend.shareNote.domain.User.repository.RefreshRepository;
 import com.Backend.shareNote.domain.User.repository.UserRepository;
 import io.jsonwebtoken.ExpiredJwtException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -150,7 +151,7 @@ public class UserService {
         String userId = jwtUtil.getUserId(refresh);
 
         //새로운 토큰 발급
-        String newAccess = jwtUtil.createJwt("access",  userId, username, role,600000L);
+        String newAccess = jwtUtil.createJwt("access",  userId, username, role,60000000L);
         String newRefresh = jwtUtil.createJwt("refresh",  userId, username, role,86400000L);
 
         //Refresh 토큰 삭제
@@ -203,5 +204,27 @@ public class UserService {
 
             return ResponseEntity.status(HttpStatus.OK).body("fcm 저장 성공");
         }
+    }
+
+    public ResponseEntity<?> cookieToJwt(HttpServletRequest request, HttpServletResponse response) {
+        for (Cookie cookie : request.getCookies()) {
+            if (cookie.getName().equals("SocialAccess")) {
+                String token = cookie.getValue();
+
+                if(jwtUtil.isExpired(token)) {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("토큰이 만료되었습니다.");
+
+                }
+                // refresh token도 만들어 줘야함
+                String refresh = jwtUtil.createJwt("refresh", jwtUtil.getUserId(token), jwtUtil.getUsername(token), jwtUtil.getRole(token), 86400000L);
+                response.setHeader("access", "Bearer " + token);
+                response.setHeader("refresh", "Bearer " + refresh);
+
+                return ResponseEntity.ok("쿠키에서 토큰으로 변환 성공");
+            }
+        }
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("쿠키안에 토큰이 없습니다.쿠키가 없을지도?");
+
     }
 }

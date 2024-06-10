@@ -51,4 +51,9 @@ public class UserController {
         return UserService.reissueFcm(request, response);
     }
 
+    @PostMapping("/user/cookieToJwt")
+    public ResponseEntity<?> cookieToJwt(HttpServletRequest request, HttpServletResponse response) {
+        return UserService.cookieToJwt(request, response);
+    }
+
 }

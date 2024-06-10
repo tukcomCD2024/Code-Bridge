@@ -35,9 +35,9 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         String role = auth.getAuthority();
 
         // 임시로 username으로 userID 부분 대체했음
-        String token = jwtUtil.createJwt("access",username, username, role,60 * 60 * 60L);
+        String token = jwtUtil.createJwt("access",username, username, role,60 * 60 * 60 * 1000L);
 
-        response.addCookie(createCookie("Authorization", token));
+        response.addCookie(createCookie("SocialAccess", token));
         // 이거는 배포버전이랑 로컬이랑 다르게 해줘야 겠네
         response.sendRedirect("http://localhost:3000/main");
         // response.sendRedirect("https://sharenote.shop/main");
