@@ -6,6 +6,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrashCan } from "@fortawesome/free-solid-svg-icons";
 import toastr from "toastr";
 import "toastr/build/toastr.css";
+import defaultNoteImage from "../../../../image/defaultNote2.png";
 
 const NoteSettingModal = ({
     modalOpen,
@@ -60,7 +61,7 @@ const NoteSettingModal = ({
     // 노트 정보 수정 함수
     const handleModify = async () => {
       const title = noteNameInput || note?.name || "노트 정보 없음";
-      const noteImageUrl = localStorage.getItem('recentImageUrl') || note?.image || 'https://sharenotebucket.s3.ap-northeast-2.amazonaws.com/NoneImage2.png';
+      const noteImageUrl = localStorage.getItem('recentImageUrl') || note?.image || defaultNoteImage;
       const endpoint = "/api/user/note";
       try {
         setIsModifyButtonDisabled(true);
@@ -72,7 +73,7 @@ const NoteSettingModal = ({
           body: JSON.stringify({ title, noteImageUrl, organizationId, noteId }),
         });
         if (response.ok) {
-            toastr.info("노트 수정 완료!");
+            toastr.info("정상적으로 처리되었습니다.");
             setNoteInfo({
               ...noteinfo,
               name: title,
@@ -99,7 +100,7 @@ const NoteSettingModal = ({
     const removeNote = async () => {
       if (note?.name == null) {
         toastr.info("정보를 불러오지 못했습니다.");
-        navigate("/main");
+        navigate("/organization");
         return;
       }
   
@@ -124,7 +125,7 @@ const NoteSettingModal = ({
           // 비정상적 상황
           } else {
               alert("이미 삭제된 Note 입니다.");
-              navigate("/main");
+              navigate("/organization");
           } 
         } catch (error) {
           console.error("Error: ", error);
@@ -137,7 +138,7 @@ const NoteSettingModal = ({
       if (note?.name == null) {
         toastr.options.positionClass = "toast-top-right";
         toastr.info("정보를 불러오지 못했습니다.");
-        navigate("/main");
+        navigate("/organization");
       }
     }, [note, navigate]);
   
@@ -169,7 +170,7 @@ const NoteSettingModal = ({
               <p style={{ fontWeight: "bold", fontSize: "20px", whiteSpace: "nowrap", overflow: "hidden", textOverflow:"ellipsis", maxWidth: "270px" }}>
               {noteNameInput || note?.name || "노트 정보 없음"}
               </p>
-              <img src={ myimage || note?.image || 'https://sharenotebucket.s3.ap-northeast-2.amazonaws.com/NoneImage2.png'} alt="Note" />
+              <img src={ myimage || note?.image || defaultNoteImage} alt="Note" />
             </LeftInsideContainer>
           </LeftContainer>
           <RightContainer>

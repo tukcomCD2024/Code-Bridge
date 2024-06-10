@@ -126,7 +126,7 @@ const SignupPage = () => {
         body: JSON.stringify({ email, nickname, password }), // 직접적으로 데이터 전송
       });
       if (response.ok) {
-        toastr.success("회원가입 성공! 로그인을 진행해주세요.");
+        toastr.success("<strong>회원가입 성공!</strong><br/>로그인을 진행해주세요.");
         navigate("/login");
       } else {
         const errorData = await response.text();

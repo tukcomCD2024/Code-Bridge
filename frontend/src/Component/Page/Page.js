@@ -27,6 +27,7 @@ import 'toastr/build/toastr.css';
 
 import ModalImageComponent from "./utils/editor/ModalImageComponent";
 import ImageToEditor from "./utils/editor/ImageToEditor";
+import NoteSettingModal from "./utils/editor/noteSettingModal";
 import BlockLike from "./utils/yjs/BlockLike";
 import BlockLock from './utils/yjs/BlockLock'; 
 import { imageSettings } from "./utils/editor/pageSettings";
@@ -34,11 +35,11 @@ import { inlinePlaceholderPlugin } from "./utils/editor/plugin/inlinePlaceholder
 import { hoverButtonPlugin } from "./utils/editor/plugin/hoverButtonPlugin";
 import { generateBlockIdPlugin } from "./utils/editor/plugin/generateBlockIdPlugin";
 import { isWeb, checkLocalStorage } from "./utils/initMobileWebView"
-import NoteSettingModal from "./utils/editor/noteSettingModal";
-import loadingImage from "../../image/loading.gif";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faLeftLong, faRightLong, faSquarePlus, faTrashCan, faList, faGear } from "@fortawesome/free-solid-svg-icons";
 import { cursorColors } from "../Utils/cursorColor"
+import defaultNoteImage from "../../image/defaultNote2.png";
+import LoadingScreen from "../Utils/LoadingScreen";
 
 function Page() {
   const location = useLocation();
@@ -217,6 +218,9 @@ function Page() {
           setPageIndex(index);
         } else {
           console.error(`Failed to fetch: HTTP status ${response.status}`);
+          navigate(`/organization`);
+          toastr.remove();
+          toastr.error("잘못된 경로입니다.");
         }
       } catch (error) {
         if (!isCancelled) {
@@ -251,6 +255,9 @@ function Page() {
           }
         } else {
           console.error(`Failed to fetch: HTTP status ${response.status}`);
+          navigate(`/organization`);
+          toastr.remove();
+          toastr.error("잘못된 경로입니다.");
         }
       } catch (error) {
         if (!isCancelled) {
@@ -486,22 +493,28 @@ function Page() {
       ydocRef.current.destroy();
     }  
 
+    // 더블클릭 감지를 위한 클릭 시간.
+    let lastClickTime = 0;
     // 더블클릭 이벤트를 처리하는 함수
     const handleDoubleClick = (event) => {
-      // 더블클릭 감지를 위한 클릭 시간.
-      let lastClickTime = 0;
-
       const currentTime = new Date().getTime();
       if (currentTime - lastClickTime < 300) {
-          const { target } = event;
-          if (target.tagName.toLowerCase() === "img") {
-              const imageUrl = target.getAttribute("src");
-              setClickedImageSrc(imageUrl)
-              setModalOpen_ImageZoom(true);
-          }
+          imageZoom(event);
       }
       lastClickTime = currentTime;
     };
+
+    const imageZoom = (event, src) => {
+      const { target } = event;
+          if (target.tagName.toLowerCase() === "img") {
+              const imageUrl = target.getAttribute("src");
+              setClickedImageSrc(imageUrl);
+              setModalOpen_ImageZoom(true);
+          } else if (src) {
+            setClickedImageSrc(src);
+            setModalOpen_ImageZoom(true);
+          }
+    }
 
     const handleNodeClick = (nickname, event) => {
       handleDoubleClick(event);
@@ -576,7 +589,7 @@ function Page() {
             cursorBuilder: myCursorBuilder,
           }),
           yUndoPlugin(),
-          hoverButtonPlugin(blockLikeRef, blockLockRef),
+          hoverButtonPlugin(blockLikeRef, blockLockRef, imageZoom),
           inlinePlaceholderPlugin(),
           generateBlockIdPlugin({ yDocInitialized }),
           imagePlugin({
@@ -616,31 +629,7 @@ function Page() {
 
   return (
     <div>
-      {!isloaded && (
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            position: "fixed",
-            top: 0,
-            left: 0,
-            width: "100%",
-            height: "100%",
-            backgroundColor: "rgba(255, 255, 255, 0.7)",
-          }}
-        >
-          <img
-            src={loadingImage}
-            alt="Loading..."
-            style={{
-              width: "200px",
-              height: "auto",
-              borderBottom: "2px solid #bbbbbb",
-            }}
-          />
-        </div>
-      )}
+    {!isloaded && (<LoadingScreen />)}
         <LayoutContainer>
           <NavigationBar $isloaded={isloaded.toString()}>
           <NoteHeaderContainer>
@@ -648,7 +637,7 @@ function Page() {
               <span>📖&nbsp;</span>
               <span>{noteinfo ? noteinfo.name : "Loading..."}</span>
             </Notename>
-              <img src={noteinfo ? noteinfo.image : 'https://sharenotebucket.s3.ap-northeast-2.amazonaws.com/NoneImage2.png'} alt="Note" />
+              <img src={noteinfo ? noteinfo.image : defaultNoteImage} alt="Note" />
               <NoteBtnContainer>
                 <NoteBtn onClick={() => navigate(`/organization/${organizationId}`)}>
                   <FontAwesomeIcon icon={faList} />
