@@ -1,5 +1,6 @@
 import React from "react";
 import styled from "styled-components";
+import { fetchLogout } from "../Utils/FetchLogout";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBars } from "@fortawesome/free-solid-svg-icons";
 import logo from "../../image/logo_person.gif";
@@ -20,13 +21,13 @@ const Header = ({ toggle, setToggle }) => {
       </StNavLogo>
 
       <StNavMenu>
-          <li onClick={() => {navigate("/"); localStorage.clear();}}>로그아웃</li>
+          <li onClick={() =>{ fetchLogout(); navigate('/'); }}>로그아웃</li>
         <li onClick={() => navigate("/editProfile")}>회원정보수정</li>
       </StNavMenu>
 
       {toggle ? (
         <StNavMenuNone>
-          <li onClick={() => {navigate("/"); localStorage.clear();}}>로그아웃</li>
+          <li onClick={() => { fetchLogout(); navigate('/'); }}>로그아웃</li>
           <li onClick={() => navigate("/editProfile")}>회원정보수정</li>
         </StNavMenuNone>
       ) : null}

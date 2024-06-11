@@ -22,6 +22,8 @@ function ContributionPage() {
   const { id } = useParams();
   const organizationId = String(id);
   const navigate = useNavigate();
+  const refresh = localStorage.getItem("refresh");
+  const access = localStorage.getItem("access");
   const nickname = localStorage.getItem("nickname");
 
   const [displayTotalScores, setDisplayTotalScores] = useState(true); // 종합 점수
@@ -60,6 +62,8 @@ function ContributionPage() {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
+            "access": access,
+            "refresh": refresh,
           },
         });
         if (response.ok && !isCancelled) {

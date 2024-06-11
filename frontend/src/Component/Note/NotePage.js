@@ -87,8 +87,13 @@ function NotePage() {
   const { id } = useParams();
   const organizationId = String(id);
   const location = useLocation(); // 현재 위치 정보를 가져옴
-  const modalRef = useRef();
   const navigate = useNavigate();
+
+  const userId = localStorage.getItem('userId');
+  const refresh = localStorage.getItem("refresh");
+  const access = localStorage.getItem("access");
+
+  const modalRef = useRef();
   const [organization, setOrganization] = useState(null);
   const [myimage, setMyImage] = useState(null);
   const [noteName, setNoteName] = useState("");
@@ -121,10 +126,14 @@ function NotePage() {
     return allowedExtensions.includes(fileExtension);
   };
 
-    const userId = localStorage.getItem('userId');
     const fetchOrganizationInfo = async () => {
       try {
-        const response = await fetch(`/api/user/organization/${userId}`);
+        const response = await fetch(`/api/user/organization/${userId}`, {
+          headers: {
+            "access": access,
+            "refresh": refresh,
+          },
+        });
         if (response.ok) {
           const organizations = await response.json();
           const matchedOrganization = organizations.find(org => org.id === id);
@@ -141,9 +150,13 @@ function NotePage() {
 
     useEffect(() => {
       const fetchNotes = async () => {
-        const createUserId = localStorage.getItem("userId");
         try {
-          const response = await fetch(`/api/user/note/${organizationId}`);
+          const response = await fetch(`/api/user/note/${organizationId}`, {
+            headers: {
+              "access": access,
+              "refresh": refresh,
+            },
+          });
           if (response.ok) {
             const data = await response.json();
             const fetchedNoteData = await Promise.all(data.map(async (note) => {
@@ -153,8 +166,10 @@ function NotePage() {
                   method: "POST",
                   headers: {
                     "Content-Type": "application/json",
+                    "access": access,
+                    "refresh": refresh,
                   },
-                  body: JSON.stringify({ organizationId, noteId: note.id, createUserId }),
+                  body: JSON.stringify({ organizationId, noteId: note.id, createUserId: userId }),
                 });
                 if (pageResponse.ok) {
                   const pageData = await pageResponse.json();
@@ -269,6 +284,8 @@ function NotePage() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "access": access,
+          "refresh": refresh,
         },
         body: JSON.stringify({ organizationId, title, createUser, noteImageUrl }),
       });
@@ -285,6 +302,8 @@ function NotePage() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "access": access,
+          "refresh": refresh,
         },
         body: JSON.stringify({ organizationId, noteId, createUserId }),
       });
@@ -310,7 +329,6 @@ function NotePage() {
       return;
     }
 
-    const userLoginId = localStorage.getItem("email");
     const isConfirmed = window.confirm(`"${organization?.name}" 의 모든 데이터를 삭제하시겠습니까? \n\n${organization.notes.length}개의 노트가 삭제되고, ${organization.members.length}명의 멤버가 추방됩니다.\n계속 진행하시려면 확인을 눌러주세요.`);
 
     if (isConfirmed) {
@@ -319,8 +337,10 @@ function NotePage() {
           method: "DELETE",
           headers: {
             "Content-Type": "application/json",
+            "access": access,
+            "refresh": refresh,
           },
-          body: JSON.stringify({ organizationId, userLoginId }),
+          body: JSON.stringify({ organizationId, userLoginId: localStorage.getItem("email") }),
         });
         const contentType = response.headers.get('content-type');
         // 삭제 성공

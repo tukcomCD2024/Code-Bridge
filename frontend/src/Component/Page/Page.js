@@ -59,6 +59,8 @@ function Page() {
 
   const nickname = localStorage.getItem('nickname');
   const userId = localStorage.getItem('userId');
+  const refresh = localStorage.getItem("refresh");
+  const access = localStorage.getItem("access");
   
   const [reconnect, setReconnect] = useState(false);
   const [noteinfo, setNoteInfo] = useState(null);
@@ -122,6 +124,8 @@ function Page() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "access": access,
+          "refresh": refresh,
         },
         body: JSON.stringify({ organizationId, noteId, createUserId: userId }),
       });
@@ -157,6 +161,8 @@ function Page() {
           method: "DELETE",
           headers: {
             "Content-Type": "application/json",
+            "access": access,
+            "refresh": refresh,
           },
           body: JSON.stringify({ organizationId, noteId, pageId }),
         });
@@ -205,6 +211,8 @@ function Page() {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            "access": access,
+            "refresh": refresh,
           },
           body: JSON.stringify({ organizationId, noteId, createUserId: userId }),
         });
@@ -218,9 +226,9 @@ function Page() {
           setPageIndex(index);
         } else {
           console.error(`Failed to fetch: HTTP status ${response.status}`);
-          navigate(`/organization`);
-          toastr.remove();
-          toastr.error("잘못된 경로입니다.");
+          // navigate(`/organization`);
+          // toastr.remove();
+          // toastr.error("잘못된 경로입니다.");
         }
       } catch (error) {
         if (!isCancelled) {
@@ -242,7 +250,12 @@ function Page() {
 
     const fetchNoteInfo = async () => {
       try {
-        const response = await fetch(`/api/user/note/${organizationId}`);
+        const response = await fetch(`/api/user/note/${organizationId}`, {
+          headers: {
+            "access": access,
+            "refresh": refresh,
+          },
+        });
         if (response.ok && !isCancelled) {
           const data = await response.json();
           const noteData = data.find(note => note.id === noteId);
@@ -255,9 +268,9 @@ function Page() {
           }
         } else {
           console.error(`Failed to fetch: HTTP status ${response.status}`);
-          navigate(`/organization`);
-          toastr.remove();
-          toastr.error("잘못된 경로입니다.");
+          // navigate(`/organization`);
+          // toastr.remove();
+          // toastr.error("잘못된 경로입니다.");
         }
       } catch (error) {
         if (!isCancelled) {
