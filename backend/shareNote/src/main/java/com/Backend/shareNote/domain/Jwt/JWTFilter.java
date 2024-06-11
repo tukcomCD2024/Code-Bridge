@@ -23,7 +23,9 @@ import java.util.List;
 @Slf4j
 public class JWTFilter extends OncePerRequestFilter {
     private final JWTUtil jwtUtil;
-    private final List<String> permitAllUrls = List.of("/api/user/login", "/api/user/signUp", "/", "/api/user/reissue", "/api/user/cookieToJwt");
+
+    private final List<String> permitAllUrls = List.of("/api/user/login", "/api/user/signUp", "/", "/api/user/reissue",
+            "/api/user/cookieToJwt","/user/uniqueEmail/**","/user/uniqueNickname/**","/swagger-ui.html","/api/user/organization/invitation/accept");
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String requestURI = request.getRequestURI();
