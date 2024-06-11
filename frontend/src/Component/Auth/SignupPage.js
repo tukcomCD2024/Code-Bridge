@@ -38,7 +38,6 @@ const SignupPage = () => {
       const response = await fetch(`/api/user/uniqueEmail/${email}`, {
         method: "POST",
       });
-      setIsEmailValid(true); // 반드시 삭제
       if (response.ok) {
         const isUnique = await response.json();
         if (isUnique) {
@@ -69,7 +68,6 @@ const SignupPage = () => {
         const response = await fetch(`/api/user/uniqueNickname/${nickname}`, {
           method: "POST",
         });
-        setIsNicknameValid(true); // 반드시 삭제
         if (response.ok) {
           const isUnique = await response.json();
           if (isUnique) {
