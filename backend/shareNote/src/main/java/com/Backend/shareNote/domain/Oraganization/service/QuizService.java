@@ -5,6 +5,7 @@ import com.Backend.shareNote.domain.Oraganization.entity.Organization;
 import com.Backend.shareNote.domain.Oraganization.repository.OrganizationRepository;
 import com.Backend.shareNote.domain.Oraganization.repository.QuizRepository;
 import com.Backend.shareNote.domain.User.entity.Users;
+import com.Backend.shareNote.domain.User.repository.FcmRepository;
 import com.Backend.shareNote.domain.User.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -21,6 +22,8 @@ public class QuizService {
 
     private final QuizRepository quizRepository;
     private final UserRepository userRepository;
+    private final FcmRepository fcmRepository;
+    private final FirebaseCloudMessageService firebaseCloudMessageService;
     @Transactional
     public ResponseEntity<Object> createQuiz(QuizCreateDTO quizCreateDTO) {
         try {
@@ -63,6 +66,23 @@ public class QuizService {
 
 
             organizationRepository.save(organization);
+
+            //퀴즈 알림 보내기
+            //멤버들의 fcm을 가져오기
+            List<String> fcmList = new ArrayList<>();
+            for (String member : organization.getMembers()) {
+                if (!member.equals(quizCreateDTO.getUserId())) {
+                    fcmList.add(fcmRepository.findByUserId(member).getFcm());
+                }
+            }
+
+            //알림 보내기
+            for(String fcm : fcmList){
+                firebaseCloudMessageService.sendMessageTo(fcm, "새로운 퀴즈가 등록되었습니다.", quizCreateDTO.getQuizTitle());
+            }
+
+
+
 
             return ResponseEntity.ok().body("퀴즈 생성 성공");
         }catch (IllegalArgumentException e) {

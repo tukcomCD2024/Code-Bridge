@@ -68,6 +68,10 @@ const LoginPage = () => {
       alert("처리 중 오류가 발생했습니다.");
     }
   };
+  // google login 버튼 클릭 함수
+  const handleGoogleLoginClick = () => {
+    window.location.href = "/api/oauth2/authorization/google";
+  };
   return (
     <Container>
     <ContentWrapper>
@@ -107,7 +111,7 @@ const LoginPage = () => {
         <GoogleLoginImg
           src={GoogleLoginBtn}
           alt="Google Login Button"
-          onClick={() => navigate("/signup")}
+          onClick={handleGoogleLoginClick} // onClick 이벤트 핸들러 설정
         />
       </GoogleLoginBtnContainer>
     </ContentWrapper>
