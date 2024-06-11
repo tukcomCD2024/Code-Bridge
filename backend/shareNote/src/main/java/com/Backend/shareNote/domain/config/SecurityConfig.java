@@ -108,9 +108,9 @@ public class SecurityConfig {
         // 경로별 인가 작업
         http
                 .authorizeHttpRequests((auth -> auth
-                        .requestMatchers("/api/user/login","/","/api/user/signUp").permitAll()
+                        .requestMatchers("/api/user/login","/","/api/user/signUp","/api/user/organization/invitation/accept").permitAll()
                         .requestMatchers("/admin").hasRole("ADMIN")
-                        .requestMatchers("/api/user/reissue","/api/user/cookieToJwt").permitAll()
+                        .requestMatchers("/api/user/reissue","/api/user/cookieToJwt","/user/uniqueEmail/**","/user/uniqueNickname/**","/swagger-ui.html","/user/reissue").permitAll()
                         .anyRequest().authenticated())
                 );
         http.addFilterAfter(new JWTFilter(jwtUtil), OAuth2LoginAuthenticationFilter.class);
