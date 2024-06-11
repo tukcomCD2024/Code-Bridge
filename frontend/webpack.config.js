@@ -9,7 +9,7 @@ module.exports = (env, argv) => {
     mode:  'production', // 배포용
     entry: './src/index.js',
     output: {
-      path: path.resolve(__dirname, 'dist'),
+      path: path.resolve(__dirname, 'build'),
       filename: 'bundle.js',
       assetModuleFilename: "[name][ext]?[hash]",
     },
