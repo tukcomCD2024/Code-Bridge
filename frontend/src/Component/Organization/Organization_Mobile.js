@@ -77,18 +77,20 @@ function OrganizationModal({
 }
 
 function Organization_Mobile() {
-  const [toggle, setToggle] = useState(false);
-  const [modalOpen, setModalOpen] = useState(false);
-  const modalRef = useRef();
+  const location = useLocation(); // 현재 위치 정보를 가져옴
+  const navigate = useNavigate(); // useNavigate 훅 사용
 
+  const userId = localStorage.getItem('userId');
+  const refresh = localStorage.getItem("refresh");
+  const access = localStorage.getItem("access");
+
+  const modalRef = useRef();
   const [myEmoji, setMyEmoji] = useState(defaultEmoji);
   const [organizationName, setOrganizationName] = useState("");
   const [organizations, setOrganizations] = useState([]);
   const [isInvalid, setIsInvalid] = useState(false);
-  
-  const location = useLocation(); // 현재 위치 정보를 가져옴
-  const navigate = useNavigate(); // useNavigate 훅 사용
-  const userId = localStorage.getItem('userId');
+  const [toggle, setToggle] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
 
   useEffect(() => {
     if(!userId){
@@ -101,7 +103,12 @@ function Organization_Mobile() {
   useEffect(() => {
     const fetchOrganizations = async () => {
       try {
-        const response = await fetch(`/api/user/organization/${userId}`);
+        const response = await fetch(`/api/user/organization/${userId}`, {
+          headers: {
+            "access": access,
+            "refresh": refresh,
+          },
+        });
           if (response.ok) {
             const data = await response.json();
               const fetchedOrganizationData = data.map(org => ({
@@ -159,10 +166,6 @@ function Organization_Mobile() {
       return;
     }
 
-    const owner = localStorage.getItem("email");
-    const name = organizationName;
-    const emoji = myEmoji; // Organization 대표 마크를 이모지로 설정함.
-
     const createOrganization = (organizationId) => {
       const newOrganization = {
         id: organizationId,
@@ -180,8 +183,10 @@ function Organization_Mobile() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "access": access,
+          "refresh": refresh,
         },
-        body: JSON.stringify({ name, owner, emoji }),
+        body: JSON.stringify({ name: organizationName, owner: localStorage.getItem("email"), emoji: myEmoji }),
       });
 
       if (response.ok) {

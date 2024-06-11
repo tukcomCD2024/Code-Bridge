@@ -8,9 +8,12 @@ const BlockLike = forwardRef(({ ydocRef }, ref) => {
   const pathSegments = location.pathname.split('/').filter(Boolean); 
   const organizationId = pathSegments[1];
   const noteId = pathSegments[2];
-  const hoverButton_like = document.querySelector(".hoverButton_like");
 
   const userId = localStorage.getItem('userId');
+  const refresh = localStorage.getItem("refresh");
+  const access = localStorage.getItem("access");
+  const hoverButton_like = document.querySelector(".hoverButton_like");
+
   const yLikeList = ydocRef.current.getMap(`yLikeList_${userId}`);
   
   const toggleLike = async (blockId, lover, heartReceiver) => {
@@ -25,6 +28,8 @@ const BlockLike = forwardRef(({ ydocRef }, ref) => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "access": access,
+          "refresh": refresh,
         },
         body: JSON.stringify({ organizationId, noteId, lover, blockId, heartReceiver }),
       });

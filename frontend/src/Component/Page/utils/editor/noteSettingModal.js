@@ -28,6 +28,9 @@ const NoteSettingModal = ({
     const organizationId = pathSegments[1];
     const noteId = pathSegments[2];
 
+    const refresh = localStorage.getItem("refresh");
+    const access = localStorage.getItem("access");
+
     // 이미지 업로드 함수
     const uploadImage = (e) => {
       const selectedFile = e.target.files[0];
@@ -69,6 +72,8 @@ const NoteSettingModal = ({
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
+            "access": access,
+            "refresh": refresh,
           },
           body: JSON.stringify({ title, noteImageUrl, organizationId, noteId }),
         });
@@ -112,6 +117,8 @@ const NoteSettingModal = ({
             method: "DELETE",
             headers: {
               "Content-Type": "application/json",
+              "access": access,
+              "refresh": refresh,
             },
             body: JSON.stringify({ organizationId, noteId }),
           });

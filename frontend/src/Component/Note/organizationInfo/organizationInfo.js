@@ -9,14 +9,17 @@ const OrganizationInfoModal = ({
   handleCloseModal,
   organization,
 }) => {
-  const modalRef = useRef();
-  const navigate = useNavigate();
-
-  const [userEmailInput, setUserEmailInput] = useState(""); // 사용자 이메일 입력 상태 관리
-  const [isSendButtonDisabled, setIsSendButtonDisabled] = useState(false);
-
   const { id } = useParams();
   const organizationId = String(id);
+  const navigate = useNavigate();
+
+  const nickname = localStorage.getItem('nickname');
+  const refresh = localStorage.getItem("refresh");
+  const access = localStorage.getItem("access");
+
+  const modalRef = useRef();
+  const [userEmailInput, setUserEmailInput] = useState(""); // 사용자 이메일 입력 상태 관리
+  const [isSendButtonDisabled, setIsSendButtonDisabled] = useState(false);
 
   // 이메일 입력 처리 함수
   const handleEmailInputChange = (event) => {
@@ -32,7 +35,6 @@ const OrganizationInfoModal = ({
 
   // 이메일 전송 처리 함수
   const handleSendInvitation = async () => {
-    const nickname = localStorage.getItem('nickname');
 
     // 이메일 형식 검증
     if (!validateEmail(userEmailInput)) {
@@ -49,6 +51,8 @@ const OrganizationInfoModal = ({
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "access": access,
+          "refresh": refresh,
         },
         body: JSON.stringify({ email: userEmailInput, nickname, organizationId }), // 입력된 이메일 데이터를 JSON 형태로 변환하여 전송
       });

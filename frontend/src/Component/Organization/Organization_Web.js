@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useLocation, useNavigate } from 'react-router-dom';
+import { fetchLogout } from "../Utils/FetchLogout";
 import styled, { keyframes, css } from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faIdBadge, faArrowRightFromBracket, faPlus, faTrashCan, faCircleInfo, faSquarePollVertical } from "@fortawesome/free-solid-svg-icons";
@@ -84,21 +85,23 @@ function OrganizationCard({ organization }) {
 }
 
 const OrganizationContainer = ({ OrgName, OrgEmoji, OrgId, removeOrganization, handleOpenOrganizationModal }) => {
-    const nickname = localStorage.getItem("nickname");
-    const userId = localStorage.getItem('userId');
+  const navigate = useNavigate();
+  const location = useLocation(); // 현재 위치 정보를 가져옴
+  const pathSegments = location.pathname.split('/').filter(Boolean); 
+  const organizationId = pathSegments[1];
 
-    const navigate = useNavigate();
-    const location = useLocation(); // 현재 위치 정보를 가져옴
-    const pathSegments = location.pathname.split('/').filter(Boolean); 
-    const organizationId = pathSegments[1];
+  const nickname = localStorage.getItem("nickname");
+  const userId = localStorage.getItem('userId');
+  const refresh = localStorage.getItem("refresh");
+  const access = localStorage.getItem("access");
 
-    const modalRef = useRef();
-    const [modalOpen, setModalOpen] = useState(false);
-    const [myEmoji, setMyEmoji] = useState(defaultEmoji);
-    const [organizationName, setOrganizationName] = useState("");
-    const [organizations, setOrganizations] = useState([]);
-    const [isInvalid, setIsInvalid] = useState(false);
-    const [isOrgVisible, setIsOrgVisible] = useState(!!OrgName);
+  const modalRef = useRef();
+  const [modalOpen, setModalOpen] = useState(false);
+  const [myEmoji, setMyEmoji] = useState(defaultEmoji);
+  const [organizationName, setOrganizationName] = useState("");
+  const [organizations, setOrganizations] = useState([]);
+  const [isInvalid, setIsInvalid] = useState(false);
+  const [isOrgVisible, setIsOrgVisible] = useState(!!OrgName);
 
     useEffect(() => {
       setIsOrgVisible(!!OrgName);
@@ -133,7 +136,14 @@ const OrganizationContainer = ({ OrgName, OrgEmoji, OrgId, removeOrganization, h
       useEffect(() => {
         const fetchOrganizations = async () => {
           try {
-            const response = await fetch(`/api/user/organization/${userId}`);
+            const response = await fetch(`/api/user/organization/${userId}`, {
+              method: "GET",
+              headers: {
+                "Content-Type": "application/json",
+                "access": access,
+                "refresh": refresh,
+              },
+            });
               if (response.ok) {
                 const data = await response.json();
                   const fetchedOrganizationData = data.map(org => ({
@@ -172,10 +182,6 @@ const OrganizationContainer = ({ OrgName, OrgEmoji, OrgId, removeOrganization, h
           return;
         }
     
-        const owner = localStorage.getItem("email");
-        const name = organizationName;
-        const emoji = myEmoji; // Organization 대표 마크를 이모지로 설정함.
-    
         const createOrganization = (organizationId) => {
           const newOrganization = {
             id: organizationId,
@@ -193,10 +199,13 @@ const OrganizationContainer = ({ OrgName, OrgEmoji, OrgId, removeOrganization, h
             method: "POST",
             headers: {
               "Content-Type": "application/json",
+              "access": access,
+              "refresh": refresh,
             },
-            body: JSON.stringify({ name, owner, emoji }),
+            body: JSON.stringify({ name: organizationName, owner: localStorage.getItem("email"), emoji: myEmoji }),
           });
-    
+          const contentType = response.headers.get('content-type');
+
           if (response.ok) {
             const responseData = await response.json();
             const organizationId = responseData.organizationId;
@@ -204,8 +213,13 @@ const OrganizationContainer = ({ OrgName, OrgEmoji, OrgId, removeOrganization, h
             console.log("생성 성공:", responseData);
             navigate(`/organization/${organizationId}`);
           } else {
-            const errorData = await response.json();
-            alert(`생성 실패: ${errorData.message}`);
+              if (contentType && contentType.includes('text/plain')) {
+                const errorMessage = await response.text();
+                alert(`로그인 실패: ${errorMessage}`);
+            } else if (contentType && contentType.includes('application/json')) {
+                const errorData = await response.json();
+                console.log(errorData);
+            } 
           }
         } catch (error) {      
           console.error("Error: ", error);
@@ -222,7 +236,7 @@ const OrganizationContainer = ({ OrgName, OrgEmoji, OrgId, removeOrganization, h
                     <span>{nickname ? <> {nickname} 님 <small style={{ fontWeight: "normal" }}>환영합니다!</small> </> : "Loading..."}</span>
                     </MyName>
                     <IdInfoBtnContainer>
-                        <IdInfoBtn onClick={() => navigate('/')}>
+                        <IdInfoBtn onClick={() => { fetchLogout(); navigate('/'); }}>
                             <FontAwesomeIcon icon={faArrowRightFromBracket} />
                             &nbsp;&nbsp;&nbsp;로그아웃
                         </IdInfoBtn>
@@ -237,7 +251,7 @@ const OrganizationContainer = ({ OrgName, OrgEmoji, OrgId, removeOrganization, h
                     <OrganizationInfo>
                       <div className="content-container">
                           <div className="image">
-                          <p>{OrgEmoji ? OrgEmoji : "❓"}</p>
+                          <p>{OrgEmoji ? OrgEmoji : "👥"}</p>
                           </div>
                           <div className="text-content">
                               <h1 className="title">{OrgName ? OrgName : "Loading..."}</h1>

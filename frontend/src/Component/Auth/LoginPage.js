@@ -9,7 +9,6 @@ import GoogleLoginBtn from "../../image/googleLoginBtn.png";
 const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [resultMessage, setResultMessage] = useState("");
   const navigate = useNavigate();
 
   const handleInputChange = (e) => {
@@ -41,14 +40,18 @@ const LoginPage = () => {
   
       // Content-Type 헤더를 체크하여 응답 타입 판별
       const contentType = response.headers.get('content-type');
-  
+      const access = response.headers.get('access');
+      const refresh = response.headers.get('refresh');
+
       if (response.ok) {
         if (contentType && contentType.includes('application/json')) {
           const data = await response.json();
           const { name, userId } = data;
           localStorage.setItem("userId", userId); // 백엔드로부터 받은 유저 (고유)아이디
           localStorage.setItem("nickname", name); // 백엔드로부터 받은 유저 닉네임
-          localStorage.setItem("email", email); // 로그인한 아이디
+          localStorage.setItem("email", email); // 로그인 성공 시 이메일 저장(백엔드에서 받은게 아님)
+          localStorage.setItem("access", access); // accessToken 저장
+          localStorage.setItem("refresh", refresh); // refreshToken 저장
           if (token != undefined){
             localStorage.removeItem('token');
             toastr.success("<strong>초대 수락 완료!</strong> <br/>확인 불가 시, 새로고침하세요.");
