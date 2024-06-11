@@ -27,6 +27,16 @@ const ModalImageComponent = ({
     if (modalRef.current) {
       setisoverflow(modalRef.current.scrollHeight > modalRef.current.clientHeight ? "true" : "false");
     }
+
+    if (modalOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "auto";
+    }
+
+    return () => {
+      document.body.style.overflow = "auto";
+    };
   }, [modalOpen]);
 
   if (!modalOpen) return null;
@@ -45,7 +55,8 @@ export default ModalImageComponent;
 const ModalContainer = styled.div`
   display: flex;
   justify-content: center;
-  align-items: flex-start;
+  // align-items: flex-start;
+  align-items: center;
   z-index: 10;
   width: 100%;
   height: 100%;
@@ -59,6 +70,10 @@ const ModalContainer = styled.div`
 const ModalContent = styled.div`
   background-color: #fff;
   max-width: 90%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: auto;
 `;
 
 const CloseButton = styled.span`

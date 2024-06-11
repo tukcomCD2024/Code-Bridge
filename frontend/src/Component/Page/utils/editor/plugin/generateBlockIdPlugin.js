@@ -2,6 +2,8 @@ import { Plugin } from "prosemirror-state";
 import { v4 as uuidv4 } from "uuid";
 
 export const generateBlockIdPlugin = ({ yDocInitialized, guidGenerator = uuidv4 }) => {
+  let initialRun = true;
+
   return new Plugin({
       appendTransaction: (transactions, prevState, nextState) => {
         // Yjs 문서가 초기화되지 않은 경우 동작하지 않도록 함
@@ -13,6 +15,31 @@ export const generateBlockIdPlugin = ({ yDocInitialized, guidGenerator = uuidv4 
         let modified = false;
         const generatedIds = new Set();
         const userId = localStorage.getItem('userId');
+
+        if (initialRun) {
+          initialRun = false;
+          nextState.doc.descendants((node, pos) => {
+            if (node.type.name === "paragraph" || node.type.name === "image") {
+              let currentGuid = node.attrs['data-guid'] || node.attrs.guid;
+              if (!currentGuid || generatedIds.has(currentGuid)) {
+                let newGuid;
+                do {
+                  newGuid = guidGenerator();
+                } while (generatedIds.has(newGuid));
+                generatedIds.add(newGuid);
+                const newAttrs = {
+                  ...node.attrs,
+                  [node.type.name === "image" ? 'data-guid' : 'guid']: newGuid,
+                  [node.type.name === "image" ? 'data-writer' : 'writer']: userId,
+                };
+                tr.setNodeMarkup(pos, undefined, newAttrs);
+                modified = true;
+              } else {
+                generatedIds.add(currentGuid);
+              }
+            }
+          });
+        }
 
         if (transactions.some(transaction => transaction.docChanged)) {
           const { paragraph, image } = nextState.schema.nodes;

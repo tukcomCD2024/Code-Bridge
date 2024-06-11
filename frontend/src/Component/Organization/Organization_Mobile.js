@@ -76,7 +76,7 @@ function OrganizationModal({
   );
 }
 
-function MainPage() {
+function Organization_Mobile() {
   const [toggle, setToggle] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const modalRef = useRef();
@@ -172,7 +172,6 @@ function MainPage() {
   
       const updatedOrganizations = [...organizations, newOrganization];
       setOrganizations(updatedOrganizations);
-      // localStorage.setItem("organizations", JSON.stringify(updatedOrganizations));
       handleCloseModal();
     };
   
@@ -482,4 +481,4 @@ const NoOrganizationMessage = styled.div`
   }
 `;
 
-export default MainPage;
+export default Organization_Mobile;

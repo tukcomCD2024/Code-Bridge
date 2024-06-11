@@ -51,9 +51,9 @@ const LoginPage = () => {
           localStorage.setItem("email", email); // 로그인한 아이디
           if (token != undefined){
             localStorage.removeItem('token');
-            toastr.success("초대 수락 완료!");
+            toastr.success("<strong>초대 수락 완료!</strong> <br/>확인 불가 시, 새로고침하세요.");
           }
-          navigate("/main");
+          navigate("/organization");
         }
       } else {
         // 에러 응답 처리

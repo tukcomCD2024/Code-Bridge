@@ -2,7 +2,7 @@ import { Plugin, Selection, NodeSelection } from "prosemirror-state";
 import down_arrow from "../../../../../image/down_arrow.svg";
 import lock from "../../../../../image/lock2.gif";
 import { library, icon } from '@fortawesome/fontawesome-svg-core';
-import { faHeart } from '@fortawesome/free-solid-svg-icons';
+import { faHeart, faMagnifyingGlassPlus } from '@fortawesome/free-solid-svg-icons';
 import toastr from 'toastr';
 import 'toastr/build/toastr.css';
 
@@ -18,7 +18,7 @@ function countDocBlocks(doc) {
 }
 
 // 노트 페이지에서 블록(노드)마다 작은 메뉴창이 뜨게 한다.
-export function hoverButtonPlugin(blockLikeRef, blockLockRef) {
+export function hoverButtonPlugin(blockLikeRef, blockLockRef, imageZoom) {
   const hoverDiv = document.createElement("div");
 
   return new Plugin({
@@ -42,6 +42,15 @@ export function hoverButtonPlugin(blockLikeRef, blockLockRef) {
       hoverButton_lock.title = "노드 편집 잠금";
       hoverButton_lock.classList.add("hoverButton_lock"); // CSS 클래스 적용
       hoverDiv.appendChild(hoverButton_lock);
+
+      // hoverButton 생성(이미지 확대)
+      const hoverButton_imageZoom = document.createElement("div");
+      library.add(faMagnifyingGlassPlus);
+      const zoomIcon = icon(faMagnifyingGlassPlus).node[0];
+      hoverButton_imageZoom.appendChild(zoomIcon);
+      hoverButton_imageZoom.classList.add("hoverButton_imageZoom");
+      hoverButton_imageZoom.title = "이미지 확대";
+      hoverDiv.appendChild(hoverButton_imageZoom);
       
       // hoverButton 생성(좋아요)
       const hoverButton_like = document.createElement("div");
@@ -54,6 +63,7 @@ export function hoverButtonPlugin(blockLikeRef, blockLockRef) {
 
       // hoverButton_like 요소에 클릭 이벤트 리스너 추가
       hoverButton_like.addEventListener("click", async function() {
+        try {
         const { state } = editorView;
         const { selection } = state;
         const isImageNode = selection instanceof NodeSelection && selection.node.type.name === "image";
@@ -80,6 +90,9 @@ export function hoverButtonPlugin(blockLikeRef, blockLockRef) {
             }
           } else {
             console.error('No last position recorded.');
+          } 
+        } catch (error) {
+            console.error("Failed:", error);
           }
         });
 
@@ -147,6 +160,23 @@ export function hoverButtonPlugin(blockLikeRef, blockLockRef) {
         }
       });
 
+      hoverButton_imageZoom.addEventListener("click", (event) => {
+        try {
+          const { state } = editorView;
+          const { selection } = state;
+          const isImageNode = selection instanceof NodeSelection && selection.node.type.name === "image";
+  
+          if (lastPos !== null) {
+             if (isImageNode && selection.node.attrs.src.toString()) {
+              const src = selection.node.attrs.src.toString();
+              imageZoom(event, src);
+              } else console.log('No src found for this Image node.');
+          } else console.error('No last position recorded.');
+          } catch (error) {
+              console.error("Failed:", error);
+          }
+      });
+      
       function editorResizing() {
         const editor = document.querySelector("#editor");
         const prosemirror = document.querySelector(".ProseMirror");
@@ -214,6 +244,8 @@ export function hoverButtonPlugin(blockLikeRef, blockLockRef) {
           }
       
           let coords;
+
+          if (isImageNode && selection.node.attrs.src?.toString()) hoverButton_imageZoom.style.display = "block"; else hoverButton_imageZoom.style.display = "none";
 
           // 이미지 노드가 문서의 시작에 있을 때
           if (pos === 0 && isImageNode) {

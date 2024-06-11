@@ -55,7 +55,7 @@ const EmailTokenHandler = () => {
   }
 
   if (isLoggedIn()) {
-    return <Navigate to="/main" />;
+    return <Navigate to="/organization" />;
   } else {
     toastr.info("로그인 후 초대가 자동 수락됩니다.");
     return <Navigate to="/login" />;

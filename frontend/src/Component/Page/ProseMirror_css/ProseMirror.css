@@ -345,9 +345,10 @@ img.ProseMirror-separator {
 #editor,
 .editor {
   background-image: url('/src/image/note_paper\(8\).svg');
-  background-size: 100% 135%;
+  background-size: 83% 260%;
   background-repeat: no-repeat; 
-  background-position: center -10px; 
+  background-position: 16vw 0px; 
+  background-attachment: fixed;
   border-radius: 4px;
   padding: 5px 0;
   margin-bottom: 23px;
@@ -357,7 +358,6 @@ img.ProseMirror-separator {
     color: black;
     background-clip: padding-box;
     background-position: 0px 0px;
-    border: 3px solid rgba(198, 241, 86, 0.315);
   }
 }
 
@@ -453,6 +453,19 @@ animation: spin 2s ease-in-out infinite;
   }
 }
 
+.hoverButton_imageZoom {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  font-size: 19px;
+  margin: 0px 4px;
+  color: #fca050;
+
+  @media (max-width: 768px) {
+    font-size: 15px;
+  }
+}
+
 .hoverButton_like {
   fill: gray;
   color: gray;
@@ -464,7 +477,8 @@ animation: spin 2s ease-in-out infinite;
 }
 
 .hoverButton_like:hover,
-.hoverButton_like_fullRedHeart:hover {
+.hoverButton_like_fullRedHeart:hover,
+.hoverButton_imageZoom:hover {
   animation: heartbeat 1s infinite;
 }
 
@@ -611,7 +625,7 @@ p#locked {
   background-color: #D6EAF8;
   border-radius: 8px;
   padding: 1px 7px;
-  background-image: url('/src/image/lock2.gif');
+  background-image: url('../../../image/lock2.gif');
   background-size: 0.8em;
   background-position: center;
   background-repeat: no-repeat;

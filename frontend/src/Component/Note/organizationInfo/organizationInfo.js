@@ -56,7 +56,7 @@ const OrganizationInfoModal = ({
       if (!response.ok) throw new Error("Network response was not ok.");
       toastr.remove();
       toastr.options.positionClass = "toast-top-right";
-      toastr.success("초대 메일이 성공적으로 전송되었습니다.");
+      toastr.success("초대 메일이 전송되었습니다.");
       setUserEmailInput("");
       setIsSendButtonDisabled(false);
     } catch (error) {
@@ -77,7 +77,7 @@ const OrganizationInfoModal = ({
     if (organization?.name == null) {
       toastr.options.positionClass = "toast-top-right";
       toastr.info("정보를 불러오지 못했습니다.");
-      navigate("/main");
+      navigate("/organization");
     }
   }, [organization, navigate]);
 
@@ -174,6 +174,7 @@ const ModalContainer = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
+  z-index: 2;
 `;
 
 const ModalContent = styled.div`
