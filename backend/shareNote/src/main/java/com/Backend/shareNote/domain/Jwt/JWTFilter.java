@@ -18,6 +18,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.List;
+import java.util.regex.Pattern;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -25,14 +26,14 @@ public class JWTFilter extends OncePerRequestFilter {
     private final JWTUtil jwtUtil;
 
     private final List<String> permitAllUrls = List.of("/api/user/login", "/api/user/signUp", "/", "/api/user/reissue",
-            "/api/user/cookieToJwt","/user/uniqueEmail/**","/user/uniqueNickname/**","/swagger-ui.html","/api/user/organization/invitation/accept");
+            "/api/user/cookieToJwt","/api/user/uniqueEmail/.*","/api/user/uniqueNickname/.*","/swagger-ui.html","/api/user/organization/invitation/accept");
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String requestURI = request.getRequestURI();
 
         // permitAll 경로에 대해서는 필터를 건너뛰도록 설정
         // JWT 인증이 필요없는 permitAll 한 url들에 대해서는 건너뛰자
-        if (permitAllUrls.contains(requestURI)) {
+        if (permitAllUrls.stream().anyMatch(urlPattern -> Pattern.matches(urlPattern, requestURI))) {
             filterChain.doFilter(request, response);
             return;
         }
@@ -43,7 +44,8 @@ public class JWTFilter extends OncePerRequestFilter {
 
 
         if(access == null){
-            log.error("토큰이 없음");
+            log.error("토큰이 없음 url: " + requestURI);
+
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.getWriter().write("JWT 토큰이 없습니다.");
             //filterChain.doFilter(request, response);

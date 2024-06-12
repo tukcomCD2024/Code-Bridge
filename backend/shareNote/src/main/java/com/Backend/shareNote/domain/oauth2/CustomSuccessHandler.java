@@ -39,7 +39,7 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
         response.addCookie(createCookie("SocialAccess", token));
         // 이거는 배포버전이랑 로컬이랑 다르게 해줘야 겠네
-        response.sendRedirect("http://localhost:3000/main");
+        response.sendRedirect("http://localhost:3000/organization?source=social");
         // response.sendRedirect("https://sharenote.shop/main");
 
     }
