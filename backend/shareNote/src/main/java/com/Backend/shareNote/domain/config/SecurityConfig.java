@@ -111,7 +111,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests((auth -> auth
                         .requestMatchers("/api/user/login","/","/api/user/signUp","/api/user/organization/invitation/accept").permitAll()
                         .requestMatchers("/admin").hasRole("ADMIN")
-                        .requestMatchers("/api/user/reissue","/api/user/cookieToJwt","/user/uniqueEmail/**","/user/uniqueNickname/**","/swagger-ui.html","/user/reissue").permitAll()
+                        .requestMatchers("/api/user/reissue","/api/user/cookieToJwt","/api/user/uniqueEmail/**","/api/user/uniqueNickname/**","/swagger-ui.html","/api/user/reissue").permitAll()
                         .anyRequest().authenticated())
                 );
         http.addFilterAfter(new JWTFilter(jwtUtil), OAuth2LoginAuthenticationFilter.class);
