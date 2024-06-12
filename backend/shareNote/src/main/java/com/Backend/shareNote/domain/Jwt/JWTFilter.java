@@ -18,6 +18,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.List;
+import java.util.regex.Pattern;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -32,7 +33,7 @@ public class JWTFilter extends OncePerRequestFilter {
 
         // permitAll 경로에 대해서는 필터를 건너뛰도록 설정
         // JWT 인증이 필요없는 permitAll 한 url들에 대해서는 건너뛰자
-        if (permitAllUrls.contains(requestURI)) {
+        if (permitAllUrls.stream().anyMatch(urlPattern -> Pattern.matches(urlPattern, requestURI))) {
             filterChain.doFilter(request, response);
             return;
         }
