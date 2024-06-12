@@ -79,7 +79,8 @@ public class SecurityConfig {
                         ));
                         configuration.setAllowedMethods(Collections.singletonList("*"));
                         configuration.setAllowCredentials(true);
-                        configuration.setAllowedHeaders(Collections.singletonList("*"));
+                        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "access", "refresh", "fcm", "SocialAccess"));
+                        configuration.setExposedHeaders(Arrays.asList("Set-Cookie", "Authorization", "access", "refresh", "fcm", "SocialAccess"));
                         configuration.setMaxAge(3600L);
 
                         // 헤더에 Authorization을 추가해줘야 클라이언트에서 접근 가능
