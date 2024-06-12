@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useLocation, useNavigate } from 'react-router-dom';
 import { fetchLogout } from "../Utils/FetchLogout";
+import { GetJWTCookie } from "../Utils/GetJWTCookie"
 import styled, { keyframes, css } from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faIdBadge, faArrowRightFromBracket, faPlus, faTrashCan, faCircleInfo, faSquarePollVertical } from "@fortawesome/free-solid-svg-icons";
@@ -103,17 +104,24 @@ const OrganizationContainer = ({ OrgName, OrgEmoji, OrgId, removeOrganization, h
   const [isInvalid, setIsInvalid] = useState(false);
   const [isOrgVisible, setIsOrgVisible] = useState(!!OrgName);
 
+  const queryParams = new URLSearchParams(location.search);
+  const source = queryParams.get('source');
+  if (source === 'social') {
+    GetJWTCookie();
+  }
+  
+    useEffect(() => {
+      if(!userId && source !== 'social'){
+        navigate("/login");
+        alert("계정 정보가 없습니다. 로그인 후 접속하세요.");
+        return;
+      }
+    }, [location]);
+
     useEffect(() => {
       setIsOrgVisible(!!OrgName);
     }, [OrgName, organizationId]);
 
-    useEffect(() => {
-        if(!userId){
-          navigate("/login");
-          alert("계정 정보가 없습니다. 로그인 후 접속하세요.");
-          return;
-        }
-      }, [location]);
 
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -305,8 +313,8 @@ const OrganizationContainer = ({ OrgName, OrgEmoji, OrgId, removeOrganization, h
             <ContentArea>
                 <NoOrganizationMessage>
                     <img src={logo_person} alt="logo" />
-                    {organizations?.length > 0 ? "📢 Organization 목록에서 선택하세요." : "📢 [+] 버튼을 눌러 Organization 을 생성해보세요!"}
-                </NoOrganizationMessage>
+                    {source === 'social' ? <span style={{ color: 'black', fontWeight: 'bold' }}>📢 소셜 로그인 처리 중입니다.</span> : (organizations?.length > 0 ? "📢 Organization 목록에서 선택하세요." : "📢 [+] 버튼을 눌러 Organization을 생성해보세요!")}
+                    </NoOrganizationMessage>
             </ContentArea>
              )}
         </LayoutContainer>

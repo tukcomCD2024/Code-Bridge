@@ -5,6 +5,7 @@ import toastr from "toastr";
 import "toastr/build/toastr.css";
 
 import GoogleLoginBtn from "../../image/googleLoginBtn.png";
+import NaverLoginBtn from "../../image/naverLoginBtn.png";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
@@ -71,10 +72,17 @@ const LoginPage = () => {
       alert("처리 중 오류가 발생했습니다.");
     }
   };
+
   // google login 버튼 클릭 함수
   const handleGoogleLoginClick = () => {
     window.location.href = "/api/oauth2/authorization/google";
   };
+
+  // naver login 버튼 클릭 함수
+  const handleNaverLoginClick = () => {
+    window.location.href = "/api/oauth2/authorization/naver";
+  };
+
   return (
     <Container>
     <ContentWrapper>
@@ -110,16 +118,21 @@ const LoginPage = () => {
           <small>회원가입하기</small>
         </SignupBtn>
       </IsNotUser>
-      <GoogleLoginBtnContainer>
-        <GoogleLoginImg
+      <br />
+      <SocialLoginBtnContainer>
+        <SocialLoginImg
           src={GoogleLoginBtn}
           alt="Google Login Button"
           onClick={handleGoogleLoginClick} // onClick 이벤트 핸들러 설정
         />
-      </GoogleLoginBtnContainer>
+        <SocialLoginImg
+          src={NaverLoginBtn}
+          alt="handleNaverLoginClick"
+          onClick={handleNaverLoginClick} // onClick 이벤트 핸들러 설정
+        />
+      </SocialLoginBtnContainer>
     </ContentWrapper>
   </Container>
-  
   );
 };
 
@@ -137,6 +150,7 @@ const ContentWrapper = styled.div`
   flex-direction: column;
   width: 350px;
   padding: 2rem;
+  padding-bottom: 1.2rem;
   align-items: center;
 
   background-color: rgba(138, 43, 226, 0.2);
@@ -233,12 +247,12 @@ const SignupBtn = styled.span`
   }
 `;
 
-const GoogleLoginBtnContainer = styled.div`
+const SocialLoginBtnContainer = styled.div`
   margin-top: 10px; // Adjust the margin as needed
+  border-radius: 10px;
 `;
 
-const GoogleLoginImg = styled.img`
-  margin-top: 10px;
+const SocialLoginImg = styled.img`
   width: 300px;
   height: auto; // Maintain the aspect ratio
   cursor: pointer; // Add cursor pointer for interaction

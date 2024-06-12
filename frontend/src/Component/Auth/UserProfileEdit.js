@@ -58,7 +58,6 @@ const UserProfileEdit = () => {
             name="email"
             type="text"
             placeholder="이메일을 입력하세요."
-            autocomplete="new-email"
             onChange={handleInputChange}
             value={email}
           />
@@ -70,7 +69,7 @@ const UserProfileEdit = () => {
             name="password"
             type="password"
             placeholder="비밀번호를 입력해주세요."
-            autocomplete="new-password"
+            autoComplete="new-password"
             onChange={handleInputChange}
             value={password}
           />
@@ -81,7 +80,7 @@ const UserProfileEdit = () => {
             name="passwordCheck"
             type="password"
             placeholder="비밀번호를 한 번 더 입력해주세요."
-            autocomplete="new-password"
+            autoComplete="new-password"
             onChange={handleInputChange}
             value={passwordCheck}
           />
