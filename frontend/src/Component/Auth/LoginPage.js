@@ -71,10 +71,12 @@ const LoginPage = () => {
       alert("처리 중 오류가 발생했습니다.");
     }
   };
+
   // google login 버튼 클릭 함수
   const handleGoogleLoginClick = () => {
     window.location.href = "/api/oauth2/authorization/google";
   };
+
   return (
     <Container>
     <ContentWrapper>

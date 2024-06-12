@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Routes, Route, useLocation, useNavigate  } from "react-router-dom";
 import Header from "./Header";
-import NotePage from "../Note/NotePage"; // NotePage 컴포넌트를 가져옴.
+import NotePage from "../Note/NotePage";
+import { GetJWTCookie } from "../Utils/GetJWTCookie"
 import styled, { keyframes, css } from "styled-components";
 import { defaultEmoji, emojiList } from "../Utils/emojiList";
 
@@ -92,8 +93,14 @@ function Organization_Mobile() {
   const [toggle, setToggle] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
 
+  const queryParams = new URLSearchParams(location.search);
+  const source = queryParams.get('source');
+  if (source === 'social') {
+    GetJWTCookie();
+  }
+
   useEffect(() => {
-    if(!userId){
+    if(!userId && source !== 'social'){
       navigate("/login");
       alert("계정 정보가 없습니다. 로그인 후 접속하세요.");
       return;

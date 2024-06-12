@@ -17,6 +17,7 @@
     "clean-webpack-plugin": "^4.0.0",
     "http-proxy-middleware": "^2.0.6",
     "jquery": "^3.7.1",
+    "jwt-decode": "^4.0.0",
     "mini-css-extract-plugin": "^2.9.0",
     "prosemirror-example-setup": "^1.2.2",
     "prosemirror-image-plugin": "^2.9.0",
