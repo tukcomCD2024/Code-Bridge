@@ -44,7 +44,8 @@ public class JWTFilter extends OncePerRequestFilter {
 
 
         if(access == null){
-            log.error("토큰이 없음");
+            log.error("토큰이 없음 url: " + requestURI);
+
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.getWriter().write("JWT 토큰이 없습니다.");
             //filterChain.doFilter(request, response);
