@@ -175,6 +175,7 @@ const SignupPage = () => {
               name="password"
               type="password"
               placeholder="비밀번호를 입력해주세요."
+              autoComplete="new-password"
               value={password}
               onChange={handleInputChange}
             />
@@ -185,6 +186,7 @@ const SignupPage = () => {
               name="passwordCheck"
               type="password"
               placeholder="비밀번호를 한 번 더 입력해주세요."
+              autoComplete="new-password"
               value={passwordCheck}
               onChange={handleInputChange}
             />

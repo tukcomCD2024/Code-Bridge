@@ -4,9 +4,11 @@ const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 
 module.exports = (env, argv) => {
+  const isProduction = argv.mode === 'production';
+  const targetUrl = isProduction ? 'http://sharenote.shop:8080' : 'http://localhost:8080';
+
   return {
-    // mode:  'development', // 개발용
-    mode:  'production', // 배포용
+    mode: isProduction ? 'production' : 'development',
     entry: './src/index.js',
     output: {
       path: path.resolve(__dirname, 'build'),
@@ -29,11 +31,11 @@ module.exports = (env, argv) => {
         },
         {
           test: /\.css$/,
-          use: ['style-loader', 'css-loader'],
+          use: [isProduction ? MiniCssExtractPlugin.loader : 'style-loader', 'css-loader'],
         },
         {
           test: /\.(png|svg|jpg|gif)$/,
-          type:'asset/resource',
+          type: 'asset/resource',
         },
       ],
     },
@@ -56,17 +58,15 @@ module.exports = (env, argv) => {
       proxy: [
         {
           context: ['/api'],
-          // target: 'http://localhost:8080', // 개발용(로컬)
-          target: 'http://sharenote.shop:8080', // 배포용
+          target: targetUrl,
           changeOrigin: true,
         },
       ],
     },
-    // 권장 사항 출력(오류 X)
     performance: {
       hints: false,
       maxEntrypointSize: 512000,
-      maxAssetSize: 512000
-      },
+      maxAssetSize: 512000,
+    },
   };
 };
