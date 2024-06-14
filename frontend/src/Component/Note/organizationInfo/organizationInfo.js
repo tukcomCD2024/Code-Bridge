@@ -4,20 +4,22 @@ import styled from "styled-components";
 import toastr from "toastr";
 import "toastr/build/toastr.css";
 
-
 const OrganizationInfoModal = ({
   modalOpen,
   handleCloseModal,
   organization,
 }) => {
-  const modalRef = useRef();
-  const navigate = useNavigate();
-
-  const [userEmailInput, setUserEmailInput] = useState(""); // 사용자 이메일 입력 상태 관리
-  const [isSendButtonDisabled, setIsSendButtonDisabled] = useState(false);
-
   const { id } = useParams();
   const organizationId = String(id);
+  const navigate = useNavigate();
+
+  const nickname = localStorage.getItem('nickname');
+  const refresh = localStorage.getItem("refresh");
+  const access = localStorage.getItem("access");
+
+  const modalRef = useRef();
+  const [userEmailInput, setUserEmailInput] = useState(""); // 사용자 이메일 입력 상태 관리
+  const [isSendButtonDisabled, setIsSendButtonDisabled] = useState(false);
 
   // 이메일 입력 처리 함수
   const handleEmailInputChange = (event) => {
@@ -33,7 +35,6 @@ const OrganizationInfoModal = ({
 
   // 이메일 전송 처리 함수
   const handleSendInvitation = async () => {
-    const nickname = localStorage.getItem('nickname');
 
     // 이메일 형식 검증
     if (!validateEmail(userEmailInput)) {
@@ -50,6 +51,8 @@ const OrganizationInfoModal = ({
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "access": access,
+          "refresh": refresh,
         },
         body: JSON.stringify({ email: userEmailInput, nickname, organizationId }), // 입력된 이메일 데이터를 JSON 형태로 변환하여 전송
       });
@@ -57,7 +60,7 @@ const OrganizationInfoModal = ({
       if (!response.ok) throw new Error("Network response was not ok.");
       toastr.remove();
       toastr.options.positionClass = "toast-top-right";
-      toastr.success("초대 메일이 성공적으로 전송되었습니다.");
+      toastr.success("초대 메일이 전송되었습니다.");
       setUserEmailInput("");
       setIsSendButtonDisabled(false);
     } catch (error) {
@@ -78,7 +81,7 @@ const OrganizationInfoModal = ({
     if (organization?.name == null) {
       toastr.options.positionClass = "toast-top-right";
       toastr.info("정보를 불러오지 못했습니다.");
-      navigate("/main");
+      navigate("/organization");
     }
   }, [organization, navigate]);
 
@@ -175,6 +178,7 @@ const ModalContainer = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
+  z-index: 2;
 `;
 
 const ModalContent = styled.div`

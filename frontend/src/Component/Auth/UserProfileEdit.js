@@ -58,7 +58,6 @@ const UserProfileEdit = () => {
             name="email"
             type="text"
             placeholder="이메일을 입력하세요."
-            autocomplete="new-email"
             onChange={handleInputChange}
             value={email}
           />
@@ -70,7 +69,7 @@ const UserProfileEdit = () => {
             name="password"
             type="password"
             placeholder="비밀번호를 입력해주세요."
-            autocomplete="new-password"
+            autoComplete="new-password"
             onChange={handleInputChange}
             value={password}
           />
@@ -81,14 +80,14 @@ const UserProfileEdit = () => {
             name="passwordCheck"
             type="password"
             placeholder="비밀번호를 한 번 더 입력해주세요."
-            autocomplete="new-password"
+            autoComplete="new-password"
             onChange={handleInputChange}
             value={passwordCheck}
           />
         </Passwordcheck_InputWrapper>
         <EditBtn>수정하기</EditBtn>
         </form>
-        <HomeBtn onClick={() => navigate("/main")}>
+        <HomeBtn onClick={() => navigate("/organization")}>
           <small>홈으로 돌아가기</small>
         </HomeBtn>
       </ContentWrapper>
@@ -134,7 +133,7 @@ const Id_Input = styled.input`
   border: none;
   outline: none;
   padding: 10px;
-  width: 30vh;
+  width: 300px;
   border-radius: 20px;
 
   &:focus {
@@ -178,7 +177,7 @@ const Password_Input = styled.input`
   background-color: #f0f0f0;
   border: none;
   outline: none;
-  width: 30vh;
+  width: 300px;
   padding: 10px;
   border-radius: 20px;
 
@@ -202,7 +201,7 @@ const Passwordcheck_Input = styled.input`
   background-color: #f0f0f0;
   border: none;
   outline: none;
-  width: 30vh;
+  width: 300px;
   padding: 10px;
   border-radius: 20px;
 
@@ -249,7 +248,7 @@ const Nickname_Input = styled.input`
   border: none;
   outline: none;
   padding: 10px;
-  width: 30vh;
+  width: 300px;
   border-radius: 20px;
 
   &:focus {
@@ -262,7 +261,7 @@ const EditBtn = styled.button`
   flex-direction: column;
   margin: 20px auto; /* Auto margin for centering horizontally */
   margin-bottom: 0px;
-  width: 30vh;
+  width: 250px;
   height: 40px;
   border: #ffffcc;
   border-radius: 1px;

@@ -37,7 +37,6 @@ public class OrganizationService {
                 .owner(organizationCreateDTO.getOwner())
                 .emoji(organizationCreateDTO.getEmoji()) // 이모지 추가
                 .notes(new ArrayList<Organization.Note>())
-                .quiz(new ArrayList<String>())
                 .members(members)
                 .description("")
                 .build();

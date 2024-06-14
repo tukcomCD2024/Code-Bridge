@@ -3,6 +3,8 @@ package com.Backend.shareNote.domain.User.controller;
 import com.Backend.shareNote.domain.User.dto.UserLoginDTO;
 import com.Backend.shareNote.domain.User.dto.UserSignUpDTO;
 import com.Backend.shareNote.domain.User.service.UserService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -15,15 +17,18 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
     private final UserService UserService;
     @PostMapping("/user/signUp")
-    public String signUp(@RequestBody UserSignUpDTO userSignUpDTO) {
-        UserService.signUp(userSignUpDTO);
-        return "회원가입 성공";
+    public ResponseEntity<?> signUp(@RequestBody UserSignUpDTO userSignUpDTO) {
+        return UserService.signUp(userSignUpDTO);
     }
 
-    @PostMapping("/user/login")
-    public ResponseEntity<Object> login(@RequestBody UserLoginDTO userLoginDTO) {
-        return UserService.login(userLoginDTO);
-    }
+
+
+
+//    @PostMapping("/user/login")
+//    public ResponseEntity<Object> login(@RequestBody UserLoginDTO userLoginDTO) {
+//        log.error("login");
+//        return UserService.login(userLoginDTO);
+//    }
 
     @PostMapping("/user/uniqueEmail/{email}")
     public ResponseEntity<Boolean> emailOnly(@PathVariable String email) {
@@ -33,6 +38,22 @@ public class UserController {
     @PostMapping("/user/uniqueNickname/{nickname}")
     public ResponseEntity<Boolean> nicknameOnly(@PathVariable String nickname) {
         return UserService.uniqueNickname(nickname);
+    }
+
+    @PostMapping("/user/reissue")
+    public ResponseEntity<?> reissue(HttpServletRequest request, HttpServletResponse response) {
+        return UserService.reissue(request, response);
+
+    }
+
+    @PostMapping("/user/reissue/fcm")
+    public ResponseEntity<?> reissueFcm(HttpServletRequest request, HttpServletResponse response) {
+        return UserService.reissueFcm(request, response);
+    }
+
+    @PostMapping("/user/cookieToJwt")
+    public ResponseEntity<?> cookieToJwt(HttpServletRequest request, HttpServletResponse response) {
+        return UserService.cookieToJwt(request, response);
     }
 
 }

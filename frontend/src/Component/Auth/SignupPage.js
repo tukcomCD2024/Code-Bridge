@@ -126,7 +126,7 @@ const SignupPage = () => {
         body: JSON.stringify({ email, nickname, password }), // 직접적으로 데이터 전송
       });
       if (response.ok) {
-        toastr.success("회원가입 성공! 로그인을 진행해주세요.");
+        toastr.success("<strong>회원가입 성공!</strong><br/>로그인을 진행해주세요.");
         navigate("/login");
       } else {
         const errorData = await response.text();
@@ -175,6 +175,7 @@ const SignupPage = () => {
               name="password"
               type="password"
               placeholder="비밀번호를 입력해주세요."
+              autoComplete="new-password"
               value={password}
               onChange={handleInputChange}
             />
@@ -185,6 +186,7 @@ const SignupPage = () => {
               name="passwordCheck"
               type="password"
               placeholder="비밀번호를 한 번 더 입력해주세요."
+              autoComplete="new-password"
               value={passwordCheck}
               onChange={handleInputChange}
             />
