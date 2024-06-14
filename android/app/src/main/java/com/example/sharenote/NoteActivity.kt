@@ -149,12 +149,12 @@ class NoteActivity : AppCompatActivity(), PageListAdapter.OnPageClickListener, P
                         showQuizzesPopup(unansweredQuizzes)
                     }
                 } else {
-                    Toast.makeText(this@NoteActivity, "Failed to load quizzes", Toast.LENGTH_SHORT).show()
+                    //
                 }
             }
 
             override fun onFailure(call: Call<List<QuizList>>, t: Throwable) {
-                Toast.makeText(this@NoteActivity, "Failed to load quizzes: ${t.message}", Toast.LENGTH_SHORT).show()
+                //
             }
         })
     }

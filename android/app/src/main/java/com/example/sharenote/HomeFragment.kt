@@ -139,8 +139,6 @@ class HomeFragment : Fragment() {
 
         // menuBtn을 클릭했을 때 팝업 메뉴를 표시합니다.
         menuBtn.setOnClickListener {
-            val fcm = SharedPreferencesUtil.getFcmToken(requireContext())
-            Toast.makeText(requireContext(), "$fcm", Toast.LENGTH_SHORT).show()
             showPopupMenu()
         }
 
