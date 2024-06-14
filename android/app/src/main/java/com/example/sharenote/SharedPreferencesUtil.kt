@@ -25,6 +25,8 @@ object SharedPreferencesUtil {
     private const val KEY_USER_EMAIL = "user_email"
 
     private const val KEY_FCM_TOKEN = "fcm_token"
+    private const val KEY_ACCESS_TOKEN = "access_token"
+    private const val KEY_REFRESH_TOKEN = "refresh_token"
 
     // 최근 워크스페이스 ID 저장
     fun saveRecentWorkspaceId(context: Context, workspaceId: String) {
@@ -133,6 +135,30 @@ object SharedPreferencesUtil {
     fun getFcmToken(context: Context): String? {
         val sharedPrefs = context.getSharedPreferences(PREF_NAME_USER, Context.MODE_PRIVATE)
         return sharedPrefs.getString(KEY_FCM_TOKEN, null)
+    }
+
+    // Access Token 저장
+    fun saveAccessToken(context: Context, accessToken: String) {
+        val sharedPrefs = context.getSharedPreferences(PREF_NAME_USER, Context.MODE_PRIVATE)
+        sharedPrefs.edit().putString(KEY_ACCESS_TOKEN, accessToken).apply()
+    }
+
+    // Access Token 불러오기
+    fun getAccessToken(context: Context): String? {
+        val sharedPrefs = context.getSharedPreferences(PREF_NAME_USER, Context.MODE_PRIVATE)
+        return sharedPrefs.getString(KEY_ACCESS_TOKEN, null)
+    }
+
+    // Refresh Token 저장
+    fun saveRefreshToken(context: Context, refreshToken: String) {
+        val sharedPrefs = context.getSharedPreferences(PREF_NAME_USER, Context.MODE_PRIVATE)
+        sharedPrefs.edit().putString(KEY_REFRESH_TOKEN, refreshToken).apply()
+    }
+
+    // Refresh Token 불러오기
+    fun getRefreshToken(context: Context): String? {
+        val sharedPrefs = context.getSharedPreferences(PREF_NAME_USER, Context.MODE_PRIVATE)
+        return sharedPrefs.getString(KEY_REFRESH_TOKEN, null)
     }
 
 }

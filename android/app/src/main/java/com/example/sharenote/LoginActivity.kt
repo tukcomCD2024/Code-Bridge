@@ -11,11 +11,11 @@ import androidx.appcompat.app.AppCompatActivity
 import com.example.sharenote.RetrofitClient.apiService
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.messaging.FirebaseMessaging
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import retrofit2.HttpException
 
 class LoginActivity : AppCompatActivity() {
     private var auth: FirebaseAuth? = null
@@ -31,9 +31,6 @@ class LoginActivity : AppCompatActivity() {
             if (task.isSuccessful) {
                 fcmToken = task.result
                 Log.d("LoginActivity", "FCM Token: $fcmToken")
-
-                // FCM 토큰을 SharedPreferences에 저장
-                SharedPreferencesUtil.saveFcmToken(this, fcmToken ?: "")
             } else {
                 Log.w("LoginActivity", "Fetching FCM token failed", task.exception)
             }
@@ -65,15 +62,24 @@ class LoginActivity : AppCompatActivity() {
         GlobalScope.launch(Dispatchers.IO) {
             try {
                 val userData = UserData("", "", email, password)
-                val fcmToken = SharedPreferencesUtil.getFcmToken(this@LoginActivity)
                 val response = apiService.login(userData, fcmToken ?: "")
                 if (response.isSuccessful) {
                     val userResponse = response.body()
                     if (userResponse != null) {
                         val name = userResponse.name
                         val id = userResponse.userId
+                        val accessToken = response.headers()["access"] ?: ""
+                        val refreshToken = response.headers()["refresh"] ?: ""
+
+                        // 로그 확인
+                        Log.d("LoginActivity", "Access Token: $accessToken")
+                        Log.d("LoginActivity", "Refresh Token: $refreshToken")
+
                         // SharedPreferences에 저장
                         SharedPreferencesUtil.saveUserData(this@LoginActivity, name, id, email)
+                        SharedPreferencesUtil.saveAccessToken(this@LoginActivity, accessToken)
+                        SharedPreferencesUtil.saveRefreshToken(this@LoginActivity, refreshToken)
+
                         // 로그인 성공 시 MainActivity로 이동
                         val intent = Intent(this@LoginActivity, MainActivity::class.java)
                         startActivity(intent)

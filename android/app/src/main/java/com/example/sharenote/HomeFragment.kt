@@ -113,6 +113,7 @@ class HomeFragment : Fragment() {
         // 최근에 방문한 워크스페이스 ID를 불러옵니다.
         val recentWorkspaceId = getRecentWorkspaceId()
 
+
         // 사용자 이메일을 표시합니다.
         val userEmail = SharedPreferencesUtil.getUserEmail(requireContext())
         emailTextView.text = userEmail
@@ -286,7 +287,9 @@ class HomeFragment : Fragment() {
             GlobalScope.launch(Dispatchers.IO) {
                 try {
                     // Retrofit을 사용하여 HTTP 요청을 보냅니다.
-                    val organizationList = RetrofitClient.apiService.getOrganization(email)
+                    val accessToken = SharedPreferencesUtil.getAccessToken(requireContext()) ?: ""
+
+                    val organizationList = RetrofitClient.apiService.getOrganization(email, accessToken)
 
                     // 받아온 organization 데이터를 WorkSpace 객체로 변환하여 어댑터에 추가합니다.
                     val workSpaceList = organizationList.map { organization ->
@@ -395,9 +398,10 @@ class HomeFragment : Fragment() {
         GlobalScope.launch(Dispatchers.IO) {
             try {
                 val notes = mutableListOf<Note>()
+                val accessToken = SharedPreferencesUtil.getAccessToken(requireContext()) ?: ""
 
                 // Retrofit을 사용하여 HTTP 요청을 보냅니다.
-                val response = RetrofitClient.apiService.getOrganization(userId)
+                val response = RetrofitClient.apiService.getOrganization(userId, accessToken)
 
                 // 받아온 데이터에서 현재 organizationId와 일치하는 조직을 찾습니다.
                 val matchingOrganization = response.find { it.id == recentWorkspaceId }
@@ -449,7 +453,8 @@ class HomeFragment : Fragment() {
             GlobalScope.launch(Dispatchers.IO) {
                 try {
                     // Retrofit을 사용하여 HTTP 요청을 보냅니다.
-                    val organizationList = RetrofitClient.apiService.getOrganization(email)
+                    val accessToken = SharedPreferencesUtil.getAccessToken(requireContext()) ?: ""
+                    val organizationList = RetrofitClient.apiService.getOrganization(email, accessToken)
 
                     // 받아온 organization 데이터 중에서 workspaceId와 일치하는 Organization을 찾습니다.
                     val organization = organizationList.find { it.id == workspaceId }

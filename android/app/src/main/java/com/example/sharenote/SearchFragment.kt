@@ -67,8 +67,10 @@ class SearchFragment : Fragment() {
             try {
                 val notes = mutableListOf<Note>()
 
+                val accessToken = SharedPreferencesUtil.getAccessToken(requireContext()) ?: ""
+
                 // Retrofit을 사용하여 HTTP 요청을 보냅니다.
-                val response = RetrofitClient.apiService.getOrganization(userId)
+                val response = RetrofitClient.apiService.getOrganization(userId, accessToken)
 
                 // 받아온 데이터에서 현재 organizationId와 일치하는 조직을 찾습니다.
                 val matchingOrganization = response.find { it.id == recentWorkspaceId }

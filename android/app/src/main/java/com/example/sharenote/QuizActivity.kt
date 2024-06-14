@@ -152,7 +152,9 @@ class QuizActivity : AppCompatActivity(), QuizAdapter.OnItemClickListener {
             try {
                 val notes = mutableListOf<Note>()
 
-                val response = RetrofitClient.apiService.getOrganization(userId)
+                val accessToken = SharedPreferencesUtil.getAccessToken(this@QuizActivity) ?: ""
+
+                val response = RetrofitClient.apiService.getOrganization(userId, accessToken)
 
                 val matchingOrganization = response.find { it.id == recentWorkspaceId }
 

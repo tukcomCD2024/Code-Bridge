@@ -84,8 +84,10 @@ class QuizDetailActivity : AppCompatActivity() {
             answer = selectedChoiceIndex
         )
 
+        val accessToken = SharedPreferencesUtil.getAccessToken(this@QuizDetailActivity) ?: ""
+
         // HTTP POST 요청
-        val solveQuizCall = RetrofitClient.apiService.solveQuiz(solveQuizData)
+        val solveQuizCall = RetrofitClient.apiService.solveQuiz(solveQuizData, accessToken)
 
         solveQuizCall.enqueue(object : Callback<ResponseBody> {
             override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
@@ -114,7 +116,9 @@ class QuizDetailActivity : AppCompatActivity() {
     }
 
     private fun fetchQuizDetail(request: QuizDetailRequest) {
-        val call = RetrofitClient.apiService.quizDetail(request)
+        val accessToken = SharedPreferencesUtil.getAccessToken(this@QuizDetailActivity) ?: ""
+
+        val call = RetrofitClient.apiService.quizDetail(request, accessToken)
 
         call.enqueue(object : Callback<QuizDetailResponse> {
             override fun onResponse(call: Call<QuizDetailResponse>, response: Response<QuizDetailResponse>) {

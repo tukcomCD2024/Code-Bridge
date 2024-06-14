@@ -126,12 +126,12 @@ class NoteActivity : AppCompatActivity(), PageListAdapter.OnPageClickListener, P
                         }
                     }
                 } else {
-                    Toast.makeText(this@NoteActivity, "Failed to load quizzes", Toast.LENGTH_SHORT).show()
+                    //
                 }
             }
 
             override fun onFailure(call: Call<List<QuizList>>, t: Throwable) {
-                Toast.makeText(this@NoteActivity, "Failed to load quizzes: ${t.message}", Toast.LENGTH_SHORT).show()
+                //
             }
         })
     }
@@ -189,6 +189,20 @@ class NoteActivity : AppCompatActivity(), PageListAdapter.OnPageClickListener, P
         dialog.show()
     }
 
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == NOTIFICATION_PERMISSION_REQUEST_CODE) {
+            if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
+                // 권한이 부여되었을 때의 작업 수행 (예: 알림 전송)
+
+                // 권한이 부여되었을 때 다시 알림을 보내는 부분을 추가
+                sendNotification(lastUnansweredCount) // 필요에 따라 알림을 보낼 데이터를 전달
+            } else {
+                // 권한이 거부되었을 때의 작업 수행
+
+            }
+        }
+    }
 
     private fun loadPagesFromMongoDB(recentWorkspaceId: String, userId: String) {
         GlobalScope.launch(Dispatchers.IO) {
@@ -196,8 +210,10 @@ class NoteActivity : AppCompatActivity(), PageListAdapter.OnPageClickListener, P
                 // 현재 NoteId를 가져옵니다.
                 val recentNoteId = SharedPreferencesUtil.getRecentNoteId(this@NoteActivity)
 
+                val accessToken = SharedPreferencesUtil.getAccessToken(this@NoteActivity) ?: ""
+
                 // Retrofit을 사용하여 HTTP 요청을 보냅니다.
-                val response = RetrofitClient.apiService.getOrganization(userId)
+                val response = RetrofitClient.apiService.getOrganization(userId, accessToken)
 
                 // 받아온 데이터에서 현재 워크스페이스의 노트들만 필터링합니다.
                 val matchingOrganization = response.find { it.id == recentWorkspaceId }
@@ -253,7 +269,8 @@ class NoteActivity : AppCompatActivity(), PageListAdapter.OnPageClickListener, P
     private fun sendPageDataToMongoDB(page: PageData) {
         GlobalScope.launch(Dispatchers.IO) {
             try {
-                val response = RetrofitClient.apiService.sendPageData(page)
+                val accessToken = SharedPreferencesUtil.getAccessToken(this@NoteActivity) ?: ""
+                val response = RetrofitClient.apiService.sendPageData(page, accessToken)
                 if (response.isSuccessful) {
                     // MongoDB에 데이터 저장 성공
                     val pageResponse = response.body()
@@ -409,7 +426,10 @@ class NoteActivity : AppCompatActivity(), PageListAdapter.OnPageClickListener, P
 
 
     fun sendInvitationEmail(data: InvitationData) {
-        apiService.sendInvitationEmail(data).enqueue(object : Callback<Void> {
+
+        val accessToken = SharedPreferencesUtil.getAccessToken(this@NoteActivity) ?: ""
+
+        apiService.sendInvitationEmail(data, accessToken).enqueue(object : Callback<Void> {
             override fun onResponse(call: Call<Void>, response: Response<Void>) {
                 if (response.isSuccessful) {
                     // 요청이 성공적으로 처리되었을 때의 작업 수행
@@ -438,7 +458,9 @@ class NoteActivity : AppCompatActivity(), PageListAdapter.OnPageClickListener, P
         GlobalScope.launch(Dispatchers.IO) {
             try {
                 // Retrofit을 사용하여 HTTP 요청을 보냄
-                val response = RetrofitClient.apiService.getOrganization(userId)
+                val accessToken = SharedPreferencesUtil.getAccessToken(this@NoteActivity) ?: ""
+
+                val response = RetrofitClient.apiService.getOrganization(userId, accessToken)
 
                 // 받아온 데이터에서 현재 워크스페이스의 데이터를 찾음
                 val matchingOrganization = response.find { it.id == recentWorkspaceId }

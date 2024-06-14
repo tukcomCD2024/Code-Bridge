@@ -156,8 +156,8 @@ class CreateQuiz : AppCompatActivity() {
         GlobalScope.launch(Dispatchers.IO) {
             try {
                 val notes = mutableListOf<Note>()
-
-                val response = RetrofitClient.apiService.getOrganization(userId)
+                val accessToken = SharedPreferencesUtil.getAccessToken(this@CreateQuiz) ?: ""
+                val response = RetrofitClient.apiService.getOrganization(userId, accessToken)
 
                 val matchingOrganization = response.find { it.id == recentWorkspaceId }
 
@@ -202,8 +202,9 @@ class CreateQuiz : AppCompatActivity() {
             problems = solutions
         )
 
+        val accessToken = SharedPreferencesUtil.getAccessToken(this@CreateQuiz) ?: ""
         // 퀴즈 생성 요청 보내기
-        apiService.createQuiz(quizRequest).enqueue(object : Callback<Void> {
+        apiService.createQuiz(quizRequest, accessToken).enqueue(object : Callback<Void> {
             override fun onResponse(call: Call<Void>, response: Response<Void>) {
                 if (response.isSuccessful) {
                     // 퀴즈 생성 성공 메시지 표시

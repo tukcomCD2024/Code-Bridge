@@ -9,6 +9,7 @@ import retrofit2.http.Body
 import retrofit2.http.Field
 import retrofit2.http.GET
 import retrofit2.http.Header
+import retrofit2.http.HeaderMap
 import retrofit2.http.Multipart
 import retrofit2.http.POST
 import retrofit2.http.Part
@@ -27,26 +28,47 @@ interface ApiService {
     ): Response<UserResponse>
 
     @POST("user/organization")
-    suspend fun sendWorkSpaceData(@Body organization: Organization): Response<OrganizationResponse>
+    suspend fun sendWorkSpaceData(
+        @Body organization: Organization,
+        @Header("access") access: String
+    ): Response<OrganizationResponse>
 
     @POST("user/note")
-    suspend fun sendNoteData(@Body note: UserNote): Response<NoteResponse>
+    suspend fun sendNoteData(
+        @Body note: UserNote,
+        @Header("access") accessToken: String
+    ): Response<NoteResponse>
 
     @POST("page")
-    suspend fun sendPageData(@Body page: PageData): Response<PageResponse>
+    suspend fun sendPageData(
+        @Body page: PageData,
+        @Header("access") accessToken: String
+    ): Response<PageResponse>
 
     @GET("user/organization/{organizationId}")
-    suspend fun getOrganization(@Path("organizationId") organizationId: String): List<CheckOrganization>
+    suspend fun getOrganization(
+        @Path("organizationId") organizationId: String,
+        @Header("access") accessToken: String
+    ): List<CheckOrganization>
 
     @POST("user/organization/invitation")
-    fun sendInvitationEmail(@Body data: InvitationData): Call<Void>
+    fun sendInvitationEmail(
+        @Body data: InvitationData,
+        @Header("access") accessToken: String
+    ): Call<Void>
 
     @Multipart
     @POST("image")
-    suspend fun uploadImage(@Part multipartFile: MultipartBody.Part): Response<ImageResponse>
+    suspend fun uploadImage(
+        @Part multipartFile: MultipartBody.Part,
+        @Header("access") accessToken: String
+    ): Response<ImageResponse>
 
     @POST("quiz")
-    fun createQuiz(@Body quizRequest: QuizRequest): Call<Void>
+    fun createQuiz(
+        @Body quizRequest: QuizRequest,
+        @Header("access") accessToken: String
+    ): Call<Void>
 
     @GET("quiz/{organization}/{noteId}/{userId}")
     fun getQuizzes(
@@ -56,8 +78,14 @@ interface ApiService {
     ): Call<List<QuizList>>
 
     @POST("quiz/detail")
-    fun quizDetail(@Body request: QuizDetailRequest): Call<QuizDetailResponse>
+    fun quizDetail(
+        @Body request: QuizDetailRequest,
+        @Header("access") accessToken: String
+    ): Call<QuizDetailResponse>
 
     @POST("quiz-solutions")
-    fun solveQuiz(@Body request: SolveQuiz): Call<ResponseBody>
+    fun solveQuiz(
+        @Body request: SolveQuiz,
+        @Header("access") accessTokten: String
+    ): Call<ResponseBody>
 }

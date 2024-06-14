@@ -100,7 +100,8 @@ class CreateNoteActivity : AppCompatActivity() {
     private fun sendNoteDataToMongoDB(note: UserNote) {
         GlobalScope.launch(Dispatchers.IO) {
             try {
-                val response = RetrofitClient.apiService.sendNoteData(note)
+                val accessToken = SharedPreferencesUtil.getAccessToken(this@CreateNoteActivity) ?: ""
+                val response = RetrofitClient.apiService.sendNoteData(note, accessToken)
                 if (response.isSuccessful) {
                     // MongoDB에 데이터 저장 성공
                     val noteResponse = response.body()
