@@ -3,9 +3,15 @@ package com.example.sharenote
 import MemberListAdapter
 import PageListAdapter
 import QuizAlertAdapter
+import android.Manifest
 import android.app.Dialog
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.content.ContentValues.TAG
+import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
@@ -20,11 +26,15 @@ import android.widget.PopupWindow
 import android.widget.RelativeLayout
 import android.widget.TextView
 import android.widget.Toast
+import androidx.core.app.ActivityCompat
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.sharenote.RetrofitClient.apiService
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -46,9 +56,39 @@ class NoteActivity : AppCompatActivity(), PageListAdapter.OnPageClickListener, P
 
     private var pages: MutableList<Page> = mutableListOf()
 
+    private var lastUnansweredCount = 0 // 이전 unansweredCount 저장 변수
+    private val TAG = "NoteActivity"
+
+    companion object {
+        private const val NOTIFICATION_PERMISSION_REQUEST_CODE = 100
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_note)
+
+
+        // FCM 토큰 가져오기
+        FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
+            if (!task.isSuccessful) {
+                Log.w(TAG, "Fetching FCM registration token failed", task.exception)
+                return@addOnCompleteListener
+            }
+
+            // FCM 토큰 가져오기
+            val token = task.result
+            Log.d(TAG, "FCM token: $token")
+
+            // 서버에 토큰 전달 또는 사용
+        }
+
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.POST_NOTIFICATIONS), NOTIFICATION_PERMISSION_REQUEST_CODE)
+        }
+
+        // 알림 채널 생성 (Android O 이상 필요)
+        createNotificationChannel()
+
 
         backTextView = findViewById(R.id.backTextView)
         createPageButton = findViewById(R.id.CreatePage)
@@ -85,8 +125,6 @@ class NoteActivity : AppCompatActivity(), PageListAdapter.OnPageClickListener, P
         loadQuizzes()
 
         badgeView.setOnClickListener {
-            // BadgeView를 클릭했을 때 처리할 내용을 여기에 추가합니다.
-            // 팝업창을 열거나 기타 동작을 수행할 수 있습니다.
             loadQuizzesForPopup()
         }
 
@@ -118,6 +156,15 @@ class NoteActivity : AppCompatActivity(), PageListAdapter.OnPageClickListener, P
                     response.body()?.let { quizzes ->
                         // correct 값이 -1인 퀴즈 항목의 수를 계산
                         val unansweredCount = quizzes.count { quiz -> quiz.correct == -1 }
+
+                        // correct 값이 -1인 퀴즈 항목의 수가 증가한 경우 알림 전송
+                        if (unansweredCount > lastUnansweredCount) {
+                            sendNotification(unansweredCount - lastUnansweredCount)
+                        }
+
+                        // 이전 unansweredCount 값 업데이트
+                        lastUnansweredCount = unansweredCount
+
                         // correct 값이 -1인 퀴즈 항목의 수가 0이 아니면 배지에 표시
                         if (unansweredCount > 0) {
                             badgeView.setCount(unansweredCount)
@@ -135,6 +182,7 @@ class NoteActivity : AppCompatActivity(), PageListAdapter.OnPageClickListener, P
             }
         })
     }
+
 
     private fun loadQuizzesForPopup() {
         val recentWorkspaceId = SharedPreferencesUtil.getRecentWorkspaceId(this) ?: ""
@@ -203,6 +251,47 @@ class NoteActivity : AppCompatActivity(), PageListAdapter.OnPageClickListener, P
             }
         }
     }
+
+
+    private fun sendNotification(newUnansweredCount: Int) {
+        // Check if the notification permission is granted (only necessary for Android 13 and above)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.POST_NOTIFICATIONS), NOTIFICATION_PERMISSION_REQUEST_CODE)
+                return
+            }
+        }
+
+        Log.d("Notification", "Sending notification for $newUnansweredCount new unanswered quizzes")
+
+        val builder = NotificationCompat.Builder(this, "QUIZ_CHANNEL")
+            .setSmallIcon(R.drawable.ic_alert)
+            .setContentTitle("New Unanswered Quizzes")
+            .setContentText("You have $newUnansweredCount new unanswered quizzes.")
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+
+        with(NotificationManagerCompat.from(this)) {
+            notify(1001, builder.build())
+        }
+    }
+
+
+
+    private fun createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val name = "Quiz Channel"
+            val descriptionText = "Channel for Quiz notifications"
+            val importance = NotificationManager.IMPORTANCE_DEFAULT
+            val channel = NotificationChannel("QUIZ_CHANNEL", name, importance).apply {
+                description = descriptionText
+            }
+            val notificationManager: NotificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+            notificationManager.createNotificationChannel(channel)
+        }
+    }
+
+
+
 
     private fun loadPagesFromMongoDB(recentWorkspaceId: String, userId: String) {
         GlobalScope.launch(Dispatchers.IO) {
