@@ -4,14 +4,18 @@ import com.Backend.shareNote.domain.User.dto.*;
 import com.Backend.shareNote.domain.User.entity.Users;
 import com.Backend.shareNote.domain.User.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class CustomOAuth2UserService extends DefaultOAuth2UserService {
     private final UserRepository userRepository;
 
@@ -40,24 +44,30 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
             Users user = Users.builder()
                     .socialId(socialId)
                     .email(oAuth2Response.getEmail())
-                    // 이게 과연 닉네임일까??
                     .nickname(oAuth2Response.getName())
+                    .organizations(new ArrayList<String>())
                     .role("ROLE_USER").build();
             userRepository.save(user);
 
             UserDTO userDTO = new UserDTO();
-            userDTO.setSocialId(socialId);
+
+            // uuid로 교체
+            userDTO.setId(user.getId());
+            userDTO.setSocialId(user.getSocialId());
             userDTO.setName(oAuth2Response.getName());
+            userDTO.setEmail(oAuth2Response.getEmail());
             userDTO.setRole("ROLE_USER");
 
             return new CustomOAuth2User(userDTO);
 
         }else {
-            existData.updateSocialInfo(oAuth2Response.getName(), oAuth2Response.getEmail());
+            existData.updateSocialInfo(oAuth2Response.getEmail(), oAuth2Response.getName());
             userRepository.save(existData);
 
             UserDTO userDTO = new UserDTO();
+            userDTO.setId(existData.getId());
             userDTO.setSocialId(existData.getSocialId());
+            userDTO.setEmail(existData.getEmail());
             userDTO.setName(existData.getNickname());
             userDTO.setRole(existData.getRole());
 

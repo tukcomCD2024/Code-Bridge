@@ -55,4 +55,17 @@ public class JWTUtil {
                 .compact();
 
     }
+
+    public String createSocialJwt(String category, String userId, String username, String email, String role, Long expiredMs) {
+        return Jwts.builder()
+                .claim("userId", userId)
+                .claim("category", category)
+                .claim("username", username)
+                .claim("email", email)
+                .claim("role", role)
+                .issuedAt(new Date(System.currentTimeMillis()))
+                .expiration(new Date(System.currentTimeMillis() + expiredMs))
+                .signWith(secretKey)
+                .compact();
+    }
 }
