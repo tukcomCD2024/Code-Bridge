@@ -7,6 +7,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
@@ -18,6 +19,7 @@ import java.util.Iterator;
 
 @RequiredArgsConstructor
 @Component
+@Slf4j
 public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
     private final JWTUtil jwtUtil;
     
@@ -27,7 +29,9 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         //OAuth2User
         CustomOAuth2User customUserDetail = (CustomOAuth2User) authentication.getPrincipal();
 
-        String username = customUserDetail.getUsername();
+        String userId = customUserDetail.getId();
+        String username = customUserDetail.getName();
+        String email = customUserDetail.getEmail();
 
         Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
         Iterator<? extends GrantedAuthority> iterator = authorities.iterator();
@@ -35,7 +39,8 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         String role = auth.getAuthority();
 
         // 임시로 username으로 userID 부분 대체했음
-        String token = jwtUtil.createJwt("access",username, username, role,60 * 60 * 60 * 1000L);
+        String token = jwtUtil.createSocialJwt("access",userId, username, email, role,60 * 60 * 60 * 1000L);
+
 
         response.addCookie(createCookie("SocialAccess", token));
         // 이거는 배포버전이랑 로컬이랑 다르게 해줘야 겠네

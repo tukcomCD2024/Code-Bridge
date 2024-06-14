@@ -33,8 +33,16 @@ public class CustomOAuth2User implements OAuth2User {
         return userDTO.getName();
     }
 
-    public String getUsername() {
+    public String getSocialId() {
         return userDTO.getSocialId();
+    }
+
+    public String getEmail() {
+        return userDTO.getEmail();
+    }
+
+    public String getId() {
+        return userDTO.getId();
     }
 
     // 내 생각에 여기에 nickname 반환하는 메서드도 넣어야해
