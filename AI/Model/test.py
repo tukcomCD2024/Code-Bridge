@@ -34,15 +34,15 @@ def allModels():
 
 def imagePredictMono():
     for i in os.listdir('.'):
-        if not 'cnn5e70v5.h5' in i:
+        if not '.h5' in i:
             continue
 
-        saved_model = load_model("./" + i)
+        saved_model = load_model(i)
 
         total = 0
         correct = 0
         for key in images.keys():
-            total += 40
+            total += 1600
 
             img = Image.open(imgsrc.format(key))
             img = img.resize((128, 128))
@@ -56,17 +56,19 @@ def imagePredictMono():
             for j in range(40):
                 try:
                     if images[key] in result[j]:
-                        print(key, j)
-                        total += j
-                        total -= 40
+                        # print(key, j)
+                        total += j**2
+                        total -= 1600
                         correct += 1
                         break
                 except:
                     # print("outOfBound")
                     break
-        # if total < 400:
-        print(i)
-        print("total:", total)
+        if total > 19000:
+            os.remove(i)
+        elif total < 15000:
+            print(i)
+            print("total:", total)
         # print("correct:", correct)
 
 
