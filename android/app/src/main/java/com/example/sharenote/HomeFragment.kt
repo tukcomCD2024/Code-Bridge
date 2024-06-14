@@ -18,6 +18,7 @@ import android.widget.ImageView
 import android.widget.PopupWindow
 import android.widget.RelativeLayout
 import android.widget.TextView
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -138,6 +139,8 @@ class HomeFragment : Fragment() {
 
         // menuBtn을 클릭했을 때 팝업 메뉴를 표시합니다.
         menuBtn.setOnClickListener {
+            val fcm = SharedPreferencesUtil.getFcmToken(requireContext())
+            Toast.makeText(requireContext(), "$fcm", Toast.LENGTH_SHORT).show()
             showPopupMenu()
         }
 

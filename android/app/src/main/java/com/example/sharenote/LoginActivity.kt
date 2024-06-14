@@ -1,41 +1,45 @@
 package com.example.sharenote
 
-
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.sharenote.RetrofitClient.apiService
-import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount
-import com.google.android.gms.auth.api.signin.GoogleSignInClient
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions
-import com.google.android.gms.common.SignInButton
-import com.google.android.gms.common.api.ApiException
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseUser
-import com.google.firebase.auth.GoogleAuthProvider
-import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-
 class LoginActivity : AppCompatActivity() {
     private var auth: FirebaseAuth? = null
+    private var fcmToken: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
         auth = FirebaseAuth.getInstance()
 
+        // FCM 토큰 받아오기
+        FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                fcmToken = task.result
+                Log.d("LoginActivity", "FCM Token: $fcmToken")
 
-        // 회원가입 창으로
+                // FCM 토큰을 SharedPreferences에 저장
+                SharedPreferencesUtil.saveFcmToken(this, fcmToken ?: "")
+            } else {
+                Log.w("LoginActivity", "Fetching FCM token failed", task.exception)
+            }
+        }
+
+        // 회원가입 창으로 이동
         findViewById<View>(R.id.signupLink).setOnClickListener {
             startActivity(Intent(this, SignUpActivity::class.java))
         }
@@ -56,17 +60,16 @@ class LoginActivity : AppCompatActivity() {
         }
     }
 
-
     // HTTP 통신을 통한 로그인 시도
     private fun login(email: String, password: String) {
         GlobalScope.launch(Dispatchers.IO) {
             try {
                 val userData = UserData("", "", email, password)
-                val response = apiService.login(userData)
+                val fcmToken = SharedPreferencesUtil.getFcmToken(this@LoginActivity)
+                val response = apiService.login(userData, fcmToken ?: "")
                 if (response.isSuccessful) {
                     val userResponse = response.body()
                     if (userResponse != null) {
-
                         val name = userResponse.name
                         val id = userResponse.userId
                         // SharedPreferences에 저장
