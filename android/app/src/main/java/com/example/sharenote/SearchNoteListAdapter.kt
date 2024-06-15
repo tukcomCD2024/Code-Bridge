@@ -6,8 +6,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.sharenote.Note
 import com.example.sharenote.R
 
-class NoteListAdapter(private val onItemClick: (String) -> Unit) :
-    RecyclerView.Adapter<NoteListAdapter.NoteViewHolder>() {
+class SearchNoteListAdapter(private val onItemClick: (String) -> Unit) :
+    RecyclerView.Adapter<SearchNoteListAdapter.NoteViewHolder>() {
 
     private val noteList = mutableListOf<Note>()
     private var filteredNoteList = mutableListOf<Note>()
@@ -33,7 +33,7 @@ class NoteListAdapter(private val onItemClick: (String) -> Unit) :
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): NoteViewHolder {
-        val itemView = LayoutInflater.from(parent.context).inflate(R.layout.item_note, parent, false)
+        val itemView = LayoutInflater.from(parent.context).inflate(R.layout.item_search_note, parent, false)
         return NoteViewHolder(itemView)
     }
 

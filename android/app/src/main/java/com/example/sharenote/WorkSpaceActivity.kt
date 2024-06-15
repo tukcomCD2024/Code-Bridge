@@ -106,7 +106,10 @@ class WorkSpaceActivity : AppCompatActivity() {
         GlobalScope.launch(Dispatchers.IO) {
             try {
                 // MongoDB에 워크스페이스 데이터를 전송
-                val response = RetrofitClient.apiService.sendWorkSpaceData(organization)
+                val accessToken = SharedPreferencesUtil.getAccessToken(this@WorkSpaceActivity) ?: ""
+
+                val response = RetrofitClient.apiService.sendWorkSpaceData(organization, accessToken)
+
                 if (response.isSuccessful) {
                     // MongoDB에 데이터 저장 성공 시
                     val workSpaceResponse = response.body() // 응답 데이터 파싱

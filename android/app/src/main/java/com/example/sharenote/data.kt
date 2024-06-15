@@ -148,3 +148,43 @@ data class AiImageRequest(
 //data class AiImageUrls(
 //    val imageUrls: List<String>
 //)
+
+data class QuizRequest(
+    val organizationId: String,
+    val noteId: String,
+    val userId: String,
+    val quizType: String,
+    val problem: String,
+    val answer: Int,
+    val problems: List<String>
+)
+
+data class QuizList(
+    val quizId: String,
+    val quizTitle: String,
+    val correct: Int,
+    val nickname: String
+)
+
+data class QuizDetailRequest(
+    val organizationId: String,
+    val noteId: String,
+    val userId: String,
+    val quizId: String
+)
+
+data class QuizDetailResponse(
+    val quizTitle: String,
+    val quizType: String,
+    val noteName: String,
+    val problems: List<String>,
+    val correct: Int
+)
+
+data class SolveQuiz(
+    val organizationId: String,
+    val noteId: String,
+    val userId: String,
+    val quizId: String,
+    val answer: Int
+)

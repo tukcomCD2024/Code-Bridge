@@ -46,7 +46,9 @@ android {
         dataBinding = true
         viewBinding = true
     }
+
 }
+
 
 
 dependencies {
@@ -54,7 +56,7 @@ dependencies {
 
     implementation(platform("com.google.firebase:firebase-bom:32.7.1"))
     implementation("com.google.firebase:firebase-analytics")
-    implementation("androidx.core:core-ktx:1.9.0")
+    implementation("androidx.core:core-ktx:1.10.0")
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("com.google.android.material:material:1.9.0")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
@@ -63,6 +65,8 @@ dependencies {
     implementation("com.google.firebase:firebase-auth-ktx:22.3.1")
     implementation("com.google.firebase:firebase-firestore:24.10.1")
     implementation("com.google.firebase:firebase-storage-ktx:20.3.0")
+
+    implementation("com.google.firebase:firebase-messaging:22.0.0")
 
     implementation ("com.squareup.retrofit2:retrofit:2.9.0")
     implementation ("com.squareup.retrofit2:converter-gson:2.9.0")
@@ -76,6 +80,9 @@ dependencies {
     implementation ("com.github.bumptech.glide:glide:4.12.0")
     implementation("androidx.preference:preference:1.2.1")
     implementation("androidx.activity:activity:1.8.0")
+    implementation("androidx.legacy:legacy-support-v4:1.0.0")
+    implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.7.0")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0")
     annotationProcessor ("com.github.bumptech.glide:compiler:4.12.0")
 
     testImplementation("junit:junit:4.13.2")

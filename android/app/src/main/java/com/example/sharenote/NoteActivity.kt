@@ -2,13 +2,22 @@ package com.example.sharenote
 
 import MemberListAdapter
 import PageListAdapter
+import QuizAlertAdapter
+import android.Manifest
+import android.app.Dialog
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.content.ContentValues.TAG
+import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.Gravity
 import android.view.LayoutInflater
+import android.view.WindowManager
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageButton
@@ -17,11 +26,15 @@ import android.widget.PopupWindow
 import android.widget.RelativeLayout
 import android.widget.TextView
 import android.widget.Toast
+import androidx.core.app.ActivityCompat
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.sharenote.RetrofitClient.apiService
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -39,15 +52,48 @@ class NoteActivity : AppCompatActivity(), PageListAdapter.OnPageClickListener, P
     private lateinit var pageListAdapter: PageListAdapter
 
     private lateinit var orgPopupWindow: PopupWindow
+    private lateinit var badgeView: BadgeView
 
     private var pages: MutableList<Page> = mutableListOf()
+
+    private var lastUnansweredCount = 0 // 이전 unansweredCount 저장 변수
+    private val TAG = "NoteActivity"
+
+    companion object {
+        private const val NOTIFICATION_PERMISSION_REQUEST_CODE = 100
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_note)
 
+
+        // FCM 토큰 가져오기
+        FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
+            if (!task.isSuccessful) {
+                Log.w(TAG, "Fetching FCM registration token failed", task.exception)
+                return@addOnCompleteListener
+            }
+
+            // FCM 토큰 가져오기
+            val token = task.result
+            Log.d(TAG, "FCM token: $token")
+
+            // 서버에 토큰 전달 또는 사용
+        }
+
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.POST_NOTIFICATIONS), NOTIFICATION_PERMISSION_REQUEST_CODE)
+        }
+
+        // 알림 채널 생성 (Android O 이상 필요)
+        createNotificationChannel()
+
+
         backTextView = findViewById(R.id.backTextView)
         createPageButton = findViewById(R.id.CreatePage)
+
+        badgeView = findViewById(R.id.badgeView)
 
         recyclerView = findViewById(R.id.recyclerViewPages)
         val layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
@@ -76,6 +122,12 @@ class NoteActivity : AppCompatActivity(), PageListAdapter.OnPageClickListener, P
         // 최근에 사용한 노트의 ID 가져오기
         val recentWorkspaceId = SharedPreferencesUtil.getRecentWorkspaceId(this)
 
+        loadQuizzes()
+
+        badgeView.setOnClickListener {
+            loadQuizzesForPopup()
+        }
+
         // 페이지 데이터를 불러오는 함수 호출
         recentWorkspaceId?.let {
             val userId = SharedPreferencesUtil.getUserId(this) ?: ""
@@ -93,29 +145,152 @@ class NoteActivity : AppCompatActivity(), PageListAdapter.OnPageClickListener, P
         showSettingPopup(page, position)
     }
 
-    /*
-    private fun loadPagesFromFirestore(recentNoteId: String) {
-        val db = FirebaseFirestore.getInstance()
-        db.collection("pages")
-            .whereEqualTo("noteId", recentNoteId) // 해당 워크스페이스 ID와 일치하는 노트만 가져오기
-            .get()
-            .addOnSuccessListener { result ->
-                pages.clear()
-                for (document in result) {
-                    val pageID = document.getString("id") ?: ""
-                    val pageTitle = document.getString("title") ?:""
-                    val pageText = document.getString("text") ?: ""
-                    val pageImageUri = document.getString("imageUri") ?: ""
-                    val page = Page(pageID, pageTitle, pageText, pageImageUri)
-                    pages.add(page)
+    private fun loadQuizzes() {
+        val recentWorkspaceId = SharedPreferencesUtil.getRecentWorkspaceId(this) ?: ""
+        val noteId = SharedPreferencesUtil.getRecentNoteId(this) ?: ""
+        val userId = SharedPreferencesUtil.getUserId(this) ?: ""
+
+        apiService.getQuizzes(recentWorkspaceId, noteId, userId).enqueue(object : Callback<List<QuizList>> {
+            override fun onResponse(call: Call<List<QuizList>>, response: Response<List<QuizList>>) {
+                if (response.isSuccessful) {
+                    response.body()?.let { quizzes ->
+                        // correct 값이 -1인 퀴즈 항목의 수를 계산
+                        val unansweredCount = quizzes.count { quiz -> quiz.correct == -1 }
+
+                        // correct 값이 -1인 퀴즈 항목의 수가 증가한 경우 알림 전송
+                        if (unansweredCount > lastUnansweredCount) {
+                            sendNotification(unansweredCount - lastUnansweredCount)
+                        }
+
+                        // 이전 unansweredCount 값 업데이트
+                        lastUnansweredCount = unansweredCount
+
+                        // correct 값이 -1인 퀴즈 항목의 수가 0이 아니면 배지에 표시
+                        if (unansweredCount > 0) {
+                            badgeView.setCount(unansweredCount)
+                        } else {
+                            badgeView.setCount(0) // 배지 숨김
+                        }
+                    }
+                } else {
+                    //
                 }
-                pageListAdapter.notifyDataSetChanged()
             }
-            .addOnFailureListener { exception ->
-                // Handle any errors
-                // Log.e(TAG, "Error getting documents: ", exception)
+
+            override fun onFailure(call: Call<List<QuizList>>, t: Throwable) {
+                //
             }
-    }*/
+        })
+    }
+
+
+    private fun loadQuizzesForPopup() {
+        val recentWorkspaceId = SharedPreferencesUtil.getRecentWorkspaceId(this) ?: ""
+        val noteId = SharedPreferencesUtil.getRecentNoteId(this) ?: ""
+        val userId = SharedPreferencesUtil.getUserId(this) ?: ""
+
+        apiService.getQuizzes(recentWorkspaceId, noteId, userId).enqueue(object : Callback<List<QuizList>> {
+            override fun onResponse(call: Call<List<QuizList>>, response: Response<List<QuizList>>) {
+                if (response.isSuccessful) {
+                    response.body()?.let { quizzes ->
+                        val unansweredQuizzes = quizzes.filter { it.correct == -1 }
+                        showQuizzesPopup(unansweredQuizzes)
+                    }
+                } else {
+                    //
+                }
+            }
+
+            override fun onFailure(call: Call<List<QuizList>>, t: Throwable) {
+                //
+            }
+        })
+    }
+
+    private fun showQuizzesPopup(quizzes: List<QuizList>) {
+        // 다이얼로그를 생성하고 레이아웃을 설정합니다.
+        val dialog = Dialog(this)
+        dialog.setContentView(R.layout.quiz_alert_popup_layout)
+
+        // 다이얼로그 크기 설정
+        val layoutParams = WindowManager.LayoutParams()
+        layoutParams.copyFrom(dialog.window?.attributes)
+        layoutParams.width = WindowManager.LayoutParams.MATCH_PARENT
+        layoutParams.height = WindowManager.LayoutParams.WRAP_CONTENT
+        dialog.window?.attributes = layoutParams
+
+        // 리사이클러뷰 설정
+        val recyclerView = dialog.findViewById<RecyclerView>(R.id.recyclerView)
+        recyclerView.layoutManager = LinearLayoutManager(this)
+        val adapter = QuizAlertAdapter(quizzes, object : QuizAlertAdapter.OnItemClickListener {
+            override fun onItemClick(quizId: String) {
+                // 퀴즈 아이템 클릭 시 QuizActivity로 이동하는 로직을 여기에 추가
+                val intent = Intent(this@NoteActivity, QuizActivity::class.java)
+                startActivity(intent)
+                finish()
+                dialog.dismiss() // 다이얼로그 닫기
+            }
+        })
+        recyclerView.adapter = adapter
+
+        // 다이얼로그를 화면에 표시합니다.
+        dialog.show()
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == NOTIFICATION_PERMISSION_REQUEST_CODE) {
+            if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
+                // 권한이 부여되었을 때의 작업 수행 (예: 알림 전송)
+
+                // 권한이 부여되었을 때 다시 알림을 보내는 부분을 추가
+                sendNotification(lastUnansweredCount) // 필요에 따라 알림을 보낼 데이터를 전달
+            } else {
+                // 권한이 거부되었을 때의 작업 수행
+
+            }
+        }
+    }
+
+
+    private fun sendNotification(newUnansweredCount: Int) {
+        // Check if the notification permission is granted (only necessary for Android 13 and above)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.POST_NOTIFICATIONS), NOTIFICATION_PERMISSION_REQUEST_CODE)
+                return
+            }
+        }
+
+        Log.d("Notification", "Sending notification for $newUnansweredCount new unanswered quizzes")
+
+        val builder = NotificationCompat.Builder(this, "QUIZ_CHANNEL")
+            .setSmallIcon(R.drawable.ic_alert)
+            .setContentTitle("New Unanswered Quizzes")
+            .setContentText("You have $newUnansweredCount new unanswered quizzes.")
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+
+        with(NotificationManagerCompat.from(this)) {
+            notify(1001, builder.build())
+        }
+    }
+
+
+
+    private fun createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val name = "Quiz Channel"
+            val descriptionText = "Channel for Quiz notifications"
+            val importance = NotificationManager.IMPORTANCE_DEFAULT
+            val channel = NotificationChannel("QUIZ_CHANNEL", name, importance).apply {
+                description = descriptionText
+            }
+            val notificationManager: NotificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+            notificationManager.createNotificationChannel(channel)
+        }
+    }
+
+
 
 
     private fun loadPagesFromMongoDB(recentWorkspaceId: String, userId: String) {
@@ -124,8 +299,10 @@ class NoteActivity : AppCompatActivity(), PageListAdapter.OnPageClickListener, P
                 // 현재 NoteId를 가져옵니다.
                 val recentNoteId = SharedPreferencesUtil.getRecentNoteId(this@NoteActivity)
 
+                val accessToken = SharedPreferencesUtil.getAccessToken(this@NoteActivity) ?: ""
+
                 // Retrofit을 사용하여 HTTP 요청을 보냅니다.
-                val response = RetrofitClient.apiService.getOrganization(userId)
+                val response = RetrofitClient.apiService.getOrganization(userId, accessToken)
 
                 // 받아온 데이터에서 현재 워크스페이스의 노트들만 필터링합니다.
                 val matchingOrganization = response.find { it.id == recentWorkspaceId }
@@ -181,7 +358,8 @@ class NoteActivity : AppCompatActivity(), PageListAdapter.OnPageClickListener, P
     private fun sendPageDataToMongoDB(page: PageData) {
         GlobalScope.launch(Dispatchers.IO) {
             try {
-                val response = RetrofitClient.apiService.sendPageData(page)
+                val accessToken = SharedPreferencesUtil.getAccessToken(this@NoteActivity) ?: ""
+                val response = RetrofitClient.apiService.sendPageData(page, accessToken)
                 if (response.isSuccessful) {
                     // MongoDB에 데이터 저장 성공
                     val pageResponse = response.body()
@@ -277,37 +455,35 @@ class NoteActivity : AppCompatActivity(), PageListAdapter.OnPageClickListener, P
         val recentWorkspaceId = getRecentWorkSpaceId() ?: ""
         val userId = getUserId() ?: ""
         val userName = getUserName() ?: ""
-        // 팝업 창의 레이아웃을 inflate하여 가져옴
-        val popupView = LayoutInflater.from(this).inflate(R.layout.org_info_layout, null)
 
+        // 다이얼로그를 생성하고 레이아웃을 설정합니다.
+        val dialog = Dialog(this)
+        dialog.setContentView(R.layout.org_info_layout)
 
-        // 워크스페이스 이름을 표시할 텍스트뷰 선언
-        val organizationTextView = popupView.findViewById<TextView>(R.id.Organization)
+        // 다이얼로그 크기 설정
+        val layoutParams = WindowManager.LayoutParams()
+        layoutParams.copyFrom(dialog.window?.attributes)
+        layoutParams.width = WindowManager.LayoutParams.MATCH_PARENT
+        layoutParams.height = WindowManager.LayoutParams.WRAP_CONTENT
+        dialog.window?.attributes = layoutParams
 
+        // 워크스페이스 이름을 표시할 텍스트뷰 설정
+        val organizationTextView = dialog.findViewById<TextView>(R.id.Organization)
         val workspaceName = SharedPreferencesUtil.getRecentWorkspaceName(this)
         organizationTextView.text = workspaceName
 
-
-        // 팝업 창을 생성
-        orgPopupWindow = PopupWindow(
-            popupView,
-            LinearLayout.LayoutParams.MATCH_PARENT,
-            LinearLayout.LayoutParams.WRAP_CONTENT,
-            true
-        )
-
-
-        // 팝업 창 내의 RecyclerView 설정
-        val memberRecyclerView = popupView.findViewById<RecyclerView>(R.id.recyclerViewMembers)
+        // RecyclerView 설정
+        val memberRecyclerView = dialog.findViewById<RecyclerView>(R.id.recyclerViewMembers)
         val layoutManager = LinearLayoutManager(this)
         memberRecyclerView.layoutManager = layoutManager
         val memberAdapter = MemberListAdapter(mutableListOf()) // 초기에는 빈 리스트를 넣어 초기화
         memberRecyclerView.adapter = memberAdapter
 
+        // 멤버 데이터를 가져와서 어댑터에 설정
         fetchOrganizationMembers(recentWorkspaceId, userId, memberAdapter)
 
-        // 팝업 창 내의 멤버 수 텍스트뷰 설정
-        val membersTextView = popupView.findViewById<TextView>(R.id.members)
+        // 멤버 수 텍스트뷰 설정
+        val membersTextView = dialog.findViewById<TextView>(R.id.members)
         memberAdapter.registerAdapterDataObserver(object : RecyclerView.AdapterDataObserver() {
             override fun onChanged() {
                 super.onChanged()
@@ -315,11 +491,10 @@ class NoteActivity : AppCompatActivity(), PageListAdapter.OnPageClickListener, P
             }
         })
 
-
         // Send Invitation 버튼 클릭 시 이메일 전송
-        val sendInvitationButton = popupView.findViewById<Button>(R.id.send)
+        val sendInvitationButton = dialog.findViewById<Button>(R.id.send)
         sendInvitationButton.setOnClickListener {
-            val emailEditText = popupView.findViewById<EditText>(R.id.inviteEditText)
+            val emailEditText = dialog.findViewById<EditText>(R.id.inviteEditText)
             val email = emailEditText.text.toString()
 
             // 이메일을 보낼 때 사용할 데이터
@@ -333,13 +508,17 @@ class NoteActivity : AppCompatActivity(), PageListAdapter.OnPageClickListener, P
             sendInvitationEmail(inviteData)
         }
 
-        // 팝업 창을 화면에 표시
-        orgPopupWindow.showAtLocation(popupView, Gravity.CENTER, 0, 0)
+        // 다이얼로그를 화면에 표시합니다.
+        dialog.show()
     }
 
 
+
     fun sendInvitationEmail(data: InvitationData) {
-        apiService.sendInvitationEmail(data).enqueue(object : Callback<Void> {
+
+        val accessToken = SharedPreferencesUtil.getAccessToken(this@NoteActivity) ?: ""
+
+        apiService.sendInvitationEmail(data, accessToken).enqueue(object : Callback<Void> {
             override fun onResponse(call: Call<Void>, response: Response<Void>) {
                 if (response.isSuccessful) {
                     // 요청이 성공적으로 처리되었을 때의 작업 수행
@@ -368,7 +547,9 @@ class NoteActivity : AppCompatActivity(), PageListAdapter.OnPageClickListener, P
         GlobalScope.launch(Dispatchers.IO) {
             try {
                 // Retrofit을 사용하여 HTTP 요청을 보냄
-                val response = RetrofitClient.apiService.getOrganization(userId)
+                val accessToken = SharedPreferencesUtil.getAccessToken(this@NoteActivity) ?: ""
+
+                val response = RetrofitClient.apiService.getOrganization(userId, accessToken)
 
                 // 받아온 데이터에서 현재 워크스페이스의 데이터를 찾음
                 val matchingOrganization = response.find { it.id == recentWorkspaceId }

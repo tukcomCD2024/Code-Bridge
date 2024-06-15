@@ -57,7 +57,7 @@ class SignUpActivity : AppCompatActivity() {
                 Toast.makeText(this, "모든 필드를 입력하세요.", Toast.LENGTH_SHORT).show()
             } else {
                 // 모든 필드가 채워져 있는 경우에만 회원가입 진행
-                if (isUsernameAvailable && Password == confirmPassword) {
+                if (/*isUsernameAvailable &&*/ Password == confirmPassword) {
                     signUpUser()
                 } else if (!isUsernameAvailable) {
                     Toast.makeText(this, "닉네임을 확인해주세요.", Toast.LENGTH_SHORT).show()
@@ -86,6 +86,7 @@ class SignUpActivity : AppCompatActivity() {
     private fun signUpUser() {
         val userData = UserData(Name, "", Email, Password)
 
+        /*
         // Firebase Authentication을 사용하여 사용자 등록
         auth.createUserWithEmailAndPassword(Email, Password)
             .addOnCompleteListener(this) { task ->
@@ -103,7 +104,7 @@ class SignUpActivity : AppCompatActivity() {
                 }
             }
 
-        saveUserDataToFirestore()
+        saveUserDataToFirestore()*/
 
         apiService.signUpUser(userData).enqueue(object : Callback<Void> {
             override fun onResponse(call: Call<Void>, response: Response<Void>) {
@@ -128,6 +129,7 @@ class SignUpActivity : AppCompatActivity() {
     }
 
 
+    /*
     private fun saveUserDataToFirestore() {
         val user = hashMapOf(
             "Name" to Name,
@@ -169,7 +171,7 @@ class SignUpActivity : AppCompatActivity() {
                     }
             }
         }
-    }
+    }*/
 
 
     private fun checkDuplicateUsername() {

@@ -15,6 +15,7 @@ import com.example.sharenote.RetrofitClient.apiService
 
 
 import com.example.sharenote.RetrofitClient.apiService2
+import com.example.sharenote.SharedPreferencesUtil
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -158,7 +159,9 @@ class drawingView(context: Context, attrs: AttributeSet) : View(context,attrs){
         // 3. 이미지 업로드 API 호출
         return withContext(Dispatchers.IO) {
             try {
-                val response = apiService.uploadImage(imagePart)
+                val accessToken = SharedPreferencesUtil.getAccessToken(context) ?: ""
+
+                val response = apiService.uploadImage(imagePart, accessToken)
                 if (response.isSuccessful && response.body() != null) {
                     Log.e("DrawingView", "이미지 업로드 성공! ${response.body()!!.image_url}")
                     response.body()!!.image_url // 성공 시 이미지 URL 반환

@@ -195,7 +195,9 @@ class PaintActivity : AppCompatActivity() {
                     // 파일을 서버로 업로드하는 로직 (Retrofit 등 사용)
                     lifecycleScope.launch {
                         try {
-                            val response = apiService.uploadImage(imagePart)
+                            val accessToken = SharedPreferencesUtil.getAccessToken(this@PaintActivity) ?: ""
+
+                            val response = apiService.uploadImage(imagePart, accessToken)
 
                             withContext(Dispatchers.Main) {
                                 if (response.isSuccessful) {

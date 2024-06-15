@@ -63,6 +63,7 @@ class PageActivity : AppCompatActivity() {
         val nickname = getUserName()
         val userId = getUserId()
         val email = getUserEmail()
+        val imageUrl = intent.getStringExtra(PaintActivity.IMAGE_URL)
 
         webView.webViewClient = object : WebViewClient() {
             override fun onPageFinished(view: WebView?, url: String?) {
@@ -73,20 +74,12 @@ class PageActivity : AppCompatActivity() {
                     localStorage.setItem('email', '$email');
                 """.trimIndent()
                 webView.evaluateJavascript(script, null)
-            }
-        }
 
-
-        val imageUrl = intent.getStringExtra(PaintActivity.IMAGE_URL)
-
-        // WebView가 로드되면 이미지를 업로드하는 함수 호출
-        webView.webViewClient = object : WebViewClient() {
-            override fun onPageFinished(view: WebView?, url: String?) {
-                super.onPageFinished(view, url)
                 // 이미지를 업로드하는 함수 호출
                 uploadImageToEditor(imageUrl)
             }
         }
+
 
 
 
@@ -112,22 +105,6 @@ class PageActivity : AppCompatActivity() {
         }
     }
 
-/*
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == 100 && resultCode == Activity.RESULT_OK) {
-            val imageUrl = data?.getStringExtra("imageUrl")
-            if (imageUrl != null) {
-                Log.d("PageActivity", "Received Image URL: $imageUrl")
-                Toast.makeText(this@PageActivity, imageUrl, Toast.LENGTH_SHORT).show()
-            } else {
-                Log.d("PageActivity", "Received Image URL is null")
-                Toast.makeText(this@PageActivity, "No image URL received", Toast.LENGTH_SHORT).show()
-            }
-        }
-    }*/
-
-
 
     private fun uploadImageToEditor(imageUrl: String?) {
         if (imageUrl != null) {
@@ -135,7 +112,7 @@ class PageActivity : AppCompatActivity() {
             val jsFunction = "uploadImageToEditor('$imageUrl')"
             webView.evaluateJavascript(jsFunction, null)
         } else {
-         
+
         }
     }
 

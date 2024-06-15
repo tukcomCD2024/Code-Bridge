@@ -1,49 +1,42 @@
 package com.example.sharenote
 
-
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.sharenote.RetrofitClient.apiService
-import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount
-import com.google.android.gms.auth.api.signin.GoogleSignInClient
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions
-import com.google.android.gms.common.SignInButton
-import com.google.android.gms.common.api.ApiException
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseUser
-import com.google.firebase.auth.GoogleAuthProvider
-import com.google.firebase.firestore.FirebaseFirestore
-import kotlinx.coroutines.CoroutineScope
+import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-
+import retrofit2.HttpException
 
 class LoginActivity : AppCompatActivity() {
     private var auth: FirebaseAuth? = null
-    private lateinit var mGoogleSignInClient: GoogleSignInClient
-    private val RC_SIGN_IN = 9001 // Google 로그인 요청 코드
-
-    private lateinit var Name: String
-    private lateinit var Email: String
-    private lateinit var Password: String
+    private var fcmToken: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
         auth = FirebaseAuth.getInstance()
 
-        // Google 로그인 구성
-        configureGoogleSignIn()
+        // FCM 토큰 받아오기
+        FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                fcmToken = task.result
+                Log.d("LoginActivity", "FCM Token: $fcmToken")
+            } else {
+                Log.w("LoginActivity", "Fetching FCM token failed", task.exception)
+            }
+        }
 
-        // 회원가입 창으로
+        // 회원가입 창으로 이동
         findViewById<View>(R.id.signupLink).setOnClickListener {
             startActivity(Intent(this, SignUpActivity::class.java))
         }
@@ -52,7 +45,7 @@ class LoginActivity : AppCompatActivity() {
         findViewById<View>(R.id.loginButton).setOnClickListener {
             val email = findViewById<EditText>(R.id.idEditText).text.toString()
             val password = findViewById<EditText>(R.id.passwordEditText).text.toString()
-            signInWithEmail(email, password)
+            login(email, password)
         }
 
         // Google 로그인 버튼
@@ -64,30 +57,29 @@ class LoginActivity : AppCompatActivity() {
         }
     }
 
-    private fun configureGoogleSignIn() {
-        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestIdToken(getString(R.string.default_web_client_id))
-            .requestEmail()
-            .build()
-
-        mGoogleSignInClient = GoogleSignIn.getClient(this, gso)
-    }
-
-
     // HTTP 통신을 통한 로그인 시도
     private fun login(email: String, password: String) {
         GlobalScope.launch(Dispatchers.IO) {
             try {
                 val userData = UserData("", "", email, password)
-                val response = apiService.login(userData)
+                val response = apiService.login(userData, fcmToken ?: "")
                 if (response.isSuccessful) {
                     val userResponse = response.body()
                     if (userResponse != null) {
-
                         val name = userResponse.name
                         val id = userResponse.userId
+                        val accessToken = response.headers()["access"] ?: ""
+                        val refreshToken = response.headers()["refresh"] ?: ""
+
+                        // 로그 확인
+                        Log.d("LoginActivity", "Access Token: $accessToken")
+                        Log.d("LoginActivity", "Refresh Token: $refreshToken")
+
                         // SharedPreferences에 저장
                         SharedPreferencesUtil.saveUserData(this@LoginActivity, name, id, email)
+                        SharedPreferencesUtil.saveAccessToken(this@LoginActivity, accessToken)
+                        SharedPreferencesUtil.saveRefreshToken(this@LoginActivity, refreshToken)
+
                         // 로그인 성공 시 MainActivity로 이동
                         val intent = Intent(this@LoginActivity, MainActivity::class.java)
                         startActivity(intent)
@@ -111,96 +103,6 @@ class LoginActivity : AppCompatActivity() {
                     ).show()
                 }
             }
-        }
-    }
-
-
-
-
-
-
-    private fun signInWithEmail(email: String, password: String) {
-        if (email.isNotEmpty() && password.isNotEmpty()) {
-            auth?.signInWithEmailAndPassword(email, password)
-                ?.addOnCompleteListener(this) { task ->
-                    if (task.isSuccessful) {
-                        Toast.makeText(
-                            baseContext, "로그인에 성공 하였습니다.",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                        moveMainPage(auth?.currentUser)
-                    } else {
-                        Toast.makeText(
-                            baseContext, "로그인에 실패 하였습니다.",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
-                }
-        }
-    }
-
-    private fun signInWithGoogle() {
-        val signInIntent = mGoogleSignInClient.signInIntent
-        startActivityForResult(signInIntent, RC_SIGN_IN)
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-
-        // Google 로그인 결과 처리
-        if (requestCode == RC_SIGN_IN) {
-            val task = GoogleSignIn.getSignedInAccountFromIntent(data)
-            try {
-                val account = task.getResult(ApiException::class.java)
-                firebaseAuthWithGoogle(account?.idToken)
-            } catch (e: ApiException) {
-                Toast.makeText(
-                    baseContext, "Google 로그인에 실패하였습니다.",
-                    Toast.LENGTH_SHORT
-                ).show()
-            }
-        }
-    }
-
-    private fun firebaseAuthWithGoogle(idToken: String?) {
-        val credential = GoogleAuthProvider.getCredential(idToken, null)
-        FirebaseAuth.getInstance().signInWithCredential(credential)
-            .addOnCompleteListener(this) { task ->
-                if (task.isSuccessful) {
-                    moveMainPage(auth?.currentUser)
-                } else {
-                    Toast.makeText(
-                        baseContext, "Firebase 인증에 실패하였습니다.",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                }
-            }
-    }
-
-    private fun moveMainPage(user: FirebaseUser?) {
-        if (user != null) {
-            val db = FirebaseFirestore.getInstance()
-            db.collection("workSpaces")
-                .whereEqualTo("owner", user.email)
-                .get()
-                .addOnSuccessListener { documents ->
-                    if (documents.isEmpty) {
-                        // 워크스페이스가 없는 경우 OrganizationActivity로 이동
-                        startActivity(Intent(this, OrganizationActivity::class.java))
-                    } else {
-                        // 워크스페이스가 있는 경우 MainActivity로 이동
-                        startActivity(Intent(this, MainActivity::class.java))
-                    }
-                    finish()
-                }
-                .addOnFailureListener { exception ->
-                    // 쿼리 실패 시 에러 처리
-                    Toast.makeText(
-                        baseContext, "워크스페이스를 확인하는 중 오류가 발생하였습니다.",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                    finish()
-                }
         }
     }
 }
