@@ -1,5 +1,6 @@
 package com.example.sharenote
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
 import android.net.Uri
@@ -17,6 +18,7 @@ class ImageSelect : AppCompatActivity() {
     // 클래스 멤버 변수로 선언
     private lateinit var imageViews: List<ImageView>
     private lateinit var completeButton: Button
+    @SuppressLint("MissingInflatedId")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_image_select)
@@ -32,7 +34,11 @@ class ImageSelect : AppCompatActivity() {
             findViewById<ImageView>(R.id.imageView3),
             findViewById<ImageView>(R.id.imageView4),
             findViewById<ImageView>(R.id.imageView5),
-            findViewById<ImageView>(R.id.imageView6)
+            findViewById<ImageView>(R.id.imageView6),
+            findViewById<ImageView>(R.id.imageView7),
+            findViewById<ImageView>(R.id.imageView8),
+            findViewById<ImageView>(R.id.imageView9),
+            findViewById<ImageView>(R.id.imageView10)
         )
 
 

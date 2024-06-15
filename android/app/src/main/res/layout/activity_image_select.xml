@@ -12,7 +12,7 @@
         android:layout_height="0dp"
         android:layout_weight="1"
         android:columnCount="2"
-        android:rowCount="3"
+        android:rowCount="5"
         android:padding="4dp">
 
         <ImageView
@@ -87,6 +87,54 @@
             android:src="@drawable/add_note"
             android:clickable="true"
             android:focusable="true" />
+        <ImageView
+            android:adjustViewBounds="true"
+            android:id="@+id/imageView7"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:layout_columnWeight="1"
+            android:layout_rowWeight="1"
+            android:scaleType="fitCenter"
+            android:src="@drawable/add_note"
+            android:clickable="true"
+            android:focusable="true" />
+        <ImageView
+            android:adjustViewBounds="true"
+            android:id="@+id/imageView8"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:layout_columnWeight="1"
+            android:layout_rowWeight="1"
+            android:scaleType="fitCenter"
+            android:src="@drawable/add_note"
+            android:clickable="true"
+            android:focusable="true" />
+        <ImageView
+            android:adjustViewBounds="true"
+            android:id="@+id/imageView9"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:layout_columnWeight="1"
+            android:layout_rowWeight="1"
+            android:scaleType="fitCenter"
+            android:src="@drawable/add_note"
+            android:clickable="true"
+            android:focusable="true" />
+        <ImageView
+            android:adjustViewBounds="true"
+            android:id="@+id/imageView10"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:layout_columnWeight="1"
+            android:layout_rowWeight="1"
+            android:scaleType="fitCenter"
+            android:src="@drawable/add_note"
+            android:clickable="true"
+            android:focusable="true" />
 
     </GridLayout>
 
@@ -96,5 +144,4 @@
         android:layout_height="wrap_content"
         android:text="선택 완료"
         android:layout_margin="8dp"/>
-
 </LinearLayout>
