@@ -37,3 +37,4 @@ out/
 .vscode/
 
 .env
+/src/main/resources/firebase/firebase_service_key.json

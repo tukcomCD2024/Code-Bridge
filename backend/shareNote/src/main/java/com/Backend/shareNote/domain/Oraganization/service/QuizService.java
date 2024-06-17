@@ -8,6 +8,7 @@ import com.Backend.shareNote.domain.User.entity.Users;
 import com.Backend.shareNote.domain.User.repository.FcmRepository;
 import com.Backend.shareNote.domain.User.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,6 +18,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class QuizService {
     private final OrganizationRepository organizationRepository;
 
@@ -72,12 +74,14 @@ public class QuizService {
             List<String> fcmList = new ArrayList<>();
             for (String member : organization.getMembers()) {
                 if (!member.equals(quizCreateDTO.getUserId())) {
+
                     fcmList.add(fcmRepository.findByUserId(member).getFcm());
                 }
             }
 
             //알림 보내기
             for(String fcm : fcmList){
+                log.info("fcm: " + fcm);
                 firebaseCloudMessageService.sendMessageTo(fcm, "새로운 퀴즈가 등록되었습니다.", quizCreateDTO.getQuizTitle());
             }
 
