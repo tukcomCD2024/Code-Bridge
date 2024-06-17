@@ -93,8 +93,9 @@ class QuizActivity : AppCompatActivity(), QuizAdapter.OnItemClickListener {
         val recentWorkspaceId = SharedPreferencesUtil.getRecentWorkspaceId(this) ?: ""
         val noteId = SharedPreferencesUtil.getRecentNoteId(this) ?: ""
         val userId = SharedPreferencesUtil.getUserId(this) ?: ""
+        val accessToken = SharedPreferencesUtil.getAccessToken(this) ?: ""
 
-        apiService.getQuizzes(recentWorkspaceId, noteId, userId).enqueue(object : Callback<List<QuizList>> {
+        apiService.getQuizzes(recentWorkspaceId, noteId, userId, accessToken).enqueue(object : Callback<List<QuizList>> {
             override fun onResponse(call: Call<List<QuizList>>, response: Response<List<QuizList>>) {
                 if (response.isSuccessful) {
                     response.body()?.let { quizzes ->
