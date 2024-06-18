@@ -67,6 +67,7 @@
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_marginBottom="50dp"
         android:layout_below="@+id/mainHead">
 
         <RelativeLayout
@@ -109,6 +110,37 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:scrollbars="vertical"/>
+
+                <RelativeLayout
+                    android:id="@+id/noRecentNotesLayout"
+                    android:layout_width="170dp"
+                    android:layout_height="wrap_content"
+                    android:padding="8dp">
+
+                    <TextView
+                        android:layout_width="150dp"
+                        android:layout_height="150dp"
+                        android:background="@drawable/rounded_divider"/>
+
+                    <ImageView
+                        android:id="@+id/image"
+                        android:layout_width="40dp"
+                        android:layout_height="wrap_content"
+                        android:layout_centerVertical="true"
+                        android:layout_marginLeft="5dp"
+                        android:src="@drawable/ic_bookmark"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="16dp"
+                        android:layout_marginTop="70dp"
+                        android:layout_below="@+id/image"
+                        android:maxLines="2"
+                        android:text="모바일에서 시작하기"
+                        android:textColor="#000"
+                        android:textSize="14sp" />
+                </RelativeLayout>
 
             </FrameLayout>
 
@@ -195,29 +227,40 @@
                 android:layout_marginTop="1dp"
                 android:layout_marginBottom="16dp"
                 android:layout_below="@+id/listLayout"/>
-
-
-
-            <Button
-                android:id="@+id/MoveDraw"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_below="@id/recyclerViewNotes"
-                android:text="그림판"/>
-            <Button
-                android:id="@+id/Quiz"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_below="@+id/MoveDraw"
-                android:text="퀴즈"/>
-            <Button
-                android:id="@+id/Contribution"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_below="@+id/Quiz"
-                android:text="기여도"/>
-
-
         </RelativeLayout>
     </ScrollView>
+
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabQuiz"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        android:src="@drawable/ic_quiz"
+        android:backgroundTint="@color/mint"
+        android:layout_above="@id/floating"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"/>
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabCont"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        android:src="@drawable/ic_chart"
+        android:backgroundTint="@color/mint"
+        android:layout_above="@id/floating"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/floating"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
+        android:layout_margin="16dp"
+        android:src="@drawable/ic_floating_add"
+        android:backgroundTint="@color/mint" />
+
 </RelativeLayout>

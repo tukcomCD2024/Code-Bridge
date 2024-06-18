@@ -29,6 +29,7 @@ import com.example.sharenote.CreateNoteActivity
 import com.example.sharenote.CreateQuiz
 import com.example.sharenote.LoginActivity
 import com.example.sharenote.MainActivity
+import com.example.sharenote.MobileActivity
 import com.example.sharenote.Note
 import com.example.sharenote.NoteActivity
 import com.example.sharenote.NoteRecentListAdapter
@@ -39,6 +40,7 @@ import com.example.sharenote.R
 import com.example.sharenote.RetrofitClient
 import com.example.sharenote.SharedPreferencesUtil
 import com.example.sharenote.WorkSpace
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.FirebaseFirestore
@@ -59,6 +61,8 @@ class HomeFragment : Fragment() {
     private lateinit var recyclerViewRecentNotes: RecyclerView
     private lateinit var recentNotesAdapter: NoteRecentListAdapter
 
+    private lateinit var noRecentNotesLayout: RelativeLayout
+
     private lateinit var emailTextView: TextView
     private lateinit var menuBtn: ImageButton
     private lateinit var profileForm: RelativeLayout
@@ -66,15 +70,16 @@ class HomeFragment : Fragment() {
     private lateinit var listLayout: RelativeLayout
     private lateinit var listLayout_1: ImageView
 
-    private lateinit var MoveDraw: Button
-    private lateinit var Quiz : Button
-    private lateinit var Cont : Button
 
     private lateinit var emailTextView1: TextView
     private lateinit var workSpaceText: TextView
     private lateinit var popupView: View // 팝업 뷰
     private lateinit var setting_circle: ImageView
 
+    private lateinit var floating: FloatingActionButton
+    private lateinit var fabQuiz: FloatingActionButton
+    private lateinit var fabCont: FloatingActionButton
+    private var isFabOpen = false
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -106,6 +111,16 @@ class HomeFragment : Fragment() {
             startActivity(intent)
         }
 
+        noRecentNotesLayout = view.findViewById(R.id.noRecentNotesLayout)
+        noRecentNotesLayout.setOnClickListener {
+            // Mobile 액티비티로 이동
+            val intent = Intent(requireContext(), MobileActivity::class.java)
+            startActivity(intent)
+        }
+
+        val recentNoteIds = SharedPreferencesUtil.getRecentNoteIds(requireContext())
+
+
         recyclerView.adapter = noteListAdapter
         recyclerViewRecentNotes.adapter = recentNotesAdapter
 
@@ -115,9 +130,14 @@ class HomeFragment : Fragment() {
         listLayout = view.findViewById(R.id.listLayout)
         listLayout_1 = view.findViewById(R.id.listLayout_1)
 
-        MoveDraw = view.findViewById(R.id.MoveDraw)
-        Quiz = view.findViewById(R.id.Quiz)
-        Cont = view.findViewById(R.id.Contribution)
+
+        floating = view.findViewById(R.id.floating)
+        fabQuiz = view.findViewById(R.id.fabQuiz)
+        fabCont = view.findViewById(R.id.fabCont)
+
+        floating.setOnClickListener {
+            toggleFab()
+        }
 
 
         // account_layout을 팝업으로 사용하기 위해 팝업 뷰를 초기화
@@ -134,6 +154,7 @@ class HomeFragment : Fragment() {
         val recentWorkspaceId = getRecentWorkspaceId()
 
 
+
         // 사용자 이메일을 표시합니다.
         val userEmail = SharedPreferencesUtil.getUserEmail(requireContext())
         emailTextView.text = userEmail
@@ -143,17 +164,13 @@ class HomeFragment : Fragment() {
             displayWorkspaceName(it)
         }
 
-        MoveDraw.setOnClickListener {
-            val intent2 = Intent(requireContext(), PaintActivity::class.java)
-            startActivityForResult(intent2, 1)
-        }
 
-        Quiz.setOnClickListener {
+        fabQuiz.setOnClickListener {
             val intent = Intent(requireContext(), QuizActivity::class.java)
             startActivity(intent)
         }
 
-        Cont.setOnClickListener {
+        fabCont.setOnClickListener {
             val intent = Intent(requireContext(), Contribution::class.java)
             startActivity(intent)
         }
@@ -191,11 +208,26 @@ class HomeFragment : Fragment() {
         }
 
         // 최근 워크스페이스 ID를 loadNotesFromFirestore() 함수로 전달하여 해당 워크스페이스에 속한 노트들을 가져옵니다.
-        recentWorkspaceId?.let {
-            val userId = SharedPreferencesUtil.getUserId(requireContext()) ?: ""
-            loadNotesFromMongoDB(it, userId)
+        if (recentWorkspaceId.isNullOrEmpty()) {
+            recyclerViewRecentNotes.visibility = View.GONE
+            noRecentNotesLayout.visibility = View.VISIBLE
+        } else {
+            recentWorkspaceId?.let { workspaceId ->
+                val userId = SharedPreferencesUtil.getUserId(requireContext()) ?: ""
+                val recentNoteIds = SharedPreferencesUtil.getRecentNoteIds(requireContext())
+
+                if (recentNoteIds.isEmpty()) {
+                    recyclerViewRecentNotes.visibility = View.GONE
+                    noRecentNotesLayout.visibility = View.VISIBLE
+                } else {
+                    recyclerViewRecentNotes.visibility = View.VISIBLE
+                    noRecentNotesLayout.visibility = View.GONE
+                    loadRecentNotes(workspaceId)
+                }
+                loadNotesFromMongoDB(workspaceId, userId)
+            }
         }
-        loadRecentNotes()
+
 
         return view
     }
@@ -467,24 +499,39 @@ class HomeFragment : Fragment() {
     }
 
 
-    private fun loadRecentNotes() {
+    private fun loadRecentNotes(recentWorkspaceId: String?) {
         GlobalScope.launch(Dispatchers.IO) {
             try {
+                // 최근 방문한 노트 ID들을 가져옵니다.
                 val recentNoteIds = SharedPreferencesUtil.getRecentNoteIds(requireContext())
-                Log.d("notes", "Recent Note IDs: $recentNoteIds")
-                if (recentNoteIds.isEmpty()) return@launch
+                Log.d(TAG, "Recent Note IDs: $recentNoteIds")
 
+                // 최근 방문한 노트 ID가 없으면 함수를 종료합니다.
+                if (recentNoteIds.isEmpty()) {
+                    withContext(Dispatchers.Main) {
+                        recyclerViewRecentNotes.visibility = View.GONE
+                        noRecentNotesLayout.visibility = View.VISIBLE
+                    }
+                    return@launch
+                }
+
+                // 사용자 정보를 가져옵니다.
                 val accessToken = SharedPreferencesUtil.getAccessToken(requireContext()) ?: ""
                 val userId = SharedPreferencesUtil.getUserId(requireContext()) ?: ""
 
+                // 사용자의 조직 목록을 가져옵니다.
                 val response = RetrofitClient.apiService.getOrganization(userId, accessToken)
                 val allNotes = mutableListOf<Note>()
 
-                for (organization in response) {
-                    for (noteData in organization.notes) {
+                // 최근 방문한 워크스페이스 ID와 일치하는 워크스페이스를 찾습니다.
+                val recentWorkspace = response.find { it.id == recentWorkspaceId }
+
+                // 최근 방문한 워크스페이스가 존재할 경우 해당 워크스페이스에 속한 노트들을 가져옵니다.
+                recentWorkspace?.let { workspace ->
+                    workspace.notes.forEach { noteData ->
                         val note = Note(
                             Id = noteData.id,
-                            createUser = organization.owner,
+                            createUser = workspace.owner,
                             title = noteData.title,
                             noteImageUrl = noteData.noteImageUrl
                         )
@@ -492,17 +539,29 @@ class HomeFragment : Fragment() {
                     }
                 }
 
-                val recentNotes = allNotes.filter { recentNoteIds.contains(it.Id) }.take(3)
+                // 최근 방문한 노트 ID들에 해당하는 노트들을 필터링하여 최대 6개를 가져옵니다.
+                val recentNotes = allNotes.filter { recentNoteIds.contains(it.Id) }.take(6)
                 Log.d(TAG, "Recent Notes: $recentNotes")
 
+                // UI 스레드에서 RecyclerView에 최근 방문한 노트들을 설정합니다.
                 withContext(Dispatchers.Main) {
-                    recentNotesAdapter.setNotes(recentNotes)
+                    if (recentNotes.isEmpty()) {
+                        recyclerViewRecentNotes.visibility = View.GONE
+                        noRecentNotesLayout.visibility = View.VISIBLE
+                    } else {
+                        recyclerViewRecentNotes.visibility = View.VISIBLE
+                        noRecentNotesLayout.visibility = View.GONE
+                        recentNotesAdapter.setNotes(recentNotes)
+                    }
                 }
             } catch (e: Exception) {
+                // 오류가 발생한 경우 로그를 남기고 처리합니다.
                 Log.e(TAG, "Error loading recent notes", e)
             }
         }
     }
+
+
 
 
 
@@ -553,6 +612,24 @@ class HomeFragment : Fragment() {
             emailTextView.text = userEmail
             emailTextView1.text = userEmail
         }
+    }
+
+    private fun toggleFab() {
+        // 플로팅 액션 버튼 닫기 - 열려있는 플로팅 버튼 집어넣는 애니메이션 세팅
+        if (isFabOpen) {
+            ObjectAnimator.ofFloat(fabQuiz, "translationY", 0f).apply { start() }
+            ObjectAnimator.ofFloat(fabCont, "translationY", 0f).apply { start() }
+            floating.setImageResource(R.drawable.ic_floating_add)
+
+            // 플로팅 액션 버튼 열기 - 닫혀있는 플로팅 버튼 꺼내는 애니메이션 세팅
+        } else {
+            ObjectAnimator.ofFloat(fabQuiz, "translationY", -200f,).apply { start() }
+            ObjectAnimator.ofFloat(fabCont, "translationY", -400f,).apply { start() }
+            floating.setImageResource(R.drawable.ic_close)
+        }
+
+        isFabOpen = !isFabOpen
+
     }
 
     // 최근 워크스페이스 ID를 저장하고 불러오기
