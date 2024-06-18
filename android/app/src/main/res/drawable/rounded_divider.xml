@@ -1,4 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
-<selector xmlns:android="http://schemas.android.com/apk/res/android">
-  
-</selector>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- 회색 사각형 아이템 -->
+    <item android:left="0dp" android:right="0dp" android:top="0dp" android:bottom="0dp">
+        <shape android:shape="rectangle">
+            <solid android:color="#E2E2E2"/>
+            <corners android:radius="20dp"/>
+            <stroke
+                android:width="0.5dp"
+                android:color="#888888"/>
+            <padding android:left="1dp" android:right="1dp" android:top="0dp" android:bottom="1dp"/>
+        </shape>
+    </item>
+
+    <!-- 흰색 사각형 아이템 -->
+    <item android:left="0dp" android:right="0dp" android:top="70dp" android:bottom="0dp">
+        <shape android:shape="rectangle">
+            <solid android:color="#FFFFFF"/>
+            <corners android:radius="20dp"/>
+        </shape>
+    </item>
+</layer-list>

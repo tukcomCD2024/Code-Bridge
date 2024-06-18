@@ -75,9 +75,48 @@
             android:paddingVertical="15dp">
 
             <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/bookText"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_marginVertical="10dp"
+                android:background="@color/gray">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:text="최근 방문한 노트"
+                    android:textColor="#000"
+                    android:textSize="22sp"
+                    android:textStyle="bold"
+                    android:layout_marginStart="10dp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <FrameLayout
+                android:id="@+id/list"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/bookText"
+                android:layout_marginBottom="20dp"
+                android:padding="15dp" >
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/recyclerViewRecentNotes"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:scrollbars="vertical"/>
+
+            </FrameLayout>
+
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/teamText"
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
+                android:layout_below="@+id/list"
                 android:background="@color/gray">
 
                 <TextView
@@ -159,40 +198,11 @@
 
 
 
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/bookText"
-                android:layout_width="match_parent"
-                android:layout_height="50dp"
-                android:layout_below="@id/recyclerViewNotes"
-                android:layout_marginVertical="10dp"
-                android:background="@color/gray">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:gravity="center_vertical"
-                    android:text="개인 페이지"
-                    android:textColor="#000"
-                    android:textSize="22sp"
-                    android:textStyle="bold"
-                    android:layout_marginStart="10dp"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
-
-            </androidx.constraintlayout.widget.ConstraintLayout>
-
-            <FrameLayout
-                android:id="@+id/list"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_below="@id/bookText"
-                android:padding="15dp" />
             <Button
                 android:id="@+id/MoveDraw"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_below="@id/list"
+                android:layout_below="@id/recyclerViewNotes"
                 android:text="그림판"/>
             <Button
                 android:id="@+id/Quiz"
@@ -200,6 +210,12 @@
                 android:layout_height="wrap_content"
                 android:layout_below="@+id/MoveDraw"
                 android:text="퀴즈"/>
+            <Button
+                android:id="@+id/Contribution"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/Quiz"
+                android:text="기여도"/>
 
 
         </RelativeLayout>

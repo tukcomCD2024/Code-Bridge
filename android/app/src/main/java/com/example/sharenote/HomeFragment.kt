@@ -24,12 +24,14 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.sharenote.ApiService
 import com.example.sharenote.CheckOrganization
+import com.example.sharenote.Contribution
 import com.example.sharenote.CreateNoteActivity
 import com.example.sharenote.CreateQuiz
 import com.example.sharenote.LoginActivity
 import com.example.sharenote.MainActivity
 import com.example.sharenote.Note
 import com.example.sharenote.NoteActivity
+import com.example.sharenote.NoteRecentListAdapter
 import com.example.sharenote.OrganizationActivity
 import com.example.sharenote.PaintActivity
 import com.example.sharenote.QuizActivity
@@ -53,6 +55,10 @@ class HomeFragment : Fragment() {
     private lateinit var auth: FirebaseAuth
     private lateinit var recyclerView: RecyclerView
     private lateinit var noteListAdapter: NoteListAdapter
+
+    private lateinit var recyclerViewRecentNotes: RecyclerView
+    private lateinit var recentNotesAdapter: NoteRecentListAdapter
+
     private lateinit var emailTextView: TextView
     private lateinit var menuBtn: ImageButton
     private lateinit var profileForm: RelativeLayout
@@ -62,6 +68,7 @@ class HomeFragment : Fragment() {
 
     private lateinit var MoveDraw: Button
     private lateinit var Quiz : Button
+    private lateinit var Cont : Button
 
     private lateinit var emailTextView1: TextView
     private lateinit var workSpaceText: TextView
@@ -84,12 +91,24 @@ class HomeFragment : Fragment() {
         noteListAdapter = NoteListAdapter { noteId ->
             // 노트 아이템 클릭 시 NoteActivity로 이동
             saveRecentNoteId(noteId) // 클릭된 노트의 ID를 저장합니다.
+            SharedPreferencesUtil.saveRecentNoteIds(requireContext(), noteId)
             val intent = Intent(requireContext(), NoteActivity::class.java)
             startActivity(intent)
         }
 
+        recyclerViewRecentNotes = view.findViewById(R.id.recyclerViewRecentNotes)
+        recyclerViewRecentNotes.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
+
+        recentNotesAdapter = NoteRecentListAdapter { noteId ->
+            saveRecentNoteId(noteId)
+            SharedPreferencesUtil.saveRecentNoteIds(requireContext(), noteId)
+            val intent = Intent(requireContext(), NoteActivity::class.java)
+            startActivity(intent)
+        }
 
         recyclerView.adapter = noteListAdapter
+        recyclerViewRecentNotes.adapter = recentNotesAdapter
+
         menuBtn = view.findViewById(R.id.menuBtn)
         profileForm = view.findViewById(R.id.profileForm)
 
@@ -98,6 +117,7 @@ class HomeFragment : Fragment() {
 
         MoveDraw = view.findViewById(R.id.MoveDraw)
         Quiz = view.findViewById(R.id.Quiz)
+        Cont = view.findViewById(R.id.Contribution)
 
 
         // account_layout을 팝업으로 사용하기 위해 팝업 뷰를 초기화
@@ -132,6 +152,13 @@ class HomeFragment : Fragment() {
             val intent = Intent(requireContext(), QuizActivity::class.java)
             startActivity(intent)
         }
+
+        Cont.setOnClickListener {
+            val intent = Intent(requireContext(), Contribution::class.java)
+            startActivity(intent)
+        }
+
+
 
         profileForm.setOnClickListener {
             // account_layout을 화면 아래에 절반 크기로 보여줌
@@ -168,6 +195,7 @@ class HomeFragment : Fragment() {
             val userId = SharedPreferencesUtil.getUserId(requireContext()) ?: ""
             loadNotesFromMongoDB(it, userId)
         }
+        loadRecentNotes()
 
         return view
     }
@@ -439,6 +467,44 @@ class HomeFragment : Fragment() {
     }
 
 
+    private fun loadRecentNotes() {
+        GlobalScope.launch(Dispatchers.IO) {
+            try {
+                val recentNoteIds = SharedPreferencesUtil.getRecentNoteIds(requireContext())
+                Log.d("notes", "Recent Note IDs: $recentNoteIds")
+                if (recentNoteIds.isEmpty()) return@launch
+
+                val accessToken = SharedPreferencesUtil.getAccessToken(requireContext()) ?: ""
+                val userId = SharedPreferencesUtil.getUserId(requireContext()) ?: ""
+
+                val response = RetrofitClient.apiService.getOrganization(userId, accessToken)
+                val allNotes = mutableListOf<Note>()
+
+                for (organization in response) {
+                    for (noteData in organization.notes) {
+                        val note = Note(
+                            Id = noteData.id,
+                            createUser = organization.owner,
+                            title = noteData.title,
+                            noteImageUrl = noteData.noteImageUrl
+                        )
+                        allNotes.add(note)
+                    }
+                }
+
+                val recentNotes = allNotes.filter { recentNoteIds.contains(it.Id) }.take(3)
+                Log.d(TAG, "Recent Notes: $recentNotes")
+
+                withContext(Dispatchers.Main) {
+                    recentNotesAdapter.setNotes(recentNotes)
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error loading recent notes", e)
+            }
+        }
+    }
+
+
 
 
 
@@ -509,5 +575,7 @@ class HomeFragment : Fragment() {
     private fun saveRecentNoteId(noteId: String) {
         SharedPreferencesUtil.saveRecentNoteId(requireContext(), noteId)
     }
+
+
 }
 
