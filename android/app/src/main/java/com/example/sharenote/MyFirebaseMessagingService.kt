@@ -34,7 +34,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         }
 
         // 알림 클릭 시 실행할 액티비티 설정
-        val intent = Intent(this, MainActivity::class.java)
+        val intent = Intent(this, QuizActivity::class.java)
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
         val pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_MUTABLE)
 

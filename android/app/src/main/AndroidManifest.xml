@@ -19,9 +19,12 @@
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
         <activity
-            android:name=".Contribution"
-            android:screenOrientation="landscape"
+            android:name=".MobileActivity"
             android:exported="false" />
+        <activity
+            android:name=".Contribution"
+            android:exported="false"
+            android:screenOrientation="landscape" />
 
         <service
             android:name=".MyFirebaseMessagingService"

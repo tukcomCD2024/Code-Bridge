@@ -68,27 +68,6 @@ class NoteActivity : AppCompatActivity(), PageListAdapter.OnPageClickListener, P
         setContentView(R.layout.activity_note)
 
 
-        // FCM 토큰 가져오기
-        FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
-            if (!task.isSuccessful) {
-                Log.w(TAG, "Fetching FCM registration token failed", task.exception)
-                return@addOnCompleteListener
-            }
-
-            // FCM 토큰 가져오기
-            val token = task.result
-            Log.d(TAG, "FCM token: $token")
-
-            // 서버에 토큰 전달 또는 사용
-        }
-
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.POST_NOTIFICATIONS), NOTIFICATION_PERMISSION_REQUEST_CODE)
-        }
-
-        // 알림 채널 생성 (Android O 이상 필요)
-        createNotificationChannel()
-
 
         backTextView = findViewById(R.id.backTextView)
         createPageButton = findViewById(R.id.CreatePage)
@@ -157,11 +136,6 @@ class NoteActivity : AppCompatActivity(), PageListAdapter.OnPageClickListener, P
                     response.body()?.let { quizzes ->
                         // correct 값이 -1인 퀴즈 항목의 수를 계산
                         val unansweredCount = quizzes.count { quiz -> quiz.correct == -1 }
-
-                        // correct 값이 -1인 퀴즈 항목의 수가 증가한 경우 알림 전송
-                        if (unansweredCount > lastUnansweredCount) {
-                            sendNotification(unansweredCount - lastUnansweredCount)
-                        }
 
                         // 이전 unansweredCount 값 업데이트
                         lastUnansweredCount = unansweredCount
@@ -239,43 +213,7 @@ class NoteActivity : AppCompatActivity(), PageListAdapter.OnPageClickListener, P
         dialog.show()
     }
 
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == NOTIFICATION_PERMISSION_REQUEST_CODE) {
-            if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
-                // 권한이 부여되었을 때의 작업 수행 (예: 알림 전송)
 
-                // 권한이 부여되었을 때 다시 알림을 보내는 부분을 추가
-                sendNotification(lastUnansweredCount) // 필요에 따라 알림을 보낼 데이터를 전달
-            } else {
-                // 권한이 거부되었을 때의 작업 수행
-
-            }
-        }
-    }
-
-
-    private fun sendNotification(newUnansweredCount: Int) {
-        // Check if the notification permission is granted (only necessary for Android 13 and above)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.POST_NOTIFICATIONS), NOTIFICATION_PERMISSION_REQUEST_CODE)
-                return
-            }
-        }
-
-        Log.d("Notification", "Sending notification for $newUnansweredCount new unanswered quizzes")
-
-        val builder = NotificationCompat.Builder(this, "QUIZ_CHANNEL")
-            .setSmallIcon(R.drawable.ic_alert)
-            .setContentTitle("New Unanswered Quizzes")
-            .setContentText("You have $newUnansweredCount new unanswered quizzes.")
-            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-
-        with(NotificationManagerCompat.from(this)) {
-            notify(1001, builder.build())
-        }
-    }
 
 
 

@@ -77,8 +77,8 @@ object SharedPreferencesUtil {
         // 새로운 노트 ID를 리스트의 맨 앞에 추가
         recentNotes.add(0, noteId)
 
-        // 리스트를 최대 3개까지 유지
-        if (recentNotes.size > 3) {
+        // 리스트를 최대 6개까지 유지
+        if (recentNotes.size > 6) {
             recentNotes.removeAt(recentNotes.size - 1)
         }
 
