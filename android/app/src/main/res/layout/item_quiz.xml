@@ -11,7 +11,7 @@
 
         <TextView
             android:id="@+id/quizTitleTextView"
-            android:layout_width="280dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Quiz Title"
             android:textSize="18sp"
@@ -19,6 +19,16 @@
             android:ellipsize="end"
             android:singleLine="true"
             android:maxLines="1" />
+
+        <ImageView
+            android:id="@+id/newImageView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="5dp"
+            android:layout_toRightOf="@id/quizTitleTextView"
+            android:src="@drawable/ic_new"
+            android:visibility="gone" />
 
         <TextView
             android:id="@+id/nicknameTextView"

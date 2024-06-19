@@ -67,13 +67,51 @@
     </RelativeLayout>
 
     <RelativeLayout
+        android:id="@+id/layout2"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:layout_marginTop="15dp"
+        android:layout_marginBottom="25dp"
+        android:padding="1dp">
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recyclerView"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+        <TextView
+            android:id="@+id/btnAll"
+            android:layout_width="70dp"
+            android:layout_height="40dp"
+            android:gravity="center"
+            android:background="@drawable/rectangle"
+            android:layout_toLeftOf="@+id/btnUnsolved"
+            android:layout_marginRight="30dp"
+            android:text="All"
+            android:textColor="@color/black"/>
 
+        <TextView
+            android:id="@+id/btnUnsolved"
+            android:layout_width="70dp"
+            android:layout_height="40dp"
+            android:gravity="center"
+            android:layout_centerHorizontal="true"
+            android:layout_marginLeft="10dp"
+            android:background="@drawable/rectangle"
+            android:text="New"
+            android:textColor="@color/black"/>
+
+        <TextView
+            android:id="@+id/btnSolved"
+            android:layout_width="70dp"
+            android:layout_height="40dp"
+            android:gravity="center"
+            android:layout_toRightOf="@id/btnUnsolved"
+            android:layout_marginLeft="30dp"
+            android:background="@drawable/rectangle"
+            android:text="Resolved"
+            android:textColor="@color/black"/>
     </RelativeLayout>
+
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/fragmentContainerView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
 </LinearLayout>
