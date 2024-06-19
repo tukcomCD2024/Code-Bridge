@@ -39,11 +39,6 @@ class QuizActivity : AppCompatActivity(), QuizAdapter.OnItemClickListener {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_quiz)
 
-        recyclerView = findViewById(R.id.recyclerView)
-        recyclerView.layoutManager = LinearLayoutManager(this)
-
-        quizAdapter = QuizAdapter(quizList, this)
-        recyclerView.adapter = quizAdapter
 
         val noteEditText: TextView = findViewById(R.id.noteEditText)
         createQuizButton = findViewById(R.id.createQuiz)
@@ -64,8 +59,32 @@ class QuizActivity : AppCompatActivity(), QuizAdapter.OnItemClickListener {
             startActivity(intent)
         }
 
-        // 퀴즈 데이터를 불러오는 메서드 호출
-        loadQuizzes()
+        // 초기 프래그먼트 설정 (전체 보기)
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.fragmentContainerView, AllQuizFragment())
+            .commit()
+
+        val btnAll: TextView = findViewById(R.id.btnAll)
+        val btnUnsolved: TextView = findViewById(R.id.btnUnsolved)
+        val btnSolved: TextView = findViewById(R.id.btnSolved)
+
+        btnAll.setOnClickListener {
+            supportFragmentManager.beginTransaction()
+                .replace(R.id.fragmentContainerView, AllQuizFragment())
+                .commit()
+        }
+
+        btnUnsolved.setOnClickListener {
+            supportFragmentManager.beginTransaction()
+                .replace(R.id.fragmentContainerView, UnsolvedQuizFragment())
+                .commit()
+        }
+
+        btnSolved.setOnClickListener {
+            supportFragmentManager.beginTransaction()
+                .replace(R.id.fragmentContainerView, SolvedQuizFragment())
+                .commit()
+        }
 
         // 최근 작업 공간 ID를 가져와 노트 데이터를 로드
         val recentWorkspaceId = getRecentWorkspaceId()
@@ -89,30 +108,7 @@ class QuizActivity : AppCompatActivity(), QuizAdapter.OnItemClickListener {
         startActivity(intent)
     }
 
-    private fun loadQuizzes() {
-        val recentWorkspaceId = SharedPreferencesUtil.getRecentWorkspaceId(this) ?: ""
-        val noteId = SharedPreferencesUtil.getRecentNoteId(this) ?: ""
-        val userId = SharedPreferencesUtil.getUserId(this) ?: ""
-        val accessToken = SharedPreferencesUtil.getAccessToken(this) ?: ""
-
-        apiService.getQuizzes(recentWorkspaceId, noteId, userId, accessToken).enqueue(object : Callback<List<QuizList>> {
-            override fun onResponse(call: Call<List<QuizList>>, response: Response<List<QuizList>>) {
-                if (response.isSuccessful) {
-                    response.body()?.let { quizzes ->
-                        quizList.clear()
-                        quizList.addAll(quizzes)
-                        quizAdapter.notifyDataSetChanged()
-                    }
-                } else {
-                    Toast.makeText(this@QuizActivity, "Failed to load quizzes", Toast.LENGTH_SHORT).show()
-                }
-            }
-
-            override fun onFailure(call: Call<List<QuizList>>, t: Throwable) {
-                Toast.makeText(this@QuizActivity, "Failed to load quizzes: ${t.message}", Toast.LENGTH_SHORT).show()
-            }
-        })
-    }
+    
 
     private fun showNoteListDialog(editText: TextView) {
         val dialogView = LayoutInflater.from(this).inflate(R.layout.quiz_note_list, null)

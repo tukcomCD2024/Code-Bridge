@@ -1,6 +1,7 @@
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.sharenote.QuizList
@@ -16,6 +17,7 @@ class QuizAdapter(private val quizList: MutableList<QuizList>, private val liste
     class QuizViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val quizTitleTextView: TextView = itemView.findViewById(R.id.quizTitleTextView)
         val nicknameTextView: TextView = itemView.findViewById(R.id.nicknameTextView)
+        val newImageView: ImageView = itemView.findViewById(R.id.newImageView)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): QuizViewHolder {
@@ -30,9 +32,18 @@ class QuizAdapter(private val quizList: MutableList<QuizList>, private val liste
 
         // correct 값을 기반으로 배경색 변경
         when (quiz.correct) {
-            1 -> holder.itemView.setBackgroundResource(R.color.lightblue)
-            0 -> holder.itemView.setBackgroundResource(R.color.lightcoral)
-            else -> holder.itemView.setBackgroundResource(android.R.color.transparent)
+            1 -> {
+                holder.itemView.setBackgroundResource(R.color.lightblue)
+                holder.newImageView.visibility = View.GONE
+            }
+            0 -> {
+                holder.itemView.setBackgroundResource(R.color.lightcoral)
+                holder.newImageView.visibility = View.GONE
+            }
+            else -> {
+                holder.itemView.setBackgroundResource(android.R.color.transparent)
+                holder.newImageView.visibility = View.VISIBLE
+            }
         }
 
         // 아이템 클릭 이벤트 설정
@@ -43,5 +54,11 @@ class QuizAdapter(private val quizList: MutableList<QuizList>, private val liste
 
     override fun getItemCount(): Int {
         return quizList.size
+    }
+
+    fun setQuizzes(quizzes: List<QuizList>) {
+        quizList.clear()
+        quizList.addAll(quizzes)
+        notifyDataSetChanged()
     }
 }
