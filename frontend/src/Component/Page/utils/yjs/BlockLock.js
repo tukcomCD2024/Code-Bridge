@@ -383,10 +383,12 @@ const BlockLock = forwardRef(({ ydocRef, editorRef }, ref) => {
           } 
         } else {
           removeYjsMapUnLockData(nickname);
-          yLineLocks.set(guid.toString(), nickname);
-          yUserLocks.set(nickname, guid.toString());
-          addIdToParagraph(guid.toString());
-          toastr.success(`블록 편집 잠금이 설정되었습니다.`);
+          ydocRef.current.transact(() => {
+            yLineLocks.set(guid.toString(), nickname);
+            yUserLocks.set(nickname, guid.toString());
+            addIdToParagraph(guid.toString());
+            toastr.success(`블록 편집 잠금이 설정되었습니다.`);
+          });
         }
       } catch (error) {
         const hoverDiv = document.querySelector(".hoverDiv");

@@ -400,8 +400,7 @@ function ContributionPage() {
   }
 
   @media (max-width: 800px) {
-    font-size: 8px;
-    padding: 1px;
+    visibility: hidden;
   }
 `;
 
