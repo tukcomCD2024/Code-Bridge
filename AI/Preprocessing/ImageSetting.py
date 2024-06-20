@@ -4,7 +4,7 @@ import cairosvg
 import os
 
 tagsTemp = ['rabbit', 'bear', 'dog', 'cat', 'tiger', 'horse']
-defaultRoute = "../asset/image/svg"
+defaultRoute = "../asset/image/alpha"
 
 
 def getImageList(path):
@@ -31,12 +31,8 @@ def convertSVGtoPNG():
 # 사진의 색갈을 흑백으로 바꿔준다
 def convertColor2Mono():
     for dir, subdirs, files in os.walk('../asset/image/animals'):
-        # imgTo = dir.replace('animals', 'monoAnimals')
-        # if not os.path.isdir(imgTo):
-        #     os.mkdir(imgTo)
         for j in files:
             imgPath = f'{dir}/{j}'
-            # imgSavePath = f"{imgTo}/{j}"
 
             image = Image.open(imgPath)
             image = image.filter(ImageFilter.FIND_EDGES)
@@ -45,7 +41,6 @@ def convertColor2Mono():
             image = image.convert("RGB")
             image = image.resize((224, 224))
 
-            # image.save(imgSavePath)
             image.save(imgPath)
 
 
@@ -68,7 +63,7 @@ def boldLine():
 def removeAlpha(img):
     size = 224
     img = img.convert("RGBA")
-    img = img.resize((224, 224))
+    img = img.resize((size, size))
 
     array = np.array(img)
     imageArray = []
@@ -77,6 +72,20 @@ def removeAlpha(img):
             imageArray.append(255 if j[3] == 0 or j[0] == 255 else 0)
     imageArray = np.resize(imageArray, [size, size])
     return Image.fromarray(imageArray)
+
+
+# 사진의 하얀색 배경을 투명하게 만든다
+def insertAlpha(img):
+    size = 224
+    img = img.convert("RGBA")
+    img = img.resize((size, size))
+
+    array = img.getdata()
+    newImage = []
+    for i in array:
+        newImage.append((255, 255, 255, 0) if i[0] == 255 else i)
+    img.putdata(newImage)
+    return img
 
 
 # 흰색 배경의 사진의 테두리를 잘라 이미지를 꽉차게 한다.
@@ -93,9 +102,6 @@ def trim_white_borders(image, threshold=240):
     coords = np.argwhere(~mask)
 
     # 흰색이 아닌 픽셀의 최소/최대 좌표 찾기
-    if coords.size == 0:
-        raise ValueError("The image is completely white!")
-
     y_min, x_min = coords.min(axis=0)
     y_max, x_max = coords.max(axis=0) + 1  # 슬라이싱을 위해 +1
 
@@ -114,9 +120,9 @@ def imageReform():
 
             img = Image.open(imgPath)
 
-            resized = removeAlpha(img).convert('L')
-            trimImage = trim_white_borders(resized)
-            trimImage.save(f'{dir}/{imageFile}')
+            resized = insertAlpha(img)
+            # trimImage = trim_white_borders(resized)
+            resized.save(f'{dir}/{imageFile}')
 
 
 # svg파일의 크기를 너무 크거나 작지 않도록 조정한다.
@@ -131,9 +137,7 @@ def svgImageResize():
             imgSource = img.read()
             img.close()
 
-            print(imgSource)
             imgSource = imgSource.replace('"1em"', '"224"')
-            print(imgSource)
 
             img = open(imgPath, 'w')
             img.write(imgSource)
@@ -141,9 +145,3 @@ def svgImageResize():
 
 
 imageReform()
-
-# convertColor2Mono()
-# boldLine()
-
-# for dir, subdir, files in os.walk(defaultRoute):
-#     print(dir, subdir, files)

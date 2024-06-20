@@ -34,7 +34,7 @@ def allModels():
 
 def imagePredictMono():
     for i in os.listdir('.'):
-        if not 'zoom' in i:
+        if not '.h5' in i:
             continue
 
         saved_model = load_model(i)
@@ -66,9 +66,7 @@ def imagePredictMono():
                     break
         if total > 12100:
             os.remove(i)
-        else:
-            if total < 10000:
-                print('-'*10)
+        elif total < 10000:
             print(i)
             print("total:", total)
         # print("correct:", correct)
