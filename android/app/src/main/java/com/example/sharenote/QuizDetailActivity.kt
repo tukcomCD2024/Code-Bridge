@@ -23,6 +23,7 @@ import retrofit2.Response
 class QuizDetailActivity : AppCompatActivity() {
 
     private lateinit var noteEditText: TextView
+    private lateinit var noteType : TextView
     private lateinit var titleEditText: TextView
     private lateinit var container: LinearLayout
     private lateinit var backTextView: TextView
@@ -39,6 +40,7 @@ class QuizDetailActivity : AppCompatActivity() {
 
         // XML에서 뷰 찾기
         noteEditText = findViewById(R.id.noteEditText)
+        noteType = findViewById(R.id.noteType)
         titleEditText = findViewById(R.id.titleEditText)
         container = findViewById(R.id.container)
 
@@ -126,8 +128,9 @@ class QuizDetailActivity : AppCompatActivity() {
                     val quizDetailResponse = response.body()
                     quizDetailResponse?.let {
                         // 받아온 데이터를 화면에 표시
-                        noteEditText.setText(it.noteName)
-                        titleEditText.setText(it.quizTitle)
+                        noteEditText.setText(it.noteName + " 퀴즈 맞히기")
+                        noteType.setText("Type : " + it.quizType)
+                        titleEditText.setText("     " + it.quizTitle)
 
                         // problems 리스트의 항목 수만큼 아이템을 생성하여 container에 추가
                         for (problem in it.problems) {
@@ -153,28 +156,29 @@ class QuizDetailActivity : AppCompatActivity() {
         // 뷰에서 answerEditText 찾기
         val answerEditText = view.findViewById<TextView>(R.id.answerEditText)
 
-        // 체크박스 찾기
-        val choiceCheckBox = view.findViewById<CheckBox>(R.id.choiceCheckBox)
+
+        val answerText = view.findViewById<TextView>(R.id.answerText)
 
         // 받아온 problem 값을 answerEditText에 설정
         answerEditText.setText(problem)
 
-        // 체크박스 클릭 리스너 설정
-        choiceCheckBox.setOnClickListener {
-            val clickedCheckBox = it as CheckBox
-            if (clickedCheckBox.isChecked) {
-                // 선택된 체크박스의 인덱스 추적
-                selectedChoiceIndex = clickedCheckBox.tag as Int
-                // 다른 모든 체크박스 선택 해제
-                uncheckOtherCheckBoxes(clickedCheckBox)
+
+        answerText.setOnClickListener {
+            val clickedTextView = it as TextView
+            if (selectedChoiceIndex != clickedTextView.tag as Int) {
+                // 선택된 TextView의 인덱스 추적
+                selectedChoiceIndex = clickedTextView.tag as Int
+                // 다른 모든 TextView의 선택 해제
+                uncheckOtherTextViews(clickedTextView)
+
+                clickedTextView.setBackgroundResource(R.drawable.rectangle_bright_blue)
             } else {
-                // 체크 해제된 경우 인덱스 초기화
+                // 클릭 해제된 경우 인덱스 초기화
                 selectedChoiceIndex = -1
             }
         }
 
-        // 체크박스에 인덱스 부여
-        choiceCheckBox.tag = choiceIndex
+        answerText.tag = choiceIndex
 
         // 생성한 뷰를 container에 추가
         container.addView(view)
@@ -183,13 +187,13 @@ class QuizDetailActivity : AppCompatActivity() {
         choiceIndex++
     }
 
-    // 다른 모든 체크박스 선택 해제
-    private fun uncheckOtherCheckBoxes(clickedCheckBox: CheckBox) {
+    private fun uncheckOtherTextViews(selectedTextView: TextView) {
+        // container의 모든 자식 뷰를 순회하며 다른 TextView의 선택 해제
         for (i in 0 until container.childCount) {
             val childView = container.getChildAt(i)
-            val checkBox = childView.findViewById<CheckBox>(R.id.choiceCheckBox)
-            if (checkBox != clickedCheckBox) {
-                checkBox.isChecked = false
+            val textView = childView.findViewById<TextView>(R.id.answerText)
+            if (textView != selectedTextView) {
+                textView.setBackgroundResource(R.drawable.rectangle)
             }
         }
     }

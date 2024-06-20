@@ -55,7 +55,7 @@
             android:layout_below="@+id/objective"
             android:layout_centerHorizontal="true"
             android:layout_centerVertical="true"
-            android:text="사용 목적에 맞게 노트를 생성하세요."
+            android:text="다양한 목적으로 노트를 생성하세요."
             android:textSize="20sp" />
     </RelativeLayout>
 
@@ -89,7 +89,7 @@
 
         <TextView
             android:id="@+id/teamText1"
-            android:layout_width="220dp"
+            android:layout_width="240dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="2dp"
             android:layout_marginLeft="10dp"
@@ -98,12 +98,6 @@
             android:text="팀원들과 문서, 프로젝트, 위키를 함께 작업해 보세요."
             android:textSize="12sp" />
 
-        <CheckBox
-            android:id="@+id/teamCheckBox"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
-            android:layout_toRightOf="@id/teamText1"/>
 
     </RelativeLayout>
 
@@ -136,7 +130,7 @@
             android:textSize="16sp" />
         <TextView
             android:id="@+id/personalText1"
-            android:layout_width="220dp"
+            android:layout_width="240dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="2dp"
             android:layout_marginLeft="10dp"
@@ -145,12 +139,7 @@
             android:text="크레에이티브하게 생각하고 체계적으로 관리하세요. 글쓰기가 쉬워집니다."
             android:textSize="12sp" />
 
-        <CheckBox
-            android:id="@+id/personalCheckBox"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
-            android:layout_toRightOf="@id/personalText1"/>
+
 
     </RelativeLayout>
 
@@ -183,7 +172,7 @@
             android:textSize="16sp" />
         <TextView
             android:id="@+id/educationalText1"
-            android:layout_width="220dp"
+            android:layout_width="240dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="2dp"
             android:layout_marginLeft="10dp"
@@ -192,12 +181,7 @@
             android:text="메모, 연구, 작업물을 모두 한곳에 보관하세요."
             android:textSize="12sp" />
 
-        <CheckBox
-            android:id="@+id/educationalCheckBox"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
-            android:layout_toRightOf="@id/educationalText1"/>
+
 
     </RelativeLayout>
 

@@ -7,9 +7,8 @@
         android:id="@+id/layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="25dp"
-        android:padding="1dp"
-        android:layout_marginLeft="10dp">
+        android:layout_marginBottom="25dp"
+        android:padding="1dp">
 
         <FrameLayout
             android:layout_width="match_parent"
@@ -19,28 +18,23 @@
 
             <TextView
                 android:id="@+id/answerText"
-                android:layout_width="300dp"
+                android:layout_width="270dp"
                 android:layout_height="60dp"
-                android:background="@drawable/rectangle_white"
-                android:layout_gravity="center"
+                android:background="@drawable/rectangle"
+                android:layout_gravity="center_horizontal"
                 android:textSize="20sp" />
 
             <TextView
                 android:id="@+id/answerEditText"
-                android:layout_width="270dp"
+                android:layout_width="250dp"
                 android:layout_height="wrap_content"
                 android:background="@android:color/transparent"
                 android:hint="객관식 n번 문항"
+                android:layout_gravity="center_vertical"
                 android:textSize="13sp"
-                android:layout_gravity="center"
-                android:paddingLeft="5dp" />
-
-            <CheckBox
-                android:id="@+id/choiceCheckBox"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical|right"/>
-
+                android:textColor="@color/black"
+                android:layout_marginLeft="27dp"
+                android:padding="15dp" />
         </FrameLayout>
     </RelativeLayout>
 </RelativeLayout>

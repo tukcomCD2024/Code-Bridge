@@ -10,6 +10,7 @@ object SharedPreferencesUtil {
 
     private const val PREF_NAME1 = "MyPrefs1"
     private const val KEY_RECENT_NOTE_ID = "recent_note_id"
+    private const val RECENT_NOTE_IDS = "recent_note_ids"
 
     private const val KEY_RECENT_NOTE_TITLE = "recent_note_title"
 
@@ -20,6 +21,7 @@ object SharedPreferencesUtil {
 
     // 유저 정보 저장
     private const val PREF_NAME_USER = "MyPrefs_user"
+    private const val KEY_LOGGED_IN = "loggedIn"
     private const val KEY_USER_NAME = "user_name"
     private const val KEY_USER_ID = "user_id"
     private const val KEY_USER_EMAIL = "user_email"
@@ -64,6 +66,35 @@ object SharedPreferencesUtil {
         return sharedPrefs.getString(KEY_RECENT_NOTE_ID, null)
     }
 
+    fun saveRecentNoteIds(context: Context, noteId: String) {
+        val sharedPreferences = context.getSharedPreferences(PREF_NAME1, Context.MODE_PRIVATE)
+        val recentNotes = getRecentNoteIds(context).toMutableList()
+
+        // 이미 있는 경우 기존 위치에서 제거
+        if (recentNotes.contains(noteId)) {
+            recentNotes.remove(noteId)
+        }
+
+        // 새로운 노트 ID를 리스트의 맨 앞에 추가
+        recentNotes.add(0, noteId)
+
+        // 리스트를 최대 6개까지 유지
+        if (recentNotes.size > 6) {
+            recentNotes.removeAt(recentNotes.size - 1)
+        }
+
+        // 수정된 리스트를 SharedPreferences에 저장
+        val editor = sharedPreferences.edit()
+        editor.putStringSet(RECENT_NOTE_IDS, recentNotes.toSet())
+        editor.apply()
+    }
+
+
+    fun getRecentNoteIds(context: Context): List<String> {
+        val sharedPreferences = context.getSharedPreferences(PREF_NAME1, Context.MODE_PRIVATE)
+        return sharedPreferences.getStringSet(RECENT_NOTE_IDS, emptySet())?.toList() ?: emptyList()
+    }
+
     fun saveRecentNoteTitle(context: Context, noteTitle: String) {
         val sharedPreferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
         sharedPreferences.edit().putString(KEY_RECENT_NOTE_TITLE, noteTitle).apply()
@@ -94,6 +125,17 @@ object SharedPreferencesUtil {
     fun getRecentPageId(context: Context): String? {
         val sharedPrefs = context.getSharedPreferences(PREF_NAME1, Context.MODE_PRIVATE)
         return sharedPrefs.getString(KEY_RECENT_PAGE_ID, null)
+    }
+
+
+    fun saveLoggedInStatus(context: Context, loggedIn: Boolean) {
+        val sharedPreferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+        sharedPreferences.edit().putBoolean(KEY_LOGGED_IN, loggedIn).apply()
+    }
+
+    fun isLoggedIn(context: Context): Boolean {
+        val sharedPreferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+        return sharedPreferences.getBoolean(KEY_LOGGED_IN, false) // 기본값은 false
     }
 
 

@@ -74,7 +74,8 @@ interface ApiService {
     fun getQuizzes(
         @Path("organization") organizationId: String,
         @Path("noteId") noteId: String,
-        @Path("userId") userId: String
+        @Path("userId") userId: String,
+        @Header("access") accessToken: String
     ): Call<List<QuizList>>
 
     @POST("quiz/detail")

@@ -55,6 +55,13 @@ class LoginActivity : AppCompatActivity() {
             val password = findViewById<EditText>(R.id.passwordEditText).text.toString()
             login(email, password)
         }
+
+        if (SharedPreferencesUtil.isLoggedIn(this)) {
+            val intent = Intent(this@LoginActivity, MainActivity::class.java)
+            startActivity(intent)
+            finish()
+        }
+
     }
 
     // HTTP 통신을 통한 로그인 시도
@@ -79,6 +86,7 @@ class LoginActivity : AppCompatActivity() {
                         SharedPreferencesUtil.saveUserData(this@LoginActivity, name, id, email)
                         SharedPreferencesUtil.saveAccessToken(this@LoginActivity, accessToken)
                         SharedPreferencesUtil.saveRefreshToken(this@LoginActivity, refreshToken)
+                        SharedPreferencesUtil.saveLoggedInStatus(this@LoginActivity, true)
 
                         // 로그인 성공 시 MainActivity로 이동
                         val intent = Intent(this@LoginActivity, MainActivity::class.java)
