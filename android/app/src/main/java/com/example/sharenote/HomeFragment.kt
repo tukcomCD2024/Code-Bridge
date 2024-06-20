@@ -277,6 +277,7 @@ class HomeFragment : Fragment() {
         val settingLayoutView = popupView.findViewById<RelativeLayout>(R.id.logoutLayout)
         settingLayoutView.setOnClickListener {
             auth.signOut()
+            SharedPreferencesUtil.saveLoggedInStatus(requireContext(), false)
             val loginIntent = Intent(requireContext(), LoginActivity::class.java)
             startActivity(loginIntent)
             requireActivity().finish()
