@@ -35,7 +35,8 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         // 알림 클릭 시 실행할 액티비티 설정
         val intent = Intent(this, QuizActivity::class.java)
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-        val pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_UPDATE_CURRENT)
+        intent.putExtra("fromNotification", true)
+        val pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_IMMUTABLE)
 
         // 알림 생성
         val notificationBuilder = NotificationCompat.Builder(this, "default")
