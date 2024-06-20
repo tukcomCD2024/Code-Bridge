@@ -8,9 +8,7 @@ import os
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 imageSize = 128
 
-trdata = ImageDataGenerator(zoom_range=[0.9, 1.3], shear_range=0.65, horizontal_flip=True, rotation_range=45)
-traindata = trdata.flow_from_directory(directory=r"C:\Users\Ka\Desktop\Ka\대학교\졸업작품\project\Code-Bridge\AI\asset\image\svg",
-                                       target_size=(imageSize, imageSize), class_mode='categorical', batch_size=20)
+
 tsdata = ImageDataGenerator()
 testdata = tsdata.flow_from_directory(directory=r"C:\Users\Ka\Desktop\Ka\대학교\졸업작품\project\Code-Bridge\AI\asset\image\svg", target_size=(imageSize, imageSize),
                                       class_mode='categorical')
@@ -78,10 +76,14 @@ def createModel(model, lr, e, name):
     hist = model.fit(traindata, steps_per_epoch=len(traindata), validation_data=testdata, validation_steps=len(testdata),
                      epochs=e, callbacks=[checkpoint, early], batch_size=5)
 
-
-for e in range(40, 100, 10):
-    createModel(cnnDepth6(), 0.0001, e, f'cnn6e{e}v9.h5')
-    createModel(cnnDepth5(), 0.0001, e, f'cnn5e{e}v9.h5')
+for i in range(9, 10):
+    for j in range(14, 15):
+        trdata = ImageDataGenerator(zoom_range=[0.1*i, 0.1*j], shear_range=0.7, horizontal_flip=True, rotation_range=45)
+        traindata = trdata.flow_from_directory(directory=r"C:\Users\Ka\Desktop\Ka\대학교\졸업작품\project\Code-Bridge\AI\asset\image\svg",
+                                       target_size=(imageSize, imageSize), class_mode='categorical', batch_size=20)
+        for e in range(70, 100, 10):
+            createModel(cnnDepth6(), 0.0001, e, f'cnn6e{e}zoom{i}-{j}.h5')
+            createModel(cnnDepth5(), 0.0001, e, f'cnn5e{e}zoom{i}-{j}.h5')
 
 # model = cnnDepth6()
 # model.compile()

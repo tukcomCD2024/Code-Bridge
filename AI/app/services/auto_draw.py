@@ -20,7 +20,7 @@ def resultByDesc(result):
     x = {}
     for i in range(len(result)):
         x[i] = result[i]
-    return sorted(x.items(), key=operator.itemgetter(1), reverse=True)[:6]
+    return sorted(x.items(), key=operator.itemgetter(1), reverse=True)[:10]
 
 
 def getImageNameList(result):
