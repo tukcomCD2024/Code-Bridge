@@ -88,6 +88,7 @@
                 android:layout_height="wrap_content"
                 android:layout_below="@id/layout1"
                 android:padding="10dp"
+                android:layout_marginTop="10dp"
                 android:layout_marginLeft="10dp">
 
                 <FrameLayout
@@ -97,39 +98,45 @@
                     android:background="@drawable/rectangle_white"
                     android:layout_marginTop="2dp">
 
-
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Q."
-                        android:textColor="@color/blue"
-                        android:textSize="18dp"
-                        android:textStyle="bold"
-                        android:padding="10dp" />
-
-                    <TextView
-                        android:id="@+id/titleEditText"
-                        android:layout_width="320dp"
-                        android:layout_height="wrap_content"
-                        android:background="@android:color/transparent"
-                        android:hint="     퀴즈 문제 내용"
-                        android:textSize="18dp"
-                        android:textColor="@color/black"
-                        android:textStyle="bold"
-                        android:padding="10dp" />
-
-                    <LinearLayout
-                        android:id="@+id/container"
+                    <RelativeLayout
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="25dp"
-                        android:layout_marginBottom="25dp"
-                        android:layout_below="@+id/titleEditText"
-                        android:orientation="vertical">
-                    </LinearLayout>
+                        android:layout_height="wrap_content">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Q."
+                            android:textColor="@color/blue"
+                            android:textSize="18dp"
+                            android:textStyle="bold"
+                            android:padding="10dp" />
+
+                        <TextView
+                            android:id="@+id/titleEditText"
+                            android:layout_width="320dp"
+                            android:layout_height="wrap_content"
+                            android:background="@android:color/transparent"
+                            android:text="퀴즈 문제 내용"
+                            android:textSize="18dp"
+                            android:textColor="@color/black"
+                            android:textStyle="bold"
+                            android:padding="10dp" />
+
+                        <LinearLayout
+                            android:id="@+id/container"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_below="@id/titleEditText"
+                            android:layout_marginBottom="5dp"
+                            android:orientation="vertical">
+                        </LinearLayout>
+
+                    </RelativeLayout>
+
                 </FrameLayout>
+
             </RelativeLayout>
+
 
             <RelativeLayout
                 android:id="@+id/layout3"
@@ -145,7 +152,7 @@
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="25dp"
+                android:layout_marginTop="5dp"
                 android:layout_below="@id/layout3"
                 android:padding="1dp"
                 android:layout_marginLeft="10dp"

@@ -79,7 +79,7 @@
             android:layout_width="70dp"
             android:layout_height="40dp"
             android:gravity="center"
-            android:background="@drawable/rectangle"
+            android:background="@drawable/rectangle_bright_blue"
             android:layout_toLeftOf="@+id/btnUnsolved"
             android:layout_marginRight="30dp"
             android:text="All"

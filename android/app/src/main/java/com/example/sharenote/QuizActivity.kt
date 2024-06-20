@@ -69,18 +69,30 @@ class QuizActivity : AppCompatActivity(), QuizAdapter.OnItemClickListener {
         val btnSolved: TextView = findViewById(R.id.btnSolved)
 
         btnAll.setOnClickListener {
+            btnAll.setBackgroundResource(R.drawable.rectangle_bright_blue)
+            btnUnsolved.setBackgroundResource(R.drawable.rectangle)
+            btnSolved.setBackgroundResource(R.drawable.rectangle)
+
             supportFragmentManager.beginTransaction()
                 .replace(R.id.fragmentContainerView, AllQuizFragment())
                 .commit()
         }
 
         btnUnsolved.setOnClickListener {
+            btnAll.setBackgroundResource(R.drawable.rectangle)
+            btnUnsolved.setBackgroundResource(R.drawable.rectangle_bright_blue)
+            btnSolved.setBackgroundResource(R.drawable.rectangle)
+
             supportFragmentManager.beginTransaction()
                 .replace(R.id.fragmentContainerView, UnsolvedQuizFragment())
                 .commit()
         }
 
         btnSolved.setOnClickListener {
+            btnAll.setBackgroundResource(R.drawable.rectangle)
+            btnUnsolved.setBackgroundResource(R.drawable.rectangle)
+            btnSolved.setBackgroundResource(R.drawable.rectangle_bright_blue)
+
             supportFragmentManager.beginTransaction()
                 .replace(R.id.fragmentContainerView, SolvedQuizFragment())
                 .commit()
@@ -108,7 +120,7 @@ class QuizActivity : AppCompatActivity(), QuizAdapter.OnItemClickListener {
         startActivity(intent)
     }
 
-    
+
 
     private fun showNoteListDialog(editText: TextView) {
         val dialogView = LayoutInflater.from(this).inflate(R.layout.quiz_note_list, null)

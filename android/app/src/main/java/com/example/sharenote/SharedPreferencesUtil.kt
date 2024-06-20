@@ -21,6 +21,7 @@ object SharedPreferencesUtil {
 
     // 유저 정보 저장
     private const val PREF_NAME_USER = "MyPrefs_user"
+    private const val KEY_LOGGED_IN = "loggedIn"
     private const val KEY_USER_NAME = "user_name"
     private const val KEY_USER_ID = "user_id"
     private const val KEY_USER_EMAIL = "user_email"
@@ -124,6 +125,17 @@ object SharedPreferencesUtil {
     fun getRecentPageId(context: Context): String? {
         val sharedPrefs = context.getSharedPreferences(PREF_NAME1, Context.MODE_PRIVATE)
         return sharedPrefs.getString(KEY_RECENT_PAGE_ID, null)
+    }
+
+
+    fun saveLoggedInStatus(context: Context, loggedIn: Boolean) {
+        val sharedPreferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+        sharedPreferences.edit().putBoolean(KEY_LOGGED_IN, loggedIn).apply()
+    }
+
+    fun isLoggedIn(context: Context): Boolean {
+        val sharedPreferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+        return sharedPreferences.getBoolean(KEY_LOGGED_IN, false) // 기본값은 false
     }
 
 
