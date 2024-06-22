@@ -83,7 +83,7 @@ def insertAlpha(img):
     array = img.getdata()
     newImage = []
     for i in array:
-        newImage.append((255, 255, 255, 0) if i[0] == 255 else i)
+        newImage.append((0, 0, 0, 0) if i[0] == 255 else i)
     img.putdata(newImage)
     return img
 
