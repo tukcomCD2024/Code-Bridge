@@ -392,29 +392,32 @@ function Page() {
     }
 
     function handleUserConnection() {
-      const nicknameWithSuffix = `${nickname}_다중 접속`;
-      const isSingleConnected = yConnectedUserList.has(nickname);
-      const isMultiConnected = yConnectedUserList.has(nicknameWithSuffix);
+      // const nicknameWithSuffix = `${nickname}_다중 접속`;
+      // const isSingleConnected = yConnectedUserList.has(nickname);
+      // const isMultiConnected = yConnectedUserList.has(nicknameWithSuffix);
   
-      if (isSingleConnected && isMultiConnected) {
-        const isConfirmed = window.confirm("동시 접속 가능한 횟수를 초과하셨습니다.\n기존 접속을 종료하고 새로 접속하시겠습니까?");
-        if (isConfirmed) {
-          yConnectedUserList.set(nicknameWithSuffix, 'kicked');
-        } else {
-          navigate(`/organization/${organizationId}`);
-          return;
-        }
-      }
+      // if (isSingleConnected && isMultiConnected) {
+      //   const isConfirmed = window.confirm("동시 접속 가능한 횟수를 초과하셨습니다.\n기존 접속을 종료하고 새로 접속하시겠습니까?");
+      //   if (isConfirmed) {
+      //     yConnectedUserList.set(nicknameWithSuffix, 'kicked');
+      //   } else {
+      //     navigate(`/organization/${organizationId}`);
+      //     return;
+      //   }
+      // }
   
-      let userColor = yConnectedUserList.get(nickname) || yConnectedUserList.get(nicknameWithSuffix) || getRandomColor();
+      // let userColor = yConnectedUserList.get(nickname) || yConnectedUserList.get(nicknameWithSuffix) || getRandomColor();
       
-      if (!isSingleConnected) {
-        yConnectedUserList.set(nickname, userColor);
-        ydocProviderRef.current.awareness.setLocalStateField('user', { name: nickname, color: userColor });
-      } else {
-        yConnectedUserList.set(nicknameWithSuffix, userColor);
-        ydocProviderRef.current.awareness.setLocalStateField('user', { name: nicknameWithSuffix, color: userColor });
-      }
+      // if (!isSingleConnected) {
+      //   yConnectedUserList.set(nickname, userColor);
+      //   ydocProviderRef.current.awareness.setLocalStateField('user', { name: nickname, color: userColor });
+      // } else {
+      //   yConnectedUserList.set(nicknameWithSuffix, userColor);
+      //   ydocProviderRef.current.awareness.setLocalStateField('user', { name: nicknameWithSuffix, color: userColor });
+      // }
+      let userColor = yConnectedUserList.get(nickname) || yConnectedUserList.get(nicknameWithSuffix) || getRandomColor();
+      yConnectedUserList.set(nickname, userColor);
+      ydocProviderRef.current.awareness.setLocalStateField('user', { name: nickname, color: userColor });
       updateUsersAndColors();
     }
 
