@@ -34,11 +34,24 @@ jobs:
         run: |
           cd ./backend/shareNote/src/main/resources
           
+          # 'firebase' 디렉토리를 생성
+          mkdir -p firebase
+          
           # application-email.yml 파일을 생성합니다.
           touch ./application-email.yml
           
           # GitHub-Actions 에서 설정한 값을 application-email.yml 파일에 작성합니다.
           echo "${{ secrets.APPLICATION_EMAIL }}" >> ./application-email.yml
+          
+          # 'firebase' 디렉토리로 이동
+          cd firebase
+          
+          # 'firebase_service_key.json' 파일을 작성
+          touch ./firebase_service_key.json
+          
+          # GitHub-Actions 에서 설정한 값을 'firebase_service_key.json' 파일에 작성합니다
+          echo "${{ secrets.APPLICATION_FIREBASE_KEY }}" >> ./firebase_service_key.json
+
         shell: bash
 
       # gradle을 통해 소스를 빌드
