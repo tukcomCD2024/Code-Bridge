@@ -405,19 +405,15 @@ function Page() {
       //     return;
       //   }
       // }
-  
-      // let userColor = yConnectedUserList.get(nickname) || yConnectedUserList.get(nicknameWithSuffix) || getRandomColor();
+      const userColor = yConnectedUserList.has(nickname) ? yConnectedUserList.get(nickname) : getRandomColor();
       
       // if (!isSingleConnected) {
-      //   yConnectedUserList.set(nickname, userColor);
-      //   ydocProviderRef.current.awareness.setLocalStateField('user', { name: nickname, color: userColor });
+        yConnectedUserList.set(nickname, userColor);
+        ydocProviderRef.current.awareness.setLocalStateField('user', { name: nickname, color: userColor });
       // } else {
       //   yConnectedUserList.set(nicknameWithSuffix, userColor);
       //   ydocProviderRef.current.awareness.setLocalStateField('user', { name: nicknameWithSuffix, color: userColor });
       // }
-      let userColor = yConnectedUserList.get(nickname) || yConnectedUserList.get(nicknameWithSuffix) || getRandomColor();
-      yConnectedUserList.set(nickname, userColor);
-      ydocProviderRef.current.awareness.setLocalStateField('user', { name: nickname, color: userColor });
       updateUsersAndColors();
     }
 
