@@ -347,7 +347,7 @@ img.ProseMirror-separator {
   background-image: url('/src/image/note_paper\(8\).svg');
   background-size: 83% 260%;
   background-repeat: no-repeat; 
-  background-position: 16vw 0px; 
+  background-position: 16vw -7vw; 
   background-attachment: fixed;
   border-radius: 4px;
   padding: 5px 0;
