@@ -7,25 +7,35 @@ const ModalImageComponent = ({
   modalClose
 }) => {
   const modalRef = useRef();
-  const [isoverflow, setisoverflow] = useState(false);
+  const [isOverflow, setisOverflow] = useState(false);
+  const [imageSize, setImageSize] = useState(40);
+
+  const handleImageSizeChange = (increment) => {
+    setImageSize((prevSize) => Math.max(10, Math.min(100, prevSize + increment)));
+  };
+
+  const handleDropdownChange = (event) => {
+    const selectedSize = parseInt(event.target.value, 10);
+    setImageSize(selectedSize);
+  };
 
   useEffect(() => {
-    const handleResize = () => {
+    const handleResizeCheck = () => {
       if (modalRef.current) {
-        setisoverflow(modalRef.current.scrollHeight > modalRef.current.clientHeight);
+        setisOverflow(modalRef.current.scrollHeight > modalRef.current.clientHeight);
       }
     };
 
-    handleResize(); // 초기에 한번 호출
-    window.addEventListener("resize", handleResize);
+    handleResizeCheck(); // 초기에 한번 호출
+    window.addEventListener("resize", handleResizeCheck);
     return () => {
-      window.removeEventListener("resize", handleResize);
+      window.removeEventListener("resize", handleResizeCheck);
     };
   }, []);
 
   useEffect(() => {
     if (modalRef.current) {
-      setisoverflow(modalRef.current.scrollHeight > modalRef.current.clientHeight ? "true" : "false");
+      setisOverflow(modalRef.current.scrollHeight > modalRef.current.clientHeight ? "true" : "false");
     }
 
     if (modalOpen) {
@@ -40,22 +50,36 @@ const ModalImageComponent = ({
   }, [modalOpen]);
 
   if (!modalOpen) return null;
+
   return (
     <ModalContainer ref={modalRef}>
-      <CloseButton isoverflow={isoverflow} onClick={modalClose}>&times;</CloseButton>
-      <ModalContent>
+      <CloseButton isOverflow={isOverflow} onClick={modalClose}>&times;</CloseButton>
+      <ModalContent imageSize={imageSize}>
         <ModalImage src={src} alt="modal" />
       </ModalContent>
+      <ButtonContainer>
+        <SizeButton onClick={() => handleImageSizeChange(10)}>+</SizeButton>
+        <SizeButton onClick={() => handleImageSizeChange(-10)}>-</SizeButton>
+      </ButtonContainer>
+      <DropdownContainer>
+        <SizeDropdown value={imageSize} onChange={handleDropdownChange}>
+          {[10, 20, 30, 40, 50, 60, 70, 80, 90, 100].map(size => (
+            <option key={size} value={size}>
+              {size}%
+            </option>
+          ))}
+        </SizeDropdown>
+      </DropdownContainer>
     </ModalContainer>
   );
 };
+
 
 export default ModalImageComponent;
 
 const ModalContainer = styled.div`
   display: flex;
   justify-content: center;
-  // align-items: flex-start;
   align-items: center;
   z-index: 10;
   width: 100%;
@@ -64,12 +88,12 @@ const ModalContainer = styled.div`
   top: 0;
   left: 0;
   background: rgba(0, 0, 0, 0.7);
-  overflow: auto; /* 스크롤 가능하도록 설정 */
+  overflow: auto;
 `;
 
 const ModalContent = styled.div`
   background-color: #fff;
-  max-width: 90%;
+  max-width: ${({ imageSize }) => imageSize}%;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -86,11 +110,50 @@ const CloseButton = styled.span`
   cursor: pointer;
   position: fixed;
   top: 10px;
-  right: ${({ isoverflow }) => (isoverflow ? "30px" : "10px")};
+  right: ${({ isOverflow }) => (isOverflow ? "30px" : "10px")};
   z-index: 20; 
 `;
 
 const ModalImage = styled.img`
   max-width: 100%;
-  height: auto; /* 이미지 높이를 자동으로 조정하여 비율 유지 */
+  height: auto;
+`;
+
+const ButtonContainer = styled.div`
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  display: flex;
+  flex-direction: row;
+`;
+
+const SizeButton = styled.button`
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 0px 10px;
+  margin: 5px;
+  cursor: pointer;
+  font-size: 29px;
+  font-weight: bold;
+
+  &:hover {
+    background-color: #0056b3;
+  }
+`;
+
+const DropdownContainer = styled.div`
+  position: fixed;
+  top: 70px; /* Adjust as needed */
+  left: 15px;
+`;
+
+const SizeDropdown = styled.select`
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  padding: 4px;
+  font-size: 16px;
+  cursor: pointer;
 `;
