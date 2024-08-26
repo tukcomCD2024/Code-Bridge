@@ -195,6 +195,9 @@ class PaintActivity : AppCompatActivity() {
                     val resultIntent = Intent()
                     val intent = Intent(this, PageActivity::class.java)
 
+                    // 기존의 PageActivity가 재사용됨
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+
                     // 파일을 서버로 업로드하는 로직 (Retrofit 등 사용)
                     lifecycleScope.launch {
                         try {

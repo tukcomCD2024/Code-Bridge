@@ -23,7 +23,6 @@ class PageActivity : AppCompatActivity() {
     private lateinit var floating: FloatingActionButton
     private lateinit var fabDraw: FloatingActionButton
     private var isFabOpen = false
-    private var isImageUploaded = false
     private var selectedImageUri: Uri? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -76,11 +75,6 @@ class PageActivity : AppCompatActivity() {
                 """.trimIndent()
                 webView.evaluateJavascript(script, null)
 
-                // 이미지를 업로드하는 함수 호출
-                if (!isImageUploaded) {
-                    uploadImageToEditor(imageUrl)
-                    isImageUploaded = true // 이미지가 업로드되었음을 표시
-                }
             }
         }
 
@@ -104,8 +98,7 @@ class PageActivity : AppCompatActivity() {
         fabDraw.setOnClickListener {
             val intent = Intent(this, PaintActivity::class.java)
             startActivity(intent)
-            finish()
-            yjsDisconnect()
+
         }
     }
 
@@ -127,6 +120,16 @@ class PageActivity : AppCompatActivity() {
 
     companion object {
         private const val REQUEST_IMAGE_SELECTION = 100
+    }
+
+    // 새롭게 전달된 intent를 받아오는 함수
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+        intent?.let {
+            // PaintActivity에서 전달된 새로운 이미지 URL을 가져옴
+            val imageUrl = it.getStringExtra(PaintActivity.IMAGE_URL)
+            uploadImageToEditor(imageUrl)
+        }
     }
 
     override fun onBackPressed() {
