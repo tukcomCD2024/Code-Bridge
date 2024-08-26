@@ -72,6 +72,8 @@ class PaintActivity : AppCompatActivity() {
     private lateinit var pdfButton: FloatingActionButton
     private lateinit var plusButton: FloatingActionButton
 
+    private var isUploading = false
+
     private val filePickerLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
             val uri = result.data?.data // 선택된 PDF 파일의 URI
@@ -147,6 +149,9 @@ class PaintActivity : AppCompatActivity() {
                 .setTitle("이미지 업로드") // 다이얼로그 제목
                 .setMessage("이미지 업로드 하시겠습니까?") // 다이얼로그 메시지
                 .setNegativeButton("네") { dialog, which ->
+                    if (isUploading) return@setNegativeButton // 이미 업로드 중이면 리턴
+
+                    isUploading = true // 업로드 상태로 설정
                     // "Yes" 버튼 클릭 시, 원래 backButton의 로직 실행
                     imageViewFixButton.performClick()
 
@@ -183,8 +188,6 @@ class PaintActivity : AppCompatActivity() {
                         finalCanvas.drawBitmap(bitmap, imageView.x, imageView.y, null)
                     }
 
-
-
                     val fileName = UUID.randomUUID().toString() + ".png"
                     // 비트맵을 멀티파트 바디 파트로 변환
                     val imagePart = convertBitmapToMultipartBodyPart(finalBitmap, "multipartFile", fileName)
@@ -200,35 +203,29 @@ class PaintActivity : AppCompatActivity() {
                             val response = apiService.uploadImage(imagePart, accessToken)
 
                             withContext(Dispatchers.Main) {
+                                isUploading = false // 업로드 완료 후 상태 초기화
                                 if (response.isSuccessful) {
                                     val imageUrl = response.body()!!.image_url
                                     intent.putExtra(IMAGE_URL, imageUrl)
                                     startActivity(intent)
                                     finish()
-                                    /*resultIntent.putExtra("imageUrl", imageUrl)
-                                    setResult(Activity.RESULT_OK, resultIntent)
-                                    Log.d("PaintActivity", "{$imageUrl}")
-                                    super.finish()*/
                                 } else {
                                     Log.e("PaintActivity", "Error: ${response.errorBody()}")
                                     setResult(Activity.RESULT_OK, resultIntent)
                                     super.finish()
                                 }
                             }
-
                         } catch (e: Exception) {
+                            isUploading = false // 업로드 실패 후 상태 초기화
                             Log.e("PaintActivity", "Exception: ${e.message}")
                         }
                     }
-                    //finish() // 예를 들어 액티비티를 종료
                 }
                 .setPositiveButton("아니요") { dialog, which ->
                     // "No" 버튼 클릭 시, 아무 일도 하지 않음
                     dialog.dismiss()
                 }
                 .show() // 다이얼로그 표시
-            // 원래 이거 밑의 한줄코드였음
-            //onBackPressed()
         }
 
         btnUndo.setOnClickListener {

@@ -23,6 +23,7 @@ class PageActivity : AppCompatActivity() {
     private lateinit var floating: FloatingActionButton
     private lateinit var fabDraw: FloatingActionButton
     private var isFabOpen = false
+    private var isImageUploaded = false
     private var selectedImageUri: Uri? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -76,7 +77,10 @@ class PageActivity : AppCompatActivity() {
                 webView.evaluateJavascript(script, null)
 
                 // 이미지를 업로드하는 함수 호출
-                uploadImageToEditor(imageUrl)
+                if (!isImageUploaded) {
+                    uploadImageToEditor(imageUrl)
+                    isImageUploaded = true // 이미지가 업로드되었음을 표시
+                }
             }
         }
 
@@ -108,9 +112,13 @@ class PageActivity : AppCompatActivity() {
 
     private fun uploadImageToEditor(imageUrl: String?) {
         if (imageUrl != null) {
+            Log.d("PageActivity", "Image URL: $imageUrl")
             // 이미지 URL을 JavaScript 함수에 전달
             val jsFunction = "uploadImageToEditor('$imageUrl')"
             webView.evaluateJavascript(jsFunction, null)
+            val intent = Intent(this, PageActivity::class.java)
+            finish()
+            startActivity(intent)
         } else {
 
         }
