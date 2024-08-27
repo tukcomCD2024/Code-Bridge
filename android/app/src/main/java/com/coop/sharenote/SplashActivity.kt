@@ -16,19 +16,11 @@ class SplashActivity : AppCompatActivity() {
         supportActionBar?.hide()
 
         val handler = Handler(Looper.getMainLooper())
-        handler.postDelayed({
-            val targetActivity = if (intent.getBooleanExtra("fromNotification", false)) {
-                QuizActivity::class.java
-            } else {
-                if (SharedPreferencesUtil.isLoggedIn(this)) {
-                    MainActivity::class.java
-                } else {
-                    LoginActivity::class.java
-                }
+        handler.postDelayed(Runnable {
+            Intent(this, LoginActivity::class.java).apply {
+                startActivity(this)
+                finish()
             }
-            val nextIntent = Intent(this, targetActivity)
-            startActivity(nextIntent)
-            finish()
-        }, 3000) // 3초 후(3000) 스플래시 화면을 닫습니다
+            }, 3000) // 3초 후(3000) 스플래시 화면을 닫습니다
     }
 }

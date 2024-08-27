@@ -55,11 +55,11 @@ class LoginActivity : AppCompatActivity() {
             login(email, password)
         }
 
-        if (SharedPreferencesUtil.isLoggedIn(this)) {
+        /*if (SharedPreferencesUtil.isLoggedIn(this)) {
             val intent = Intent(this@LoginActivity, MainActivity::class.java)
             startActivity(intent)
             finish()
-        }
+        }*/
 
     }
 
