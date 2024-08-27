@@ -1,7 +1,6 @@
 import React, { useEffect } from "react";
 import styled from "styled-components";
-import veryBigEye from "../../image/veryBigEye.gif";
-import book from "../../image/book2.gif";
+import book from "../../image/book.gif";
 import { useNavigate } from "react-router-dom";
 
 function AuthPage() {
@@ -14,7 +13,6 @@ function AuthPage() {
   return (
     <FlexContainer>
       <ImageWrapper>
-        {/* <BigEyeImage src={veryBigEye} alt="Very Big Eye" /> */}
         <BookImage src={book} alt="Book" />
         <CommentWrapper>
           <p>Let's Share with me!!</p>
