@@ -1,7 +1,6 @@
 import React, { useEffect } from "react";
 import styled from "styled-components";
-import veryBigEye from "../../image/veryBigEye.gif";
-import book1 from "../../image/book1.gif";
+import book from "../../image/book.gif";
 import { useNavigate } from "react-router-dom";
 
 function AuthPage() {
@@ -14,8 +13,10 @@ function AuthPage() {
   return (
     <FlexContainer>
       <ImageWrapper>
-        <BigEyeImage src={veryBigEye} alt="Very Big Eye" />
-        <BookImage src={book1} alt="Book" />
+        <BookImage src={book} alt="Book" />
+        <CommentWrapper>
+          <p>Let's Share with me!!</p>
+        </CommentWrapper>
       </ImageWrapper>
       <AuthBox>
         <ToMain>
@@ -34,7 +35,7 @@ const FlexContainer = styled.div`
   display: flex;
   align-items: stretch;
   height: 100vh;
-  background-color: #f5f5f5;
+  // background-color: #FFFFE0;
 `;
 
 const ImageWrapper = styled.div`
@@ -42,8 +43,16 @@ const ImageWrapper = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: #ddd;
-  position: relative; /* 이를 relative로 설정 */
+  background-color: #FFFFE0;
+  position: relative; 
+`;
+
+const CommentWrapper = styled.div`
+  width: 50%;
+  margin-top: 30%;
+  font-size: 25px;
+  font-weight: 600;
+  color: #FF8C00;
 `;
 
 const AuthBox = styled.div`
@@ -65,7 +74,6 @@ const ToMain = styled.div`
 
 const LoginBtn = styled.button`
   width: 100%;
-
   background-color: #0064ff;
   color: #ffffff;
   border: 1px solid #000000;
@@ -101,10 +109,10 @@ const SignupBtn = styled.button`
 const BigEyeImage = styled.img`
   width: 300px;
   height: auto;
-  position: absolute; /* 이 이미지를 absolute로 설정 */
-  left: 50%; /* 중앙 정렬을 위해 */
-  top: 48%; /* 중앙 정렬을 위해 */
-  transform: translate(-50%, -50%); /* 정확히 중앙에 위치하도록 조정 */
+  position: absolute; 
+  left: 50%; 
+  top: 48%; 
+  transform: translate(-50%, -50%);
 
   @media screen and (max-width: 768px) {
     flex-direction: column;
@@ -114,12 +122,12 @@ const BigEyeImage = styled.img`
 `;
 
 const BookImage = styled.img`
-  width: 600px;
+  width: 53%;
   height: auto;
-  position: absolute; /* 이 이미지도 absolute로 설정 */
-  left: 50%; /* 중앙 정렬을 위해 */
-  top: 40%; /* 중앙 정렬을 위해 */
-  transform: translate(-50%, -50%); /* 정확히 중앙에 위치하도록 조정 */
+  position: absolute;
+  left: 50%; 
+  top: 40%; 
+  transform: translate(-50%, -50%) rotate(20deg);
 
   @media screen and (max-width: 768px) {
     display: none;

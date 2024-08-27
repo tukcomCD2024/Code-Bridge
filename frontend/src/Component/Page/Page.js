@@ -38,7 +38,7 @@ import { isWeb, checkLocalStorage } from "./utils/initMobileWebView"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faLeftLong, faRightLong, faSquarePlus, faTrashCan, faList, faGear } from "@fortawesome/free-solid-svg-icons";
 import { cursorColors } from "../Utils/cursorColor"
-import defaultNoteImage from "../../image/defaultNote2.png";
+import defaultNoteImage from "../../image/defaultNote.png";
 import LoadingScreen from "../Utils/LoadingScreen";
 
 function Page() {

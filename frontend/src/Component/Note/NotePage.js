@@ -4,8 +4,8 @@ import styled, { keyframes, css } from "styled-components";
 import OrganizationInfoModal from "./organizationInfo/organizationInfo";
 import OrganizationContainer from "../Organization/Organization_Web";
 import ImagetoBackend from "../Utils/imageToBackend";
-import noneImage from "../../image/NoneImage2.png";
-import defaultImage from "../../image/defaultNote2.png";
+import noneImage from "../../image/NoneImage.png";
+import defaultImage from "../../image/defaultNote.png";
 import backgroundImage from "../../image/organizationBackgroundImage.png";
 import AddNoteIcon from "../../image/addNote.svg";
 import toastr from "toastr";
@@ -177,7 +177,7 @@ function NotePage() {
                     return {
                       id: note.id,
                       name: note.title,
-                      image: note.noteImageUrl,
+                      image: note.noteImageUrl == "http~" ? defaultImage : note.noteImageUrl,
                       organizationId: id,
                       pageId: pageData[0].pageId,
                     };
