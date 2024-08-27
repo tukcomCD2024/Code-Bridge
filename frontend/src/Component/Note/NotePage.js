@@ -50,6 +50,11 @@ function NoteModal({
   isInvalid,
   handleCreate,
 }) {
+
+  const handleImageError = (e) => {
+    e.target.src = noneImage;
+  };
+
   return (
     <ModalContainer>
       <ModalContent ref={modalRef}>
@@ -72,6 +77,7 @@ function NoteModal({
           src={myimage || noneImage}
           alt="Note-Picture"
           $isDefaultImage={myimage === noneImage}
+          onError={handleImageError}
         />
         <ImagetoBackend onImageUpload={uploadImage} />
         <hr />
@@ -177,7 +183,7 @@ function NotePage() {
                     return {
                       id: note.id,
                       name: note.title,
-                      image: note.noteImageUrl,
+                      image: note.noteImageUrl == "http~" ? noneImage : note.noteImageUrl,
                       organizationId: id,
                       pageId: pageData[0].pageId,
                     };
