@@ -6,7 +6,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrashCan } from "@fortawesome/free-solid-svg-icons";
 import toastr from "toastr";
 import "toastr/build/toastr.css";
-import defaultNoteImage from "../../../../image/defaultNote2.png";
+import defaultNoteImage from "../../../../image/defaultNote.png";
 
 const NoteSettingModal = ({
     modalOpen,
