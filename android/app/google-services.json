@@ -9,7 +9,7 @@
       "client_info": {
         "mobilesdk_app_id": "1:411874898060:android:f17868999e2562fddbcba9",
         "android_client_info": {
-          "package_name": "com.example.sharenote"
+          "package_name": "com.coop.sharenote"
         }
       },
       "oauth_client": [
@@ -17,7 +17,7 @@
           "client_id": "411874898060-69dmapsaifg85vrn10csh2c8n93dr7n3.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "com.example.sharenote",
+            "package_name": "com.coop.sharenote",
             "certificate_hash": "46da62f4b6c62d78edfbbe8f04896bb4c45cb18d"
           }
         },

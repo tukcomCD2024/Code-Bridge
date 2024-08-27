@@ -16,7 +16,6 @@ import android.os.Looper
 import android.os.ParcelFileDescriptor
 import android.os.Parcelable
 import android.util.AttributeSet
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.WindowManager
@@ -29,7 +28,7 @@ import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.sharenote.R
+import com.coop.sharenote.R
 import com.rajat.pdfviewer.util.PdfEngine
 import java.io.File
 import java.io.FileNotFoundException

@@ -9,13 +9,11 @@ import android.view.ViewGroup
 import android.view.animation.AlphaAnimation
 import android.view.animation.LinearInterpolator
 import androidx.recyclerview.widget.RecyclerView
-import com.example.sharenote.databinding.ListItemPdfPageBinding
+import com.coop.sharenote.databinding.ListItemPdfPageBinding
 import com.rajat.pdfviewer.util.CommonUtils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import java.security.PrivateKey
-import kotlin.math.log
 
 internal class PdfViewAdapter(
     private val context: Context,

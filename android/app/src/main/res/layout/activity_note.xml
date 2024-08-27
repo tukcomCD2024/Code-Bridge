@@ -31,7 +31,7 @@
             android:layout_centerVertical="true"
             android:layout_marginRight="15dp">
 
-            <com.example.sharenote.BadgeView
+            <com.coop.sharenote.BadgeView
                 android:id="@+id/badgeView"
                 android:layout_width="50dp"
                 android:layout_height="50dp"
