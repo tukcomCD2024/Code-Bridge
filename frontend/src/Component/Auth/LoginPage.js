@@ -21,11 +21,40 @@ const LoginPage = () => {
     }
   };
 
+  const fetchEmailInvitationToken = async (userId, token) => {
+    try {
+      const response = await fetch("/api/user/organization/invitation/accept", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ userId, token }),
+      });
+
+      const contentType = response.headers.get('content-type');
+
+      if (response.ok) {
+        if (contentType && contentType.includes('text/plain')) {
+          const responseMessage = await response.text();
+          console.log(responseMessage);
+        }
+      } else {
+        const errorMessage = await response.text();
+        toastr.error(errorMessage);
+      }
+    } catch (error) {
+      console.error("Error: ", error);
+    } finally {
+      localStorage.removeItem("token");
+    }
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (password === "" || email === "") {
-      alert("이메일(ID)과 비밀번호를 모두 입력해주세요.");
+      toastr.remove();
+      toastr.error("<strong>로그인 실패!</strong><br/>모든 칸을 입력하세요.");
       return;
     }
   
@@ -54,17 +83,23 @@ const LoginPage = () => {
           localStorage.setItem("access", access); // accessToken 저장
           localStorage.setItem("refresh", refresh); // refreshToken 저장
           if (token != undefined){
-            localStorage.removeItem('token');
+            fetchEmailInvitationToken(userId, token);
+            toastr.remove();
             toastr.success("<strong>초대 수락 완료!</strong> <br/>확인 불가 시, 새로고침하세요.");
           }
           navigate("/organization");
         }
       } else {
         // 에러 응답 처리
-        if (contentType && contentType.includes('text/plain')) {
+        if (response.status === 401) {
+          toastr.remove();
+          toastr.error("<strong>로그인 실패!</strong><br/>존재하지 않은 계정입니다.");
+        } else if (contentType && contentType.includes('text/plain')) {
           // 응답이 텍스트 형식인 경우
           const errorMessage = await response.text();
           alert(`로그인 실패: ${errorMessage}`);
+        } else {
+          alert("로그인에 실패했습니다. 다시 시도해주세요.");
         }
       }
     } catch (error) {
@@ -152,8 +187,8 @@ const ContentWrapper = styled.div`
   padding: 2rem;
   padding-bottom: 1.2rem;
   align-items: center;
-
-  background-color: rgba(138, 43, 226, 0.2);
+  // background-color: rgba(138, 43, 226, 0.2); // 보라색
+  background-color: rgba(255, 250, 209, 1);
   border-radius: 10px;
   margin: 0 auto;
 `;
@@ -215,7 +250,8 @@ const LoginBtn = styled.button`
   height: 40px;
   border: #ffffcc;
   border-radius: 1px;
-  background-color: #ffffcc;
+  // background-color: #ffffcc;
+  background-color: rgba(0, 100, 255, 0.7);
   text-align: center;
   align-items: center;
   line-height: 40px;
@@ -225,7 +261,8 @@ const LoginBtn = styled.button`
   border-radius: 20px;
 
   &:hover {
-    background-color: #f7f7b5;
+    // background-color: #f7f7b5;
+      background-color: rgba(0, 100, 255, 0.9);
   }
 `;
 

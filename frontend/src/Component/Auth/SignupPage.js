@@ -98,7 +98,8 @@ const SignupPage = () => {
       email === "" ||
       nickname === ""
     ) {
-      alert("모든 칸을 빠짐없이 입력해주세요.");
+      toastr.remove();
+      toastr.error("<strong>회원가입 실패!</strong><br/>모든 칸을 입력하세요.");
       return;
     } else if (password !== passwordCheck) {
       alert("비밀번호와 비밀번호 확인이 일치하지 않습니다.");
@@ -126,6 +127,7 @@ const SignupPage = () => {
         body: JSON.stringify({ email, nickname, password }), // 직접적으로 데이터 전송
       });
       if (response.ok) {
+        toastr.remove();
         toastr.success("<strong>회원가입 성공!</strong><br/>로그인을 진행해주세요.");
         navigate("/login");
       } else {
@@ -196,7 +198,7 @@ const SignupPage = () => {
             style={{ cursor: !(isEmailValid && isNicknameValid && password && password === passwordCheck) ? 'not-allowed' : 'pointer'}}
           >회원가입</SignupBtn>
         </form>
-        <HomeBtn onClick={() => navigate("/")}>
+        <HomeBtn onClick={() => { navigate("/"); toastr.remove(); }}>
           <small>홈으로 돌아가기</small>
         </HomeBtn>
       </ContentWrapper>
@@ -219,7 +221,8 @@ const ContentWrapper = styled.div`
   width: 350px;
   padding: 2rem;
   align-items: center;
-  background-color: rgba(138, 43, 226, 0.2);
+  // background-color: rgba(138, 43, 226, 0.2);
+  background-color: rgba(255, 250, 209, 1);
   border-radius: 10px;
   margin: 0 auto;
 `;
@@ -371,7 +374,8 @@ const SignupBtn = styled.button`
   height: 40px;
   border: 0px solid #ffffff;
   border-radius: 1px;
-  background-color: #ffffcc;
+  // background-color: #ffffcc;
+  background-color: rgba(0, 100, 255, 0.7);
   text-align: center;
   align-items: center;
   line-height: 40px;
@@ -382,7 +386,9 @@ const SignupBtn = styled.button`
   border-color: #ffffcc;
 
   &:hover {
-    background-color: #f7f7b5;
+    // background-color: #f7f7b5;
+    background-color: rgba(0, 100, 255, 0.9);
+
   }
 `;
 
