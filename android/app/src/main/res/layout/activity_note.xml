@@ -92,34 +92,20 @@
 
     </LinearLayout>
 
-    <HorizontalScrollView
+
+    <RelativeLayout
+        android:id="@+id/PageLayout"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center">
 
-        <RelativeLayout
-            android:id="@+id/PageLayout"
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerViewPages"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center">
-
-            <ImageButton
-                android:id="@+id/CreatePage"
-                android:layout_width="150dp"
-                android:layout_height="250dp"
-                android:layout_marginTop="40dp"
-                android:layout_marginLeft="15dp"
-                android:layout_marginRight="15dp"
-                android:src="@drawable/ic_addbox"/>
-
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/recyclerViewPages"
-                android:layout_toRightOf="@id/CreatePage"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
-
-        </RelativeLayout>
-    </HorizontalScrollView>
+            android:layout_height="wrap_content" />
+    </RelativeLayout>
 
 
 

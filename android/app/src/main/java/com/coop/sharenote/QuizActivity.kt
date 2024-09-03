@@ -25,6 +25,7 @@ class QuizActivity : AppCompatActivity(), QuizAdapter.OnItemClickListener {
     private lateinit var noteListAdapter: SearchNoteListAdapter
 
     private lateinit var backTextView: TextView
+    private lateinit var noteEditText: TextView
 
     private var noteList: MutableList<Note> = mutableListOf()
 
@@ -35,7 +36,7 @@ class QuizActivity : AppCompatActivity(), QuizAdapter.OnItemClickListener {
         setContentView(R.layout.activity_quiz)
 
 
-        val noteEditText: TextView = findViewById(R.id.noteEditText)
+        noteEditText = findViewById(R.id.noteEditText)
         createQuizButton = findViewById(R.id.createQuiz)
 
         backTextView = findViewById(R.id.backTextView)
@@ -114,7 +115,6 @@ class QuizActivity : AppCompatActivity(), QuizAdapter.OnItemClickListener {
         val intent = Intent(this, QuizDetailActivity::class.java)
         startActivity(intent)
     }
-
 
 
     private fun showNoteListDialog(editText: TextView) {

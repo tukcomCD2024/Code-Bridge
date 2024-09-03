@@ -253,6 +253,8 @@ class HomeFragment : Fragment() {
             override fun onWorkSpaceClick(workSpace: WorkSpace) {
                 saveRecentWorkspaceId(workSpace.id)
                 saveRecentWorkspaceName(workSpace.name)
+                val recentNoteTitle = "노트 종류를 선택하세요"
+                SharedPreferencesUtil.saveRecentNoteTitle(requireContext(), recentNoteTitle)
                 val mainIntent = Intent(requireContext(), MainActivity::class.java)
                 startActivity(mainIntent)
                 requireActivity().finish()

@@ -22,6 +22,7 @@ import android.widget.PopupWindow
 import android.widget.RelativeLayout
 import android.widget.TextView
 import android.widget.Toast
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.coop.sharenote.RetrofitClient.apiService
@@ -33,10 +34,9 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
-class NoteActivity : AppCompatActivity(), PageListAdapter.OnPageClickListener, PageListAdapter.OnSettingClickListener {
+class NoteActivity : AppCompatActivity(), PageListAdapter.OnPageClickListener, PageListAdapter.OnSettingClickListener, PageListAdapter.OnCreatePageClickListener {
 
     private lateinit var backTextView: TextView
-    private lateinit var createPageButton: ImageButton
 
     private lateinit var recyclerView: RecyclerView
     private lateinit var pageListAdapter: PageListAdapter
@@ -60,28 +60,18 @@ class NoteActivity : AppCompatActivity(), PageListAdapter.OnPageClickListener, P
 
 
         backTextView = findViewById(R.id.backTextView)
-        createPageButton = findViewById(R.id.CreatePage)
 
         badgeView = findViewById(R.id.badgeView)
 
         recyclerView = findViewById(R.id.recyclerViewPages)
-        val layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
+        val layoutManager = GridLayoutManager(this, 2)
         recyclerView.layoutManager = layoutManager
-        pageListAdapter = PageListAdapter(pages, this, this)
+        pageListAdapter = PageListAdapter(pages, this, this, this)
         recyclerView.adapter = pageListAdapter
 
         backTextView.setOnClickListener {
             val intent = Intent(this, MainActivity::class.java)
             startActivity(intent)
-        }
-
-        createPageButton.setOnClickListener {
-            val organizationId = getRecentWorkSpaceId() ?: ""
-            val noteId = getRecentNoteId() ?: ""
-            val userId = getUserId() ?: ""
-
-            val pageData = PageData(organizationId, noteId, userId)
-            sendPageDataToMongoDB(pageData)
         }
 
         findViewById<LinearLayout>(R.id.Organization).setOnClickListener {
@@ -112,6 +102,15 @@ class NoteActivity : AppCompatActivity(), PageListAdapter.OnPageClickListener, P
 
     override fun onSettingClick(page: Page, position: Int) {
         showSettingPopup(page, position)
+    }
+
+    override fun onCreatePageClick() {
+        val organizationId = getRecentWorkSpaceId() ?: ""
+        val noteId = getRecentNoteId() ?: ""
+        val userId = getUserId() ?: ""
+
+        val pageData = PageData(organizationId, noteId, userId)
+        sendPageDataToMongoDB(pageData)
     }
 
     private fun loadQuizzes() {
@@ -191,6 +190,8 @@ class NoteActivity : AppCompatActivity(), PageListAdapter.OnPageClickListener, P
         val adapter = QuizAlertAdapter(quizzes, object : QuizAlertAdapter.OnItemClickListener {
             override fun onItemClick(quizId: String) {
                 // 퀴즈 아이템 클릭 시 QuizActivity로 이동하는 로직을 여기에 추가
+                val recentNoteTitle = SharedPreferencesUtil.getRecentNoteTitle(this@NoteActivity) ?: ""
+                SharedPreferencesUtil.saveRecentNoteTitle(this@NoteActivity, recentNoteTitle)
                 val intent = Intent(this@NoteActivity, QuizActivity::class.java)
                 startActivity(intent)
                 finish()
