@@ -173,7 +173,8 @@ class HomeFragment : Fragment() {
 
         // menuBtn을 클릭했을 때 팝업 메뉴를 표시합니다.
         menuBtn.setOnClickListener {
-            showPopupMenu()
+            showPopupAccount()
+        //showPopupMenu()
         }
 
         setting_circle.setOnClickListener {
