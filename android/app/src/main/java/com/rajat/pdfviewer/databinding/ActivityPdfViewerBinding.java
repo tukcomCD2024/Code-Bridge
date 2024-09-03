@@ -14,7 +14,7 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.viewbinding.ViewBinding;
 import androidx.viewbinding.ViewBindings;
 
-import com.example.sharenote.R;
+import com.coop.sharenote.R;
 import com.rajat.pdfviewer.PdfRendererView;
 
 public final class ActivityPdfViewerBinding implements ViewBinding {

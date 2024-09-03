@@ -7,13 +7,13 @@ plugins {
 }
 
 android {
-    namespace = "com.example.sharenote"
+    namespace = "com.coop.sharenote"
     compileSdk = 34
 
 
 
     defaultConfig {
-        applicationId = "com.example.sharenote"
+        applicationId = "com.coop.sharenote"
         minSdk = 24
         targetSdk = 33
         versionCode = 1

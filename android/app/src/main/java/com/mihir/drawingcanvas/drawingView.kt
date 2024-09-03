@@ -5,30 +5,21 @@ import android.content.Context
 import android.graphics.*
 import android.util.AttributeSet
 import android.util.Log
-import android.util.TypedValue
 import android.view.MotionEvent
 import android.view.View
-import android.widget.Toast
 import androidx.annotation.IntRange
-import com.example.sharenote.ImageResponse
-import com.example.sharenote.RetrofitClient.apiService
+import com.coop.sharenote.RetrofitClient.apiService
 
 
-import com.example.sharenote.RetrofitClient.apiService2
-import com.example.sharenote.SharedPreferencesUtil
-import kotlinx.coroutines.CoroutineScope
+import com.coop.sharenote.SharedPreferencesUtil
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-import okhttp3.Call
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 
 import okhttp3.RequestBody.Companion.toRequestBody
 
-import retrofit2.Callback
-import retrofit2.Response
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileOutputStream

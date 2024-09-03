@@ -77,10 +77,11 @@
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/bookText"
-                android:layout_width="match_parent"
+                android:layout_width="400dp"
                 android:layout_height="50dp"
+                android:layout_centerHorizontal="true"
                 android:layout_marginVertical="10dp"
-                android:background="@color/gray">
+                android:background="@drawable/rectangle">
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -146,10 +147,11 @@
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/teamText"
-                android:layout_width="match_parent"
+                android:layout_width="400dp"
                 android:layout_height="50dp"
+                android:layout_centerHorizontal="true"
                 android:layout_below="@+id/list"
-                android:background="@color/gray">
+                android:background="@drawable/rectangle">
 
                 <TextView
                     android:layout_width="wrap_content"

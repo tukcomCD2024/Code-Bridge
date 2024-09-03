@@ -11,7 +11,7 @@
 
         <TextView
             android:id="@+id/quizTitleTextView"
-            android:layout_width="wrap_content"
+            android:layout_width="200dp"
             android:layout_height="wrap_content"
             android:text="Quiz Title"
             android:textSize="18sp"
@@ -32,11 +32,13 @@
 
         <TextView
             android:id="@+id/nicknameTextView"
-            android:layout_width="wrap_content"
+            android:layout_width="70dp"
             android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"
             android:layout_centerInParent="true"
-            android:text="Nickname" />
+            android:text="Nickname"
+            android:singleLine="true"
+            android:maxLines="1"/>
 
     </RelativeLayout>
 </LinearLayout>
