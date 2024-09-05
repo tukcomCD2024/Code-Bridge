@@ -37,10 +37,14 @@ const LoginPage = () => {
         if (contentType && contentType.includes('text/plain')) {
           const responseMessage = await response.text();
           console.log(responseMessage);
+          toastr.remove();
+          toastr.success("<strong>초대 수락 완료!</strong> <br/>확인 불가 시, 새로고침하세요.");
         }
       } else {
         const errorMessage = await response.text();
-        toastr.error(errorMessage);
+        console.log(errorMessage);
+        toastr.remove();
+        toastr.error("<strong>초대 수락 실패!</strong> <br/>초대장 버튼을 다시 누르세요.");
       }
     } catch (error) {
       console.error("Error: ", error);
@@ -84,8 +88,6 @@ const LoginPage = () => {
           localStorage.setItem("refresh", refresh); // refreshToken 저장
           if (token != undefined){
             fetchEmailInvitationToken(userId, token);
-            toastr.remove();
-            toastr.success("<strong>초대 수락 완료!</strong> <br/>확인 불가 시, 새로고침하세요.");
           }
           navigate("/organization");
         }
