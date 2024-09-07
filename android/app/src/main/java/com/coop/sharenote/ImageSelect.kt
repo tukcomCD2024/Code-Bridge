@@ -3,13 +3,19 @@ package com.coop.sharenote
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.Color
+import android.net.Uri
 import android.os.Bundle
 import android.widget.Button
 import android.widget.ImageView
 
 import androidx.appcompat.app.AppCompatActivity
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.bitmap_recycle.BitmapPool
+import com.bumptech.glide.load.resource.bitmap.BitmapTransformation
 import com.bumptech.glide.request.RequestOptions
+import java.security.MessageDigest
 
 
 class ImageSelect : AppCompatActivity() {
@@ -74,6 +80,7 @@ class ImageSelect : AppCompatActivity() {
             Glide.with(this)
                 .load(url)
                 .apply(RequestOptions().fitCenter())
+                .transform(TransparentBackgroundTransformation())
                 .into(imageView)
         }
     }
@@ -109,5 +116,31 @@ class ImageSelect : AppCompatActivity() {
         return imageViews.find { it.isSelected }?.let {
             it.getTag() as String
         }
+    }
+}
+// 글라이드 쓸 때 투명하게 처리해 주는 형님
+class TransparentBackgroundTransformation : BitmapTransformation() {
+    override fun updateDiskCacheKey(messageDigest: MessageDigest) {
+        messageDigest.update("transparent_background".toByteArray())
+    }
+
+    override fun transform(
+        pool: BitmapPool,
+        toTransform: Bitmap,
+        outWidth: Int,
+        outHeight: Int
+    ): Bitmap {
+        val bitmap = toTransform.copy(Bitmap.Config.ARGB_8888, true)
+
+        for (x in 0 until bitmap.width) {
+            for (y in 0 until bitmap.height) {
+                val pixel = bitmap.getPixel(x, y)
+                if (pixel == Color.WHITE) {
+                    bitmap.setPixel(x, y, Color.TRANSPARENT)
+                }
+            }
+        }
+
+        return bitmap
     }
 }
