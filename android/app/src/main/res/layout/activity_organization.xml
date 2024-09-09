@@ -186,7 +186,7 @@
     </RelativeLayout>
 
 
-    <Button
+    <android.widget.Button
         android:id="@+id/continueButton"
         android:layout_width="370dp"
         android:layout_height="wrap_content"
