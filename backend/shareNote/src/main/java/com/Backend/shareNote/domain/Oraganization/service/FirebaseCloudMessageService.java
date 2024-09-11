@@ -12,7 +12,10 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
 
+import java.io.ByteArrayInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 @Service
@@ -51,9 +54,14 @@ public class FirebaseCloudMessageService {
         return objectMapper.writeValueAsString(fcmMessage);
     }
     private String getAccessToken() throws IOException {
-        String firebaseConfigPath = "firebase/firebase_service_key.json";
+        // 환경 변수에서 FIREBASE_SERVICE_KEY 값을 가져옵니다.
+        String firebaseServiceKey = System.getenv("FIREBASE_SERVICE_KEY");
+        if (firebaseServiceKey == null) {
+            throw new FileNotFoundException("Firebase 서비스 키가 환경 변수에 설정되지 않았습니다.");
+        }
+
         GoogleCredentials googleCredentials = GoogleCredentials
-                .fromStream(new ClassPathResource(firebaseConfigPath).getInputStream())
+                .fromStream(new ByteArrayInputStream(firebaseServiceKey.getBytes(StandardCharsets.UTF_8)))
                 .createScoped(List.of("https://www.googleapis.com/auth/cloud-platform"));
 
         googleCredentials.refreshIfExpired();
