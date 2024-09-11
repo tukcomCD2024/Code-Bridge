@@ -50,7 +50,8 @@ jobs:
           touch ./firebase_service_key.json
           
           # GitHub-Actions 에서 설정한 JSON 값을 'firebase_service_key.json' 파일에 안전하게 작성
-          echo "${{ secrets.APPLICATION_FIREBASE_KEY }}" | jq . > ./firebase_service_key.json
+          printf '%s' "${{ secrets.APPLICATION_FIREBASE_KEY }}" > ./firebase_service_key.json
+
 
         shell: bash
 
