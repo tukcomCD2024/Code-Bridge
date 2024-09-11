@@ -26,6 +26,8 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.graphics.drawable.toBitmap
 import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.bitmap_recycle.BitmapPool
+import com.bumptech.glide.load.resource.bitmap.BitmapTransformation
 import com.coop.sharenote.RetrofitClient.apiService
 import com.coop.sharenote.RetrofitClient.apiService2
 import com.github.dhaval2404.colorpicker.ColorPickerDialog
@@ -43,6 +45,8 @@ import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import java.io.ByteArrayOutputStream
 import java.io.File
+import java.io.FileOutputStream
+import java.security.MessageDigest
 import java.util.UUID
 
 
@@ -535,11 +539,38 @@ class PaintActivity : AppCompatActivity() {
                 // Glide를 사용하여 이미지 로드
                 Glide.with(this)
                     .load(selectedUrl)
+                    .transform(com.coop.sharenote.TransparentBackgroundTransformation())
                     .into(imageView)
             }
         }
+    }
 
+    class TransparentBackgroundTransformation : BitmapTransformation() {
 
+        override fun updateDiskCacheKey(messageDigest: MessageDigest) {
+            messageDigest.update("transparent_background".toByteArray())
+        }
+
+        override fun transform(
+            pool: BitmapPool,
+            toTransform: Bitmap,
+            outWidth: Int,
+            outHeight: Int
+        ): Bitmap {
+            val bitmap = toTransform.copy(Bitmap.Config.ARGB_8888, true)
+
+            for (x in 0 until bitmap.width) {
+                for (y in 0 until bitmap.height) {
+                    val pixel = bitmap.getPixel(x, y)
+                    // 흰색을 투명하게 바꿈
+                    if (pixel == Color.WHITE) {
+                        bitmap.setPixel(x, y, Color.TRANSPARENT)
+                    }
+                }
+            }
+
+            return bitmap
+        }
     }
 
 

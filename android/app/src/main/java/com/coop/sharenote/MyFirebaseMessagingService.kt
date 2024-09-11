@@ -6,6 +6,7 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
@@ -16,11 +17,14 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         super.onMessageReceived(remoteMessage)
 
         // 메시지 데이터 추출
-        val title = remoteMessage.notification?.title
-        val body = remoteMessage.notification?.body
+        val title = remoteMessage.notification?.title ?: "알림"
+        val body = remoteMessage.notification?.body ?: "알림이 도착했습니다."
 
-        // 알림 표시
+        // 알림 표시, body가 null인데(백엔드에서 그렇게 줌) 이러면 알림이 안생길 가능성이 높대
         showNotification(title, body)
+
+        Log.d("FCM", "Message received: $title")
+        Log.d("FCM", "Message received: $body")
     }
 
     private fun showNotification(title: String?, body: String?) {
@@ -28,7 +32,8 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
 
         // 채널 생성 (Android O 이상 필요)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel("default", "Default Channel", NotificationManager.IMPORTANCE_DEFAULT)
+            //default보다 High로 설정 시도
+            val channel = NotificationChannel("default", "Default Channel", NotificationManager.IMPORTANCE_HIGH)
             notificationManager.createNotificationChannel(channel)
         }
 
