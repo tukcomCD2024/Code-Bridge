@@ -28,8 +28,8 @@ import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.bitmap_recycle.BitmapPool
 import com.bumptech.glide.load.resource.bitmap.BitmapTransformation
-import com.example.sharenote.RetrofitClient.apiService
-import com.example.sharenote.RetrofitClient.apiService2
+import com.coop.sharenote.RetrofitClient.apiService
+import com.coop.sharenote.RetrofitClient.apiService2
 import com.github.dhaval2404.colorpicker.ColorPickerDialog
 import com.github.dhaval2404.colorpicker.model.ColorShape
 import com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -539,7 +539,7 @@ class PaintActivity : AppCompatActivity() {
                 // Glide를 사용하여 이미지 로드
                 Glide.with(this)
                     .load(selectedUrl)
-                    .transform(com.example.sharenote.TransparentBackgroundTransformation())
+                    .transform(com.coop.sharenote.TransparentBackgroundTransformation())
                     .into(imageView)
             }
         }

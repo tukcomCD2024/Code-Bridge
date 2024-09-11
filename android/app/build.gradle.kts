@@ -102,6 +102,7 @@ dependencies {
     //implementation ("ru.github.igla:ferriswheel:1.2")
 
     implementation("com.squareup.okhttp3:logging-interceptor:4.9.3")
+    implementation("io.github.ParkSangGwon:tedpermission-normal:3.4.2")
 
 
 }
