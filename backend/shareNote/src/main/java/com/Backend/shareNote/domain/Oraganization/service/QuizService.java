@@ -82,7 +82,9 @@ public class QuizService {
             //알림 보내기
             for(String fcm : fcmList){
                 log.info("fcm: " + fcm);
-                firebaseCloudMessageService.sendMessageTo(fcm, "새로운 퀴즈가 등록되었습니다.", quizCreateDTO.getQuizTitle());
+                //아 의사소통 부재로 이 필드는 null이라서 body값이 null이라 안드로이드에서 알림을 안날린 듯
+                //고쳐도 안되네 그래도 일단 keep
+                firebaseCloudMessageService.sendMessageTo(fcm, "새로운 퀴즈가 등록되었습니다.", quizCreateDTO.getProblem());
             }
 
 

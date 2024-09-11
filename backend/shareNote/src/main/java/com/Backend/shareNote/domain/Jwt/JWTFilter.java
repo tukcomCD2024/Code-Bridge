@@ -27,7 +27,7 @@ public class JWTFilter extends OncePerRequestFilter {
 
     private final List<String> permitAllUrls = List.of("/api/user/login", "/api/user/signUp", "/", "/api/user/reissue",
             "/api/user/cookieToJwt","/api/user/uniqueEmail/.*","/api/user/uniqueNickname/.*","/swagger-ui.html"
-            ,"/api/user/organization/invitation/accept", "/api/image");
+            ,"/api/user/organization/invitation/accept", "/api/image", "/api/organization/invitation/approve");
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String requestURI = request.getRequestURI();
