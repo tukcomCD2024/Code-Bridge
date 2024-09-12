@@ -51,7 +51,7 @@ public class FirebaseCloudMessageService {
     }
     private String getAccessToken() throws IOException {
         // GitHub Actions에서 생성된 firebase_service_key.json 파일의 경로
-        String firebaseConfigPath = "./firebase_service_key.json";  // 프로젝트 루트 경로에서 파일을 찾음
+        String firebaseConfigPath = "/home/runner/work/Code-Bridge/Code-Bridge/firebase_service_key.json";
 
         // 파일을 읽어 GoogleCredentials 생성
         GoogleCredentials googleCredentials = GoogleCredentials
