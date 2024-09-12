@@ -33,7 +33,6 @@ import com.coop.sharenote.R
 import com.coop.sharenote.RetrofitClient
 import com.coop.sharenote.SharedPreferencesUtil
 import com.coop.sharenote.WorkSpace
-import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import kotlinx.coroutines.Dispatchers
@@ -55,6 +54,9 @@ class HomeFragment : Fragment() {
     private lateinit var emailTextView: TextView
     private lateinit var menuBtn: ImageButton
     private lateinit var profileForm: RelativeLayout
+    private lateinit var mainHead: RelativeLayout
+    private lateinit var quiz: RelativeLayout
+    private lateinit var contribution: RelativeLayout
 
     private lateinit var listLayout: RelativeLayout
     private lateinit var listLayout_1: ImageView
@@ -65,10 +67,7 @@ class HomeFragment : Fragment() {
     private lateinit var popupView: View // 팝업 뷰
     private lateinit var setting_circle: ImageView
 
-    private lateinit var floating: FloatingActionButton
-    private lateinit var fabQuiz: FloatingActionButton
-    private lateinit var fabCont: FloatingActionButton
-    private var isFabOpen = false
+
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -78,7 +77,7 @@ class HomeFragment : Fragment() {
         val view = inflater.inflate(R.layout.fragment_home, container, false)
         auth = FirebaseAuth.getInstance()
         recyclerView = view.findViewById(R.id.recyclerViewNotes)
-        val layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
+        val layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
         recyclerView.layoutManager = layoutManager
 
         // noteListAdapter를 초기화합니다.
@@ -115,18 +114,17 @@ class HomeFragment : Fragment() {
 
         menuBtn = view.findViewById(R.id.menuBtn)
         profileForm = view.findViewById(R.id.profileForm)
+        mainHead = view.findViewById(R.id.mainHead)
+
+        quiz = view.findViewById(R.id.quiz)
+        contribution = view.findViewById(R.id.contribution)
 
         listLayout = view.findViewById(R.id.listLayout)
         listLayout_1 = view.findViewById(R.id.listLayout_1)
 
 
-        floating = view.findViewById(R.id.floating)
-        fabQuiz = view.findViewById(R.id.fabQuiz)
-        fabCont = view.findViewById(R.id.fabCont)
 
-        floating.setOnClickListener {
-            toggleFab()
-        }
+
 
 
         // account_layout을 팝업으로 사용하기 위해 팝업 뷰를 초기화
@@ -154,19 +152,20 @@ class HomeFragment : Fragment() {
         }
 
 
-        fabQuiz.setOnClickListener {
+        quiz.setOnClickListener{
             val intent = Intent(requireContext(), QuizActivity::class.java)
             startActivity(intent)
         }
 
-        fabCont.setOnClickListener {
+        contribution.setOnClickListener {
             val intent = Intent(requireContext(), Contribution::class.java)
             startActivity(intent)
         }
 
 
 
-        profileForm.setOnClickListener {
+
+        mainHead.setOnClickListener {
             // account_layout을 화면 아래에 절반 크기로 보여줌
             showPopupAccount()
         }
@@ -181,7 +180,6 @@ class HomeFragment : Fragment() {
 
         }
 
-
         listLayout_1.setOnClickListener {
             // recyclerViewNotes의 가시성을 토글
             if (recyclerView.visibility == View.VISIBLE) {
@@ -190,6 +188,8 @@ class HomeFragment : Fragment() {
                 animateView(true)
             }
         }
+
+
 
         // Create Note 버튼 클릭 시 NoteActivity로 이동
         val buttonCreateNote = view.findViewById<ImageView>(R.id.listLayout_4)
@@ -282,7 +282,8 @@ class HomeFragment : Fragment() {
 
         val settingCircle = popupView.findViewById<ImageView>(R.id.setting_circle)
         settingCircle.setOnClickListener {
-            showAccountMenuPopup(settingCircle) // setting_circle을 전달하여 팝업 창이 해당 뷰의 아래쪽에 표시
+            startActivity(Intent(requireContext(), OrganizationActivity::class.java))
+            //showAccountMenuPopup(settingCircle) // setting_circle을 전달하여 팝업 창이 해당 뷰의 아래쪽에 표시
         }
 
         dialog.show()
@@ -329,11 +330,25 @@ class HomeFragment : Fragment() {
 
 
 
+    private fun animateView(visible: Boolean) {
+        // 애니메이션 생성 및 설정
+        val rotationFrom = if (visible) -90f else 0f
+        val rotationTo = if (visible) 0f else -90f
+        val rotationAnimation =
+            ObjectAnimator.ofFloat(listLayout_1, "rotation", rotationFrom, rotationTo)
+        rotationAnimation.duration = 200 // 애니메이션의 지속 시간을 설정합니다 (밀리초 단위)
+
+        // 애니메이션 시작
+        rotationAnimation.start()
+
+        // recyclerViewNotes의 가시성 변경
+        recyclerView.visibility = if (visible) View.VISIBLE else View.GONE
+    }
 
 
 
 
-    private fun loadWorkSpacesForPopup(adapter: WorkSpaceListAdapter) {
+        private fun loadWorkSpacesForPopup(adapter: WorkSpaceListAdapter) {
         val currentUserEmail = getUserId()
 
         currentUserEmail?.let { email ->
@@ -346,7 +361,7 @@ class HomeFragment : Fragment() {
 
                     // 받아온 organization 데이터를 WorkSpace 객체로 변환하여 어댑터에 추가합니다.
                     val workSpaceList = organizationList.map { organization ->
-                        WorkSpace(organization.name, organization.owner, organization.id)
+                        WorkSpace(organization.name, organization.owner, organization.id, organization.members)
                     }
 
                     // 어댑터에 워크스페이스 데이터 설정
@@ -401,19 +416,7 @@ class HomeFragment : Fragment() {
 
 
 
-    private fun animateView(visible: Boolean) {
-        // 애니메이션 생성 및 설정
-        val rotationFrom = if (visible) -90f else 0f
-        val rotationTo = if (visible) 0f else -90f
-        val rotationAnimation = ObjectAnimator.ofFloat(listLayout_1, "rotation", rotationFrom, rotationTo)
-        rotationAnimation.duration = 200 // 애니메이션의 지속 시간을 설정합니다 (밀리초 단위)
 
-        // 애니메이션 시작
-        rotationAnimation.start()
-
-        // recyclerViewNotes의 가시성 변경
-        recyclerView.visibility = if (visible) View.VISIBLE else View.GONE
-    }
 
 
     private fun createNote() {
@@ -607,23 +610,7 @@ class HomeFragment : Fragment() {
         }
     }
 
-    private fun toggleFab() {
-        // 플로팅 액션 버튼 닫기 - 열려있는 플로팅 버튼 집어넣는 애니메이션 세팅
-        if (isFabOpen) {
-            ObjectAnimator.ofFloat(fabQuiz, "translationY", 0f).apply { start() }
-            ObjectAnimator.ofFloat(fabCont, "translationY", 0f).apply { start() }
-            floating.setImageResource(R.drawable.ic_floating_add)
 
-            // 플로팅 액션 버튼 열기 - 닫혀있는 플로팅 버튼 꺼내는 애니메이션 세팅
-        } else {
-            ObjectAnimator.ofFloat(fabQuiz, "translationY", -200f,).apply { start() }
-            ObjectAnimator.ofFloat(fabCont, "translationY", -400f,).apply { start() }
-            floating.setImageResource(R.drawable.ic_close)
-        }
-
-        isFabOpen = !isFabOpen
-
-    }
 
     // 최근 워크스페이스 ID를 저장하고 불러오기
     private fun saveRecentWorkspaceId(workspaceId: String) {
