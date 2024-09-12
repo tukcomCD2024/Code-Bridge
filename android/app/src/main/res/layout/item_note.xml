@@ -1,63 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
+    android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:padding="8dp">
 
     <RelativeLayout
         android:id="@+id/settingLayout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_width="150dp"
+        android:layout_height="150dp"
+        android:background="@drawable/rectangle_link"
         android:padding="10dp">
 
         <ImageView
             android:id="@+id/image1"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
             android:layout_centerVertical="true"
-            android:layout_marginLeft="30dp"
-            android:src="@drawable/baseline_keyboard_arrow_right_24"/>
-
-        <ImageView
-            android:id="@+id/image2"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
-            android:layout_toRightOf="@+id/image1"
-            android:layout_marginLeft="5dp"
-            android:src="@drawable/ic_pencil"/>
-
-        <TextView
-            android:id="@+id/titleTextView"
-            android:layout_width="200dp"
-            android:layout_height="wrap_content"
-            android:layout_toRightOf="@+id/image2"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:layout_margin="8dp"/>
-
-        <ImageView
-            android:id="@+id/image3"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
-            android:layout_toLeftOf="@id/image4"
-            android:layout_marginRight="5dp"
-            android:src="@drawable/ic_setting_note"/>
-
-        <ImageView
-            android:id="@+id/image4"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
-            android:layout_alignParentEnd="true"
-            android:src="@drawable/ic_add_note"/>
-
-
-
+            android:layout_centerHorizontal="true"
+            android:src="@drawable/ic_note"/>
 
     </RelativeLayout>
 
+    <TextView
+        android:id="@+id/titleTextView"
+        android:layout_width="150dp"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:maxLines="1"
+        android:layout_toRightOf="@+id/image2"
+        android:layout_marginTop="5dp"
+        android:textSize="18sp"
+        android:textStyle="bold" />
+
 
 </LinearLayout>
+
+
+

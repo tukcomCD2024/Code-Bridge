@@ -41,9 +41,14 @@ class WorkSpaceListAdapter(
 
     inner class WorkSpaceViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val workSpaceNameTextView: TextView = itemView.findViewById(R.id.workspaceNameTextView)
+        private val workSpaceMember : TextView = itemView.findViewById(R.id.workspaceMember)
 
         fun bind(workSpace: WorkSpace) {
             workSpaceNameTextView.text = workSpace.name
+
+            // 멤버 수를 텍스트로 설정
+            val memberCount = workSpace.members.size
+            workSpaceMember.text = "$memberCount 명의 멤버"
 
             // 아이템 클릭 이벤트 처리
             itemView.setOnClickListener {

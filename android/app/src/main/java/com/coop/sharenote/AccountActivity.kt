@@ -30,9 +30,10 @@ class AccountActivity : AppCompatActivity() {
         recyclerViewWorkSpace.layoutManager = LinearLayoutManager(this)
 
         // 파이어스토어에서 워크스페이스 데이터를 가져와서 어댑터에 설정
-        loadWorkSpaces()
+        //loadWorkSpaces()
     }
 
+    /*
     // 파이어스토어에서 워크스페이스 데이터를 가져와서 어댑터에 설정하는 함수
     private fun loadWorkSpaces() {
         val db = FirebaseFirestore.getInstance()
@@ -54,5 +55,5 @@ class AccountActivity : AppCompatActivity() {
                 // 쿼리 실패 시 에러 처리
                 // 예를 들어, 로그 출력 등
             }
-    }
+    }*/
 }

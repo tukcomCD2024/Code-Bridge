@@ -70,7 +70,7 @@
         android:padding="1dp">
 
 
-        <Button
+        <android.widget.Button
             android:id="@+id/copyLinkButton"
             android:layout_width="370dp"
             android:layout_height="wrap_content"
@@ -81,7 +81,7 @@
             android:text="초대 링크 복사"
             android:textSize="16dp" />
 
-        <Button
+        <android.widget.Button
             android:id="@+id/continueButton"
             android:layout_width="370dp"
             android:layout_height="wrap_content"

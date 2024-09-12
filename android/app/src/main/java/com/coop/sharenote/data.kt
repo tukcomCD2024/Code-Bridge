@@ -47,7 +47,8 @@ data class UserResponse(
 data class WorkSpace(
     val name: String,
     val owner: String,
-    val id : String
+    val id : String,
+    val members : List<String>
 )
 
 
