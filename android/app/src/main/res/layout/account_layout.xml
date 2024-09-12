@@ -3,7 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:background="@drawable/rectangle"
+    android:background="@drawable/rectangle_white"
     android:padding="10dp">
 
     <RelativeLayout
@@ -42,15 +42,16 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:layout_centerVertical="true"
+            android:layout_marginLeft="10dp"
             android:text="사용자 이메일"
             android:textSize="20sp" />
 
         <ImageView
             android:id="@+id/setting_circle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
             android:layout_alignParentEnd="true"
-            android:src="@drawable/setting_circle"/>
+            android:src="@drawable/baseline_add_24"/>
 
     </RelativeLayout>
 
@@ -58,7 +59,6 @@
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
         android:layout_marginBottom="16dp">
 
         <LinearLayout
@@ -69,8 +69,7 @@
             <RelativeLayout
                 android:id="@+id/recycler_layout"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="@drawable/rectangle_white">
+                android:layout_height="wrap_content">
 
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/recyclerViewWorkSpace"
@@ -84,7 +83,6 @@
                 android:id="@+id/logoutLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
                 android:background="@drawable/rectangle_white"
                 android:clickable="true"
                 android:focusable="true"
@@ -104,6 +102,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_toRightOf="@id/cancle"
+                    android:layout_marginBottom="10dp"
                     android:text="로그아웃"
                     android:textColor="@android:color/holo_red_light"
                     android:textSize="18sp"

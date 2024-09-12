@@ -3,7 +3,9 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:padding="8dp">
+    android:background="@drawable/rectangle_link"
+    android:layout_marginBottom="5dp"
+    android:padding="1dp">
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -12,15 +14,53 @@
         android:layout_marginBottom="5dp"
         android:padding="10dp">
 
-        <TextView
-            android:id="@+id/workspaceNameTextView"
-            android:layout_width="wrap_content"
+        <ImageView
+            android:id="@+id/image1"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:src="@drawable/ic_indicator"
+            android:layout_marginLeft="10dp"
+            android:layout_centerVertical="true"/>
+
+        <ImageView
+            android:id="@+id/image2"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:src="@drawable/ic_group"
+            android:layout_toRightOf="@+id/image1"
+            android:layout_marginLeft="5dp"
+            android:layout_centerVertical="true"/>
+
+        <RelativeLayout
+            android:layout_width="160dp"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            android:layout_marginLeft="8dp"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:textColor="@color/black" />
+            android:layout_toRightOf="@+id/image2"
+            android:layout_marginLeft="10dp"
+            android:layout_centerVertical="true">
+
+            <TextView
+                android:id="@+id/workspaceNameTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="8dp"
+                android:maxLines="1"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="@color/black" />
+
+            <TextView
+                android:id="@+id/workspaceMember"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:maxLines="1"
+                android:layout_marginLeft="8dp"
+                android:layout_below="@+id/workspaceNameTextView"
+                android:textSize="14sp"
+                android:textColor="@color/black" />
+
+        </RelativeLayout>
+
+
 
         <Button
             android:id="@+id/buttonDeleteWorkSpace"
@@ -33,9 +73,4 @@
             android:text="삭제" />
 
     </RelativeLayout>
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="@color/gray"
-        android:layout_marginVertical="0dp"/>
 </LinearLayout>
