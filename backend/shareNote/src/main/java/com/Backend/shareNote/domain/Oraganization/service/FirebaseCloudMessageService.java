@@ -8,10 +8,12 @@ import com.google.auth.oauth2.GoogleCredentials;
 import com.google.common.net.HttpHeaders;
 import lombok.RequiredArgsConstructor;
 import okhttp3.*;
+
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
-
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.List;
 
@@ -51,7 +53,10 @@ public class FirebaseCloudMessageService {
         return objectMapper.writeValueAsString(fcmMessage);
     }
     private String getAccessToken() throws IOException {
+        // GitHub Actions에서 생성된 firebase_service_key.json 파일의 경로
         String firebaseConfigPath = "firebase/firebase_service_key.json";
+
+        // 파일을 읽어 GoogleCredentials 생성
         GoogleCredentials googleCredentials = GoogleCredentials
                 .fromStream(new ClassPathResource(firebaseConfigPath).getInputStream())
                 .createScoped(List.of("https://www.googleapis.com/auth/cloud-platform"));

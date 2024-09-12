@@ -43,16 +43,27 @@ jobs:
           # GitHub-Actions 에서 설정한 값을 application-email.yml 파일에 작성합니다.
           echo "${{ secrets.APPLICATION_EMAIL }}" >> ./application-email.yml
           
-          # 'firebase' 디렉토리로 이동
-          cd firebase
           
-          # 'firebase_service_key.json' 파일을 작성
-          touch ./firebase_service_key.json
-          
-          # GitHub-Actions 에서 설정한 값을 'firebase_service_key.json' 파일에 작성합니다
-          echo "${{ secrets.APPLICATION_FIREBASE_KEY }}" >> ./firebase_service_key.json
+
 
         shell: bash
+
+      - name: Create-json
+        uses: jsdaniell/create-json@v1.2.3
+        with:
+          name: "firebase_service_key.json"
+          json: ${{ secrets.APPLICATION_FIREBASE_KEY }}
+
+      - name: Set permissions for firebase_service_key.json
+        run: chmod 644 ./firebase_service_key.json
+
+      - name: JSON file location
+        run: |
+          pwd # 현재 경로 출력
+          ls -la # 현재 디렉토리의 파일 목록 확인
+
+      - name: Copy firebase_service_key.json to build context
+        run: cp ./firebase_service_key.json ./backend/shareNote/src/main/resources/firebase
 
       # gradle을 통해 소스를 빌드
       - name: Build with Gradle
