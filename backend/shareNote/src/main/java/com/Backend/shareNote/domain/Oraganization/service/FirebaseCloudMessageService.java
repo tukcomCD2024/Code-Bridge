@@ -8,14 +8,10 @@ import com.google.auth.oauth2.GoogleCredentials;
 import com.google.common.net.HttpHeaders;
 import lombok.RequiredArgsConstructor;
 import okhttp3.*;
-import org.springframework.core.io.ClassPathResource;
+
 import org.springframework.stereotype.Service;
-
-
-import java.io.ByteArrayInputStream;
-import java.io.FileNotFoundException;
+import java.io.FileInputStream;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 @Service
@@ -54,14 +50,12 @@ public class FirebaseCloudMessageService {
         return objectMapper.writeValueAsString(fcmMessage);
     }
     private String getAccessToken() throws IOException {
-        // 환경 변수에서 FIREBASE_SERVICE_KEY 값을 가져옵니다.
-        String firebaseServiceKey = System.getenv("FIREBASE_SERVICE_KEY");
-        if (firebaseServiceKey == null) {
-            throw new FileNotFoundException("Firebase 서비스 키가 환경 변수에 설정되지 않았습니다.");
-        }
+        // GitHub Actions에서 생성된 firebase_service_key.json 파일의 경로
+        String firebaseConfigPath = "./firebase_service_key.json";  // 프로젝트 루트 경로에서 파일을 찾음
 
+        // 파일을 읽어 GoogleCredentials 생성
         GoogleCredentials googleCredentials = GoogleCredentials
-                .fromStream(new ByteArrayInputStream(firebaseServiceKey.getBytes(StandardCharsets.UTF_8)))
+                .fromStream(new FileInputStream(firebaseConfigPath))
                 .createScoped(List.of("https://www.googleapis.com/auth/cloud-platform"));
 
         googleCredentials.refreshIfExpired();
