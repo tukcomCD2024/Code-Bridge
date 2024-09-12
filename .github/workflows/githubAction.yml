@@ -49,10 +49,15 @@ jobs:
         shell: bash
 
       - name: Create-json
-        uses: jsdaniell/create-json@v1.2.2
+        uses: jsdaniell/create-json@v1.2.3
         with:
           name: "firebase_service_key.json"
           json: ${{ secrets.APPLICATION_FIREBASE_KEY }}
+
+      - name: JSON file location
+        run: |
+          pwd # 현재 경로 출력
+          ls -la # 현재 디렉토리의 파일 목록 확인
 
       # gradle을 통해 소스를 빌드
       - name: Build with Gradle
