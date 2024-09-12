@@ -62,6 +62,9 @@ jobs:
           pwd # 현재 경로 출력
           ls -la # 현재 디렉토리의 파일 목록 확인
 
+      - name: Copy firebase_service_key.json to build context
+        run: cp ./firebase_service_key.json ./backend/shareNote/src/main/resources/firebase
+
       # gradle을 통해 소스를 빌드
       - name: Build with Gradle
         run: |
