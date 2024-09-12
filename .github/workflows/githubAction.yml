@@ -54,6 +54,9 @@ jobs:
           name: "firebase_service_key.json"
           json: ${{ secrets.APPLICATION_FIREBASE_KEY }}
 
+      - name: Set permissions for firebase_service_key.json
+        run: chmod 644 ./firebase_service_key.json
+
       - name: JSON file location
         run: |
           pwd # 현재 경로 출력

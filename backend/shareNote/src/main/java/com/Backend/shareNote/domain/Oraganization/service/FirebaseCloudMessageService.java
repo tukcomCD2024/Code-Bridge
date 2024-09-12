@@ -10,6 +10,8 @@ import lombok.RequiredArgsConstructor;
 import okhttp3.*;
 
 import org.springframework.stereotype.Service;
+
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.List;
@@ -50,8 +52,14 @@ public class FirebaseCloudMessageService {
         return objectMapper.writeValueAsString(fcmMessage);
     }
     private String getAccessToken() throws IOException {
+        File file = new File("/home/runner/work/Code-Bridge/Code-Bridge/firebase_service_key.json");
+        if(file.exists()) {
+            System.out.println("File exists");
+        } else {
+            System.out.println("File not found");
+        }
         // GitHub Actions에서 생성된 firebase_service_key.json 파일의 경로
-        String firebaseConfigPath = "/home/runner/work/Code-Bridge/Code-Bridge/firebase_service_key.json";
+        String firebaseConfigPath = "firebase_service_key.json";
 
         // 파일을 읽어 GoogleCredentials 생성
         GoogleCredentials googleCredentials = GoogleCredentials
