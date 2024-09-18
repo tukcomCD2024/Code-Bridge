@@ -28,20 +28,21 @@ class QuizAdapter(private val quizList: MutableList<QuizList>, private val liste
     override fun onBindViewHolder(holder: QuizViewHolder, position: Int) {
         val quiz = quizList[position]
         holder.quizTitleTextView.text = quiz.quizTitle
-        holder.nicknameTextView.text = quiz.nickname
+        holder.nicknameTextView.text = "출제자 : ${quiz.nickname}"
+
 
         // correct 값을 기반으로 배경색 변경
         when (quiz.correct) {
             1 -> {
-                holder.itemView.setBackgroundResource(R.color.lightblue)
+                holder.itemView.setBackgroundResource(R.drawable.correct)
                 holder.newImageView.visibility = View.GONE
             }
             0 -> {
-                holder.itemView.setBackgroundResource(R.color.lightcoral)
+                holder.itemView.setBackgroundResource(R.drawable.incorrect)
                 holder.newImageView.visibility = View.GONE
             }
             else -> {
-                holder.itemView.setBackgroundResource(android.R.color.transparent)
+                holder.itemView.setBackgroundResource(R.drawable.unsolved)
                 holder.newImageView.visibility = View.VISIBLE
             }
         }
