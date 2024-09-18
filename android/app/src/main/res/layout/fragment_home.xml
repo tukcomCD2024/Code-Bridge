@@ -106,6 +106,8 @@
                 android:layout_width="150dp"
                 android:layout_height="150dp"
                 android:layout_marginEnd="16dp"
+                android:layout_marginBottom="10dp"
+                android:elevation="6dp"
                 android:background="@drawable/rectangle_link"
                 app:layout_constraintEnd_toStartOf="@+id/contribution"
                 app:layout_constraintStart_toStartOf="parent"
@@ -153,6 +155,8 @@
             android:id="@+id/contribution"
             android:layout_width="150dp"
             android:layout_height="150dp"
+            android:layout_marginBottom="10dp"
+            android:elevation="6dp"
             android:background="@drawable/rectangle_link"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/quiz"
@@ -356,7 +360,7 @@
                     android:layout_centerVertical="true"
                     android:layout_alignParentEnd="true"
                     android:layout_marginEnd="16dp"
-                    android:src="@drawable/ic_add_note"/>
+                    android:src="@drawable/baseline_add_24"/>
             </RelativeLayout>
 
             <androidx.recyclerview.widget.RecyclerView
