@@ -248,12 +248,6 @@
                     android:text="계정 로그인에 사용할 영구 비밀번호를 설정하세요."
                     android:textSize="12sp" />
 
-                <Switch
-                    android:id="@+id/switch5"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentEnd="true"
-                    android:layout_centerInParent="true"/>
             </RelativeLayout>
 
             <View
@@ -282,15 +276,7 @@
                     android:text="내 기기에서 SharNote의 모습을 마음껏 바꿔보세요."
                     android:textSize="12sp" />
 
-                <Button
-                    android:id="@+id/button1"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentEnd="true"
-                    android:layout_centerInParent="true"
-                    android:background="@android:color/transparent"
-                    android:text="시스템 설정"
-                    android:textColor="@color/black"/>
+
             </RelativeLayout>
 
             <View
@@ -309,25 +295,17 @@
                     android:id="@+id/alarm7"
                     android:layout_width="178dp"
                     android:layout_height="wrap_content"
-                    android:text="개인정보 수정"
+                    android:text="개인정보"
                     android:textStyle="bold"
                     android:textSize="16sp" />
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_below="@+id/alarm7"
-                    android:text="닉네임 및 비밀번호를 수정하세요."
+                    android:text="닉네임 및 이메일을 확인하세요."
                     android:textSize="12sp" />
 
-                <Button
-                    android:id="@+id/button2"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentEnd="true"
-                    android:layout_centerInParent="true"
-                    android:background="@android:color/transparent"
-                    android:text="개인정보 수정"
-                    android:textColor="@color/black" />
+
             </RelativeLayout>
 
 

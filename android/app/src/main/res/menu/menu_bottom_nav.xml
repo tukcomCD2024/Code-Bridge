@@ -9,10 +9,6 @@
         android:title="검색"
         android:icon="@drawable/ic_search"/>
     <item
-        android:id="@+id/fragment_alert"
-        android:title="알림"
-        android:icon="@drawable/ic_alert"/>
-    <item
         android:id="@+id/fragment_settings"
         android:title="설정"
         android:icon="@drawable/ic_settings"/>

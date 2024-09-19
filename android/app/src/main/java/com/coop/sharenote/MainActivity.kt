@@ -71,10 +71,7 @@ class MainActivity : AppCompatActivity() {
                         .commit()
                     true
                 }
-                R.id.fragment_alert -> {
-                    // AlertFragment로 이동하는 코드 작성
-                    true
-                }
+
                 R.id.fragment_settings -> {
                     supportFragmentManager.beginTransaction()
                         .replace(R.id.main_container, SettingsFragment())
