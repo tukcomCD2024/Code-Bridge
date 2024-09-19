@@ -44,6 +44,12 @@
                 android:textColor="@color/black"
                 android:textStyle="bold" />
 
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="노트로 이동하기"
+                android:textColor="@color/dimgray"
+                android:layout_below="@id/titleTextView"/>
         </RelativeLayout>
 
 

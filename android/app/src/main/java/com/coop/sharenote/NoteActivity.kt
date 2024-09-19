@@ -181,7 +181,8 @@ class NoteActivity : AppCompatActivity(), PageListAdapter.OnPageClickListener, P
         val layoutParams = WindowManager.LayoutParams()
         layoutParams.copyFrom(dialog.window?.attributes)
         layoutParams.width = WindowManager.LayoutParams.MATCH_PARENT
-        layoutParams.height = WindowManager.LayoutParams.WRAP_CONTENT
+        layoutParams.height = 1200
+        layoutParams.gravity = Gravity.BOTTOM
         dialog.window?.attributes = layoutParams
 
         // 리사이클러뷰 설정

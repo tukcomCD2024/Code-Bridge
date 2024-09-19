@@ -78,16 +78,19 @@
 
     <LinearLayout
         android:id="@+id/Organization"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_width="350dp"
+        android:layout_height="40dp"
         android:layout_marginBottom="15dp"
-        android:background="@color/gray"
+        android:elevation="5dp"
+        android:background="@drawable/rectangle_lb"
+        android:layout_gravity="center_horizontal"
         android:gravity="center">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Organization 정보 확인"
+            android:textColor="@color/black"
             android:textSize="18dp"/>
 
     </LinearLayout>
@@ -97,6 +100,7 @@
         android:id="@+id/PageLayout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:padding="5dp"
         android:orientation="horizontal"
         android:gravity="center">
 
