@@ -1,6 +1,7 @@
 package com.coop.sharenote
 
 import SearchNoteListAdapter
+import SearchNoteListAdapter_f
 import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
@@ -20,7 +21,7 @@ import kotlinx.coroutines.withContext
 class SearchFragment : Fragment() {
     private lateinit var searchEditText: EditText
     private lateinit var searchResultRecyclerView: RecyclerView
-    private lateinit var noteListAdapter: SearchNoteListAdapter
+    private lateinit var noteListAdapter: SearchNoteListAdapter_f
     private var noteList: MutableList<Note> = mutableListOf()
 
     override fun onCreateView(
@@ -36,7 +37,7 @@ class SearchFragment : Fragment() {
         searchResultRecyclerView = view.findViewById(R.id.searchResultRecyclerView)
 
         searchResultRecyclerView.layoutManager = LinearLayoutManager(context)
-        noteListAdapter = SearchNoteListAdapter { noteId ->
+        noteListAdapter = SearchNoteListAdapter_f { noteId ->
             saveRecentNoteId(noteId) // 클릭된 노트의 ID를 저장합니다.
             val intent = Intent(requireContext(), NoteActivity::class.java)
             startActivity(intent)

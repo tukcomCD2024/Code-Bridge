@@ -1,8 +1,7 @@
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@color/gray"
+    android:layout_height="wrap_content"
     android:orientation="vertical">
 
     <ScrollView
@@ -34,140 +33,151 @@
             </RelativeLayout>
 
             <RelativeLayout
-                android:id="@+id/layout1"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="15dp"
-                android:padding="1dp"
-                android:layout_marginLeft="10dp">
+                android:layout_marginTop="20dp"
+                android:background="@drawable/rectangle_lb">
 
-                <FrameLayout
+                <RelativeLayout
+                    android:id="@+id/layout1"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_centerHorizontal="true"
-                    android:layout_marginTop="2dp">
+                    android:layout_marginTop="15dp"
+                    android:padding="1dp"
+                    android:layout_marginLeft="10dp">
 
-                    <TextView
-                        android:id="@+id/noteText"
-                        android:layout_width="330dp"
-                        android:layout_height="80dp"
-                        android:background="@drawable/rectangle_white"
-                        android:layout_gravity="center"
-                        android:textSize="20sp" />
-
-                    <TextView
-                        android:id="@+id/noteEditText"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:background="@android:color/transparent"
-                        android:hint="노트"
-                        android:textColor="@color/black"
-                        android:textStyle="bold"
-                        android:textSize="17sp"
-                        android:padding="13dp"
-                        android:layout_marginLeft="40dp"/>
-
-                    <TextView
-                        android:id="@+id/noteType"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:hint="객관식"
-                        android:textColor="@color/black"
-                        android:textSize="15dp"
-                        android:layout_gravity="center_vertical"
-                        android:padding="13dp"
-                        android:layout_marginLeft="40dp"
-                        android:layout_marginTop="12dp"/>
-
-                </FrameLayout>
-            </RelativeLayout>
-
-            <RelativeLayout
-                android:id="@+id/layout2"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_below="@id/layout1"
-                android:padding="10dp"
-                android:layout_marginTop="10dp"
-                android:layout_marginLeft="10dp">
-
-                <FrameLayout
-                    android:layout_width="330dp"
-                    android:layout_height="wrap_content"
-                    android:layout_centerHorizontal="true"
-                    android:background="@drawable/rectangle_white"
-                    android:layout_marginTop="2dp">
-
-                    <RelativeLayout
+                    <FrameLayout
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content">
+                        android:layout_height="wrap_content"
+                        android:layout_centerHorizontal="true"
+                        android:layout_marginTop="2dp">
 
                         <TextView
+                            android:id="@+id/noteText"
+                            android:layout_width="330dp"
+                            android:layout_height="80dp"
+                            android:background="@drawable/rectangle_white"
+                            android:layout_gravity="center"
+                            android:textSize="20sp" />
+
+                        <TextView
+                            android:id="@+id/noteEditText"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Q."
-                            android:textColor="@color/blue"
-                            android:textSize="18dp"
-                            android:textStyle="bold"
-                            android:padding="10dp" />
-
-                        <TextView
-                            android:id="@+id/titleEditText"
-                            android:layout_width="320dp"
-                            android:layout_height="wrap_content"
                             android:background="@android:color/transparent"
-                            android:text="퀴즈 문제 내용"
-                            android:textSize="18dp"
+                            android:hint="노트"
                             android:textColor="@color/black"
                             android:textStyle="bold"
-                            android:padding="10dp" />
+                            android:textSize="17sp"
+                            android:padding="13dp"
+                            android:layout_marginLeft="40dp"/>
 
-                        <LinearLayout
-                            android:id="@+id/container"
-                            android:layout_width="match_parent"
+                        <TextView
+                            android:id="@+id/noteType"
+                            android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_below="@id/titleEditText"
-                            android:layout_marginBottom="5dp"
-                            android:orientation="vertical">
-                        </LinearLayout>
+                            android:hint="객관식"
+                            android:textColor="@color/black"
+                            android:textSize="15dp"
+                            android:layout_gravity="center_vertical"
+                            android:padding="13dp"
+                            android:layout_marginLeft="40dp"
+                            android:layout_marginTop="12dp"/>
 
-                    </RelativeLayout>
+                    </FrameLayout>
+                </RelativeLayout>
 
-                </FrameLayout>
-
-            </RelativeLayout>
-
-
-            <RelativeLayout
-                android:id="@+id/layout3"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="25dp"
-                android:layout_below="@id/layout2"
-                android:padding="1dp"
-                android:layout_marginLeft="10dp">
-
-            </RelativeLayout>
-
-            <RelativeLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="5dp"
-                android:layout_below="@id/layout3"
-                android:padding="1dp"
-                android:layout_marginLeft="10dp"
-                android:layout_marginRight="10dp">
-
-                <Button
-                    android:id="@+id/submitButton"
-                    android:layout_width="250dp"
+                <RelativeLayout
+                    android:id="@+id/layout2"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_centerHorizontal="true"
-                    android:background="@drawable/rectangle_white"
-                    android:text="제출하기"
-                    android:textSize="15dp"
-                    android:padding="10dp" />
+                    android:layout_below="@id/layout1"
+                    android:padding="10dp"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginLeft="10dp">
+
+                    <FrameLayout
+                        android:layout_width="330dp"
+                        android:layout_height="wrap_content"
+                        android:layout_centerHorizontal="true"
+                        android:background="@drawable/rectangle_white"
+                        android:layout_marginTop="2dp">
+
+                        <RelativeLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Q."
+                                android:textColor="@color/blue"
+                                android:textSize="18dp"
+                                android:textStyle="bold"
+                                android:padding="10dp" />
+
+                            <TextView
+                                android:id="@+id/titleEditText"
+                                android:layout_width="320dp"
+                                android:layout_height="wrap_content"
+                                android:background="@android:color/transparent"
+                                android:text="퀴즈 문제 내용"
+                                android:textSize="18dp"
+                                android:textColor="@color/black"
+                                android:textStyle="bold"
+                                android:padding="10dp" />
+
+                            <LinearLayout
+                                android:id="@+id/container"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_below="@id/titleEditText"
+                                android:layout_marginBottom="5dp"
+                                android:orientation="vertical">
+                            </LinearLayout>
+
+                        </RelativeLayout>
+
+                    </FrameLayout>
+
+                </RelativeLayout>
+
+
+                <RelativeLayout
+                    android:id="@+id/layout3"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="25dp"
+                    android:layout_below="@id/layout2"
+                    android:padding="1dp"
+                    android:layout_marginLeft="10dp">
+
+                </RelativeLayout>
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="5dp"
+                    android:layout_below="@id/layout3"
+                    android:padding="1dp"
+                    android:layout_marginLeft="10dp"
+                    android:layout_marginRight="10dp">
+
+                    <android.widget.Button
+                        android:id="@+id/submitButton"
+                        android:layout_width="250dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="25dp"
+                        android:layout_centerHorizontal="true"
+                        android:background="@drawable/button_background"
+                        android:text="제출하기"
+                        android:textSize="15dp"
+                        android:textColor="@color/white"
+                        android:padding="10dp" />
+                </RelativeLayout>
+
             </RelativeLayout>
+
 
         </LinearLayout>
     </ScrollView>

@@ -34,7 +34,7 @@ class SettingsFragment : Fragment() {
         binding.switch2.isChecked = sharedPreferences.getBoolean("switch2", false)
         binding.switch3.isChecked = sharedPreferences.getBoolean("switch3", false)
         binding.switch4.isChecked = sharedPreferences.getBoolean("switch4", false)
-        binding.switch5.isChecked = sharedPreferences.getBoolean("switch5", false)
+
 
         // Switches
         binding.switch1.setOnCheckedChangeListener { _, isChecked ->
@@ -57,15 +57,10 @@ class SettingsFragment : Fragment() {
             sharedPreferences.edit().putBoolean("switch4", isChecked).apply()
         }
 
-        binding.switch5.setOnCheckedChangeListener { _, isChecked ->
-            // Save switch state to SharedPreferences
-            sharedPreferences.edit().putBoolean("switch5", isChecked).apply()
-        }
 
-
-        binding.button2.setOnClickListener {
+        /*binding.button2.setOnClickListener {
             goToMyPageActivity()
-        }
+        }*/
 
     }
 

@@ -38,12 +38,14 @@
             android:layout_centerHorizontal="true"
             android:layout_marginTop="2dp">
 
-            <Button
+            <android.widget.Button
                 android:id="@+id/createQuiz"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
-                android:text="퀴즈 생성"/>
+                android:background="@drawable/rectangle_bright_blue"
+                android:text="퀴즈 생성"
+                android:textColor="@color/black"/>
 
             <TextView
                 android:id="@+id/noteText"
@@ -71,7 +73,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="15dp"
-        android:layout_marginBottom="25dp"
+        android:layout_marginBottom="15dp"
         android:padding="1dp">
 
         <TextView
@@ -107,6 +109,21 @@
             android:text="Resolved"
             android:textColor="@color/black"/>
     </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal">
+
+        <View
+            android:id="@+id/view"
+            android:layout_width="320dp"
+            android:layout_height="1dp"
+            android:background="@color/gray"
+            android:layout_marginVertical="0dp"/>
+
+    </RelativeLayout>
+
 
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/fragmentContainerView"

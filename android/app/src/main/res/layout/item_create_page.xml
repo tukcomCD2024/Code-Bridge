@@ -10,5 +10,7 @@
         android:layout_width="150dp"
         android:layout_height="250dp"
         android:layout_margin="15dp"
-        android:src="@drawable/ic_addbox"/>
+        android:src="@drawable/baseline_add_24"
+        android:background="@drawable/rectangle_lb"
+        android:elevation="5dp"/>
 </LinearLayout>
